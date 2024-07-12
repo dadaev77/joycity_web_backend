@@ -1,0 +1,12 @@
+FROM yiisoftware/yii2-php:8.1-apache
+
+RUN rm -rf /etc/localtime
+RUN ln -s /usr/share/zoneinfo/UTC /etc/localtime
+
+RUN apt update
+RUN apt install -y git cron nano vim htop
+
+COPY ./components/docker/entrypoint.sh /usr/local/bin/backend-entrypoint
+RUN chmod +x /usr/local/bin/backend-entrypoint
+
+ENTRYPOINT ["/bin/sh", "-c", "backend-entrypoint && /bin/bash docker-php-entrypoint && /bin/bash apache2-foreground"]

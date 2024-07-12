@@ -1,0 +1,54 @@
+<?php
+
+/* @var $this yii\web\View */
+/* @var $form yii\bootstrap\ActiveForm */
+/* @var $model app\models\LoginForm */
+
+use yii\helpers\Html;
+use yii\bootstrap\ActiveForm;
+
+$this->title = 'Вход';
+$this->params['breadcrumbs'][] = $this->title;
+?>
+<div class="site-login">
+    <h1 style="margin-top: -25px;"><?= Html::encode($this->title) ?></h1>
+
+    <!--<p>Please fill out the following fields to login:</p>-->
+
+    <?php $form = ActiveForm::begin([
+        'id' => 'login-form',
+        'options' => ['class' => 'form-horizontal'],
+        'fieldConfig' => [
+            'template' => "<div class=\"col-lg-3\">{input}</div>\n<div class=\"col-lg-8\">{error}</div>",
+            'labelOptions' => ['class' => 'col-lg-1 control-label'],
+        ],
+    ]); ?>
+<style>
+#loginform-username, #loginform-password, #loginform-remember {
+    margin-left: 20px;
+    width: 300px;
+}
+#loginform-remember {margin-left: 30px;}
+.help-block.help-block-error{
+	margin-top: -25px;
+	height: 20px;
+	margin-left: -80px;
+}
+</style>
+        <?= $form->field($model, 'username')->textInput(['autofocus' => true, 'placeholder' => "Логин"]) ?>
+
+        <?= $form->field($model, 'password')->passwordInput(['placeholder' => "Пароль"]) ?>
+
+        <?= $form->field($model, 'rememberMe')->checkbox([
+            'template' => "<div id=\"loginform-remember\" class=\"col-lg-offset-1 col-lg-3\">{input} {label}</div>\n<div class=\"col-lg-8\">{error}</div>",
+        ]) ?>
+
+        <div class="form-group">
+            <div class="col-lg-12">
+                <?= Html::submitButton('Войти', ['class' => 'btn btn-default', 'name' => 'login-button']) ?>
+            </div>
+        </div>
+
+    <?php ActiveForm::end(); ?>
+
+</div>

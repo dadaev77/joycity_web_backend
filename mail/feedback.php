@@ -1,0 +1,4 @@
+<?=$name?><br>
+<?=$email?><br>
+<?=$theme?><br>
+<?=$text?><br>

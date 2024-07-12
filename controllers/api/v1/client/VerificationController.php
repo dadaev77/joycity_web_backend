@@ -1,0 +1,106 @@
+<?php
+
+namespace app\controllers\api\v1\client;
+
+use app\components\ApiResponse;
+use app\controllers\api\v1\ClientController;
+use app\models\Chat;
+use app\models\User;
+use app\models\UserVerificationRequest;
+use app\services\chat\ChatConstructorService;
+use app\services\notification\NotificationConstructor;
+use app\services\output\UserVerificationRequestOutputService;
+use app\services\RateService;
+use Throwable;
+use Yii;
+
+class VerificationController extends ClientController
+{
+    public function behaviors()
+    {
+        $behaviors = parent::behaviors();
+        $behaviors['verbFilter']['actions']['create'] = ['post'];
+
+        return $behaviors;
+    }
+
+    public function actionCreate()
+    {
+        $apiCodes = UserVerificationRequest::apiCodes();
+
+        try {
+            $user = User::getIdentity();
+
+            if ($user->is_verified) {
+                return ApiResponse::code($apiCodes->ALREADY_VERIFIED);
+            }
+
+            $activeVerificationRequest = UserVerificationRequest::findOne([
+                'created_by_id' => $user->id,
+                'status' => UserVerificationRequest::STATUS_WAITING,
+            ]);
+
+            if ($activeVerificationRequest) {
+                return ApiResponse::code($apiCodes->HAS_ACTIVE_REQUEST);
+            }
+
+            $randomManager = User::find()
+                ->select(['id'])
+                ->where(['role' => User::ROLE_MANAGER])
+                ->orderBy('RAND()')
+                ->one();
+            $newRequest = new UserVerificationRequest([
+                'created_by_id' => $user->id,
+                'manager_id' => $randomManager->id,
+                'created_at' => date('Y-m-d H:i:s'),
+                'status' => UserVerificationRequest::STATUS_WAITING,
+                'amount' => RateService::convertRUBtoCNY(
+                    Yii::$app->params['verificationAmount'],
+                ),
+            ]);
+            $transaction = Yii::$app->db->beginTransaction();
+
+            if (!$newRequest->save()) {
+                $transaction?->rollBack();
+
+                return ApiResponse::codeErrors(
+                    $apiCodes->ERROR_SAVE,
+                    $newRequest->getFirstErrors(),
+                );
+            }
+
+            $conversation = ChatConstructorService::createChatVerification(
+                Chat::GROUP_CLIENT_MANAGER,
+                [$user->id, $randomManager->id],
+                $newRequest->id,
+            );
+
+            if (!$conversation->success) {
+                $transaction?->rollBack();
+
+                return ApiResponse::codeErrors(
+                    $apiCodes->ERROR_SAVE,
+                    $conversation->reason,
+                );
+            }
+
+            $transaction?->commit();
+
+            NotificationConstructor::verificationVerificationCreated(
+                $newRequest->manager_id,
+                $newRequest->id,
+            );
+
+            return ApiResponse::codeInfo(
+                $apiCodes->SUCCESS,
+                UserVerificationRequestOutputService::getEntity(
+                    $newRequest->id,
+                ),
+            );
+        } catch (Throwable $e) {
+            isset($transaction) && $transaction->rollBack();
+
+            return ApiResponse::internalError($e);
+        }
+    }
+}

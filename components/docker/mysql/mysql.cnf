@@ -1,0 +1,14 @@
+[mysqld]
+performance_schema = off
+key_buffer_size = 0
+
+innodb_buffer_pool_size = 128M
+innodb_buffer_pool_instances = 1
+innodb_log_file_size = 16M
+innodb_file_per_table = 1
+
+max_connections = 20
+max_user_connections = 45
+connect_timeout = 15
+wait_timeout = 3600
+interactive_timeout = 3600

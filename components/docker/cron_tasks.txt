@@ -1,0 +1,3 @@
+#* * * * * /usr/local/bin/php /app/yii cron/ping >> /app/_cron.log
+
+*/5 * * * * /usr/local/bin/php /app/yii cron/order-distribution >> /app/_cron.log

@@ -1,0 +1,22 @@
+#AuthType Basic
+#AuthName "Protected Area"
+#AuthUserFile conf_folder/.htpasswd
+#Require valid-user
+
+#Use if on shared hosting and this not in the root folder.
+#RewriteBase /
+
+RewriteEngine on
+
+RewriteCond %{HTTP:Authorization} ^(.*) 
+RewriteRule .* - [e=HTTP_AUTHORIZATION:%1]
+# if a directory or a file exists, use it directly
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# otherwise forward it to index.php
+RewriteRule . index.php
+
+#php_flag display_errors on
+
+#php_flag  log_errors on

@@ -1,0 +1,205 @@
+<?php
+
+use app\components\ApiResponse;
+use yii\rest\UrlRule;
+use yii\web\JsonParser;
+use yii\web\MultipartFormDataParser;
+
+$params = require __DIR__ . '/params.php';
+
+$config = [
+    'id' => 'basic',
+    'basePath' => dirname(__DIR__),
+    'timeZone' => 'Europe/Moscow',
+    'bootstrap' => ['log'],
+    'defaultRoute' => 'api',
+    'language' => 'ru-RU',
+    'aliases' => [
+        '@bower' => '@vendor/yidas/yii2-bower-asset/bower',
+    ],
+    'components' => [
+        'i18n' => [
+            'translations' => [
+                'app*' => [
+                    'basePath' => '@app/lang',
+                    'class' => 'yii\i18n\PhpMessageSource',
+                ],
+            ],
+        ],
+
+        'response' => [
+            'format' => yii\web\Response::FORMAT_JSON,
+            'on beforeSend' => static function ($event) {
+                ApiResponse::handleErrors($event->sender);
+            },
+        ],
+
+        'request' => [
+            'cookieValidationKey' => 'QgCrRBT_xzOl_VJ8-on6gIEZwkgjOofu',
+            'parsers' => [
+                'application/json' => JsonParser::class,
+                'multipart/form-data' => MultipartFormDataParser::class,
+            ],
+        ],
+        'cache' => [
+            'class' => 'yii\caching\FileCache',
+        ],
+        'user' => [
+            'identityClass' => 'app\models\User',
+            'enableAutoLogin' => false,
+            'enableSession' => false,
+        ],
+        'errorHandler' => [
+            'errorAction' => null,
+        ],
+        'mailer' => require __DIR__ . '/smtp.php',
+        'log' => [
+            'traceLevel' => YII_DEBUG ? 3 : 0,
+            'targets' => [
+                [
+                    'class' => 'yii\log\FileTarget',
+                    'levels' => ['error', 'warning'],
+                ],
+                [
+                    'class' => 'yii\log\FileTarget',
+                    'levels' => ['info'],
+                    'categories' => ['scanoil'],
+                    'logFile' => '@app/runtime/logs/reports/scanoil.log',
+                    'maxFileSize' => 1024 * 2,
+                    'maxLogFiles' => 20,
+                ],
+                [
+                    'class' => 'yii\log\FileTarget',
+                    'levels' => ['info'],
+                    'categories' => ['mails'],
+                    'logFile' => '@app/runtime/logs/reports/mails.log',
+                    'maxFileSize' => 1024 * 2,
+                    'maxLogFiles' => 50,
+                ],
+                [
+                    'class' => 'yii\log\FileTarget',
+                    'levels' => ['info'],
+                    'categories' => ['login'],
+                    'logFile' => '@app/runtime/logs/reports/login.log',
+                    'maxFileSize' => 1024 * 2,
+                    'maxLogFiles' => 50,
+                ],
+            ],
+        ],
+        'db' => require __DIR__ . '/db.php',
+
+        'urlManager' => [
+            'enablePrettyUrl' => true,
+            'enableStrictParsing' => false,
+            'showScriptName' => false,
+            'rules' => [
+                [
+                    'class' => UrlRule::class,
+                    // Контроллеры REST API
+                    'controller' => [
+                        'api/v1/buyer/buyer',
+                        'api/v1/buyer/chat',
+                        'api/v1/buyer/feedback/buyer',
+                        'api/v1/buyer/feedback/product',
+                        'api/v1/buyer/order',
+                        'api/v1/buyer/order/buyer-offer',
+                        'api/v1/buyer/order/distribution',
+                        'api/v1/buyer/product',
+                        'api/v1/buyer/report',
+                        'api/v1/buyer/search',
+                        'api/v1/buyer/settings',
+                        'api/v1/client/buyer',
+                        'api/v1/client/chat',
+                        'api/v1/client/feedback/buyer',
+                        'api/v1/client/feedback/product',
+                        'api/v1/client/order',
+                        'api/v1/client/order/buyer-offer',
+                        'api/v1/client/order/fulfillment-offer',
+                        'api/v1/client/product',
+                        'api/v1/client/profile',
+                        'api/v1/client/search',
+                        'api/v1/client/settings',
+                        'api/v1/client/verification',
+                        'api/v1/fulfillment/chat',
+                        'api/v1/fulfillment/order',
+                        'api/v1/fulfillment/order/fulfillment-offer',
+                        'api/v1/fulfillment/order/marketplace-transaction',
+                        'api/v1/fulfillment/profile',
+                        'api/v1/fulfillment/report',
+                        'api/v1/fulfillment/settings',
+                        'api/v1/internal/constants/category',
+                        'api/v1/internal/constants/delivery-point',
+                        'api/v1/internal/constants/delivery-point',
+                        'api/v1/internal/constants/delivery-point-address',
+                        'api/v1/internal/constants/rate',
+                        'api/v1/internal/constants/subcategory',
+                        'api/v1/internal/constants/type-delivery',
+                        'api/v1/internal/constants/type-delivery-link-category',
+                        'api/v1/internal/constants/type-delivery-link-subcategory',
+                        'api/v1/internal/constants/type-delivery-price',
+                        'api/v1/internal/constants/type-packaging',
+                        'api/v1/internal/options',
+                        'api/v1/internal/order',
+                        'api/v1/internal/order',
+                        'api/v1/internal/profile',
+                        'api/v1/internal/user',
+                        'api/v1/internal/verification',
+                        'api/v1/manager/chat',
+                        'api/v1/manager/order',
+                        'api/v1/manager/order/buyer-offer',
+                        'api/v1/manager/order/buyer-delivery-offer',
+                        'api/v1/manager/order/fulfillment-offer',
+                        'api/v1/manager/order/marketplace-transaction',
+                        'api/v1/manager/verification',
+                        'api/v1/service/profile',
+                        'api/v1/notifications',
+                        'api/v1/order-request',
+                        'api/v1/profile',
+                        'api/v1/translate',
+                    ],
+                    'pluralize' => false,
+                ],
+                'sign-up' => 'api/v1/auth/register',
+
+                'api/v1/<controller>/<id:\d+>/<action>' =>
+                    'api/v1/<controller>/<action>',
+                'api/v1/<group>/<controller>/<action>' =>
+                    'api/v1/<group>/<controller>/<action>',
+                'api/v1/<group>/<id:\d+>/<controller>/<action>' =>
+                    'api/v1/<group>/<controller>/<action>',
+                'api/v1/<group>/<controller>/<id:\d+>/<action>' =>
+                    'api/v1/<group>/<controller>/<action>',
+                'api/v1/<group>/<id:\d+>/<controller>/<subId:\d+>/<action>' =>
+                    'api/v1/<group>/<controller>/<action>',
+
+                'api/v1/<module>/<controller>/<id:\d+>/<action>' =>
+                    'api/v1/<module>/<controller>/<action>',
+                'api/v1/<module>/<group>/<id:\d+>/<controller>/<action>' =>
+                    'api/v1/<module>/<group>/<controller>/<action>',
+                'api/v1/<module>/<group>/<controller>/<id:\d+>/<action>' =>
+                    'api/v1/<module>/<group>/<controller>/<action>',
+                'api/v1/<module>/<group>/<id:\d+>/<controller>/<subId:\d+>/<action>' =>
+                    'api/v1/<module>/<group>/<controller>/<action>',
+            ],
+        ],
+        'assetManager' => ['baseUrl' => 'api/assets'],
+    ],
+    'params' => $params,
+];
+
+if (YII_ENV_DEV) {
+    // configuration adjustments for 'dev' environment
+    $config['bootstrap'][] = 'debug';
+    $config['modules']['debug'] = [
+        'class' => 'yii\debug\Module',
+        //'allowedIPs' => ['*']
+    ];
+
+    $config['bootstrap'][] = 'gii';
+    $config['modules']['gii'] = [
+        'class' => 'yii\gii\Module',
+        'allowedIPs' => ['*'],
+    ];
+}
+//$config = ['debug' => true];
+return $config;

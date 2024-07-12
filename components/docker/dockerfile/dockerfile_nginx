@@ -1,0 +1,8 @@
+FROM nginx:latest
+
+RUN apt update
+RUN apt install -y git nano
+
+RUN curl -L https://raw.githubusercontent.com/tj/n/master/bin/n -o n
+RUN bash n 16
+RUN npm i -g n npm@8.16
