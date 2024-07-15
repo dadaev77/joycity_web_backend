@@ -8,6 +8,8 @@
 
 RewriteEngine on
 
+RewriteRule \.(js|css)$ - [L]
+
 RewriteCond %{HTTP:Authorization} ^(.*) 
 RewriteRule .* - [e=HTTP_AUTHORIZATION:%1]
 # if a directory or a file exists, use it directly

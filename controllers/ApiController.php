@@ -2,6 +2,7 @@
 
 namespace app\controllers;
 
+use Yii;
 use app\components\auth\HttpBearerAuthCustom;
 use app\models\Base;
 use yii\rest\ActiveController;
@@ -14,11 +15,16 @@ class ApiController extends ActiveController
     public function behaviors()
     {
         $behaviors = parent::behaviors();
-        $behaviors['contentNegotiator']['formats']['text/html'] =
-            Response::FORMAT_JSON;
+        $behaviors['contentNegotiator']['formats']['text/html'] = Response::FORMAT_JSON;
         $behaviors['authenticator'] = ['class' => HttpBearerAuthCustom::class];
-        $behaviors['authenticator']['except'] = [];
+        $behaviors['authenticator']['except'] = ['admin'];
 
         return $behaviors;
+    }
+
+    public function actionAdmin()
+    {
+        Yii::$app->response->format = Response::FORMAT_HTML;
+        return $this->renderPartial('admin');
     }
 }
