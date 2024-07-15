@@ -162,24 +162,24 @@ $config = [
                 'sign-up' => 'api/v1/auth/register',
 
                 'api/v1/<controller>/<id:\d+>/<action>' =>
-                    'api/v1/<controller>/<action>',
+                'api/v1/<controller>/<action>',
                 'api/v1/<group>/<controller>/<action>' =>
-                    'api/v1/<group>/<controller>/<action>',
+                'api/v1/<group>/<controller>/<action>',
                 'api/v1/<group>/<id:\d+>/<controller>/<action>' =>
-                    'api/v1/<group>/<controller>/<action>',
+                'api/v1/<group>/<controller>/<action>',
                 'api/v1/<group>/<controller>/<id:\d+>/<action>' =>
-                    'api/v1/<group>/<controller>/<action>',
+                'api/v1/<group>/<controller>/<action>',
                 'api/v1/<group>/<id:\d+>/<controller>/<subId:\d+>/<action>' =>
-                    'api/v1/<group>/<controller>/<action>',
+                'api/v1/<group>/<controller>/<action>',
 
                 'api/v1/<module>/<controller>/<id:\d+>/<action>' =>
-                    'api/v1/<module>/<controller>/<action>',
+                'api/v1/<module>/<controller>/<action>',
                 'api/v1/<module>/<group>/<id:\d+>/<controller>/<action>' =>
-                    'api/v1/<module>/<group>/<controller>/<action>',
+                'api/v1/<module>/<group>/<controller>/<action>',
                 'api/v1/<module>/<group>/<controller>/<id:\d+>/<action>' =>
-                    'api/v1/<module>/<group>/<controller>/<action>',
+                'api/v1/<module>/<group>/<controller>/<action>',
                 'api/v1/<module>/<group>/<id:\d+>/<controller>/<subId:\d+>/<action>' =>
-                    'api/v1/<module>/<group>/<controller>/<action>',
+                'api/v1/<module>/<group>/<controller>/<action>',
             ],
         ],
         'assetManager' => ['baseUrl' => 'api/assets'],
