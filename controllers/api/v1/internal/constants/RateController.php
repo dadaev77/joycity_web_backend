@@ -24,10 +24,10 @@ class RateController extends InternalController
     {
         $rate = new Rate();
         $rate->created_at = date('Y-m-d H:i:s');
-        $rate->CNY = 1;
+        $rate->RUB = 1;
         $rateSave = SaveModelService::loadValidateAndSave(
             $rate,
-            ['RUB', 'USD'],
+            ['CNY', 'USD'],
             null,
             true,
         );
