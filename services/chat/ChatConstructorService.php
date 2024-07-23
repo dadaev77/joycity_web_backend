@@ -48,6 +48,7 @@ class ChatConstructorService
                 ->select(['id', 'personal_id'])
                 ->where(['id' => $userIds])
                 ->all();
+
             $chat = new Chat([
                 'created_at' => date('Y-m-d H:i:s'),
                 'name' => $name,

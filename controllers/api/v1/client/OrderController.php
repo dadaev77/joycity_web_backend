@@ -23,6 +23,7 @@ use app\services\SaveModelService;
 use app\services\TypeDeliveryService;
 use Throwable;
 use Yii;
+use yii\base\Exception;
 use yii\web\UploadedFile;
 
 class OrderController extends ClientController
@@ -42,7 +43,7 @@ class OrderController extends ClientController
         array_unshift($behaviours['access']['rules'], [
             'actions' => ['create', 'update', 'cancel'],
             'allow' => false,
-            'matchCallback' => fn() => !User::getIdentity()->is_verified,
+            'matchCallback' => fn () => !User::getIdentity()->is_verified,
         ]);
         $behaviours['access']['denyCallback'] = static function () {
             Yii::$app->response->data = ApiResponse::byResponseCode(
@@ -56,6 +57,7 @@ class OrderController extends ClientController
     public function actionCreate()
     {
         $user = User::getIdentity();
+
         $request = Yii::$app->request;
         $apiCodes = Order::apiCodes();
         $images = UploadedFile::getInstancesByName('images');
@@ -112,7 +114,7 @@ class OrderController extends ClientController
             ) {
                 return ApiResponse::code($apiCodes->BAD_REQUEST, [
                     'type_delivery_id' =>
-                        'Type delivery is not available for this subcategory',
+                    'Type delivery is not available for this subcategory',
                 ]);
             }
 
@@ -202,7 +204,6 @@ class OrderController extends ClientController
 
                 if (!$conversationManagerBuyer->success) {
                     $transaction?->rollBack();
-
                     return ApiResponse::codeErrors(
                         $apiCodes->ERROR_SAVE,
                         $conversationManagerBuyer->reason,
@@ -215,7 +216,6 @@ class OrderController extends ClientController
 
                 if (!$distributionStatus->success) {
                     $transaction?->rollBack();
-
                     return ApiResponse::codeErrors(
                         $apiCodes->ERROR_SAVE,
                         $distributionStatus->reason,
@@ -251,7 +251,7 @@ class OrderController extends ClientController
                 if ($repeatOrder && $repeatOrder->created_by === $user->id) {
                     $attachmentsToKeep = Attachment::find()
                         ->joinWith([
-                            'orderLinkAttachments' => fn($q) => $q->where([
+                            'orderLinkAttachments' => fn ($q) => $q->where([
                                 'order_id' => $repeatOrder->id,
                             ]),
                         ])
@@ -279,10 +279,10 @@ class OrderController extends ClientController
                 $order->manager_id,
                 $order->id,
             );
-
+            // var_dump($conversationManager);
+            // code block where return error
             if (!$conversationManager->success) {
                 $transaction?->rollBack();
-
                 return ApiResponse::codeErrors(
                     $apiCodes->ERROR_SAVE,
                     $conversationManager->reason,
@@ -296,7 +296,6 @@ class OrderController extends ClientController
             ]);
         } catch (Throwable $e) {
             $transaction?->rollBack();
-
             return ApiResponse::internalError($e);
         }
     }
@@ -348,7 +347,7 @@ class OrderController extends ClientController
             ) {
                 return ApiResponse::code($apiCodes->BAD_REQUEST, [
                     'type_delivery_id' =>
-                        'Type delivery is not available for this subcategory',
+                    'Type delivery is not available for this subcategory',
                 ]);
             }
 
@@ -493,9 +492,9 @@ class OrderController extends ClientController
                     'fulfillment_id' => $user['id'],
                     'address' => $user['deliveryPointAddress']['address'],
                     'delivery_point_address_id' =>
-                        $user['deliveryPointAddress']['id'],
+                    $user['deliveryPointAddress']['id'],
                     'high_workload' =>
-                        (bool) $user['userSettings']['high_workload'],
+                    (bool) $user['userSettings']['high_workload'],
                 ];
             }
         }

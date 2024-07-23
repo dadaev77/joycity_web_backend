@@ -37,7 +37,9 @@ class TwilioService
 
             return Result::success($newParticipant->sid);
         } catch (RuntimeException | TwilioException $e) {
-            return Result::error(['errors' => ['twilio' => $e->getMessage()]]);
+            return Result::error([
+                'errors' => ['twilio' => $e->getMessage()]
+            ]);
         }
     }
 
@@ -61,7 +63,16 @@ class TwilioService
 
             return Result::success($conversation);
         } catch (RuntimeException | TwilioException $e) {
-            return Result::error(['errors' => ['twilio' => $e->getMessage()]]);
+            return Result::error([
+                'errors' => [
+                    'twilio' => $e->getMessage(),
+                    'from' => 'TwilioService'
+                    // 'file' => $e->getFile(),
+                    // 'line' => $e->getLine(),
+                    // 'code' => $e->getCode(),
+                    // 'trace' => $e->getTraceAsString()
+                ]
+            ]);
         }
     }
 
