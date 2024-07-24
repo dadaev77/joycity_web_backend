@@ -137,7 +137,7 @@ class OrderDistributionService
         if (
             !$force &&
             strtotime($task->requested_at) + self::DISTRIBUTION_ACCEPT_TIMEOUT >
-                time()
+            time()
         ) {
             return Result::notValid([
                 'requested_at' => 'Task is not ready to transfer',
@@ -197,8 +197,8 @@ class OrderDistributionService
         $buyerIds = User::find()
             ->select(['id', 'rating'])
             ->with([
-                'categories' => fn($q) => $q->where(['id' => $categoryId]),
-                'userSettings' => fn($q) => $q->select([
+                'categories' => fn ($q) => $q->where(['id' => $categoryId]),
+                'userSettings' => fn ($q) => $q->select([
                     'id',
                     'user_id',
                     'use_only_selected_categories',
