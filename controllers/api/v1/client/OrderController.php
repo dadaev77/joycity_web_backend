@@ -289,11 +289,19 @@ class OrderController extends ClientController
             //     );
             // }
 
-            // $transaction?->commit();
+            $transaction?->commit();
 
-            return ApiResponse::byResponseCode(null, [
-                'info' => OrderOutputService::getEntity($order->id),
-            ]);
+            if ($orderSave->success) {
+                return ApiResponse::byResponseCode(null, [
+                    'info' => OrderOutputService::getEntity($order->id),
+                    'message' => 'Order created successfully',
+                ]);
+            } else {
+                return ApiResponse::codeErrors(
+                    $apiCodes->ERROR_SAVE,
+                    $orderSave->reason
+                );
+            }
         } catch (Throwable $e) {
             $transaction?->rollBack();
             return ApiResponse::internalError($e);
