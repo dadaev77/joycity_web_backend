@@ -192,34 +192,34 @@ class OrderDistributionService
 
     private static function createBuyersList(Order $order): mixed
     {
-        // $out = [];
-        // $categoryId = $order->subcategory->category_id;
-        // $buyerIds = User::find()
-        //     ->select(['id', 'rating'])
-        //     ->with([
-        //         'categories' => fn ($q) => $q->where(['id' => $categoryId]),
-        //         'userSettings' => fn ($q) => $q->select([
-        //             'id',
-        //             'user_id',
-        //             'use_only_selected_categories',
-        //         ]),
-        //     ])
-        //     ->where(['role' => User::ROLE_BUYER])
-        //     ->orderBy(['rating' => SORT_DESC]);
+        $out = [];
+        $categoryId = $order->subcategory->category_id;
+        $buyerIds = User::find()
+            ->select(['id', 'rating'])
+            ->with([
+                'categories' => fn ($q) => $q->where(['id' => $categoryId]),
+                'userSettings' => fn ($q) => $q->select([
+                    'id',
+                    'user_id',
+                    'use_only_selected_categories',
+                ]),
+            ])
+            ->where(['role' => User::ROLE_BUYER])
+            ->orderBy(['rating' => SORT_DESC]);
 
-        // foreach ($buyerIds->each() as $buyer) {
+        foreach ($buyerIds->each() as $buyer) {
 
-        //     if (
-        //         ($buyer->userSettings->use_only_selected_categories && $buyer->categories) ||
-        //         !$buyer->userSettings->use_only_selected_categories
-        //     ) {
-        //         $out[] = $buyer->id;
-        //     }
+            if (
+                ($buyer->userSettings->use_only_selected_categories && $buyer->categories) ||
+                !$buyer->userSettings->use_only_selected_categories
+            ) {
+                $out[] = $buyer->id;
+            }
 
-        //     gc_collect_cycles();
-        // }
+            gc_collect_cycles();
+        }
 
-        // return implode(',', $out);
-        return implode(',', [44, 44]);
+        return implode(',', $out);
+        // return implode(',', [44, 44]);
     }
 }
