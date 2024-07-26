@@ -207,19 +207,14 @@ class OrderDistributionService
             ->where(['role' => User::ROLE_BUYER])
             ->orderBy(['rating' => SORT_DESC]);
 
+        dd($buyerIds->all());
         foreach ($buyerIds->each() as $buyer) {
-
-            if (
-                ($buyer->userSettings->use_only_selected_categories && $buyer->categories) ||
-                !$buyer->userSettings->use_only_selected_categories
-            ) {
+            if (($buyer->userSettings->use_only_selected_categories && $buyer->categories) || !$buyer->userSettings->use_only_selected_categories) {
                 $out[] = $buyer->id;
             }
-
             gc_collect_cycles();
         }
 
         return implode(',', $out);
-        // return implode(',', [44, 44]);
     }
 }
