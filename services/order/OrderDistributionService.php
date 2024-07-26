@@ -190,7 +190,7 @@ class OrderDistributionService
         return Result::errors($task->getFirstErrors());
     }
 
-    private static function createBuyersList(Order $order): string
+    private static function createBuyersList(Order $order): mixed
     {
         $out = [];
         $categoryId = $order->subcategory->category_id;
@@ -221,6 +221,7 @@ class OrderDistributionService
         }
         return $buyers;
         die();
+
         return implode(',', $out);
     }
 }
