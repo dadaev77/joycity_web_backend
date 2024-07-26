@@ -195,7 +195,7 @@ class OrderDistributionService
         $out = [];
         $categoryId = $order->subcategory->category_id;
         $buyerIds = User::find()
-            ->select(['id', 'rating'])
+            ->select(['id', 'rating', 'name'])
             ->with([
                 'categories' => fn ($q) => $q->where(['id' => $categoryId]),
                 'userSettings' => fn ($q) => $q->select([
@@ -207,14 +207,21 @@ class OrderDistributionService
             ->where(['role' => User::ROLE_BUYER])
             ->orderBy(['rating' => SORT_DESC]);
 
-        dd($buyerIds->all());
-        foreach ($buyerIds->each() as $buyer) {
+        $buyers = [];
+        foreach ($buyerIds->all() as $buyer) {
+            $buyers[][$buyer->id] = [
+                'name' => $buyer->name,
+                'rating' => $buyer->rating,
+                'categories' => $buyer->categories,
+                'userSettings' => $buyer->userSettings->use_only_selected_categories,
+            ];
+
             if (($buyer->userSettings->use_only_selected_categories && $buyer->categories) || !$buyer->userSettings->use_only_selected_categories) {
                 $out[] = $buyer->id;
             }
-            gc_collect_cycles();
+            // gc_collect_cycles();
         }
-
+        dd($buyers);
         return implode(',', $out);
     }
 }
