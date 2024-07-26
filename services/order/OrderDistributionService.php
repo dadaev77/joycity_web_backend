@@ -205,21 +205,22 @@ class OrderDistributionService
                 ]),
             ])
             ->where(['role' => User::ROLE_BUYER])
-            ->orderBy(['rating' => SORT_DESC])
-            ->all();
+            ->orderBy(['rating' => SORT_DESC]);
 
-        foreach ($buyerIds as $buyer) {
-            if (
-                ($buyer->userSettings->use_only_selected_categories &&
-                    $buyer->categories) ||
-                !$buyer->userSettings->use_only_selected_categories
-            ) {
-                $out[] = $buyer->id;
-            }
+        $buyers = [];
+        foreach ($buyerIds->each() as $buyer) {
+            $buyers[] = $buyer;
+            // if (
+            //     ($buyer->userSettings->use_only_selected_categories && $buyer->categories) ||
+            //     !$buyer->userSettings->use_only_selected_categories
+            // ) {
+            //     $out[] = $buyer->id;
+            // }
 
-            gc_collect_cycles();
+            // gc_collect_cycles();
         }
-
+        return $buyers;
+        die();
         return implode(',', $out);
     }
 }

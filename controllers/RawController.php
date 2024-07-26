@@ -8,6 +8,7 @@ use app\models\Category;
 use app\models\Subcategory;
 use yii\web\Controller;
 use app\components\ApiResponse;
+use Yii;
 
 class RawController extends Controller
 {
@@ -70,5 +71,11 @@ class RawController extends Controller
             ];
         }
         return ApiResponse::collection($res);
+    }
+    public function actionGeneratePassword($password)
+    {
+        return Yii::$app
+            ->getSecurity()
+            ->generatePasswordHash($password);
     }
 }
