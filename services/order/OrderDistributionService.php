@@ -221,7 +221,8 @@ class OrderDistributionService
             }
             // gc_collect_cycles();
         }
-        dd($buyers);
+        var_dump($buyers);
+        die();
         return implode(',', $out);
     }
 }
