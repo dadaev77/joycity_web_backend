@@ -207,13 +207,14 @@ class OrderDistributionService
             ])
             ->where(['role' => User::ROLE_BUYER])
             ->orderBy(['rating' => SORT_DESC]);
-
+        $ids = [];
         foreach ($buyerIds->all() as $buyer) {
-            if (($buyer->userSettings->use_only_selected_categories && $buyer->categories) || !$buyer->userSettings->use_only_selected_categories) {
-                $out[] = $buyer->id;
-            }
+            $ids[] = $buyer->id;
+            // if (($buyer->userSettings->use_only_selected_categories && $buyer->categories) || !$buyer->userSettings->use_only_selected_categories) {
+            //     $out[] = $buyer->id;
+            // }
         }
-
+        dd($ids);
         return implode(',', $out);
     }
 }
