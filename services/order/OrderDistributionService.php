@@ -208,7 +208,7 @@ class OrderDistributionService
             ->orderBy(['rating' => SORT_DESC])
             ->all();
 
-        foreach ($buyerIds->each() as $buyer) {
+        foreach ($buyerIds as $buyer) {
             if (
                 ($buyer->userSettings->use_only_selected_categories &&
                     $buyer->categories) ||
