@@ -194,27 +194,26 @@ class OrderDistributionService
     {
         $out = [];
         $categoryId = $order->subcategory->category_id;
-        dd(User::find()->where(['role' => User::ROLE_BUYER])->all());
-        // $buyerIds = User::find()
-        //     ->select(['id', 'rating'])
-        //     ->with([
-        //         'categories' => fn ($q) => $q->where(['id' => $categoryId]),
-        //         'userSettings' => fn ($q) => $q->select([
-        //             'id',
-        //             'user_id',
-        //             'use_only_selected_categories',
-        //         ]),
-        //     ])
-        //     ->where(['role' => User::ROLE_BUYER])
-        //     ->orderBy(['rating' => SORT_DESC]);
 
-        // foreach ($buyerIds->all() as $buyer) {
-        //     if (($buyer->userSettings->use_only_selected_categories && $buyer->categories) || !$buyer->userSettings->use_only_selected_categories) {
-        //         $out[] = $buyer->id;
-        //     }
-        //     // gc_collect_cycles();
-        // }
+        $buyerIds = User::find()
+            ->select(['id', 'rating'])
+            ->with([
+                'categories' => fn ($q) => $q->where(['id' => $categoryId]),
+                'userSettings' => fn ($q) => $q->select([
+                    'id',
+                    'user_id',
+                    'use_only_selected_categories',
+                ]),
+            ])
+            ->where(['role' => User::ROLE_BUYER])
+            ->orderBy(['rating' => SORT_DESC]);
 
-        // return implode(',', $out);
+        foreach ($buyerIds->all() as $buyer) {
+            if (($buyer->userSettings->use_only_selected_categories && $buyer->categories) || !$buyer->userSettings->use_only_selected_categories) {
+                $out[] = $buyer->id;
+            }
+        }
+
+        return implode(',', $out);
     }
 }
