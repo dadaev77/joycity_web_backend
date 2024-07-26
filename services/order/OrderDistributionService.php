@@ -194,35 +194,27 @@ class OrderDistributionService
     {
         $out = [];
         $categoryId = $order->subcategory->category_id;
-        $buyerIds = User::find()
-            ->select(['id', 'rating', 'name'])
-            ->with([
-                'categories' => fn ($q) => $q->where(['id' => $categoryId]),
-                'userSettings' => fn ($q) => $q->select([
-                    'id',
-                    'user_id',
-                    'use_only_selected_categories',
-                ]),
-            ])
-            ->where(['role' => User::ROLE_BUYER])
-            ->orderBy(['rating' => SORT_DESC]);
+        dd(User::find()->where(['role' => User::ROLE_BUYER])->all());
+        // $buyerIds = User::find()
+        //     ->select(['id', 'rating'])
+        //     ->with([
+        //         'categories' => fn ($q) => $q->where(['id' => $categoryId]),
+        //         'userSettings' => fn ($q) => $q->select([
+        //             'id',
+        //             'user_id',
+        //             'use_only_selected_categories',
+        //         ]),
+        //     ])
+        //     ->where(['role' => User::ROLE_BUYER])
+        //     ->orderBy(['rating' => SORT_DESC]);
 
-        $buyers = [];
-        foreach ($buyerIds->all() as $buyer) {
-            $buyers[][$buyer->id] = [
-                'name' => $buyer->name,
-                'rating' => $buyer->rating,
-                'categories' => $buyer->categories,
-                'userSettings' => $buyer->userSettings->use_only_selected_categories,
-            ];
+        // foreach ($buyerIds->all() as $buyer) {
+        //     if (($buyer->userSettings->use_only_selected_categories && $buyer->categories) || !$buyer->userSettings->use_only_selected_categories) {
+        //         $out[] = $buyer->id;
+        //     }
+        //     // gc_collect_cycles();
+        // }
 
-            if (($buyer->userSettings->use_only_selected_categories && $buyer->categories) || !$buyer->userSettings->use_only_selected_categories) {
-                $out[] = $buyer->id;
-            }
-            // gc_collect_cycles();
-        }
-        var_dump($buyers);
-        die();
-        return implode(',', $out);
+        // return implode(',', $out);
     }
 }
