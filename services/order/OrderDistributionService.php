@@ -219,7 +219,7 @@ class OrderDistributionService
 
             // gc_collect_cycles();
         }
-        return $buyers;
+        var_dump($buyers);
         die();
 
         return implode(',', $out);
