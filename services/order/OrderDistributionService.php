@@ -207,7 +207,7 @@ class OrderDistributionService
             ->where(['role' => User::ROLE_BUYER])
             ->orderBy(['rating' => SORT_DESC]);
 
-        var_dump($buyerIds);
+        var_dump($buyerIds->all());
         die();
 
         foreach ($buyerIds->each() as $buyer) {
