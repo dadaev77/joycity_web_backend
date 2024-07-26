@@ -207,6 +207,9 @@ class OrderDistributionService
             ->where(['role' => User::ROLE_BUYER])
             ->orderBy(['rating' => SORT_DESC]);
 
+        var_dump($buyerIds);
+        die();
+
         foreach ($buyerIds->each() as $buyer) {
             if (
                 ($buyer->userSettings->use_only_selected_categories &&
