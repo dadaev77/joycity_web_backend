@@ -95,7 +95,7 @@ class RateService
     private static function convertSimpleRate(string $fromCurrency, string $toCurrency, float $amount, int $precision = 4, int $orderId = 0): float
     {
         $currentRate = $orderId ? self::getOrderRate($orderId) : self::getRate();
-        return round($amount * ($currentRate[$toCurrency] / $currentRate[$fromCurrency]), $precision);
+        return round($amount * ($currentRate[$fromCurrency] / $currentRate[$toCurrency]), $precision);
     }
 
     // Convert amount using a cross rate conversion
