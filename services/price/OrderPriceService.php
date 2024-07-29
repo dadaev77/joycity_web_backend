@@ -36,7 +36,7 @@ class OrderPriceService
                 $lastOffer?->product_depth ?: ($product?->product_depth ?: 0),
                 $lastOffer?->product_weight ?: ($product?->product_weight ?: 0),
                 $buyerDeliveryOffer?->total_packaging_quantity ?:
-                $order->expected_packaging_quantity,
+                    $order->expected_packaging_quantity,
                 $order->type_delivery_id,
                 $order->type_packaging_id,
                 $buyerOffer?->price_inspection ?: 0,
@@ -84,10 +84,10 @@ class OrderPriceService
         $out['product_inspection'] = $productInspectionPrice;
         $out['fulfillment'] = RateService::convertRUBtoCNY($fulfillmentPrice);
 
-        $out['delivery']['packaging'] = RateService::convertUSDtoCNY(
+        $out['delivery']['packaging'] = RateService::convertRUBtoUSD(
             $packagingPrice,
         );
-        $out['delivery']['delivery'] = RateService::convertUSDtoCNY(
+        $out['delivery']['delivery'] = RateService::convertRUBtoUSD(
             $deliveryPrice,
         );
         $out['delivery']['overall'] =
@@ -120,7 +120,7 @@ class OrderPriceService
     public static function outputOrderPricesInUserCurrency(array $prices): array
     {
         return ArrayHelperExtended::mapDeep(
-            static fn($amount) => RateService::outputInUserCurrency($amount),
+            static fn ($amount) => RateService::outputInUserCurrency($amount),
             $prices,
         );
     }

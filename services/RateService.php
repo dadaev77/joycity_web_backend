@@ -46,15 +46,13 @@ class RateService
     {
         $userCurrency = User::getIdentity()->userSettings->currency;
 
-        return $userCurrency === self::CURRENCY_RUB
-            ? self::convertRUBtoCNY($amount, $orderId, $precision)
-            : round($amount, $precision);
+        return $userCurrency === self::CURRENCY_RUB ? round($amount, $precision) : self::convertRUBtoCNY($amount, $orderId, $precision);
     }
 
     // Convert amount from a specific currency to the initial currency
     public static function convertToInitialCurrency(string $fromCurrency, float $amount, int $orderId = 0, int $precision = 4)
     {
-        return self::convertSimpleRate($fromCurrency, self::CURRENCY_CNY, $amount, $precision, $orderId);
+        return self::convertSimpleRate($fromCurrency, self::CURRENCY_RUB, $amount, $precision, $orderId);
     }
 
     // Convert amount from CNY to RUB
