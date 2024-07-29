@@ -55,9 +55,7 @@ class RateService
     ): float {
         $userCurrency = User::getIdentity()->userSettings->currency;
 
-        return $userCurrency === self::CURRENCY_RUB
-            ? self::convertCNYtoRUB($amount, $orderId, $precision)
-            : round($amount, $precision);
+        return $userCurrency === self::CURRENCY_RUB ? self::convertCNYtoRUB($amount, $orderId, $precision) : round($amount, $precision);
     }
 
     public static function putInUserCurrency(
@@ -157,65 +155,20 @@ class RateService
         );
     }
 
-    public static function convertRUBtoUSD(
-        float $amount,
-        int $orderId = 0,
-        int $precision = 4,
-    ): float {
-        return self::convertCrossRate(
-            self::CURRENCY_RUB,
-            self::CURRENCY_USD,
-            $amount,
-            $precision,
-            $orderId,
-        );
+    public static function convertRUBtoUSD(float $amount, int $orderId = 0, int $precision = 4): float
+    {
+        return self::convertCrossRate(self::CURRENCY_RUB, self::CURRENCY_USD, $amount, $precision, $orderId);
     }
 
-    private static function convertSimpleRate(
-        string $fromCurrency,
-        string $toCurrency,
-        float $amount,
-        int $precision = 4,
-        int $orderId = 0,
-    ): float {
-        try {
-            $currentRate = self::getRate();
-
-            if ($orderId) {
-                $currentRate = self::getOrderRate($orderId);
-            }
-
-            return round(
-                $amount *
-                    ($currentRate[$toCurrency] / $currentRate[$fromCurrency]),
-                $precision,
-            );
-        } catch (Throwable) {
-            return 0;
-        }
+    private static function convertSimpleRate(string $fromCurrency, string $toCurrency, float $amount, int $precision = 4, int $orderId = 0): float
+    {
+        $currentRate = $orderId ? self::getOrderRate($orderId) : self::getRate();
+        return round($amount * ($currentRate[$toCurrency] / $currentRate[$fromCurrency]), $precision);
     }
 
-    private static function convertCrossRate(
-        string $fromCurrency,
-        string $toCurrency,
-        float $amount,
-        int $precision = 4,
-        int $orderId = 0,
-    ): float {
-        $amountInBaseCurrency = self::convertSimpleRate(
-            $fromCurrency,
-            self::CURRENCY_CNY,
-            $amount,
-            $precision,
-            $orderId,
-        );
-
-        return self::convertSimpleRate(
-            self::CURRENCY_CNY,
-            $toCurrency,
-            $amountInBaseCurrency,
-            $precision,
-            $orderId,
-        );
+    private static function convertCrossRate(string $fromCurrency, string $toCurrency, float $amount, int $precision = 4, int $orderId = 0): float
+    {
+        $amountInBaseCurrency = self::convertSimpleRate($fromCurrency, self::CURRENCY_CNY, $amount, $precision, $orderId);
+        return self::convertSimpleRate(self::CURRENCY_CNY, $toCurrency, $amountInBaseCurrency, $precision, $orderId);
     }
 }

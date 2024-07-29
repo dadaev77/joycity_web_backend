@@ -58,7 +58,7 @@ class AttachmentService
                     ResponseCodes::getSelf()->BAD_REQUEST,
                     [
                         'message' =>
-                            'Ошибка: недопустимый тип файла или превышено количество',
+                        'Ошибка: недопустимый тип файла или превышено количество',
                     ],
                     400,
                 );
@@ -69,7 +69,7 @@ class AttachmentService
                     ResponseCodes::getSelf()->BAD_REQUEST,
                     [
                         'message' =>
-                            'Ошибка: превышен максимальный размер файла (не более 50 МБ)',
+                        'Ошибка: превышен максимальный размер файла (не более 50 МБ)',
                     ],
                     400,
                 );
@@ -181,7 +181,7 @@ class AttachmentService
                 return Result::notValid([
                     'errors' => [
                         'file_size' =>
-                            'Ошибка: превышен максимальный размер файла (не более 50 МБ)',
+                        'Ошибка: превышен максимальный размер файла (не более 50 МБ)',
                     ],
                 ]);
             }
@@ -223,12 +223,8 @@ class AttachmentService
     {
         $extension = pathinfo($file->name, PATHINFO_EXTENSION);
         $mimeType = $file->type;
-        $pathName =
-            time() .
-            '_' .
-            random_int(1e3, 9e3) .
-            '_' .
-            md5(file_get_contents($file->tempName));
+        $pathName = time() . '_' . random_int(1e3, 9e3) . '_' . md5(file_get_contents($file->tempName));
+
         $path = '/' . self::PUBLIC_PATH . "/$pathName.$extension";
         $fullPath = self::getFilesPath() . "/$pathName.$extension";
         $size = $file->size;
