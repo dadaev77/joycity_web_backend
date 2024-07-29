@@ -19,34 +19,18 @@ class RateService
     // Get the latest currency rate
     protected static function getRate(): array
     {
-        if (!empty(self::$currentRate)) {
-            return self::$currentRate;
-        }
+        if (!empty(self::$currentRate)) return self::$currentRate;
 
-        return self::$currentRate = Rate::find()
-            ->orderBy(['id' => SORT_DESC])
-            ->asArray()
-            ->one();
+        return self::$currentRate = Rate::find()->orderBy(['id' => SORT_DESC])->asArray()->one();
     }
 
     // Get the order rate for a specific order
     protected static function getOrderRate(int $orderId): array
     {
-        if (!empty(self::$orderRates[$orderId])) {
-            return self::$orderRates[$orderId];
-        }
-
-        $orderRate = OrderRate::find()
-            ->asArray()
-            ->where(['order_id' => $orderId])
-            ->one();
-
-        if (!$orderRate) {
-            return self::getRate();
-        }
-
+        if (!empty(self::$orderRates[$orderId])) return self::$orderRates[$orderId];
+        $orderRate = OrderRate::find()->asArray()->where(['order_id' => $orderId])->one();
+        if (!$orderRate) return self::getRate();
         self::$orderRates[$orderId] = $orderRate;
-
         return self::$orderRates[$orderId];
     }
 
@@ -54,7 +38,7 @@ class RateService
     public static function outputInUserCurrency(float $amount, int $orderId = 0, int $precision = 4): float
     {
         $userCurrency = User::getIdentity()->userSettings->currency;
-        return $userCurrency === self::CURRENCY_RUB ? self::convertRUBtoCNY($amount, $orderId, $precision) : round($amount, $precision);
+        return $userCurrency === self::CURRENCY_RUB ? round($amount, $precision) : self::convertRUBtoCNY($amount, $orderId, $precision);
     }
 
     // Convert amount to user's currency
