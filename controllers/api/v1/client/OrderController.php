@@ -269,25 +269,27 @@ class OrderController extends ClientController
                 $order->linkAll('attachments', $attachmentsToLink);
             }
 
-            // $conversationManager = ChatConstructorService::createChatOrder(
-            //     Chat::GROUP_CLIENT_MANAGER,
-            //     [$user->id, $randomManager->id],
-            //     $order->id,
-            // );
+            //Twilio service start
+            $conversationManager = ChatConstructorService::createChatOrder(
+                Chat::GROUP_CLIENT_MANAGER,
+                [$user->id, $randomManager->id],
+                $order->id,
+            );
 
-            // NotificationConstructor::orderOrderCreated(
-            //     $order->manager_id,
-            //     $order->id,
-            // );
+            NotificationConstructor::orderOrderCreated(
+                $order->manager_id,
+                $order->id,
+            );
 
-            // // code block where return error
-            // if (!$conversationManager->success) {
-            //     $transaction?->rollBack();
-            //     return ApiResponse::codeErrors(
-            //         $apiCodes->ERROR_SAVE,
-            //         $conversationManager->reason,
-            //     );
-            // }
+            // code block where return error
+            if (!$conversationManager->success) {
+                $transaction?->rollBack();
+                return ApiResponse::codeErrors(
+                    $apiCodes->ERROR_SAVE,
+                    $conversationManager->reason,
+                );
+            }
+            //Twilio service end
 
             $transaction?->commit();
 
