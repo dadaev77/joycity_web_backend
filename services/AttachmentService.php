@@ -9,7 +9,6 @@ use app\components\responseFunction\ResultAnswer;
 use app\models\Attachment;
 use Exception;
 use finfo;
-use Imagick;
 use Yii;
 use yii\web\HttpException;
 use yii\web\UploadedFile;
@@ -219,6 +218,9 @@ class AttachmentService
         return Result::success($out);
     }
 
+    /**
+     * new method that use GD extension
+     */
     public static function writeFileWithModel(UploadedFile $file): ResultAnswer
     {
         $extension = pathinfo($file->name, PATHINFO_EXTENSION);
@@ -233,20 +235,17 @@ class AttachmentService
             $extension = 'jpeg';
             $fullPath = self::getFilesPath() . "/$pathName.$extension";
             $path = '/' . self::PUBLIC_PATH . "/$pathName.$extension";
-            $image = new Imagick($file->tempName);
 
-            $image->setFormat('jpeg');
+            $image = imagecreatefromstring(file_get_contents($file->tempName));
+            if ($image !== false) {
+                imagejpeg($image, $fullPath, 50);
+                imagedestroy($image);
 
-            $quality = 50;
-            $image->setImageCompression(Imagick::COMPRESSION_JPEG);
-            $image->setImageCompressionQuality($quality);
-            $image->setInterlaceScheme(Imagick::INTERLACE_PLANE);
-
-            $image->writeImage($fullPath);
-            $mimeType = mime_content_type($fullPath);
-            $size = filesize($fullPath);
-
-            $image->destroy();
+                $mimeType = mime_content_type($fullPath);
+                $size = filesize($fullPath);
+            } else {
+                return Result::error(['errors' => ['Error processing image']]);
+            }
         } else {
             $status = rename($file->tempName, $fullPath);
             if (!$status) {
@@ -272,6 +271,62 @@ class AttachmentService
 
         return Result::success($attachment);
     }
+    /**
+     * old method that use Imagick extension
+     */
+    // public static function writeFileWithModel(UploadedFile $file): ResultAnswer
+    // {
+    //     $extension = pathinfo($file->name, PATHINFO_EXTENSION);
+    //     $mimeType = $file->type;
+    //     $pathName = time() . '_' . random_int(1e3, 9e3) . '_' . md5(file_get_contents($file->tempName));
+
+    //     $path = '/' . self::PUBLIC_PATH . "/$pathName.$extension";
+    //     $fullPath = self::getFilesPath() . "/$pathName.$extension";
+    //     $size = $file->size;
+
+    //     if (in_array($extension, self::AllowedImageExtensions, true)) {
+    //         $extension = 'jpeg';
+    //         $fullPath = self::getFilesPath() . "/$pathName.$extension";
+    //         $path = '/' . self::PUBLIC_PATH . "/$pathName.$extension";
+    //         $image = new Imagick($file->tempName);
+
+    //         $image->setFormat('jpeg');
+
+    //         $quality = 50;
+    //         $image->setImageCompression(Imagick::COMPRESSION_JPEG);
+    //         $image->setImageCompressionQuality($quality);
+    //         $image->setInterlaceScheme(Imagick::INTERLACE_PLANE);
+
+    //         $image->writeImage($fullPath);
+    //         $mimeType = mime_content_type($fullPath);
+    //         $size = filesize($fullPath);
+
+    //         $image->destroy();
+    //     } else {
+    //         $status = rename($file->tempName, $fullPath);
+    //         if (!$status) {
+    //             return Result::error(['errors' => ['Error save file']]);
+    //         }
+    //     }
+    //     chmod($fullPath, 0666);
+
+    //     $attachment = new Attachment([
+    //         'path' => $path,
+    //         'size' => $size,
+    //         'extension' => $extension,
+    //         'mime_type' => $mimeType,
+    //     ]);
+
+    //     if (!$attachment->validate()) {
+    //         return Result::notValid([
+    //             'errors' => $attachment->getFirstErrors(),
+    //         ]);
+    //     }
+
+    //     $attachment->save();
+
+    //     return Result::success($attachment);
+    // }
 
     public static function getFilesPath()
     {
