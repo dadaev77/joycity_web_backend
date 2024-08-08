@@ -27,7 +27,7 @@ class TwilioController extends Controller
         $conversations = $client->conversations->v1->conversations->read();
 
         foreach ($conversations as $conversation) {
-            echo 'Participants: ' . $conversation->participants . "\n";
+            echo 'Participants: ' . $conversation->participants->page() . "\n";
             echo "Conversation SID: " . $conversation->sid . "\n";
             echo "Conversation Friendly Name: " . $conversation->friendlyName . "\n";
             echo "Conversation Date Created: " . $conversation->dateCreated->format('Y-m-d H:i:s') . "\n";
