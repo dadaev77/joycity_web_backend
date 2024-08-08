@@ -28,7 +28,12 @@ class TwilioController extends Controller
 
         foreach ($conversations as $conversation) {
             echo "Conversation SID: " . $conversation->sid . "\n";
-            echo "Conversation Friendly Name: " . $conversation->friendlyName . "\n";
+            echo "Token: " . $conversation->token . "\n";
+            echo "Friendly Name: " . $conversation->friendlyName . "\n";
+            echo "Unread Messages: " . $conversation->unreadMessagesCount . "\n";
+            echo "Date Created: " . $conversation->dateCreated->format('Y-m-d H:i:s') . "\n";
+            echo "Date Updated: " . $conversation->dateUpdated->format('Y-m-d H:i:s') . "\n";
+            echo "--------------------\n";
         }
     }
 }

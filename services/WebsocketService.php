@@ -24,7 +24,6 @@ class WebsocketService
 
     public static function getWebsocketUrl()
     {
-        return 'http://127.0.0.1:8000';
-        // return 'http://' . $_ENV['WEBSOCKET_CONTAINER_URL'];
+        return 'http://' . $_ENV['WEBSOCKET_CONTAINER_URL'];
     }
 }
