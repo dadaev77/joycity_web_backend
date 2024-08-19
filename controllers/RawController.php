@@ -17,6 +17,21 @@ class RawController extends Controller
     public function actionLog()
     {
         $logs = file_get_contents(__DIR__ . '/../runtime/logs/app.log');
+        $tags = [
+            'TWILIO_ACCOUNT_SID',
+            'TWILIO_AUTH_TOKEN',
+            'TWILIO_PHONE_NUMBER',
+            'TWILIO_CONVERSATION_SERVICE_SID',
+            'TWILIO_API_KEY_SID',
+            'TWILIO_API_KEY_SECRET',
+            'SCRIPT_NAME',
+            'DOCUMENT_ROOT',
+        ];
+        $lines = explode("\n", $logs);
+        foreach ($tags as $tag) {
+            $logs = preg_replace('/.*' . preg_quote($tag, '/') . '.*\n?/', '', $logs);
+        }
+
         if ($logs) {
             $logs = nl2br($logs);
             $logs = str_replace('', '<br>', $logs);
@@ -24,6 +39,9 @@ class RawController extends Controller
             $logs = '<h2>Log file is empty</h2><br>';
         }
         Yii::$app->response->format = Response::FORMAT_HTML;
+
+
+
         include(__DIR__ . '/../views/raw/log.php');
     }
     public function actionGeneratePassword($password)
