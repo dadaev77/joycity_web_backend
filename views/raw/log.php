@@ -25,4 +25,8 @@
 </script>
 
 <br>
-<pre><?= $logs; ?></pre>
+<pre style="
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    word-break: break-all;
+"><?= $logs; ?></pre>
