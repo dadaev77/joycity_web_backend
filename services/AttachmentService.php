@@ -13,6 +13,7 @@ use Imagick;
 use Yii;
 use yii\web\HttpException;
 use yii\web\UploadedFile;
+use Intervention\Image\ImageManager;
 
 class AttachmentService
 {
@@ -79,7 +80,7 @@ class AttachmentService
         $transaction = Yii::$app->db->beginTransaction();
 
         try {
-            // Удаляем существующие вложения возможны доработки
+            // Удал��ем существующие вложения возможны доработки
             $existingAttachments = $mainModel->$relationName;
             if ($existingAttachments) {
                 foreach ($existingAttachments as $existingAttachment) {
@@ -134,7 +135,7 @@ class AttachmentService
 
             $transaction->commit();
         } catch (Exception $e) {
-            // Если произошла ошибка во время транзакции, откатываем ее и выбрасываем исключение
+            // Если произошла ошибка во время транзакции, ��ткатываем ее и выбрасываем исключение
             $transaction->rollBack();
             return ApiResponse::byResponseCode(
                 ResponseCodes::getSelf()->INTERNAL_ERROR,
@@ -223,12 +224,7 @@ class AttachmentService
     {
         $extension = pathinfo($file->name, PATHINFO_EXTENSION);
         $mimeType = $file->type;
-        $pathName =
-            time() .
-            '_' .
-            random_int(1e3, 9e3) .
-            '_' .
-            md5(file_get_contents($file->tempName));
+        $pathName = time() . '_' . random_int(1e3, 9e3) . '_' . md5(file_get_contents($file->tempName));
         $path = '/' . self::PUBLIC_PATH . "/$pathName.$extension";
         $fullPath = self::getFilesPath() . "/$pathName.$extension";
         $size = $file->size;
@@ -237,43 +233,35 @@ class AttachmentService
             $extension = 'jpeg';
             $fullPath = self::getFilesPath() . "/$pathName.$extension";
             $path = '/' . self::PUBLIC_PATH . "/$pathName.$extension";
-            $image = new Imagick($file->tempName);
 
-            $image->setFormat('jpeg');
-
-            $quality = 50;
-            $image->setImageCompression(Imagick::COMPRESSION_JPEG);
-            $image->setImageCompressionQuality($quality);
-            $image->setInterlaceScheme(Imagick::INTERLACE_PLANE);
-
-            $image->writeImage($fullPath);
+            $imageManager = new ImageManager(['driver' => 'imagick']);
+            $image = $imageManager->make($file->tempName);
+            $image->encode($extension, 50);
+            // $image->interlace(true);
+            $image->resize(1024, 1024, function ($constraint) {
+                $constraint->aspectRatio();
+                $constraint->upsize();
+            });
+            $image->save($fullPath);
             $mimeType = mime_content_type($fullPath);
             $size = filesize($fullPath);
-
-            $image->destroy();
         } else {
             $status = rename($file->tempName, $fullPath);
-            if (!$status) {
-                return Result::error(['errors' => ['Error save file']]);
-            }
+            if (!$status) return Result::error(['errors' => ['Error save file']]);
         }
-        chmod($fullPath, 0666);
 
+        chmod($fullPath, 0666);
+        // create attachment instance
         $attachment = new Attachment([
             'path' => $path,
             'size' => $size,
             'extension' => $extension,
             'mime_type' => $mimeType,
         ]);
-
-        if (!$attachment->validate()) {
-            return Result::notValid([
-                'errors' => $attachment->getFirstErrors(),
-            ]);
-        }
-
+        // validate attachment
+        if (!$attachment->validate()) return Result::notValid(['errors' => $attachment->getFirstErrors()]);
+        // save attachment
         $attachment->save();
-
         return Result::success($attachment);
     }
 
@@ -285,41 +273,27 @@ class AttachmentService
     public static function writeFileWithModelByPath(string $link): ResultAnswer
     {
         $fileContent = file_get_contents(Yii::getAlias('@webroot') . $link);
-
-        if ($fileContent === false) {
-            return Result::error();
-        }
+        if ($fileContent === false) return Result::error();
 
         $fileInfo = new finfo(FILEINFO_MIME_TYPE);
         $extension = pathinfo($link, PATHINFO_EXTENSION);
-        $pathName =
-            time() . '_' . random_int(1e3, 9e3) . '_' . md5($fileContent);
+        $pathName = time() . '_' . random_int(1e3, 9e3) . '_' . md5($fileContent);
         $path = '/' . self::PUBLIC_PATH . "/$pathName.$extension";
         $fullPath = self::getFilesPath() . "/$pathName.$extension";
-
         $status = file_put_contents($fullPath, $fileContent);
-
-        if (!$status) {
-            return Result::error(['errors' => ['Error save file']]);
-        }
-
+        if (!$status) return Result::error(['errors' => ['Error save file']]);
         chmod($fullPath, 0666);
-
+        // create attachment instance
         $attachment = new Attachment([
             'path' => $path,
             'size' => strlen($fileContent),
             'extension' => $extension,
             'mime_type' => $fileInfo->buffer($fileContent),
         ]);
-
-        if (!$attachment->validate()) {
-            return Result::notValid([
-                'errors' => $attachment->getFirstErrors(),
-            ]);
-        }
-
+        // validate attachment
+        if (!$attachment->validate()) return Result::notValid(['errors' => $attachment->getFirstErrors()]);
+        // save attachment
         $attachment->save();
-
         return Result::success($attachment);
     }
 }

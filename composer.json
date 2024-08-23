@@ -41,7 +41,8 @@
     "twilio/sdk": "^7.9",
     "vlucas/phpdotenv": "^5.5",
     "linslin/yii2-curl": "^1.5",
-    "ext-imagick": "*"
+    "ext-imagick": "*",
+    "intervention/image": "^2.7"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest",
