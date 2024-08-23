@@ -9,6 +9,7 @@ use app\components\responseFunction\ResultAnswer;
 use app\models\Attachment;
 use Exception;
 use finfo;
+use Imagick;
 use Yii;
 use yii\web\HttpException;
 use yii\web\UploadedFile;
@@ -218,15 +219,16 @@ class AttachmentService
         return Result::success($out);
     }
 
-    /**
-     * new method that use GD extension
-     */
     public static function writeFileWithModel(UploadedFile $file): ResultAnswer
     {
         $extension = pathinfo($file->name, PATHINFO_EXTENSION);
         $mimeType = $file->type;
-        $pathName = time() . '_' . random_int(1e3, 9e3) . '_' . md5(file_get_contents($file->tempName));
-
+        $pathName =
+            time() .
+            '_' .
+            random_int(1e3, 9e3) .
+            '_' .
+            md5(file_get_contents($file->tempName));
         $path = '/' . self::PUBLIC_PATH . "/$pathName.$extension";
         $fullPath = self::getFilesPath() . "/$pathName.$extension";
         $size = $file->size;
@@ -235,17 +237,20 @@ class AttachmentService
             $extension = 'jpeg';
             $fullPath = self::getFilesPath() . "/$pathName.$extension";
             $path = '/' . self::PUBLIC_PATH . "/$pathName.$extension";
+            $image = new Imagick($file->tempName);
 
-            $image = imagecreatefromstring(file_get_contents($file->tempName));
-            if ($image !== false) {
-                imagejpeg($image, $fullPath, 50);
-                imagedestroy($image);
+            $image->setFormat('jpeg');
 
-                $mimeType = mime_content_type($fullPath);
-                $size = filesize($fullPath);
-            } else {
-                return Result::error(['errors' => ['Error processing image']]);
-            }
+            $quality = 50;
+            $image->setImageCompression(Imagick::COMPRESSION_JPEG);
+            $image->setImageCompressionQuality($quality);
+            $image->setInterlaceScheme(Imagick::INTERLACE_PLANE);
+
+            $image->writeImage($fullPath);
+            $mimeType = mime_content_type($fullPath);
+            $size = filesize($fullPath);
+
+            $image->destroy();
         } else {
             $status = rename($file->tempName, $fullPath);
             if (!$status) {
