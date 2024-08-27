@@ -171,7 +171,7 @@
                                 </div>
                             </div>
                             <div class="tab-pane fade" id="attachments" role="tabpanel" aria-labelledby="attachments-tab">
-                                <div class="row row-cols-2 row-cols-md-6">
+                                <div class="row row-cols-2 row-cols-md-6 g-2">
                                     <?php foreach ($attachments as $attachment) : ?>
                                         <div class="col h-100">
                                             <div title="<?= $attachment ?>" class="rounded" style="min-height: 180px; width: 100%;background-size: cover; background-position: center; background-image: url('/attachments/<?= $attachment ?>');">
