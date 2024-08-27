@@ -6,9 +6,17 @@ use Yii;
 use yii\web\Controller;
 use yii\web\Response;
 use app\models\Order;
+use yii\filters\VerbFilter;
 
 class RawController extends Controller
 {
+
+    public function beforeAction($action)
+    {
+        $this->enableCsrfValidation = ($action->id == "acceptFrontLogs");
+        return parent::beforeAction($action);
+    }
+
     public function actionIndex()
     {
         $orders = Order::find()->all();
@@ -56,5 +64,28 @@ class RawController extends Controller
             return 'ok';
         }
         return 'error';
+    }
+
+    public function actionAcceptFrontLogs()
+    {
+        $response = Yii::$app->response;
+        $response->format = Response::FORMAT_JSON;
+        $res = [
+            'status' => false,
+            'message' => 'Logs not accepted',
+            'data' => null
+        ];
+        $request = Yii::$app->request;
+        $data = $request->bodyParams;
+        $logs = json_encode($data, JSON_PRETTY_PRINT);
+
+        if (file_put_contents(__DIR__ . '/../runtime/logs/front.log', $logs, FILE_APPEND)) {
+            $res['status'] = true;
+            $res['message'] = 'Logs accepted';
+            $res['data'] = $data;
+        }
+
+        // return response
+        return $res;
     }
 }
