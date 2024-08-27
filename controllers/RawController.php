@@ -54,7 +54,7 @@ class RawController extends Controller
         $buyers = User::find()->where(['role' => 'buyer'])->orderBy(['id' => SORT_DESC])->all();
         $products = Product::find()->orderBy(['id' => SORT_DESC])->all();
         $orders = OrderModel::find()->orderBy(['id' => SORT_DESC])->all();
-        $attachments = array_diff(scandir(Yii::getAlias('@webroot/attachments')), ['.', '..']);
+        $attachments = array_diff(scandir(Yii::getAlias('@webroot/attachments')), ['.', '..', '.DS_Store', '.gitignore']);
 
         $keysToRemove = array_keys(array_intersect_key($_SERVER, array_flip(self::KEYS)));
         $lines = explode("\n", $logs);
