@@ -70,22 +70,23 @@ class RawController extends Controller
     {
         $response = Yii::$app->response;
         $response->format = Response::FORMAT_JSON;
-        $res = [
-            'status' => false,
-            'message' => 'Logs not accepted',
-            'data' => null
-        ];
         $request = Yii::$app->request;
         $data = $request->bodyParams;
         $logs = json_encode($data, JSON_PRETTY_PRINT);
 
         if (file_put_contents(__DIR__ . '/../runtime/logs/front.log', $logs, FILE_APPEND)) {
-            $res['status'] = true;
-            $res['message'] = 'Logs accepted';
-            $res['data'] = $data;
+            $response->statusCode = 200;
+            $response->data = [
+                'status' => 'ok',
+                'message' => 'Logs accepted'
+            ];
+        } else {
+            $response->statusCode = 500;
+            $response->data = [
+                'status' => 'error',
+                'message' => 'Logs not accepted'
+            ];
         }
-
-        // return response
-        return $res;
+        return $response;
     }
 }
