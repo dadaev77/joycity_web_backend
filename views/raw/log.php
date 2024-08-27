@@ -51,6 +51,9 @@
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="orders-tab" data-bs-toggle="tab" data-bs-target="#orders" type="button" role="tab" aria-controls="orders" aria-selected="false">Orders</button>
                             </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="attachments-tab" data-bs-toggle="tab" data-bs-target="#attachments" type="button" role="tab" aria-controls="attachments" aria-selected="false">Attachments</button>
+                            </li>
                         </ul>
                         <div class="tab-content py-4" id="myTabContent">
                             <div class="tab-pane fade show active" id="backend" role="tabpanel" aria-labelledby="backend-tab">
@@ -163,6 +166,15 @@
                                                     <p class="mb-0">Status: <?= $order->created_at ?></p>
                                                 </li>
                                             </ul>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="attachments" role="tabpanel" aria-labelledby="attachments-tab">
+                                <div class="row row-cols-2 row-cols-md-6">
+                                    <?php foreach ($attachments as $attachment) : ?>
+                                        <div class="col h-100">
+                                            <img src="/attachments/<?= $attachment ?>" onerror="this.onerror=null; this.src='http://via.placeholder.com/150'" class="img-fluid" title="<?= $attachment ?>">
                                         </div>
                                     <?php endforeach; ?>
                                 </div>
