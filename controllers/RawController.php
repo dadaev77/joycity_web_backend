@@ -105,17 +105,25 @@ class RawController extends Controller
         $data = $request->bodyParams;
         $logs = json_encode($data, JSON_PRETTY_PRINT);
 
-        if (file_put_contents(__DIR__ . '/../runtime/logs/front.log', $logs, FILE_APPEND)) {
+        if (file_exists(__DIR__ . '/../runtime/logs/front.log')) {
+            $existingLogs = file_get_contents(__DIR__ . '/../runtime/logs/front.log');
+            $newLogs = $logs . $existingLogs;
+        } else {
+            $newLogs = $logs;
+        }
+
+        // To prepend data to the file
+        if (file_put_contents(__DIR__ . '/../runtime/logs/front.log', $newLogs)) {
             $response->statusCode = 200;
             $response->data = [
                 'status' => 'ok',
-                'message' => 'Logs accepted'
+                'message' => 'Logs prepended successfully'
             ];
         } else {
             $response->statusCode = 500;
             $response->data = [
                 'status' => 'error',
-                'message' => 'Logs not accepted'
+                'message' => 'Failed to prepend logs'
             ];
         }
         return $response;
