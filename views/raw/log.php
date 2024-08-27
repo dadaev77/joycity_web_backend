@@ -174,7 +174,8 @@
                                 <div class="row row-cols-2 row-cols-md-6">
                                     <?php foreach ($attachments as $attachment) : ?>
                                         <div class="col h-100">
-                                            <img src="/attachments/<?= $attachment ?>" onerror="this.onerror=null; this.src='http://via.placeholder.com/150'" class="img-fluid" title="<?= $attachment ?>">
+                                            <div title="<?= $attachment ?>" class="rounded" style="min-height: 180px; width: 100%;background-size: cover; background-position: center; background-image: url('/attachments/<?= $attachment ?>');">
+                                            </div>
                                         </div>
                                     <?php endforeach; ?>
                                 </div>
