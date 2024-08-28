@@ -224,9 +224,9 @@ class AttachmentService
     {
         // Get the temporary file path of the uploaded file
         $tempFilePath = $file->tempName;
-
+        $extension = $file->getExtension();
         // Create a new Imagick object
-        $imagick = new Imagick($tempFilePath);
+        $imagick = new Imagick($tempFilePath . '.' . $extension);
 
         // Get the file extension and generate a unique file name
         $extension = $file->getExtension();
