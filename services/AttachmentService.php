@@ -222,36 +222,39 @@ class AttachmentService
 
     public static function writeFileWithModel(UploadedFile $file): ResultAnswer
     {
-        // Get the temporary file path of the uploaded file
-        $tempFilePath = $file->tempName;
-        $extension = $file->getExtension();
-        // Create a new Imagick object
-        $imagick = new Imagick($tempFilePath . '.' . $extension);
+        $extension = pathinfo($file->name, PATHINFO_EXTENSION);
+        $mimeType = $file->type;
+        $pathName = time() . '_' . random_int(1e3, 9e3) . '_' . md5(file_get_contents($file->tempName));
+        $path = '/' . self::PUBLIC_PATH . "/$pathName.$extension";
+        $fullPath = self::getFilesPath() . "/$pathName.$extension";
+        $size = $file->size;
 
-        // Get the file extension and generate a unique file name
-        $extension = $file->getExtension();
-        $fileName = substr(md5(uniqid(rand(), true)), 0, 10) . '_' . time();
-        $fileName = preg_replace('/[^a-zA-Z0-9_.-]/', '', $fileName); // Remove invalid characters
-        $path = '/' . self::PUBLIC_PATH . "/$fileName.$extension";
-        $fullPath = self::getFilesPath() . "/$fileName.$extension";
+        if (in_array($extension, self::AllowedImageExtensions, true)) {
+            $extension = 'jpeg';
+            $fullPath = self::getFilesPath() . "/$pathName.$extension";
+            $path = '/' . self::PUBLIC_PATH . "/$pathName.$extension";
+            $image = new Imagick($file->tempName);
 
-        // Resize the image if needed
-        $imagick->resizeImage(1024, 1024, Imagick::FILTER_LANCZOS, 1, true);
+            $image->setFormat('jpeg');
 
-        // Set the image format to JPEG
-        $imagick->setImageFormat('jpeg');
+            $quality = 50;
+            $image->setImageCompression(Imagick::COMPRESSION_JPEG);
+            $image->setImageCompressionQuality($quality);
+            $image->setInterlaceScheme(Imagick::INTERLACE_PLANE);
 
-        // Save the image to the full path
-        $imagick->writeImage($fullPath);
+            $image->writeImage($fullPath);
+            $mimeType = mime_content_type($fullPath);
+            $size = filesize($fullPath);
 
-        // Get the MIME type and size of the saved image
-        $mimeType = $imagick->getImageMimeType();
-        $size = filesize($fullPath);
-
-        // Set permissions for the saved image
+            $image->destroy();
+        } else {
+            $status = rename($file->tempName, $fullPath);
+            if (!$status) {
+                return Result::error(['errors' => ['Error save file']]);
+            }
+        }
         chmod($fullPath, 0666);
 
-        // Create an Attachment instance
         $attachment = new Attachment([
             'path' => $path,
             'size' => $size,
@@ -259,16 +262,13 @@ class AttachmentService
             'mime_type' => $mimeType,
         ]);
 
-        // Validate and save the Attachment
         if (!$attachment->validate()) {
-            return Result::notValid(['errors' => $attachment->getFirstErrors()]);
+            return Result::notValid([
+                'errors' => $attachment->getFirstErrors(),
+            ]);
         }
 
         $attachment->save();
-
-        // Clean up resources
-        $imagick->clear();
-        $imagick->destroy();
 
         return Result::success($attachment);
     }
