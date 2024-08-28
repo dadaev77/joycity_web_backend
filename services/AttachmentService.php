@@ -229,6 +229,10 @@ class AttachmentService
         $fullPath = self::getFilesPath() . "/$pathName.$extension";
         $size = $file->size;
 
+        // Debugging: Log the generated paths
+        Yii::info("Generated path: $path", __METHOD__);
+        Yii::info("Full path: $fullPath", __METHOD__);
+
         if (in_array($extension, self::AllowedImageExtensions, true)) {
             $extension = 'jpeg';
             $image = new Imagick($file->tempName);
@@ -250,6 +254,11 @@ class AttachmentService
             }
         }
         chmod($fullPath, 0666);
+
+        // Debugging: Check if the file exists
+        if (!file_exists($fullPath)) {
+            return Result::error(['errors' => ['File does not exist after saving']]);
+        }
 
         $attachment = new Attachment([
             'path' => $path,
