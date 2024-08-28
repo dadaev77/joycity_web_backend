@@ -222,27 +222,28 @@ class AttachmentService
 
     public static function writeFileWithModel(UploadedFile $file): ResultAnswer
     {
-        $imageManager = new ImageManager(['driver' => 'imagick']);
+        $imageManager = new ImageManager(['driver' => 'gd']);
         $image = $imageManager->make($file->tempName);
-        $extension = $file->getExtension();
-        // file name with extension
-        $fileName = substr(md5(uniqid(rand(), true)), 0, 10) . '_' . time() . '.' . $extension;
-        // file path
-        $path = '/' . self::PUBLIC_PATH . "/$fileName";
-        $fullPath = self::getFilesPath() . "/$fileName";
 
-        // get mime type and size
-        $mimeType = mime_content_type($file->tempName);
-        $size = filesize($file->tempName);
+        $extension = $file->getExtension();
+        $fileName = substr(md5(uniqid(rand(), true)), 0, 10) . '_' . time();
+        $path = '/' . self::PUBLIC_PATH . "/$fileName.$extension";
+        $fullPath = self::getFilesPath() . "/$fileName.$extension";
 
         if (in_array($extension, self::AllowedImageExtensions, true)) {
-            // encode and resize image
-            $image->encode('jpg', 50)
+            $extension = 'jpeg';
+            $fullPath = self::getFilesPath() . "/$fileName.$extension";
+            $path = '/' . self::PUBLIC_PATH . "/$fileName.$extension";
+
+            $image->encode($extension, 50)
                 ->resize(1024, 1024, function ($constraint) {
                     $constraint->aspectRatio();
                     $constraint->upsize();
                 })
                 ->save($fullPath);
+
+            $mimeType = mime_content_type($fullPath);
+            $size = filesize($fullPath);
         } else {
             if (!rename($file->tempName, $fullPath)) {
                 return Result::error(['errors' => ['Error saving file']]);
@@ -263,6 +264,7 @@ class AttachmentService
         }
 
         $attachment->save();
+
         return Result::success($attachment);
     }
 
