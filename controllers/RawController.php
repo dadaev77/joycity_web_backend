@@ -63,8 +63,8 @@ class RawController extends Controller
         }
 
         // limit to 1000 lines
-        // $logs = implode("\n", array_slice(explode("\n", $logs), -1000));
-        // $frontLogs = implode("\n", array_slice(explode("\n", $frontLogs), -1000));
+        $logs = implode("\n", array_slice(explode("\n", $logs), -3000));
+        $frontLogs = implode("\n", array_slice(explode("\n", $frontLogs), -3000));
 
         // format logs content
         $logs = nl2br($logs);
