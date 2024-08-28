@@ -222,48 +222,30 @@ class AttachmentService
 
     public static function writeFileWithModel(UploadedFile $file): ResultAnswer
     {
-        $imageManager = new ImageManager(['driver' => 'gd']);
-        $image = $imageManager->make($file->tempName);
-
+        $tempFilePath = $file->tempName;
+        $imagick = new Imagick($tempFilePath);
         $extension = $file->getExtension();
         $fileName = substr(md5(uniqid(rand(), true)), 0, 10) . '_' . time();
         $path = '/' . self::PUBLIC_PATH . "/$fileName.$extension";
         $fullPath = self::getFilesPath() . "/$fileName.$extension";
-
-        if (in_array($extension, self::AllowedImageExtensions, true)) {
-            $extension = 'jpeg';
-            $fullPath = self::getFilesPath() . "/$fileName.$extension";
-            $path = '/' . self::PUBLIC_PATH . "/$fileName.$extension";
-
-            $image->encode($extension, 50)
-                ->resize(1024, 1024, function ($constraint) {
-                    $constraint->aspectRatio();
-                    $constraint->upsize();
-                })
-                ->save($fullPath);
-
-            $mimeType = mime_content_type($fullPath);
-            $size = filesize($fullPath);
-        } else {
-            if (!rename($file->tempName, $fullPath)) {
-                return Result::error(['errors' => ['Error saving file']]);
-            }
-        }
-
+        $imagick->resizeImage(1024, 1024, Imagick::FILTER_LANCZOS, 1, true);
+        $imagick->setImageFormat('jpeg');
+        $imagick->writeImage($fullPath);
+        $mimeType = $imagick->getImageMimeType();
+        $size = filesize($fullPath);
         chmod($fullPath, 0666);
-
         $attachment = new Attachment([
             'path' => $path,
             'size' => $size,
             'extension' => $extension,
             'mime_type' => $mimeType,
         ]);
-
         if (!$attachment->validate()) {
             return Result::notValid(['errors' => $attachment->getFirstErrors()]);
         }
-
         $attachment->save();
+        $imagick->clear();
+        $imagick->destroy();
 
         return Result::success($attachment);
     }
