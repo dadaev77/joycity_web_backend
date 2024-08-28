@@ -229,24 +229,18 @@ class AttachmentService
         $fullPath = self::getFilesPath() . "/$pathName.$extension";
         $size = $file->size;
 
-        // Debugging: Log the generated paths
-        Yii::info("Generated path: $path", __METHOD__);
-        Yii::info("Full path: $fullPath", __METHOD__);
-
         if (in_array($extension, self::AllowedImageExtensions, true)) {
-            $extension = 'jpeg';
-            $image = new Imagick($file->tempName);
-            $image->setFormat('jpeg');
-            $quality = 50;
-            $image->setImageCompression(Imagick::COMPRESSION_JPEG);
-            $image->setImageCompressionQuality($quality);
-            $image->setInterlaceScheme(Imagick::INTERLACE_PLANE);
+            $imageManager = new ImageManager(['driver' => 'imagick']);
+            $image = $imageManager->make($file->tempName)
+                ->resize(1024, 1024, function ($constraint) {
+                    $constraint->aspectRatio();
+                    $constraint->upsize();
+                })
+                ->encode('jpeg', 50);
 
-            $image->writeImage($fullPath);
+            $image->save($fullPath);
             $mimeType = mime_content_type($fullPath);
             $size = filesize($fullPath);
-
-            $image->destroy();
         } else {
             $status = rename($file->tempName, $fullPath);
             if (!$status) {
