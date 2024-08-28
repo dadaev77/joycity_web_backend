@@ -62,8 +62,17 @@
                                 </div>
                             </div>
                             <div class="tab-pane fade" id="frontend" role="tabpanel" aria-labelledby="frontend-tab">
-                                <div style="white-space: wrap; word-break: break-all; font-size: 12px;">
+                                <div style="white-space: wrap; word-break: break-all; font-size: 12px;" id="frontend-logs">
                                     <?= $frontLogs ?>
+                                    <script>
+                                        document.addEventListener('DOMContentLoaded', function() {
+                                            var items = document.getElementsByClassName('format');
+                                            for (var i = 0; i < items.length; i++) {
+                                                const formattedData = JSON.parse(items[i].innerText);
+                                                items[i].innerText = JSON.stringify(formattedData, null, 4);
+                                            }
+                                        });
+                                    </script>
                                 </div>
                             </div>
                             <!-- Add corresponding tab panes for the new tabs -->

@@ -107,9 +107,12 @@ class RawController extends Controller
         $data = $request->bodyParams;
         $logs = json_encode($data, JSON_PRETTY_PRINT);
 
+        $logs = htmlspecialchars_decode($logs);
+        $logs = '<pre class="format">' . $logs . '</pre>';
+
         if (file_exists(__DIR__ . '/../runtime/logs/front.log')) {
             $existingLogs = file_get_contents(__DIR__ . '/../runtime/logs/front.log');
-            $newLogs = $logs . $existingLogs;
+            $newLogs = '[-][-][' . date('Y-m-d H:i:s') . '][-][-] ' . $logs . $existingLogs;
         } else {
             $newLogs = $logs;
         }
