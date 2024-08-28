@@ -222,28 +222,51 @@ class AttachmentService
 
     public static function writeFileWithModel(UploadedFile $file): ResultAnswer
     {
+        // Get the temporary file path of the uploaded file
         $tempFilePath = $file->tempName;
+
+        // Create a new Imagick object
         $imagick = new Imagick($tempFilePath);
+
+        // Get the file extension and generate a unique file name
         $extension = $file->getExtension();
         $fileName = substr(md5(uniqid(rand(), true)), 0, 10) . '_' . time();
+        $fileName = preg_replace('/[^a-zA-Z0-9_.-]/', '', $fileName); // Remove invalid characters
         $path = '/' . self::PUBLIC_PATH . "/$fileName.$extension";
         $fullPath = self::getFilesPath() . "/$fileName.$extension";
+
+        // Resize the image if needed
         $imagick->resizeImage(1024, 1024, Imagick::FILTER_LANCZOS, 1, true);
+
+        // Set the image format to JPEG
         $imagick->setImageFormat('jpeg');
+
+        // Save the image to the full path
         $imagick->writeImage($fullPath);
+
+        // Get the MIME type and size of the saved image
         $mimeType = $imagick->getImageMimeType();
         $size = filesize($fullPath);
+
+        // Set permissions for the saved image
         chmod($fullPath, 0666);
+
+        // Create an Attachment instance
         $attachment = new Attachment([
             'path' => $path,
             'size' => $size,
             'extension' => $extension,
             'mime_type' => $mimeType,
         ]);
+
+        // Validate and save the Attachment
         if (!$attachment->validate()) {
             return Result::notValid(['errors' => $attachment->getFirstErrors()]);
         }
+
         $attachment->save();
+
+        // Clean up resources
         $imagick->clear();
         $imagick->destroy();
 
