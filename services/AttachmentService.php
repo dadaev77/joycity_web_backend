@@ -277,6 +277,7 @@ class AttachmentService
         return Yii::getAlias('@webroot') . '/' . self::PUBLIC_PATH;
     }
 
+
     public static function writeFileWithModelByPath(string $link): ResultAnswer
     {
         $fileContent = file_get_contents(Yii::getAlias('@webroot') . $link);
