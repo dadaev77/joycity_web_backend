@@ -231,12 +231,8 @@ class AttachmentService
 
         if (in_array($extension, self::AllowedImageExtensions, true)) {
             $extension = 'jpeg';
-            $fullPath = self::getFilesPath() . "/$pathName.$extension";
-            $path = '/' . self::PUBLIC_PATH . "/$pathName.$extension";
             $image = new Imagick($file->tempName);
-
             $image->setFormat('jpeg');
-
             $quality = 50;
             $image->setImageCompression(Imagick::COMPRESSION_JPEG);
             $image->setImageCompressionQuality($quality);
