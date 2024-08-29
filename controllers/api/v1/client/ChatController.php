@@ -9,6 +9,7 @@ use app\models\User;
 use app\services\output\ChatOutputService;
 use Throwable;
 use Yii;
+use app\models\Order;
 
 class ChatController extends ClientController
 {
@@ -16,7 +17,7 @@ class ChatController extends ClientController
     {
         $behaviors = parent::behaviors();
         $behaviors['verbFilter']['actions']['index'] = ['get'];
-
+        $behaviors['verbFilter']['actions']['search'] = ['get'];
         return $behaviors;
     }
 
@@ -52,5 +53,36 @@ class ChatController extends ClientController
         } catch (Throwable $e) {
             return ApiResponse::internalError($e);
         }
+    }
+    public function actionSearch()
+    {
+        // define variables
+        $result = [];
+        $request = Yii::$app->request;
+        $user = User::getIdentity();
+        $apiCodes = Order::apiCodes();
+        $query = $request->get('query');
+        if (!$user) return ApiResponse::code($apiCodes->NOT_AUTHORIZED);
+        if (!$query) return ApiResponse::code($apiCodes->BAD_REQUEST);
+
+        $orders = Order::find()
+            ->where(['like', 'id', $query])
+            ->all();
+        if (!$orders) return ApiResponse::code($apiCodes->NOT_FOUND);
+
+        foreach ($orders as $order) {
+            $result[] = [
+                'order_id' => $order->id,
+                'buyer_id' => $order->buyer_id,
+                'manager_id' => $order->manager_id,
+                'fulfillment_id' => $order->fulfillment_id ? $order->fulfillment_id : 'не назначен',
+                'chats' => Chat::find()
+                    ->where(['order_id' => $order->id])
+                    ->andWhere(['like', 'group', 'client_'])
+                    ->all(),
+            ];
+        }
+
+        return $result;
     }
 }
