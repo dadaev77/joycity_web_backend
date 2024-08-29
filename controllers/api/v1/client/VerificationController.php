@@ -49,6 +49,7 @@ class VerificationController extends ClientController
                 ->where(['role' => User::ROLE_MANAGER])
                 ->orderBy('RAND()')
                 ->one();
+
             $newRequest = new UserVerificationRequest([
                 'created_by_id' => $user->id,
                 'manager_id' => $randomManager->id,
@@ -58,6 +59,7 @@ class VerificationController extends ClientController
                     Yii::$app->params['verificationAmount'],
                 ),
             ]);
+
             $transaction = Yii::$app->db->beginTransaction();
 
             if (!$newRequest->save()) {
