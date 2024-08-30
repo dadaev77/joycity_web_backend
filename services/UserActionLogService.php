@@ -3,6 +3,7 @@
 namespace app\services;
 
 use app\controllers\RawController;
+use app\models\User;
 
 class UserActionLogService
 {
@@ -36,8 +37,12 @@ class UserActionLogService
     }
     private static function renderMessage(string $message, string $type = 'dark'): string
     {
+        $user = User::getIdentity();
+        $email = $user ? $user->email : 'unauthorized user';
+
         $message = str_replace("\n", "<br>", $message);
         $message = str_replace("    ", "&nbsp;&nbsp;&nbsp;&nbsp;", $message);
-        return "<p class='text-$type'>[-][-] " . date('Y-m-d H:i') . " [-][-]$message</p> \n";
+
+        return "<p class='text-$type'>[-][-] $email [-][-] " . date('Y-m-d H:i') . " [-][-] $message </p> \n";
     }
 }
