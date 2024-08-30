@@ -15,31 +15,31 @@ class UserActionLogService
         file_put_contents($logFile, $newContent);
     }
 
-    public static function info(string $message): void
+    public static function info(mixed $message): void
     {
         self::prependLog(self::renderMessage($message, 'primary'));
     }
-    public static function error(string $message): void
+    public static function error(mixed $message): void
     {
         self::prependLog(self::renderMessage($message, 'danger'));
     }
-    public static function danger(string $message): void
+    public static function danger(mixed $message): void
     {
         self::prependLog(self::renderMessage($message, 'danger'));
     }
-    public static function warning(string $message): void
+    public static function warning(mixed $message): void
     {
         self::prependLog(self::renderMessage($message, 'warning'));
     }
-    public static function debug(string $message): void
+    public static function debug(mixed $message): void
     {
         self::prependLog(self::renderMessage($message, 'secondary'));
     }
-    public static function success(string $message): void
+    public static function success(mixed $message): void
     {
         self::prependLog(self::renderMessage($message, 'success'));
     }
-    public static function log(string $message): void
+    public static function log(mixed $message): void
     {
         self::prependLog(self::renderMessage($message));
     }
