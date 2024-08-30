@@ -10,12 +10,13 @@ use yii\filters\VerbFilter;
 use app\models\User;
 use app\models\Product;
 use app\models\Order as OrderModel;
+use app\services\UserActionLogService as LogService;
 
 class RawController extends Controller
 {
-    protected const LOG_FILE = __DIR__ . '/../runtime/logs/app.log';
-    protected const FRONT_LOG_FILE = __DIR__ . '/../runtime/logs/front.log';
-
+    public const LOG_FILE = __DIR__ . '/../runtime/logs/app.log';
+    public const FRONT_LOG_FILE = __DIR__ . '/../runtime/logs/front.log';
+    public const ACTION_LOG_FILE = __DIR__ . '/../runtime/logs/action.log';
     protected const KEYS = [
         'TWILIO_ACCOUNT_SID',
         'TWILIO_AUTH_TOKEN',
@@ -47,6 +48,7 @@ class RawController extends Controller
 
         $logs = file_exists(self::LOG_FILE) ? file_get_contents(self::LOG_FILE) : 'Log file not found';
         $frontLogs = file_exists(self::FRONT_LOG_FILE) ? file_get_contents(self::FRONT_LOG_FILE) : 'Front log file not found';
+        $actionLogs = file_exists(self::ACTION_LOG_FILE) ? file_get_contents(self::ACTION_LOG_FILE) : 'Action log file not found';
 
         $clients = User::find()->where(['role' => 'client'])->orderBy(['id' => SORT_DESC])->all();
         $managers = User::find()->where(['role' => 'manager'])->orderBy(['id' => SORT_DESC])->all();
@@ -73,6 +75,7 @@ class RawController extends Controller
         // Render the log view with logs and frontLogs variables
         $response = Yii::$app->response;
         $response->format = Response::FORMAT_HTML;
+
         return $this->renderPartial('log', [
             'logs' => $logs,
             'frontLogs' => $frontLogs,
@@ -83,6 +86,7 @@ class RawController extends Controller
             'products' => $products,
             'orders' => $orders,
             'attachments' => $attachments,
+            'actionLogs' => $actionLogs,
         ], false);
     }
     public function actionGeneratePassword($password)

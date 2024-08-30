@@ -32,6 +32,9 @@
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="frontend-tab" data-bs-toggle="tab" data-bs-target="#frontend" type="button" role="tab" aria-controls="frontend" aria-selected="false">Frontend Logs</button>
                             </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="invoices-tab" data-bs-toggle="tab" data-bs-target="#invoices" type="button" role="tab" aria-controls="invoices" aria-selected="false">Action Logs</button>
+                            </li>
                             <!-- Add tabs for buyers list, clients list, manager list, fulfillment list, and products -->
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="buyers-tab" data-bs-toggle="tab" data-bs-target="#buyers" type="button" role="tab" aria-controls="buyers" aria-selected="false">Buyers List</button>
@@ -54,6 +57,7 @@
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="attachments-tab" data-bs-toggle="tab" data-bs-target="#attachments" type="button" role="tab" aria-controls="attachments" aria-selected="false">Attachments</button>
                             </li>
+
                         </ul>
                         <div class="tab-content py-4" id="myTabContent">
                             <div class="tab-pane fade show active" id="backend" role="tabpanel" aria-labelledby="backend-tab">
@@ -187,6 +191,18 @@
                                             </div>
                                         </div>
                                     <?php endforeach; ?>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="invoices" role="tabpanel" aria-labelledby="invoices-tab">
+                                <div class="row">
+                                    <style>
+                                        p {
+                                            margin-bottom: 0 !important;
+                                        }
+                                    </style>
+                                    <div class="col">
+                                        <?= $actionLogs ?>
+                                    </div>
                                 </div>
                             </div>
                         </div>

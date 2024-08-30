@@ -14,6 +14,7 @@ use app\models\UserSettings;
 use app\services\EmailService;
 use app\services\output\ProfileOutputService;
 use app\services\twilio\TwilioService;
+use app\services\UserActionLogService as LogService;
 use Exception as BaseException;
 use Throwable;
 use Yii;
@@ -106,6 +107,7 @@ class AuthController extends V1Controller implements ApiAuth
     public function actionLogout()
     {
         $user = User::getIdentity();
+        LogService::log('logout is called by ' . $user->email);
         $user->access_token =
             Yii::$app->security->generateRandomString() .
             Yii::$app->security->generateRandomString();
@@ -124,6 +126,7 @@ class AuthController extends V1Controller implements ApiAuth
         );
 
         if ($user) {
+            LogService::log('email check is called by ' . $user->email);
             return ApiResponse::code($apiCodes->EMAIL_EXISTS);
         }
 
@@ -134,7 +137,7 @@ class AuthController extends V1Controller implements ApiAuth
     {
         $request = Yii::$app->request;
         $apiCodes = User::apiCodes();
-
+        LogService::log('register is called by ' . $request->post('email'));
         try {
             $transaction = Yii::$app->db->beginTransaction();
             $email = strtolower($request->post('email'));
@@ -207,7 +210,7 @@ class AuthController extends V1Controller implements ApiAuth
             ) {
                 return ApiResponse::codeErrors($apiCodes->NOT_VALID, [
                     'role' =>
-                        'Param `role` can only be "client" or "buyer" or "fulfillment"',
+                    'Param `role` can only be "client" or "buyer" or "fulfillment"',
                 ]);
             }
 
@@ -217,7 +220,7 @@ class AuthController extends V1Controller implements ApiAuth
                     $user->getFirstErrors(),
                 );
             }
-
+            LogService::success('created user ' . $request->post('email'));
             $user->personal_id = md5(time() . random_int(1e3, 9e3));
             $user->password = Yii::$app
                 ->getSecurity()
@@ -237,7 +240,7 @@ class AuthController extends V1Controller implements ApiAuth
             if ($role === User::ROLE_FULFILLMENT) {
                 $deliveryPointAddress = new DeliveryPointAddress([
                     'type_delivery_point_id' =>
-                        TypeDeliveryPoint::TYPE_FULFILLMENT,
+                    TypeDeliveryPoint::TYPE_FULFILLMENT,
                     'address' => $address,
                     'user_id' => $user->id,
                 ]);
@@ -255,8 +258,8 @@ class AuthController extends V1Controller implements ApiAuth
             $settings->user_id = $user->id;
             $settings->currency =
                 $role === User::ROLE_CLIENT || $role === User::ROLE_FULFILLMENT
-                    ? UserSettings::CURRENCY_RUB
-                    : UserSettings::CURRENCY_CNY;
+                ? UserSettings::CURRENCY_RUB
+                : UserSettings::CURRENCY_CNY;
             $settings->application_language =
                 UserSettings::APPLICATION_LANGUAGE_RU;
             $settings->chat_language = UserSettings::CHAT_LANGUAGE_RU;
@@ -553,7 +556,7 @@ class AuthController extends V1Controller implements ApiAuth
     public function actionTwilioToken()
     {
         $user = User::getIdentity();
-
+        LogService::log('twilio token is called by ' . $user->email);
         return ApiResponse::code(ResponseCodes::getStatic()->SUCCESS, [
             'access_token' => TwilioService::generateJWT($user->personal_id),
         ]);

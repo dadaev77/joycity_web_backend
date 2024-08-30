@@ -25,6 +25,7 @@ use Throwable;
 use Yii;
 use yii\base\Exception;
 use yii\web\UploadedFile;
+use app\services\UserActionLogService as LogService;
 
 class OrderController extends ClientController
 {
@@ -43,7 +44,7 @@ class OrderController extends ClientController
         array_unshift($behaviours['access']['rules'], [
             'actions' => ['create', 'update', 'cancel'],
             'allow' => false,
-            'matchCallback' => fn () => !User::getIdentity()->is_verified,
+            'matchCallback' => fn() => !User::getIdentity()->is_verified,
         ]);
         $behaviours['access']['denyCallback'] = static function () {
             Yii::$app->response->data = ApiResponse::byResponseCode(
@@ -57,8 +58,8 @@ class OrderController extends ClientController
     public function actionCreate()
     {
         $user = User::getIdentity();
-
         $request = Yii::$app->request;
+        LogService::log('create client order is called by ' . $user->email);
         $apiCodes = Order::apiCodes();
         $images = UploadedFile::getInstancesByName('images');
         $repeatOrderId = $request->post('repeat_order_id');
@@ -79,15 +80,13 @@ class OrderController extends ClientController
             $order->created_at = date('Y-m-d H:i:s');
             $order->status = Order::STATUS_CREATED;
             $order->manager_id = $randomManager->id;
+            LogService::log('manager id is set to ' . $randomManager->id);
             $order->type_delivery_point_id = $typeDeliveryPointId;
             $order->expected_price_per_item = RateService::putInUserCurrency(
                 $request->post('expected_price_per_item', 0),
             );
 
-            if (
-                (int) $typeDeliveryPointId ===
-                TypeDeliveryPoint::TYPE_FULFILLMENT
-            ) {
+            if ((int) $typeDeliveryPointId === TypeDeliveryPoint::TYPE_FULFILLMENT) {
                 $fulfillmentUser = User::find()
                     ->where([
                         'id' => $fulfillmentId,
@@ -96,14 +95,13 @@ class OrderController extends ClientController
                     ->one();
                 if ($fulfillmentUser) {
                     $order->fulfillment_id = $fulfillmentId;
+                    LogService::log('fulfillment id is set to ' . $fulfillmentId);
                 } else {
                     return ApiResponse::code($apiCodes->NOT_FOUND);
                 }
             }
 
-            $availableTypeIdsDeliveries = TypeDeliveryService::getTypeDeliveryIdsBySubcategory(
-                $request->post('subcategory_id'),
-            );
+            $availableTypeIdsDeliveries = TypeDeliveryService::getTypeDeliveryIdsBySubcategory($request->post('subcategory_id'));
 
             if (
                 !in_array(
@@ -137,17 +135,15 @@ class OrderController extends ClientController
                 $transaction,
                 true,
             );
-
+            LogService::log('order saved with id ' . $order->id);
             if (!$orderSave->success) {
                 return $orderSave->apiResponse;
             }
 
             if ($order->product_id) {
                 $buyerId = $order->product->buyer_id;
-                $distributionStatus = OrderDistributionService::createDistributionTask(
-                    $order->id,
-                    $buyerId,
-                );
+                LogService::log('buyer id is set to ' . $buyerId);
+                $distributionStatus = OrderDistributionService::createDistributionTask($order->id, $buyerId);
 
                 if (!$distributionStatus->success) {
                     return ApiResponse::transactionCodeErrors(
@@ -161,7 +157,7 @@ class OrderController extends ClientController
                     $distributionStatus->result,
                     $buyerId,
                 );
-
+                LogService::log('buyer accept status is set to ' . $buyerAcceptStatus->success);
                 if (!$buyerAcceptStatus->success) {
                     return ApiResponse::transactionCodeErrors(
                         $transaction,
@@ -195,7 +191,7 @@ class OrderController extends ClientController
                         $conversationManager->reason,
                     );
                 }
-
+                LogService::log('created conversation between client and buyer');
                 $conversationManagerBuyer = ChatConstructorService::createChatOrder(
                     Chat::GROUP_MANAGER_BUYER,
                     [$order->manager_id, $buyerId],
@@ -209,11 +205,12 @@ class OrderController extends ClientController
                         $conversationManagerBuyer->reason,
                     );
                 }
+                LogService::log('created conversation between manager and buyer');
             } else {
                 $distributionStatus = OrderDistributionService::createDistributionTask(
                     $order->id,
                 );
-
+                LogService::log('created distribution task for order with id ' . $order->id . '. because buyer is not assigned');
                 if (!$distributionStatus->success) {
                     $transaction?->rollBack();
                     return ApiResponse::codeErrors(
@@ -251,7 +248,7 @@ class OrderController extends ClientController
                 if ($repeatOrder && $repeatOrder->created_by === $user->id) {
                     $attachmentsToKeep = Attachment::find()
                         ->joinWith([
-                            'orderLinkAttachments' => fn ($q) => $q->where([
+                            'orderLinkAttachments' => fn($q) => $q->where([
                                 'order_id' => $repeatOrder->id,
                             ]),
                         ])
@@ -289,16 +286,20 @@ class OrderController extends ClientController
                     $conversationManager->reason,
                 );
             }
+            LogService::log('created conversation between client and manager');
+            LogService::log('created notification for manager');
             //Twilio service end
 
             $transaction?->commit();
 
             if ($orderSave->success) {
+                LogService::success('order saved with id ' . $order->id . '. Flow is correct');
                 return ApiResponse::byResponseCode(null, [
                     'info' => OrderOutputService::getEntity($order->id),
                     'message' => 'Order created successfully',
                 ]);
             } else {
+                LogService::danger('order not saved with id ' . $order->id . '. Flow is incorrect');
                 return ApiResponse::codeErrors(
                     $apiCodes->ERROR_SAVE,
                     $orderSave->reason
