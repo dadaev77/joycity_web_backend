@@ -114,7 +114,7 @@ class OrderPriceService
                 $out['fulfillment'],
             4,
         );
-        LogService::info('calculated overall price: ' . $out);
+        LogService::info($out);
         return $out;
     }
 
