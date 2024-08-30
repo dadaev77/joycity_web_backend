@@ -201,5 +201,5 @@ if (YII_ENV_DEV) {
     //     'allowedIPs' => ['*'],
     // ];
 }
-// $config = ['debug' => true];
+$config = ['debug' => true];
 return $config;
