@@ -7,38 +7,52 @@ use app\models\User;
 
 class UserActionLogService
 {
+    private static function prependLog(string $message): void
+    {
+        $logFile = RawController::ACTION_LOG_FILE;
+        $currentContent = file_exists($logFile) ? file_get_contents($logFile) : '';
+        $newContent = $message . $currentContent;
+        file_put_contents($logFile, $newContent);
+    }
+
     public static function info(string $message): void
     {
-        file_put_contents(RawController::ACTION_LOG_FILE, self::renderMessage($message, 'primary'), FILE_APPEND);
+        self::prependLog(self::renderMessage($message, 'primary'));
     }
     public static function error(string $message): void
     {
-        file_put_contents(RawController::ACTION_LOG_FILE, self::renderMessage($message, 'danger'), FILE_APPEND);
+        self::prependLog(self::renderMessage($message, 'danger'));
     }
     public static function danger(string $message): void
     {
-        file_put_contents(RawController::ACTION_LOG_FILE, self::renderMessage($message, 'danger'), FILE_APPEND);
+        self::prependLog(self::renderMessage($message, 'danger'));
     }
     public static function warning(string $message): void
     {
-        file_put_contents(RawController::ACTION_LOG_FILE, self::renderMessage($message, 'warning'), FILE_APPEND);
+        self::prependLog(self::renderMessage($message, 'warning'));
     }
     public static function debug(string $message): void
     {
-        file_put_contents(RawController::ACTION_LOG_FILE, self::renderMessage($message, 'secondary'), FILE_APPEND);
+        self::prependLog(self::renderMessage($message, 'secondary'));
     }
     public static function success(string $message): void
     {
-        file_put_contents(RawController::ACTION_LOG_FILE, self::renderMessage($message, 'success'), FILE_APPEND);
+        self::prependLog(self::renderMessage($message, 'success'));
     }
     public static function log(string $message): void
     {
-        file_put_contents(RawController::ACTION_LOG_FILE, self::renderMessage($message), FILE_APPEND);
+        self::prependLog(self::renderMessage($message));
     }
-    private static function renderMessage(string $message, string $type = 'dark'): string
+    private static function renderMessage(mixed $message, string $type = 'dark'): string
     {
         $user = User::getIdentity();
         $email = $user ? $user->email : 'unauthorized user';
+
+        if (is_array($message)) {
+            $message = json_encode($message);
+        } elseif (!is_string($message)) {
+            $message = (string) $message;
+        }
 
         $message = str_replace("\n", "<br>", $message);
         $message = str_replace("    ", "&nbsp;&nbsp;&nbsp;&nbsp;", $message);
