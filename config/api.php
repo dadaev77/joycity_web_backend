@@ -195,11 +195,11 @@ if (YII_ENV_DEV) {
         'allowedIPs' => ['*']
     ];
 
-    $config['bootstrap'][] = 'gii';
-    $config['modules']['gii'] = [
-        'class' => 'yii\gii\Module',
-        'allowedIPs' => ['*'],
-    ];
+    // $config['bootstrap'][] = 'gii';
+    // $config['modules']['gii'] = [
+    //     'class' => 'yii\gii\Module',
+    //     'allowedIPs' => ['*'],
+    // ];
 }
-$config = ['debug' => true];
+// $config = ['debug' => true];
 return $config;
