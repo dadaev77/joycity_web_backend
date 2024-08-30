@@ -6,6 +6,7 @@ use app\helpers\ArrayHelperExtended;
 use app\models\Order;
 use app\services\RateService;
 use Throwable;
+use app\services\UserActionLogService as LogService;
 
 class OrderPriceService
 {
@@ -16,11 +17,10 @@ class OrderPriceService
     {
         try {
             $order = Order::findOne(['id' => $orderId]);
-
             if (!$order) {
                 return self::getPricesConfig();
             }
-
+            LogService::info('calculate order prices is called for order with id ' . $order->id);
             $buyerOffers = $order->buyerOffers;
             $buyerOffer = array_pop($buyerOffers);
             $buyerDeliveryOffer = $order->buyerDeliveryOffer;
@@ -76,11 +76,12 @@ class OrderPriceService
             $productWeight,
             $typeDeliveryId,
         );
+        LogService::info('calculated delivery price: ' . $deliveryPrice);
         $packagingPrice = OrderDeliveryPriceService::calculatePackagingPrice(
             $typePackagingId,
             $packagingQuantity,
         );
-
+        LogService::info('calculated packaging price: ' . $packagingPrice);
         $out['product_inspection'] = $productInspectionPrice;
         $out['fulfillment'] = RateService::convertRUBtoCNY($fulfillmentPrice);
 
@@ -113,14 +114,14 @@ class OrderPriceService
                 $out['fulfillment'],
             4,
         );
-
+        LogService::info('calculated overall price: ' . implode(', ',  $out));
         return $out;
     }
 
     public static function outputOrderPricesInUserCurrency(array $prices): array
     {
         return ArrayHelperExtended::mapDeep(
-            static fn ($amount) => RateService::outputInUserCurrency($amount),
+            static fn($amount) => RateService::outputInUserCurrency($amount),
             $prices,
         );
     }
