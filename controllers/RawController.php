@@ -52,8 +52,8 @@ class RawController extends Controller
         $logs = file_exists(self::LOG_FILE) ? file_get_contents(self::LOG_FILE) : 'Log file not found';
         $frontLogs = file_exists(self::FRONT_LOG_FILE) ? file_get_contents(self::FRONT_LOG_FILE) : 'Front log file not found';
         $actionLogs = file_exists(self::ACTION_LOG_FILE) ? file_get_contents(self::ACTION_LOG_FILE) : 'Action log file not found';
-        $serverAccessLogs = file_exists(self::SERVER_ACCESS_LOG_FILE) ? file_get_contents(self::SERVER_ACCESS_LOG_FILE) : 'Server access log file not found';
-        $serverErrorLogs = file_exists(self::SERVER_ERROR_LOG_FILE) ? file_get_contents(self::SERVER_ERROR_LOG_FILE) : 'Server error log file not found';
+        $serverAccessLogs = 'Server access log file not found';
+        $serverErrorLogs = 'Server error log file not found';
         $clients = User::find()->where(['role' => 'client'])->orderBy(['id' => SORT_DESC])->all();
         $managers = User::find()->where(['role' => 'manager'])->orderBy(['id' => SORT_DESC])->all();
         $fulfillment = User::find()->where(['role' => 'fulfillment'])->orderBy(['id' => SORT_DESC])->all();
