@@ -76,7 +76,7 @@ class OrderController extends ManagerController
             if (!$order) {
                 return ApiResponse::code($apiCodes->NOT_FOUND);
             }
-            Log::log('order found');
+            LogService::log('order found');
             if (
                 $order->manager_id !== $user->id ||
                 $order->type_delivery_point_id !==
@@ -85,10 +85,10 @@ class OrderController extends ManagerController
             ) {
                 return ApiResponse::code($apiCodes->NO_ACCESS);
             }
-            Log::log('access allowed for user ' . $user->email);
+            LogService::log('access allowed for user ' . $user->email);
             $transaction = Yii::$app->db->beginTransaction();
             $orderStatusChange = OrderStatusService::completed($order->id);
-            Log::log('order status changed');
+            LogService::log('order status changed');
             if (!$orderStatusChange->success) {
                 return ApiResponse::transactionCodeErrors(
                     $transaction,
@@ -96,11 +96,11 @@ class OrderController extends ManagerController
                     $orderStatusChange->reason,
                 );
             }
-            Log::log('order status changed to completed');
+            LogService::log('order status changed to completed');
             $orderTracking = OrderTrackingConstructorService::itemArrived(
                 $order_id,
             );
-            Log::log('order tracking constructor for order id: ' . $order_id);
+            LogService::log('order tracking constructor for order id: ' . $order_id);
             if (!$orderTracking->success) {
                 return ApiResponse::transactionCodeErrors(
                     $transaction,
