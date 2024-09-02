@@ -20,7 +20,7 @@ class OrderPriceService
             if (!$order) {
                 return self::getPricesConfig();
             }
-            LogService::info('calculate order prices is called for order with id ' . $order->id);
+            // LogService::info('calculate order prices is called for order with id ' . $order->id);
             $buyerOffers = $order->buyerOffers;
             $buyerOffer = array_pop($buyerOffers);
             $buyerDeliveryOffer = $order->buyerDeliveryOffer;
@@ -76,12 +76,12 @@ class OrderPriceService
             $productWeight,
             $typeDeliveryId,
         );
-        LogService::info('calculated delivery price: ' . $deliveryPrice);
+        // LogService::info('calculated delivery price: ' . $deliveryPrice);
         $packagingPrice = OrderDeliveryPriceService::calculatePackagingPrice(
             $typePackagingId,
             $packagingQuantity,
         );
-        LogService::info('calculated packaging price: ' . $packagingPrice);
+        // LogService::info('calculated packaging price: ' . $packagingPrice);
         $out['product_inspection'] = $productInspectionPrice;
         $out['fulfillment'] = RateService::convertRUBtoCNY($fulfillmentPrice);
 
@@ -114,7 +114,7 @@ class OrderPriceService
                 $out['fulfillment'],
             4,
         );
-        LogService::info($out);
+        // LogService::info($out);
         return $out;
     }
 
