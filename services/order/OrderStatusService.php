@@ -160,7 +160,7 @@ class OrderStatusService
 
     public static function completed(int $orderId): ResultAnswer
     {
-        LogService::log('order status for change for order id: ' . $orderId);
+        LogService::info('OrderStatusService. order status for change for order id: ' . $orderId);
         $order = Order::find()
             ->select(['id', 'status', 'created_by'])
             ->where(['id' => $orderId])
@@ -169,7 +169,7 @@ class OrderStatusService
         if (!$order) {
             return Result::notFound();
         }
-        LogService::log('order found');
+        LogService::success('OrderStatusService. order found');
         if (
             $order->status !== Order::STATUS_ARRIVED_TO_WAREHOUSE &&
             $order->status !== Order::STATUS_FULLY_PAID
@@ -178,18 +178,18 @@ class OrderStatusService
                 'status' => 'Order in current status cannot be completed',
             ]);
         }
-        LogService::log('order status is allowed for completion');
+        LogService::success('OrderStatusService. order status is allowed for completion');
 
         $linkedChats = Chat::findAll(['order_id' => $orderId]);
-        LogService::log('linked chats found');
+        LogService::success('OrderStatusService. linked chats found');
         $notifications = Notification::findAll([
             'entity_id' => $orderId,
             'entity_type' => Notification::ENTITY_TYPE_ORDER,
         ]);
-        LogService::log('notifications found');
+        LogService::success('OrderStatusService. notifications found');
 
         $transaction = Yii::$app->db->beginTransaction();
-
+        LogService::success('OrderStatusService. transaction started');
         try {
             foreach ($notifications as $notification) {
                 $notificationIsRead = NotificationManagementService::markAsRead(
@@ -220,6 +220,9 @@ class OrderStatusService
 
             return self::changeOrderStatus(Order::STATUS_COMPLETED, $orderId);
         } catch (Throwable $e) {
+
+            LogService::danger('OrderStatusService. error: ' . $e->getMessage());
+
             return Result::error(['errors' => ['base' => $e->getMessage()]]);
         }
     }
@@ -314,7 +317,7 @@ class OrderStatusService
             if (!$order) {
                 return Result::notFound();
             }
-            LogService::log('order found for change status in ChangeOrderStatus method');
+            LogService::log('OrderStatusService. order found for change status in ChangeOrderStatus method');
             $order->status = $orderStatus;
 
             if (!$order->save(true, ['status'])) {
