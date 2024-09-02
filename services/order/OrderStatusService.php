@@ -190,41 +190,41 @@ class OrderStatusService
 
         $transaction = Yii::$app->db->beginTransaction();
         LogService::success('OrderStatusService. transaction started');
-        // try {
-        //     foreach ($notifications as $notification) {
-        //         $notificationIsRead = NotificationManagementService::markAsRead(
-        //             $notification->id,
-        //         );
+        try {
+            LogService::success('OrderStatusService. Start marking notifications as read for managmeent');
+            foreach ($notifications as $notification) {
+                $notificationIsRead = NotificationManagementService::markAsRead(
+                    $notification->id,
+                );
 
-        //         if (!$notificationIsRead->success) {
-        //             $transaction?->rollBack();
+                if (!$notificationIsRead->success) {
+                    $transaction?->rollBack();
 
-        //             return $notificationIsRead;
-        //         }
-        //     }
+                    return $notificationIsRead;
+                }
+            }
+            LogService::success('OrderStatusService. Notifications marked as read');
+            LogService::success('OrderStatusService. Start archiving chats ');
+            if ($linkedChats) {
+                foreach ($linkedChats as $chat) {
+                    $chatArchiveStatus = ChatArchiveService::archiveChat(
+                        $chat->id,
+                    );
 
-        //     if ($linkedChats) {
-        //         foreach ($linkedChats as $chat) {
-        //             $chatArchiveStatus = ChatArchiveService::archiveChat(
-        //                 $chat->id,
-        //             );
+                    if (!$chatArchiveStatus->success) {
+                        $transaction?->rollBack();
 
-        //             if (!$chatArchiveStatus->success) {
-        //                 $transaction?->rollBack();
-
-        //                 return $chatArchiveStatus;
-        //             }
-        //         }
-        //     }
-
-        //     $transaction?->commit();
-        //     LogService::success('OrderStatusService. transaction committed');
-        //     return self::changeOrderStatus(Order::STATUS_COMPLETED, $orderId);
-        // } catch (Throwable $e) {
-        //     return Result::error(['errors' => ['base' => $e->getMessage()]]);
-        // }
-        $transaction?->commit();
-        return self::changeOrderStatus(Order::STATUS_COMPLETED, $orderId);
+                        return $chatArchiveStatus;
+                    }
+                }
+            }
+            LogService::success('OrderStatusService. Chats archived');
+            $transaction?->commit();
+            LogService::success('OrderStatusService. Start changing order status to completed');
+            return self::changeOrderStatus(Order::STATUS_COMPLETED, $orderId);
+        } catch (Throwable $e) {
+            return Result::error(['errors' => ['base' => $e->getMessage()]]);
+        }
     }
 
     public static function cancelled(int $orderId): ResultAnswer
