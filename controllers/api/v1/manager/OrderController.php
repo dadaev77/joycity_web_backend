@@ -12,6 +12,7 @@ use app\services\OrderTrackingConstructorService;
 use app\services\output\OrderOutputService;
 use Throwable;
 use Yii;
+use app\services\UserActionLogService as LogService;
 
 class OrderController extends ManagerController
 {
@@ -70,7 +71,7 @@ class OrderController extends ManagerController
             $order_id = $request->post('order_id');
             $user = User::getIdentity();
             $order = Order::findOne(['id' => $order_id]);
-
+            LogService::info('Initialize method finishOrder. Order id: ' . $order_id . ' Manager id: ' . $user->id . ' User email: ' . $user->email);
             if (!$order) {
                 return ApiResponse::code($apiCodes->NOT_FOUND);
             }
@@ -78,9 +79,10 @@ class OrderController extends ManagerController
             if (
                 $order->manager_id !== $user->id ||
                 $order->type_delivery_point_id !==
-                    TypeDeliveryPoint::TYPE_WAREHOUSE ||
+                TypeDeliveryPoint::TYPE_WAREHOUSE ||
                 $order->status !== Order::STATUS_ARRIVED_TO_WAREHOUSE
             ) {
+                LogService::danger('No access to finish order for Manger id: ' . $user->id);
                 return ApiResponse::code($apiCodes->NO_ACCESS);
             }
 
@@ -94,11 +96,10 @@ class OrderController extends ManagerController
                     $orderStatusChange->reason,
                 );
             }
-
+            LogService::log('Order status changed to order id: ' . $order_id . ' by Manager id: ' . $user->id);
             $orderTracking = OrderTrackingConstructorService::itemArrived(
                 $order_id,
             );
-
             if (!$orderTracking->success) {
                 return ApiResponse::transactionCodeErrors(
                     $transaction,
@@ -106,13 +107,13 @@ class OrderController extends ManagerController
                     $orderTracking->reason,
                 );
             }
-
+            LogService::log('Order tracking constructor for order id: ' . $order_id . ' by Manager id: ' . $user->id);
             $transaction?->commit();
 
             return ApiResponse::info(OrderOutputService::getEntity($order->id));
         } catch (Throwable $e) {
+            LogService::danger('Error finish order for order id: ' . $order_id . ' by Manager id: ' . $user->id);
             isset($transaction) && $transaction->rollBack();
-
             return ApiResponse::internalError($e);
         }
     }
