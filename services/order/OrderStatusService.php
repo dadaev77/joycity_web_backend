@@ -282,8 +282,8 @@ class OrderStatusService
                         LogService::danger('OrderStatusService. Failed to mark notification as read');
                         return $notificationIsRead;
                     }
+                    LogService::log('OrderStatusService. Notification marked as read :' . $notification->id);
                 }
-                LogService::log('OrderStatusService. Notifications marked as read');
             }
             if ($linkedChats) {
                 LogService::log('OrderStatusService. Start archiving chats');

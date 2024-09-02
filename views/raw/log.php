@@ -57,6 +57,12 @@
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="attachments-tab" data-bs-toggle="tab" data-bs-target="#attachments" type="button" role="tab" aria-controls="attachments" aria-selected="false">Attachments</button>
                             </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="access-log-tab" data-bs-toggle="tab" data-bs-target="#access-log" type="button" role="tab" aria-controls="access-log" aria-selected="false">Server Access Log</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="error-log-tab" data-bs-toggle="tab" data-bs-target="#error-log" type="button" role="tab" aria-controls="error-log" aria-selected="false">Server Error Log</button>
+                            </li>
 
                         </ul>
                         <div class="tab-content py-4" id="myTabContent">
@@ -205,6 +211,12 @@
                                         <?= $actionLogs ?>
                                     </div>
                                 </div>
+                            </div>
+                            <div class="tab-pane fade" id="access-log" role="tabpanel" aria-labelledby="access-log-tab">
+                                <?= $serverAccessLogs ?>
+                            </div>
+                            <div class="tab-pane fade" id="error-log" role="tabpanel" aria-labelledby="error-log-tab">
+                                <?= $serverErrorLogs ?>
                             </div>
                         </div>
                     </div>
