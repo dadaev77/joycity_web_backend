@@ -170,6 +170,7 @@
                                         <div class="col h-100">
                                             <ul class="list-unstyled p-0 card p-3">
                                                 <li class="d-block">
+                                                    <p class="mb-0">ID: <?= $order->id ?></p>
                                                     <p class="mb-0">Created By: <?= $order->created_by ?></p>
                                                     <p class="mb-0">Buyer ID: <?= $order->buyer_id ?></p>
                                                     <p class="mb-0">Manager ID: <?= $order->manager_id ?></p>
