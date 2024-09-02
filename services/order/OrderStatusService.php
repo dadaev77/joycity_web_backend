@@ -335,21 +335,21 @@ class OrderStatusService
                         $order->created_by,
                         $orderId,
                     );
-                    LogService::log('notification constructor for created by');
+                    LogService::log('OrderStatusService. notification constructor for created by');
                     if ($order->buyer_id) {
                         NotificationConstructor::orderOrderStatusChange(
                             $order->buyer_id,
                             $orderId,
                         );
                     }
-                    LogService::log('notification constructor for buyer id');
+                    LogService::log('OrderStatusService. notification constructor for buyer id');
                     if ($order->manager_id) {
                         NotificationConstructor::orderOrderStatusChange(
                             $order->manager_id,
                             $orderId,
                         );
                     }
-                    LogService::log('notification constructor for manager id');
+                    LogService::log('OrderStatusService. notification constructor for manager id');
                     if (
                         $order->fulfillment_id &&
                         in_array(
@@ -363,7 +363,7 @@ class OrderStatusService
                             $orderId,
                         );
                     }
-                    LogService::log('notification constructor for fulfillment id');
+                    LogService::log('OrderStatusService. notification constructor for fulfillment id');
                     if (
                         $order->status ===
                         Order::STATUS_PARTIALLY_DELIVERED_TO_MARKETPLACE
@@ -384,7 +384,7 @@ class OrderStatusService
                         $order->manager_id,
                         $orderId,
                     );
-                    LogService::log('notification constructor for manager id');
+                    LogService::log('OrderStatusService. notification constructor for manager id');
                 }
             } else {
                 if ($order->manager_id) {

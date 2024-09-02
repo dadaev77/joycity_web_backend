@@ -390,6 +390,7 @@ class OrderController extends ClientController
 
     public function actionCancel(int $id)
     {
+        LogService::info('OrderController. actionCancel is called by user with email ' . User::getIdentity()->email);
         $apiCodes = Order::apiCodes();
         $user = User::getIdentity();
         $order = Order::findOne(['id' => $id]);
@@ -397,20 +398,19 @@ class OrderController extends ClientController
         if (!$order) {
             return ApiResponse::byResponseCode($apiCodes->NOT_FOUND);
         }
-
+        LogService::success('OrderController. order found with id ' . $order->id);
         if ($order->created_by !== $user->id) {
             return ApiResponse::byResponseCode($apiCodes->NO_ACCESS);
         }
-
+        LogService::success('OrderController. order created by is correct');
         $orderChangeStatus = OrderStatusService::cancelled($order->id);
-
         if (!$orderChangeStatus->success) {
             return ApiResponse::byResponseCode(
                 $apiCodes->ERROR_SAVE,
                 $orderChangeStatus->reason,
             );
         }
-
+        LogService::success('OrderController. order status changed to cancelled');
         return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
             'info' => OrderOutputService::getEntity($order->id),
         ]);
