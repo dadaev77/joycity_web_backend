@@ -72,23 +72,23 @@ class OrderController extends ManagerController
             $user = User::getIdentity();
             $order = Order::findOne(['id' => $order_id]);
             LogService::info('Initialize method finishOrder. Order id: ' . $order_id . ' Manager id: ' . $user->id . ' User email: ' . $user->email);
+
             if (!$order) {
                 return ApiResponse::code($apiCodes->NOT_FOUND);
             }
-
+            Log::log('order found');
             if (
                 $order->manager_id !== $user->id ||
                 $order->type_delivery_point_id !==
                 TypeDeliveryPoint::TYPE_WAREHOUSE ||
                 $order->status !== Order::STATUS_ARRIVED_TO_WAREHOUSE
             ) {
-                LogService::danger('No access to finish order for Manger id: ' . $user->id);
                 return ApiResponse::code($apiCodes->NO_ACCESS);
             }
-
+            Log::log('access allowed for user ' . $user->email);
             $transaction = Yii::$app->db->beginTransaction();
             $orderStatusChange = OrderStatusService::completed($order->id);
-
+            Log::log('order status changed');
             if (!$orderStatusChange->success) {
                 return ApiResponse::transactionCodeErrors(
                     $transaction,
@@ -96,10 +96,11 @@ class OrderController extends ManagerController
                     $orderStatusChange->reason,
                 );
             }
-            LogService::log('Order status changed to order id: ' . $order_id . ' by Manager id: ' . $user->id);
+            Log::log('order status changed to completed');
             $orderTracking = OrderTrackingConstructorService::itemArrived(
                 $order_id,
             );
+            Log::log('order tracking constructor for order id: ' . $order_id);
             if (!$orderTracking->success) {
                 return ApiResponse::transactionCodeErrors(
                     $transaction,
