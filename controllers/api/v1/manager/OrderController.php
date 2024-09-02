@@ -87,8 +87,9 @@ class OrderController extends ManagerController
             }
             LogService::log('access allowed for user ' . $user->email);
             $transaction = Yii::$app->db->beginTransaction();
+            LogService::log('transaction started');
             $orderStatusChange = OrderStatusService::completed($order->id);
-            LogService::log('order status changed');
+
             if (!$orderStatusChange->success) {
                 return ApiResponse::transactionCodeErrors(
                     $transaction,

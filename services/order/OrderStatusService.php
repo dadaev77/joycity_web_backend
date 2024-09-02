@@ -1,6 +1,7 @@
 <?php
 
 namespace app\services\order;
+
 use app\components\responseFunction\Result;
 use app\components\responseFunction\ResultAnswer;
 use app\models\Chat;
@@ -11,6 +12,7 @@ use app\services\notification\NotificationConstructor;
 use app\services\notification\NotificationManagementService;
 use Throwable;
 use Yii;
+use app\services\UserActionLogService as LogService;
 
 class OrderStatusService
 {
@@ -158,6 +160,7 @@ class OrderStatusService
 
     public static function completed(int $orderId): ResultAnswer
     {
+        LogService::log('order status for change for order id: ' . $orderId);
         $order = Order::find()
             ->select(['id', 'status', 'created_by'])
             ->where(['id' => $orderId])
@@ -166,7 +169,7 @@ class OrderStatusService
         if (!$order) {
             return Result::notFound();
         }
-
+        LogService::log('order found');
         if (
             $order->status !== Order::STATUS_ARRIVED_TO_WAREHOUSE &&
             $order->status !== Order::STATUS_FULLY_PAID
@@ -175,13 +178,15 @@ class OrderStatusService
                 'status' => 'Order in current status cannot be completed',
             ]);
         }
+        LogService::log('order status is allowed for completion');
 
         $linkedChats = Chat::findAll(['order_id' => $orderId]);
-
+        LogService::log('linked chats found');
         $notifications = Notification::findAll([
             'entity_id' => $orderId,
             'entity_type' => Notification::ENTITY_TYPE_ORDER,
         ]);
+        LogService::log('notifications found');
 
         $transaction = Yii::$app->db->beginTransaction();
 
@@ -309,12 +314,13 @@ class OrderStatusService
             if (!$order) {
                 return Result::notFound();
             }
-
+            LogService::log('order found for change status in ChangeOrderStatus method');
             $order->status = $orderStatus;
 
             if (!$order->save(true, ['status'])) {
                 return Result::error(['errors' => $order->getFirstErrors()]);
             }
+            LogService::log('order status changed');
 
             if (
                 $order->status !== Order::STATUS_COMPLETED &&
@@ -326,21 +332,21 @@ class OrderStatusService
                         $order->created_by,
                         $orderId,
                     );
-
+                    LogService::log('notification constructor for created by');
                     if ($order->buyer_id) {
                         NotificationConstructor::orderOrderStatusChange(
                             $order->buyer_id,
                             $orderId,
                         );
                     }
-
+                    LogService::log('notification constructor for buyer id');
                     if ($order->manager_id) {
                         NotificationConstructor::orderOrderStatusChange(
                             $order->manager_id,
                             $orderId,
                         );
                     }
-
+                    LogService::log('notification constructor for manager id');
                     if (
                         $order->fulfillment_id &&
                         in_array(
@@ -354,6 +360,7 @@ class OrderStatusService
                             $orderId,
                         );
                     }
+                    LogService::log('notification constructor for fulfillment id');
                     if (
                         $order->status ===
                         Order::STATUS_PARTIALLY_DELIVERED_TO_MARKETPLACE
@@ -374,6 +381,7 @@ class OrderStatusService
                         $order->manager_id,
                         $orderId,
                     );
+                    LogService::log('notification constructor for manager id');
                 }
             } else {
                 if ($order->manager_id) {
