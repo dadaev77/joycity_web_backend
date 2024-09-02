@@ -190,6 +190,7 @@ class OrderStatusService
 
         $transaction = Yii::$app->db->beginTransaction();
         LogService::success('OrderStatusService. transaction started');
+
         try {
             foreach ($notifications as $notification) {
                 $notificationIsRead = NotificationManagementService::markAsRead(
@@ -216,13 +217,11 @@ class OrderStatusService
                     }
                 }
             }
-            $transaction?->commit();
 
+            $transaction?->commit();
+            LogService::success('OrderStatusService. transaction committed');
             return self::changeOrderStatus(Order::STATUS_COMPLETED, $orderId);
         } catch (Throwable $e) {
-
-            LogService::danger('OrderStatusService. error: ' . $e->getMessage());
-
             return Result::error(['errors' => ['base' => $e->getMessage()]]);
         }
     }
