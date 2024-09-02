@@ -190,40 +190,41 @@ class OrderStatusService
 
         $transaction = Yii::$app->db->beginTransaction();
         LogService::success('OrderStatusService. transaction started');
+        // try {
+        //     foreach ($notifications as $notification) {
+        //         $notificationIsRead = NotificationManagementService::markAsRead(
+        //             $notification->id,
+        //         );
 
-        try {
-            foreach ($notifications as $notification) {
-                $notificationIsRead = NotificationManagementService::markAsRead(
-                    $notification->id,
-                );
+        //         if (!$notificationIsRead->success) {
+        //             $transaction?->rollBack();
 
-                if (!$notificationIsRead->success) {
-                    $transaction?->rollBack();
+        //             return $notificationIsRead;
+        //         }
+        //     }
 
-                    return $notificationIsRead;
-                }
-            }
+        //     if ($linkedChats) {
+        //         foreach ($linkedChats as $chat) {
+        //             $chatArchiveStatus = ChatArchiveService::archiveChat(
+        //                 $chat->id,
+        //             );
 
-            if ($linkedChats) {
-                foreach ($linkedChats as $chat) {
-                    $chatArchiveStatus = ChatArchiveService::archiveChat(
-                        $chat->id,
-                    );
+        //             if (!$chatArchiveStatus->success) {
+        //                 $transaction?->rollBack();
 
-                    if (!$chatArchiveStatus->success) {
-                        $transaction?->rollBack();
+        //                 return $chatArchiveStatus;
+        //             }
+        //         }
+        //     }
 
-                        return $chatArchiveStatus;
-                    }
-                }
-            }
-
-            $transaction?->commit();
-            LogService::success('OrderStatusService. transaction committed');
-            return self::changeOrderStatus(Order::STATUS_COMPLETED, $orderId);
-        } catch (Throwable $e) {
-            return Result::error(['errors' => ['base' => $e->getMessage()]]);
-        }
+        //     $transaction?->commit();
+        //     LogService::success('OrderStatusService. transaction committed');
+        //     return self::changeOrderStatus(Order::STATUS_COMPLETED, $orderId);
+        // } catch (Throwable $e) {
+        //     return Result::error(['errors' => ['base' => $e->getMessage()]]);
+        // }
+        $transaction?->commit();
+        return self::changeOrderStatus(Order::STATUS_COMPLETED, $orderId);
     }
 
     public static function cancelled(int $orderId): ResultAnswer
