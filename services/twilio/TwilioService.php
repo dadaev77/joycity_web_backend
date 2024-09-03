@@ -66,11 +66,6 @@ class TwilioService
             return Result::error([
                 'errors' => [
                     'twilio' => $e->getMessage(),
-                    'from' => 'TwilioService'
-                    // 'file' => $e->getFile(),
-                    // 'line' => $e->getLine(),
-                    // 'code' => $e->getCode(),
-                    // 'trace' => $e->getTraceAsString()
                 ]
             ]);
         }

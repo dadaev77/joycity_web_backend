@@ -191,6 +191,16 @@ class OrderController extends ClientController
                     );
                 }
 
+                // //////////////////////////////
+                LogService::log('start adding manager to conversation');
+                $personalId = User::find()->where(['id' => $order->manager_id])->one()->personal_id;
+                $addManagerToConversation = TwilioService::addUserToConversation($personalId, $conversationManager->result);
+                if (!$addManagerToConversation->success) {
+                    LogService::danger('error adding manager to conversation' . json_encode($addManagerToConversation->reason));
+                }
+                LogService::success('manager added to conversation');
+                // //////////////////////////////
+
                 LogService::success('created conversation between client and buyer');
                 $conversationManagerBuyer = ChatConstructorService::createChatOrder(
                     Chat::GROUP_MANAGER_BUYER,
