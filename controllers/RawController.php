@@ -2,6 +2,7 @@
 
 namespace app\controllers;
 
+use app\models\Chat;
 use Yii;
 use yii\web\Controller;
 use yii\web\Response;
@@ -153,11 +154,16 @@ class RawController extends Controller
             $_ENV['TWILIO_AUTH_TOKEN']
         );
 
-        $chats = $client->conversations->v1->conversations->read([], 20);
-        foreach ($chats as $chat) {
-            echo '<pre>';
-            var_dump($chat->participants);
-            echo '</pre>';
-        }
+        $chatSid = Chat::find()->where(['id' => SORT_DESC])->one()->twilio_id;
+        $conversation = $client->conversations->v1->conversations($chatSid)->fetch();
+        $participiants = $client->conversations->v1->conversations($chatSid)->participants->read();
+
+        echo '<pre>';
+        var_dump($conversation);
+        echo '</pre>';
+
+        echo '<pre>';
+        var_dump($participiants);
+        echo '</pre>';
     }
 }
