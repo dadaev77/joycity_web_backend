@@ -206,21 +206,6 @@ class OrderController extends ClientController
                     );
                 }
 
-                $convManagerBuyerClient = ChatConstructorService::createChatOrder(
-                    Chat::GROUP_MANAGER_BUYER_CLIENT,
-                    [$order->manager_id, $buyerId, $user->id],
-                    $order->id,
-                );
-
-                if (!$convManagerBuyerClient->success) {
-                    $transaction?->rollBack();
-                    return ApiResponse::codeErrors(
-                        LogService::log('error create conversation between manager and buyer and client'),
-                        $apiCodes->ERROR_SAVE,
-                        $convManagerBuyerClient->reason,
-                    );
-                }
-
                 LogService::success('created conversation between manager and buyer');
             } else {
                 $distributionStatus = OrderDistributionService::createDistributionTask(

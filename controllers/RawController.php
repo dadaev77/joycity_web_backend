@@ -10,6 +10,7 @@ use yii\filters\VerbFilter;
 use app\models\User;
 use app\models\Product;
 use app\models\Order as OrderModel;
+use app\services\chat\ChatConstructorService;
 use app\services\UserActionLogService as LogService;
 
 class RawController extends Controller
@@ -142,5 +143,15 @@ class RawController extends Controller
             ];
         }
         return $response;
+    }
+    public function actionCreateConv()
+    {
+        $conversation = ChatConstructorService::createChatOrder(
+            'client_buyer_manager',
+            [1, 2, 3],
+            1
+        );
+
+        var_dump($conversation);
     }
 }
