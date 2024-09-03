@@ -195,7 +195,7 @@ class OrderController extends ClientController
                 // //////////////////////////////
                 LogService::log('start adding manager to conversation');
                 $personalId = User::find()->where(['id' => $order->manager_id])->one()->personal_id;
-                $addManagerToConversation = TwilioService::addUserToConversation($personalId, $conversationManager->result);
+                $addManagerToConversation = TwilioService::addUserToConversation($personalId, $conversationManager->result->twilio_id);
                 if (!$addManagerToConversation->success) {
                     LogService::danger('error adding manager to conversation' . json_encode($addManagerToConversation->reason));
                 }
