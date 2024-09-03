@@ -179,7 +179,7 @@ class OrderController extends ClientController
                 // Добавить менеджера в чат при созданиии заявки
                 $conversationManager = ChatConstructorService::createChatOrder(
                     Chat::GROUP_CLIENT_BUYER,
-                    [$user->id, $buyerId, $randomManager->id],
+                    [$user->id, $buyerId],
                     $order->id,
                 );
 
@@ -205,6 +205,21 @@ class OrderController extends ClientController
                         $conversationManagerBuyer->reason,
                     );
                 }
+
+                $convManagerBuyerClient = ChatConstructorService::createChatOrder(
+                    Chat::GROUP_MANAGER_BUYER_CLIENT,
+                    [$order->manager_id, $buyerId, $user->id],
+                    $order->id,
+                );
+
+                if (!$convManagerBuyerClient->success) {
+                    $transaction?->rollBack();
+                    return ApiResponse::codeErrors(
+                        $apiCodes->ERROR_SAVE,
+                        $convManagerBuyerClient->reason,
+                    );
+                }
+
                 LogService::success('created conversation between manager and buyer');
             } else {
                 $distributionStatus = OrderDistributionService::createDistributionTask(
