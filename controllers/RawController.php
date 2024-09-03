@@ -154,7 +154,20 @@ class RawController extends Controller
         );
 
         $chats = $client->conversations->v1->conversations->read([], 20);
-
-        var_dump($chats);
+        foreach ($chats as $chat) {
+            echo $chat->friendlyName . '<br>';
+            echo $chat->uniqueName . '<br>';
+            echo $chat->dateCreated->format('Y-m-d H:i:s') . '<br>';
+            echo $chat->dateUpdated->format('Y-m-d H:i:s') . '<br>';
+            echo $chat->attributes . '<br>';
+            echo $chat->conversationAttributes . '<br>';
+            echo $chat->conversationSid . '<br>';
+            echo $chat->createdBy . '<br>';
+            echo $chat->dateCreated->format('Y-m-d H:i:s') . '<br>';
+            echo $chat->dateUpdated->format('Y-m-d H:i:s') . '<br>';
+            echo $chat->friendlyName . '<br>';
+            echo $chat->uniqueName . '<br>';
+            echo '============================================== <br>';
+        }
     }
 }
