@@ -99,10 +99,15 @@ class ChatController extends ClientController
             ->where(['order_id' => $chatId])
             ->all();
 
+        $chatIds = [];
+        foreach ($chat as $item) {
+            $chatIds[] = $item->id;
+        }
+
         if (!$chat) return ApiResponse::code($apiCodes->NOT_FOUND);
 
         return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
-            'info' => ChatOutputService::getCollection($chat),
+            'info' => ChatOutputService::getCollection($chatIds),
         ]);
     }
 }
