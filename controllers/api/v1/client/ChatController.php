@@ -82,7 +82,25 @@ class ChatController extends ClientController
                     ->all(),
             ];
         }
-
         return ApiResponse::collection($result);
+    }
+
+    public function actionGetChat()
+    {
+        $request = Yii::$app->request;
+        $user = User::getIdentity();
+        $apiCodes = Order::apiCodes();
+        $chatId = $request->get('chat_id');
+
+        if (!$user) return ApiResponse::code($apiCodes->NOT_AUTHORIZED);
+        if (!$chatId) return ApiResponse::code($apiCodes->BAD_REQUEST);
+
+        $chat = Chat::find()
+            ->where(['id' => $chatId])
+            ->one();
+
+        if (!$chat) return ApiResponse::code($apiCodes->NOT_FOUND);
+
+        return ApiResponse::item($chat);
     }
 }
