@@ -62,11 +62,14 @@ class ChatController extends ManagerController
         $user = User::getIdentity();
         $apiCodes = Order::apiCodes();
         $query = $request->get('query');
+
+        // check if user is authorized and query is not empty
         if (!$user) return ApiResponse::code($apiCodes->NOT_AUTHORIZED);
         if (!$query) return ApiResponse::code($apiCodes->BAD_REQUEST);
 
         $orders = Order::find()
             ->where(['like', 'id', $query])
+            ->andWhere(['manager_id' => $user->id])
             ->all();
         if (!$orders) return ApiResponse::code($apiCodes->NOT_FOUND);
 

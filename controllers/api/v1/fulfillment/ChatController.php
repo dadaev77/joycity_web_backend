@@ -62,14 +62,21 @@ class ChatController extends FulfillmentController
         $user = User::getIdentity();
         $apiCodes = Order::apiCodes();
         $query = $request->get('query');
+
+        // check if user is authorized and query is not empty
         if (!$user) return ApiResponse::code($apiCodes->NOT_AUTHORIZED);
         if (!$query) return ApiResponse::code($apiCodes->BAD_REQUEST);
 
+        // find orders by query and fulfillment_id to exlude orders that not belongs to user
         $orders = Order::find()
             ->where(['like', 'id', $query])
+            ->andWhere(['fulfillment_id' => $user->id])
             ->all();
+
+        // check if orders are found
         if (!$orders) return ApiResponse::code($apiCodes->NOT_FOUND);
 
+        // get chats for each order
         foreach ($orders as $order) {
             $result[] = [
                 'order_id' => $order->id,
@@ -79,6 +86,7 @@ class ChatController extends FulfillmentController
                 'chats' => Chat::find()
                     ->where(['order_id' => $order->id])
                     ->andWhere(['like', 'group', '_fulfilment'])
+                    ->andWhere(['is_archive' => 0])
                     ->all(),
             ];
         }
