@@ -190,10 +190,11 @@ class OrderController extends ClientController
                         $conversationManager->reason,
                     );
                 }
+
                 LogService::success('created conversation between client and buyer');
                 $conversationManagerBuyer = ChatConstructorService::createChatOrder(
-                    Chat::GROUP_MANAGER_BUYER,
-                    [$order->manager_id, $buyerId],
+                    Chat::GROUP_MANAGER_BUYER_CLIENT,
+                    [$order->manager_id, $buyerId, $user->id],
                     $order->id,
                 );
 
