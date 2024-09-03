@@ -147,7 +147,7 @@ class RawController extends Controller
     public function actionCreateConv()
     {
         $conversation = ChatConstructorService::createChatOrder(
-            'client_buyer_manager',
+            'client_buyer',
             [1, 2, 3],
             1
         );
