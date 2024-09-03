@@ -157,13 +157,6 @@ class RawController extends Controller
         $chatSid = Chat::find()->where(['id' => SORT_DESC])->one()->twilio_id;
         $conversation = $client->conversations->v1->conversations($chatSid)->fetch();
         $participiants = $client->conversations->v1->conversations($chatSid)->participants->read();
-
-        echo '<pre>';
-        var_dump($conversation);
-        echo '</pre>';
-
-        echo '<pre>';
-        var_dump($participiants);
-        echo '</pre>';
+        return $participiants;
     }
 }
