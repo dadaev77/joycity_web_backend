@@ -215,6 +215,7 @@ class OrderController extends ClientController
                 if (!$convManagerBuyerClient->success) {
                     $transaction?->rollBack();
                     return ApiResponse::codeErrors(
+                        LogService::log('error create conversation between manager and buyer and client'),
                         $apiCodes->ERROR_SAVE,
                         $convManagerBuyerClient->reason,
                     );
