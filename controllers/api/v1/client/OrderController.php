@@ -179,7 +179,7 @@ class OrderController extends ClientController
                 // Добавить менеджера в чат при созданиии заявки
                 $conversationManager = ChatConstructorService::createChatOrder(
                     Chat::GROUP_CLIENT_BUYER,
-                    [$user->id, $buyerId],
+                    [$user->id, $buyerId, $randomManager->id],
                     $order->id,
                 );
 
