@@ -83,6 +83,6 @@ class ChatController extends ClientController
             ];
         }
 
-        return $result;
+        return ApiResponse::collection($result);
     }
 }

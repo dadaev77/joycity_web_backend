@@ -83,6 +83,6 @@ class ChatController extends FulfillmentController
             ];
         }
 
-        return $result;
+        return ApiResponse::collection($result);
     }
 }

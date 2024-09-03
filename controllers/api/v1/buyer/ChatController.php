@@ -81,6 +81,6 @@ class ChatController extends BuyerController
                     ->all(),
             ];
         }
-        return $result;
+        return ApiResponse::collection($result);
     }
 }

@@ -83,6 +83,6 @@ class ChatController extends ManagerController
             ];
         }
 
-        return $result;
+        return ApiResponse::collection($result);
     }
 }
