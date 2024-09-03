@@ -11,7 +11,9 @@ use app\models\User;
 use app\models\Product;
 use app\models\Order as OrderModel;
 use app\services\chat\ChatConstructorService;
+use app\services\twilio\TwilioService;
 use app\services\UserActionLogService as LogService;
+use Twilio\Rest\Client;
 
 class RawController extends Controller
 {
@@ -144,14 +146,15 @@ class RawController extends Controller
         }
         return $response;
     }
-    public function actionCreateConv()
+    public function actionFetchChats()
     {
-        $conversation = ChatConstructorService::createChatOrder(
-            'client_buyer_manager',
-            [1, 2, 3],
-            1
+        $client = new Client(
+            $_ENV['TWILIO_ACCOUNT_SID'],
+            $_ENV['TWILIO_AUTH_TOKEN']
         );
 
-        var_dump($conversation);
+        $chats = $client->conversations->v1->conversations->read([], 20);
+
+        var_dump($chats);
     }
 }
