@@ -9,7 +9,7 @@ class TranslationService
 {
     public static function translate(string $originalText)
     {
-        $apiUrl = $_ENV['APP_URL'] . '/translate_message';
+        $apiUrl = $_ENV['APP_URL_AI'] . '/translate_message';
         $curl = new Curl();
 
         $response = $curl
