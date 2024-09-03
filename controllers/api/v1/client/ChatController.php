@@ -90,19 +90,19 @@ class ChatController extends ClientController
         $request = Yii::$app->request;
         $user = User::getIdentity();
         $apiCodes = Order::apiCodes();
-        $chatId = $request->get('chat_id');
+        $chatId = $request->get('order_id');
 
         if (!$user) return ApiResponse::code($apiCodes->NOT_AUTHORIZED);
         if (!$chatId) return ApiResponse::code($apiCodes->BAD_REQUEST);
 
         $chat = Chat::find()
             ->where(['order_id' => $chatId])
-            ->one();
+            ->all();
 
         if (!$chat) return ApiResponse::code($apiCodes->NOT_FOUND);
 
         return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
-            'info' => ChatOutputService::getEntity($chatId),
+            'info' => ChatOutputService::getCollection($chat),
         ]);
     }
 }
