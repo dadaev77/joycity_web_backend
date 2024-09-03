@@ -96,7 +96,7 @@ class ChatController extends ClientController
         if (!$chatId) return ApiResponse::code($apiCodes->BAD_REQUEST);
 
         $chat = Chat::find()
-            ->where(['id' => $chatId])
+            ->where(['order_id' => $chatId])
             ->one();
 
         if (!$chat) return ApiResponse::code($apiCodes->NOT_FOUND);
