@@ -24,7 +24,7 @@ use yii\db\ActiveQuery;
 class Chat extends Base
 {
     public const GROUP_CLIENT_MANAGER = 'client_manager';
-    public const GROUP_CLIENT_BUYER = 'client_buyer_manager';
+    public const GROUP_CLIENT_BUYER = 'client_buyer';
     public const GROUP_MANAGER_BUYER = 'manager_buyer';
     public const GROUP_CLIENT_FULFILMENT = 'client_fulfilment';
     public const GROUP_MANAGER_FULFILMENT = 'manager_fulfilment';
