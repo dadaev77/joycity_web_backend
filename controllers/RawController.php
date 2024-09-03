@@ -154,7 +154,7 @@ class RawController extends Controller
             $_ENV['TWILIO_AUTH_TOKEN']
         );
 
-        $chatSid = Chat::find()->where(['id' => SORT_DESC])->one()->twilio_id;
+        $chatSid = 'CH2c3f2f19547d46d08afb084eaa9256b6';
         $conversation = $client->conversations->v1->conversations($chatSid)->fetch();
         $participiants = $client->conversations->v1->conversations($chatSid)->participants->read();
         return $participiants;
