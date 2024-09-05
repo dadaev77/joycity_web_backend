@@ -18,6 +18,8 @@ use app\services\order\OrderStatusService;
 use app\services\OrderTrackingConstructorService;
 use app\services\output\BuyerOfferOutputService;
 use app\services\output\OrderOutputService;
+use app\services\twilio\TwilioService;
+use app\services\UserActionLogService as LogService;
 use Throwable;
 use Yii;
 
@@ -106,6 +108,16 @@ class BuyerOfferController extends ManagerController
                         $conversationFulfilment->reason,
                     );
                 }
+
+                // add manager of order to conversation with fulfillment
+                LogService::log('start adding manager to conversation');
+                $personalId = User::find()->where(['id' => $order->manager_id])->one()->personal_id;
+                $addManagerToConversation = TwilioService::addUserToConversation($personalId, $conversationFulfilment->result->twilio_id);
+                if (!$addManagerToConversation->success) {
+                    LogService::danger('error adding manager to conversation' . json_encode($addManagerToConversation->reason));
+                }
+                LogService::success('manager added to conversation');
+                // end add manager to conversation
 
                 $conversationManagerFulfilment = ChatConstructorService::createChatOrder(
                     Chat::GROUP_MANAGER_FULFILMENT,
@@ -198,7 +210,7 @@ class BuyerOfferController extends ManagerController
 
             if (
                 $buyerOffer->order->status !==
-                    Order::STATUS_BUYER_INSPECTION_COMPLETE ||
+                Order::STATUS_BUYER_INSPECTION_COMPLETE ||
                 $buyerOffer->order->manager_id !== $user->id
             ) {
                 return ApiResponse::code($apiCodes->NO_ACCESS);
