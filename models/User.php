@@ -47,9 +47,13 @@ class User extends UserStructure implements IdentityInterface
         return [];
     }
 
-    public static function getIdentity(): User
+    public static function getIdentity(): mixed
     {
-        return Yii::$app->user->getIdentity();
+        if (Yii::$app->user->getIdentity()) {
+            return Yii::$app->user->getIdentity();
+        }
+
+        return null;
     }
 
     public static function apiCodes(): UserCodes
