@@ -100,6 +100,7 @@ class ChatController extends ClientController
         $user = User::getIdentity();
         $request = Yii::$app->request;
         $orderId = $request->get('order_id');
+        $apiCodes = Order::apiCodes();
         // check if user is authorized and order_id is not empty
         if (!$user) return ApiResponse::code($apiCodes->NOT_AUTHORIZED);
         if (!$orderId) return ApiResponse::code($apiCodes->BAD_REQUEST);
