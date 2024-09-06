@@ -84,15 +84,16 @@ class ChatController extends ClientController
                 'manager_id' => $order->manager_id,
                 'fulfillment_id' => $order->fulfillment_id ? $order->fulfillment_id : 'не назначен',
                 'chats' => Chat::find()
+                    ->select('id')
                     ->where(['order_id' => $order->id])
                     ->andWhere(['like', 'group', 'client_'])
                     ->andWhere(['is_archive' => 0])
-                    ->all(),
+                    ->column(),
             ];
         }
 
         // return chats
-        return ApiResponse::collection($result);
+        return ApiResponse::collection(ChatOutputService::getCollection($result));
     }
     public function actionGetChat()
     {
