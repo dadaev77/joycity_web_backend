@@ -107,6 +107,7 @@ class ChatController extends ClientController
 
         // get chats for order
         $chats = Chat::find()
+            ->select('id')
             ->where(['order_id' => $orderId])
             ->andWhere(['like', 'group', 'client_'])
             ->andWhere(['is_archive' => 0])
