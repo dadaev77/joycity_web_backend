@@ -46,7 +46,11 @@ class UserActionLogService
     private static function renderMessage(mixed $message, string $type = 'dark'): string
     {
         $user = User::getIdentity();
-        $email = $user ? $user->email : 'unauthorized user';
+        if (!$user) {
+            $email = 'unauthorized user';
+        } else {
+            $email = $user->email;
+        }
 
         if (is_array($message)) {
             $message = json_encode($message);
