@@ -23,11 +23,13 @@ class ChatController extends ManagerController
 
     public function actionIndex()
     {
+        // define vars
+        $user = User::getIdentity();
+        $request = Yii::$app->request;
+        $type = $request->get('group', '');
+        $isArchive = (int) $request->get('is_archive', 0);
+
         try {
-            $user = User::getIdentity();
-            $request = Yii::$app->request;
-            $type = $request->get('group', '');
-            $isArchive = (int) $request->get('is_archive', 0);
             $query = Chat::find()
                 ->select(['chat.id'])
                 ->joinWith([
@@ -37,15 +39,8 @@ class ChatController extends ManagerController
                             'user_id' => $user->id,
                         ]),
                 ])
-                ->where(['group' => $type]);
-
-            if ($isArchive === 1) {
-                $query->andWhere(['is_archive' => 1]);
-            }
-
-            if ($isArchive === 0) {
-                $query->andWhere(['is_archive' => 0]);
-            }
+                ->where(['group' => $type])
+                ->andWhere(['is_archive' => boolval($isArchive)]);
 
             return ApiResponse::collection(
                 ChatOutputService::getCollection($query->column()),
