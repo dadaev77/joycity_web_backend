@@ -94,4 +94,24 @@ class ChatController extends ClientController
         // return chats
         return ApiResponse::collection($result);
     }
+    public function actionGetChat()
+    {
+        // define variables
+        $request = Yii::$app->request;
+        $orderId = $request->get('order_id');
+        // check if user is authorized and order_id is not empty
+        if (!$user) return ApiResponse::code($apiCodes->NOT_AUTHORIZED);
+        if (!$orderId) return ApiResponse::code($apiCodes->BAD_REQUEST);
+
+        // get chats for order
+        $chats = Chat::find()
+            ->where(['order_id' => $orderId])
+            ->andWhere(['like', 'group', 'client_'])
+            ->andWhere(['is_archive' => 0])
+            ->all();
+
+        if (!$chats) return ApiResponse::code($apiCodes->NOT_FOUND);
+
+        return ApiResponse::collection($chats);
+    }
 }
