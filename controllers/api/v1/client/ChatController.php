@@ -97,6 +97,7 @@ class ChatController extends ClientController
     public function actionGetChat()
     {
         // define variables
+        $user = User::getIdentity();
         $request = Yii::$app->request;
         $orderId = $request->get('order_id');
         // check if user is authorized and order_id is not empty
