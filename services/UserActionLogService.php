@@ -7,10 +7,6 @@ use app\models\User;
 
 class UserActionLogService
 {
-    public function __construct(private User $user)
-    {
-        $this->user = $user;
-    }
     private static function prependLog(string $message): void
     {
         $logFile = RawController::ACTION_LOG_FILE;
@@ -49,9 +45,9 @@ class UserActionLogService
     }
     private static function renderMessage(mixed $message, string $type = 'dark'): string
     {
-
-        if ($this->user) {
-            $email = $this->user->email;
+        $user = User::getIdentity();
+        if ($user) {
+            $email = $user->email;
         } else {
             $email = 'unauthorized user';
         }
