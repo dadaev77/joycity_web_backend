@@ -115,6 +115,6 @@ class ChatController extends ClientController
 
         if (!$chats) return ApiResponse::code($apiCodes->NOT_FOUND);
 
-        return ChatOutputService::getCollection($chats);
+        return ApiResponse::collection(ChatOutputService::getCollection($chats));
     }
 }
