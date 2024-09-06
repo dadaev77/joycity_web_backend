@@ -111,7 +111,7 @@ class ChatController extends ClientController
             ->where(['order_id' => $orderId])
             ->andWhere(['like', 'group', 'client_'])
             ->andWhere(['is_archive' => 0])
-            ->all();
+            ->column();
 
         if (!$chats) return ApiResponse::code($apiCodes->NOT_FOUND);
 
