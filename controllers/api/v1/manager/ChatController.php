@@ -26,7 +26,7 @@ class ChatController extends ManagerController
     {
         // define vars
         $user = User::getIdentity();
-        LogService::log('manager' . $user->name . '.ChatController::actionIndex');
+        LogService::log('manager: ' . $user->name . '. ChatController::actionIndex');
         $request = Yii::$app->request;
         $type = $request->get('group', '');
         LogService::log('type: ' . $type);
@@ -37,9 +37,9 @@ class ChatController extends ManagerController
                 ->joinWith([
                     'chatUsers' => fn($q) => $q
                         ->select(['id', 'user_id', 'chat_id'])
-                        ->where([
-                            'user_id' => $user->id,
-                        ]),
+                    // ->where([
+                    //     'user_id' => $user->id,
+                    // ]),
                 ])
                 ->where(['group' => $type])
                 ->andWhere(['is_archive' => boolval($isArchive)]);
