@@ -73,19 +73,25 @@ class ChatController extends ManagerController
 
 
         foreach ($orders as $order) {
+
             $chats = Chat::find()
-                ->select('id')
                 ->where(['order_id' => $order->id])
-                ->andWhere(['like', 'group', 'manager_'])
                 ->andWhere(['is_archive' => 0])
-                ->column();
+                ->all();
+            $outChats = [];
+            // Filter out chats with group 'manager_buyer' or 'manager_fulfillment'
+            foreach ($chats as $chat) {
+                if (!in_array($chat->group, ['manager_buyer', 'manager_fulfillment'])) {
+                    $outChats[] = $chat->id;
+                }
+            }
 
             $result[] = [
                 'order_id' => $order->id,
                 'buyer_id' => $order->buyer_id,
                 'manager_id' => $order->manager_id,
                 'fulfillment_id' => $order->fulfillment_id ? $order->fulfillment_id : 'не назначен',
-                'chats' => ChatOutputService::getCollection($chats),
+                'chats' => ChatOutputService::getCollection($outChats),
             ];
         }
 
