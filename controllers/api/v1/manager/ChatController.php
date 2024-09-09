@@ -113,15 +113,14 @@ class ChatController extends ManagerController
         // Filter out chats with group 'manager_buyer' or 'manager_fulfillment'
         foreach ($chats as $chat) {
             if (!in_array($chat->group, ['manager_buyer', 'manager_fulfillment'])) {
-                $outChats[] = $chat;
+                $outChats[] = $chat->id;
             }
         }
+
         if (empty($outChats)) {
             return ApiResponse::code($apiCodes->NOT_FOUND);
         }
 
-        $chats = array_values($filteredChats); // Reset array keys after filtering
-
-        return ApiResponse::collection(ChatOutputService::getCollection($chats));
+        return ApiResponse::collection(ChatOutputService::getCollection($outChats));
     }
 }
