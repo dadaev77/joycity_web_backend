@@ -106,10 +106,9 @@ class ChatController extends ManagerController
 
         // get chats for order
         $chats = Chat::find()
-            ->select('id')
             ->where(['order_id' => $orderId])
             ->andWhere(['is_archive' => 0])
-            ->column();
+            ->all();
 
         // Filter out chats with group 'manager_buyer' or 'manager_fulfillment'
         $filteredChats = array_filter($chats, function ($chat) {
