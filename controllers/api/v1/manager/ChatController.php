@@ -90,4 +90,28 @@ class ChatController extends ManagerController
 
         return ApiResponse::collection($result);
     }
+    public function actionGetChat()
+    {
+        // define variables
+        $user = User::getIdentity();
+        $request = Yii::$app->request;
+        $orderId = $request->get('order_id');
+        $apiCodes = Order::apiCodes();
+
+        // check if user is authorized and order_id is not empty
+        if (!$user) return ApiResponse::code($apiCodes->NOT_AUTHORIZED);
+        if (!$orderId) return ApiResponse::code($apiCodes->BAD_REQUEST);
+
+        // get chats for order
+        $chats = Chat::find()
+            ->select('id')
+            ->where(['order_id' => $orderId])
+            ->andWhere(['like', 'group', 'manager_'])
+            ->andWhere(['is_archive' => 0])
+            ->column();
+
+        if (!$chats) return ApiResponse::code($apiCodes->NOT_FOUND);
+
+        return ApiResponse::collection(ChatOutputService::getCollection($chats));
+    }
 }
