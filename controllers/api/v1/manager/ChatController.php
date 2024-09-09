@@ -104,6 +104,13 @@ class ChatController extends ManagerController
         if (!$user) return ApiResponse::code($apiCodes->NOT_AUTHORIZED);
         if (!$orderId) return ApiResponse::code($apiCodes->BAD_REQUEST);
 
+        // get chats for order
+        $chats = Chat::find()
+            ->select('id')
+            ->where(['order_id' => $orderId])
+            ->andWhere(['is_archive' => 0])
+            ->column();
+
         // Filter out chats with group 'manager_buyer' or 'manager_fulfillment'
         $filteredChats = array_filter($chats, function ($chat) {
             return !in_array($chat->group, ['manager_buyer', 'manager_fulfillment']);
