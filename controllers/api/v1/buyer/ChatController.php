@@ -78,16 +78,19 @@ class ChatController extends BuyerController
 
         // get chats for each order
         foreach ($orders as $order) {
+            $chats = Chat::find()
+                ->select('id')
+                ->where(['order_id' => $order->id])
+                ->andWhere(['like', 'group', '_buyer'])
+                ->andWhere(['is_archive' => 0])
+                ->column();
+
             $result[] = [
                 'order_id' => $order->id,
                 'buyer_id' => $order->buyer_id,
                 'manager_id' => $order->manager_id,
                 'fulfillment_id' => $order->fulfillment_id ? $order->fulfillment_id : 'не назначен',
-                'chats' => Chat::find()
-                    ->where(['order_id' => $order->id])
-                    ->andWhere(['like', 'group', '_buyer'])
-                    ->andWhere(['is_archive' => 0])
-                    ->all(),
+                'chats' => ChatOutputService::getCollection($chats),
             ];
         }
         return ApiResponse::collection($result);

@@ -68,18 +68,23 @@ class ChatController extends ManagerController
             ->where(['like', 'id', $query])
             ->andWhere(['manager_id' => $user->id])
             ->all();
+
         if (!$orders) return ApiResponse::code($apiCodes->NOT_FOUND);
 
         foreach ($orders as $order) {
+            $chats = Chat::find()
+                ->select('id')
+                ->where(['order_id' => $order->id])
+                ->andWhere(['like', 'group', 'manager_'])
+                ->andWhere(['is_archive' => 0])
+                ->column();
+
             $result[] = [
                 'order_id' => $order->id,
                 'buyer_id' => $order->buyer_id,
                 'manager_id' => $order->manager_id,
                 'fulfillment_id' => $order->fulfillment_id ? $order->fulfillment_id : 'не назначен',
-                'chats' => Chat::find()
-                    ->where(['order_id' => $order->id])
-                    ->andWhere(['like', 'group', 'manager_'])
-                    ->all(),
+                'chats' => ChatOutputService::getCollection($chats),
             ];
         }
 

@@ -84,6 +84,7 @@ class ChatController extends ClientController
                 ->andWhere(['like', 'group', 'client_'])
                 ->andWhere(['is_archive' => 0])
                 ->column();
+
             $result[] = [
                 'order_id' => $order->id,
                 'buyer_id' => $order->buyer_id,
