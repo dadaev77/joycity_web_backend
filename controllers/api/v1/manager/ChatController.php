@@ -106,7 +106,7 @@ class ChatController extends ManagerController
         $chats = Chat::find()
             ->select('id')
             ->where(['order_id' => $orderId])
-            ->andWhere(['like', 'group', 'manager_'])
+            // ->andWhere(['like', 'group', 'manager_'])
             ->andWhere(['is_archive' => 0])
             ->column();
 
