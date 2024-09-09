@@ -111,7 +111,11 @@ class ChatController extends ManagerController
             // ->andWhere(['like', 'group', 'manager_'])
             ->andWhere(['is_archive' => 0])
             ->column();
-
+        foreach ($chats as $chat) {
+            if ($chat->group == 'manager_buyer' || $chat->group == 'manager_fulfillment') {
+                unset($chats[$chat->id]);
+            }
+        }
         if (!$chats) return ApiResponse::code($apiCodes->NOT_FOUND);
 
         return ApiResponse::collection(ChatOutputService::getCollection($chats));
