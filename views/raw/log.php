@@ -63,7 +63,9 @@
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="error-log-tab" data-bs-toggle="tab" data-bs-target="#error-log" type="button" role="tab" aria-controls="error-log" aria-selected="false">Server Error Log</button>
                             </li>
-
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="new-tab" data-bs-toggle="tab" data-bs-target="#new" type="button" role="tab" aria-controls="new" aria-selected="false">Reset App</button>
+                            </li>
                         </ul>
                         <div class="tab-content py-4" id="myTabContent">
                             <div class="tab-pane fade show active" id="backend" role="tabpanel" aria-labelledby="backend-tab">
@@ -217,6 +219,11 @@
                             </div>
                             <div class="tab-pane fade" id="error-log" role="tabpanel" aria-labelledby="error-log-tab">
                                 <?= $serverErrorLogs ?>
+                            </div>
+                            <div class="tab-pane fade" id="new" role="tabpanel" aria-labelledby="new-tab">
+                                <div>
+                                    sfjfgdkghdkfjg
+                                </div>
                             </div>
                         </div>
                     </div>
