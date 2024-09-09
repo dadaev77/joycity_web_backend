@@ -96,7 +96,7 @@ class BuyerOfferController extends ManagerController
 
                 $conversationFulfilment = ChatConstructorService::createChatOrder(
                     Chat::GROUP_CLIENT_FULFILMENT,
-                    [$order->created_by, $order->fulfillment_id],
+                    [$order->created_by, $order->fulfillment_id, $order->manager_id],
                     $order->id,
                 );
 
@@ -109,16 +109,6 @@ class BuyerOfferController extends ManagerController
                     );
                 }
 
-                // add manager of order to conversation with fulfillment
-                LogService::log('start adding manager to conversation client and fulfillment');
-                $personalId = User::find()->where(['id' => $order->manager_id])->one()->personal_id;
-                LogService::log('Manager personalId: ' . $personalId);
-                $addManagerToConversation = TwilioService::addUserToConversation($personalId, $conversationFulfilment->result->twilio_id);
-                if (!$addManagerToConversation->success) {
-                    LogService::danger('error adding manager to conversation' . json_encode($addManagerToConversation->reason));
-                }
-                LogService::success('manager added to conversation client and fulfillment');
-                // end add manager to conversation
 
                 $conversationManagerFulfilment = ChatConstructorService::createChatOrder(
                     Chat::GROUP_MANAGER_FULFILMENT,

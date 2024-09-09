@@ -159,4 +159,17 @@ class RawController extends Controller
         $participiants = $client->conversations->v1->conversations($chatSid)->participants->read();
         return $participiants;
     }
+    public function actionTest()
+    {
+        var_dump(
+            [
+                'asd' => 'asd',
+                'asd2' => 'asd2',
+                'asd3' => (object)['asd' => 'asd', 'asd2' => 'asd2'],
+                'asd4' => (object)['asd4' => 'asd4', 'asd5' => 'asd5'],
+                'asd6' => (object)['asd6' => 'asd6', 'asd7' => 'asd7'],
+            ]
+        );
+        die();
+    }
 }

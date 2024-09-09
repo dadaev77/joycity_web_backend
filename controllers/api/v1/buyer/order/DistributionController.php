@@ -95,7 +95,7 @@ class DistributionController extends BuyerController
 
             $conversationClient = ChatConstructorService::createChatOrder(
                 Chat::GROUP_CLIENT_BUYER,
-                [$user->id, $order->created_by],
+                [$user->id, $order->created_by, $order->manager_id],
                 $order->id,
             );
 
