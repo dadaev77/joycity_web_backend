@@ -77,7 +77,6 @@ class ChatController extends ManagerController
                 ->select('id')
                 ->where(['order_id' => $order->id])
                 ->andWhere(['like', 'group', 'manager_'])
-                ->andWhere(['group' => Chat::GROUP_CLIENT_BUYER])
                 ->andWhere(['is_archive' => 0])
                 ->column();
 
