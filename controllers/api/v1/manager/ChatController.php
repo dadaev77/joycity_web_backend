@@ -71,17 +71,12 @@ class ChatController extends ManagerController
 
         if (!$orders) return ApiResponse::code($apiCodes->NOT_FOUND);
 
+
         foreach ($orders as $order) {
             $chats = Chat::find()
                 ->select('id')
                 ->where(['order_id' => $order->id])
                 ->andWhere(['like', 'group', 'manager_'])
-                ->andWhere(['is_archive' => 0])
-                ->column();
-            $chats[] = Chat::find()
-                ->select('id')
-                ->where(['order_id' => $order->id])
-                ->andWhere(['like', 'group', 'client_manager'])
                 ->andWhere(['is_archive' => 0])
                 ->column();
 
