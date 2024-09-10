@@ -24,6 +24,6 @@ class WebsocketService
 
     public static function getWebsocketUrl()
     {
-        return 'http://' . $_ENV['WEBSOCKET_CONTAINER_URL'];
+        return 'https://' . $_ENV['WEBSOCKET_CONTAINER_URL'] . '/socket.io/';
     }
 }
