@@ -81,7 +81,7 @@ class ChatController extends BuyerController
             $chats = Chat::find()
                 ->select('id')
                 ->where(['order_id' => $order->id])
-                ->andWhere(['like', 'group', 'client_buyer'])
+                ->andWhere(['like', 'group', Chat::GROUP_CLIENT_BUYER])
                 ->andWhere(['is_archive' => 0])
                 ->column();
 

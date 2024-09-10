@@ -78,16 +78,19 @@ class ChatController extends FulfillmentController
 
         // get chats for each order
         foreach ($orders as $order) {
+            $chats = Chat::find()
+                ->select('id')
+                ->where(['order_id' => $order->id])
+                ->andWhere(['like', 'group', Chat::GROUP_CLIENT_FULFILMENT])
+                ->andWhere(['is_archive' => 0])
+                ->column();
+
             $result[] = [
                 'order_id' => $order->id,
                 'buyer_id' => $order->buyer_id,
                 'manager_id' => $order->manager_id,
                 'fulfillment_id' => $order->fulfillment_id ? $order->fulfillment_id : 'не назначен',
-                'chats' => Chat::find()
-                    ->where(['order_id' => $order->id])
-                    ->andWhere(['like', 'group', '_fulfilment'])
-                    ->andWhere(['is_archive' => 0])
-                    ->all(),
+                'chats' => ChatOutputService::getCollection($chats),
             ];
         }
 
@@ -110,7 +113,7 @@ class ChatController extends FulfillmentController
         $chats = Chat::find()
             ->select('id')
             ->where(['order_id' => $orderId])
-            ->andWhere(['like', 'group', '_fulfilment'])
+            ->andWhere(['like', 'group', Chat::GROUP_CLIENT_FULFILMENT])
             ->andWhere(['is_archive' => 0])
             ->column();
 
