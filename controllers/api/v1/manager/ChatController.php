@@ -122,10 +122,9 @@ class ChatController extends ManagerController
         // Filter out chats with group 'manager_buyer' or 'manager_fulfillment'
         foreach ($chats as $chat) {
             if (!in_array($chat->group, [
-                'client_manager',
+                // 'client_manager',
                 'manager_buyer',
-                'manager_fulfillment',
-                'manager_buyer_fulfillment',
+                'manager_fulfilment',
             ])) {
                 $outChats[] = $chat->id;
             }
