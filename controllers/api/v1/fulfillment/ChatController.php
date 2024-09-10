@@ -85,6 +85,8 @@ class ChatController extends FulfillmentController
                 ->andWhere(['is_archive' => 0])
                 ->column();
 
+            if (!$chats) ApiResponse::code($apiCodes->NOT_FOUND);
+
             $result[] = [
                 'order_id' => $order->id,
                 'buyer_id' => $order->buyer_id,
