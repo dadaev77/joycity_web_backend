@@ -2,7 +2,7 @@
 
 namespace app\services;
 
-class PriceService
+class PriceService extends PriceOutputService
 {
     public static function calculateMinMaxPrice($products)
     {

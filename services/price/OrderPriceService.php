@@ -8,11 +8,8 @@ use app\services\RateService;
 use Throwable;
 use app\services\UserActionLogService as LogService;
 
-class OrderPriceService
+class OrderPriceService extends PriceOutputService
 {
-    public const TYPE_CALCULATION_PRODUCT = 'product';
-    public const TYPE_CALCULATION_PACKAGING = 'packaging';
-
     public static function calculateOrderPrices(int $orderId): array
     {
         try {
@@ -95,7 +92,7 @@ class OrderPriceService
             $out['delivery']['packaging'] + $out['delivery']['delivery'];
 
         $out['product']['price_per_item'] = $productPrice;
-        $out['product']['overall'] = round($productPrice * $productQuantity, 4);
+        $out['product']['overall'] = round($productPrice * $productQuantity, self::SYMBOLS_AFTER_DECIMAL_POINT);
         $out['product']['cost_price_per_item'] = $productQuantity
             ? round(
                 ($out['product_inspection'] +
@@ -103,7 +100,7 @@ class OrderPriceService
                     $out['delivery']['overall'] +
                     $out['fulfillment']) /
                     $productQuantity,
-                4,
+                self::SYMBOLS_AFTER_DECIMAL_POINT,
             )
             : 0;
 
@@ -112,9 +109,8 @@ class OrderPriceService
                 $out['product_inspection'] +
                 $out['delivery']['overall'] +
                 $out['fulfillment'],
-            4,
+            self::SYMBOLS_AFTER_DECIMAL_POINT,
         );
-        // LogService::info($out);
         return $out;
     }
 

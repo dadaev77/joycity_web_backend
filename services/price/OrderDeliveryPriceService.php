@@ -9,7 +9,7 @@ use app\models\TypePackaging;
 use Throwable;
 use Yii;
 
-class OrderDeliveryPriceService
+class OrderDeliveryPriceService extends PriceOutputService
 {
     public static function addPriceRangeToTypeDelivery(
         int $typeDeliveryId,
@@ -124,7 +124,7 @@ class OrderDeliveryPriceService
         );
         $densityPrice = self::getPriceByWeight($typeDeliveryId, $density);
 
-        return round($densityPrice * ($weightPerItem * $itemsCount), 4);
+        return round($densityPrice * ($weightPerItem * $itemsCount), self::SYMBOLS_AFTER_DECIMAL_POINT);
     }
 
     public static function calculatePackagingPrice(
@@ -136,7 +136,7 @@ class OrderDeliveryPriceService
                 'id' => $typePackagingId,
             ]);
 
-            return round(($typePackaging?->price ?: 0) * $packagingQuantity, 4);
+            return round(($typePackaging?->price ?: 0) * $packagingQuantity, self::SYMBOLS_AFTER_DECIMAL_POINT);
         } catch (Throwable) {
             return 0;
         }
