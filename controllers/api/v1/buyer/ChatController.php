@@ -116,7 +116,7 @@ class ChatController extends BuyerController
 
         $outChats = [];
         foreach ($chats as $chat) {
-            if (!in_array($chat->group, ['manager_buyer'])) {
+            if (!in_array($chat->group, ['manager_buyer', 'client_manager', 'client_fulfilment'])) {
                 $outChats[] = $chat->id;
             }
         }
