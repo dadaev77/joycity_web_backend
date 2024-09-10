@@ -117,10 +117,16 @@ class ChatController extends ManagerController
             ->where(['order_id' => $orderId])
             ->andWhere(['is_archive' => 0])
             ->all();
+
         $outChats = [];
         // Filter out chats with group 'manager_buyer' or 'manager_fulfillment'
         foreach ($chats as $chat) {
-            if (!in_array($chat->group, ['manager_buyer', 'manager_fulfillment'])) {
+            if (!in_array($chat->group, [
+                'client_manager',
+                'manager_buyer',
+                'manager_fulfillment',
+                'manager_buyer_fulfillment',
+            ])) {
                 $outChats[] = $chat->id;
             }
         }
