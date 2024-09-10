@@ -78,6 +78,9 @@ class ChatController extends ManagerController
                 ->where(['order_id' => $order->id])
                 ->andWhere(['is_archive' => 0])
                 ->all();
+
+            if (!$chats) return ApiResponse::code($apiCodes->NOT_FOUND);
+
             $outChats = [];
             // Filter out chats with group 'manager_buyer' or 'manager_fulfillment'
             foreach ($chats as $chat) {

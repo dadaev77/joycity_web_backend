@@ -85,6 +85,8 @@ class ChatController extends ClientController
                 ->andWhere(['is_archive' => 0])
                 ->column();
 
+            if (!$chats) return ApiResponse::code($apiCodes->NOT_FOUND);
+
             $result[] = [
                 'order_id' => $order->id,
                 'buyer_id' => $order->buyer_id,
