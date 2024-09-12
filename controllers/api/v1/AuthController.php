@@ -204,6 +204,7 @@ class AuthController extends V1Controller implements ApiAuth
                         User::ROLE_BUYER,
                         User::ROLE_CLIENT,
                         User::ROLE_FULFILLMENT,
+                        User::ROLE_CLIENT_DEMO
                     ],
                     true,
                 )

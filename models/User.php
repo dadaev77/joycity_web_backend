@@ -13,6 +13,7 @@ class User extends UserStructure implements IdentityInterface
     public const ROLE_ADMIN = 'admin';
     public const ROLE_SUPER_ADMIN = 'super-admin';
     public const ROLE_CLIENT = 'client';
+    public const ROLE_CLIENT_DEMO = 'client-demo';
     public const ROLE_MANAGER = 'manager';
     public const ROLE_BUYER = 'buyer';
     public const ROLE_FULFILLMENT = 'fulfillment';
@@ -21,6 +22,7 @@ class User extends UserStructure implements IdentityInterface
         self::ROLE_SUPER_ADMIN,
         self::ROLE_ADMIN,
         self::ROLE_CLIENT,
+        self::ROLE_CLIENT_DEMO,
         self::ROLE_MANAGER,
         self::ROLE_BUYER,
         self::ROLE_FULFILLMENT,
