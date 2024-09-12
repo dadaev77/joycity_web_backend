@@ -45,12 +45,15 @@ class OrderController extends ClientController
         array_unshift($behaviours['access']['rules'], [
             'actions' => ['create', 'update', 'cancel'],
             'allow' => false,
-            'matchCallback' => fn() => !User::getIdentity()->is_verified,
+            'matchCallback' => fn() => User::getIdentity()->role === User::ROLE_CLIENT_DEMO ? true : !User::getIdentity()->is_verified,
         ]);
         $behaviours['access']['denyCallback'] = static function () {
-            Yii::$app->response->data = ApiResponse::byResponseCode(
-                ResponseCodes::getStatic()->NO_ACCESS_FOR_NOT_VERIFIED,
-            );
+            $response =
+                User::getIdentity()->role === User::ROLE_CLIENT_DEMO ?
+                ApiResponse::byResponseCode(ResponseCodes::getStatic()->NOT_AUTHENTICATED) :
+                ApiResponse::byResponseCode(ResponseCodes::getStatic()->NO_ACCESS_FOR_NOT_VERIFIED);
+
+            Yii::$app->response->data = $response;
         };
 
         return $behaviours;
