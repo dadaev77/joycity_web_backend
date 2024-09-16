@@ -3,6 +3,7 @@
 namespace app\controllers\api\v1\client;
 
 use app\components\ApiResponse;
+use app\components\response\ResponseCodes;
 use app\controllers\api\v1\ClientController;
 use app\helpers\POSTHelper;
 use app\models\Category;
@@ -16,12 +17,25 @@ class SettingsController extends ClientController
 {
     public function behaviors()
     {
-        $behaviors = parent::behaviors();
-        $behaviors['verbFilter']['actions']['self'] = ['get'];
-        $behaviors['verbFilter']['actions']['update'] = ['put'];
-        $behaviors['verbFilter']['actions']['set-categories'] = ['put'];
+        $behaviours = parent::behaviors();
 
-        return $behaviors;
+        $behaviours['verbFilter']['actions']['self'] = ['get'];
+        $behaviours['verbFilter']['actions']['update'] = ['put'];
+        $behaviours['verbFilter']['actions']['set-categories'] = ['put'];
+        array_unshift($behaviours['access']['rules'], [
+            'actions' => ['update', 'delete'],
+            'allow' => false,
+            'matchCallback' => fn() => User::getIdentity()->role === User::ROLE_CLIENT_DEMO,
+        ]);
+        $behaviours['access']['denyCallback'] = static function () {
+            $response =
+                User::getIdentity()->role === User::ROLE_CLIENT_DEMO ?
+                ApiResponse::byResponseCode(ResponseCodes::getStatic()->NOT_AUTHENTICATED) :
+                false;
+            Yii::$app->response->data = $response;
+        };
+
+        return $behaviours;
     }
 
     public function actionSelf()

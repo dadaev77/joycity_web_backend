@@ -13,6 +13,8 @@ use Throwable;
 use Yii;
 use yii\db\Exception;
 use yii\web\UploadedFile;
+use app\components\response\ResponseCodes;
+
 
 class ProfileController extends ClientController
 {
@@ -23,6 +25,18 @@ class ProfileController extends ClientController
         $behaviours['verbFilter']['actions']['upload-avatar'] = ['post'];
         $behaviours['verbFilter']['actions']['self'] = ['get'];
         $behaviours['verbFilter']['actions']['delete'] = ['delete'];
+        array_unshift($behaviours['access']['rules'], [
+            'actions' => ['update', 'delete'],
+            'allow' => false,
+            'matchCallback' => fn() => User::getIdentity()->role === User::ROLE_CLIENT_DEMO,
+        ]);
+        $behaviours['access']['denyCallback'] = static function () {
+            $response =
+                User::getIdentity()->role === User::ROLE_CLIENT_DEMO ?
+                ApiResponse::byResponseCode(ResponseCodes::getStatic()->NOT_AUTHENTICATED) :
+                false;
+            Yii::$app->response->data = $response;
+        };
 
         return $behaviours;
     }

@@ -28,12 +28,14 @@ class ProductController extends ClientController
         array_unshift($behaviors['access']['rules'], [
             'actions' => ['create'],
             'allow' => false,
-            'matchCallback' => fn() => !User::getIdentity()->is_verified,
+            'matchCallback' => fn() => User::getIdentity()->role === User::ROLE_CLIENT_DEMO || !User::getIdentity()->is_verified,
         ]);
         $behaviors['access']['denyCallback'] = static function () {
-            Yii::$app->response->data = ApiResponse::byResponseCode(
-                ResponseCodes::getStatic()->NO_ACCESS_FOR_NOT_VERIFIED,
-            );
+            $response =
+                User::getIdentity()->role === User::ROLE_CLIENT_DEMO ?
+                ApiResponse::byResponseCode(ResponseCodes::getStatic()->NOT_AUTHENTICATED) :
+                ApiResponse::byResponseCode(ResponseCodes::getStatic()->NO_ACCESS_FOR_NOT_VERIFIED);
+            Yii::$app->response->data = $response;
         };
 
         return $behaviors;

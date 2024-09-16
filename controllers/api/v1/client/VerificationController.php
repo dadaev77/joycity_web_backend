@@ -3,6 +3,7 @@
 namespace app\controllers\api\v1\client;
 
 use app\components\ApiResponse;
+use app\components\response\ResponseCodes;
 use app\controllers\api\v1\ClientController;
 use app\models\Chat;
 use app\models\User;
@@ -18,10 +19,24 @@ class VerificationController extends ClientController
 {
     public function behaviors()
     {
-        $behaviors = parent::behaviors();
-        $behaviors['verbFilter']['actions']['create'] = ['post'];
+        $behaviours = parent::behaviors();
 
-        return $behaviors;
+        $behaviours['verbFilter']['actions']['create'] = ['post'];
+        array_unshift($behaviours['access']['rules'], [
+            'actions' => ['create'],
+            'allow' => false,
+            'matchCallback' => fn() => User::getIdentity()->role === User::ROLE_CLIENT_DEMO,
+        ]);
+
+        $behaviours['access']['denyCallback'] = static function () {
+            $response =
+                User::getIdentity()->role === User::ROLE_CLIENT_DEMO ?
+                ApiResponse::byResponseCode(ResponseCodes::getStatic()->NOT_AUTHENTICATED) :
+                false;
+            Yii::$app->response->data = $response;
+        };
+
+        return $behaviours;
     }
 
     public function actionCreate()
