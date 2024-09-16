@@ -3,6 +3,7 @@
 namespace app\controllers\api\v1\buyer\order;
 
 use app\components\ApiResponse;
+use app\components\response\ResponseCodes;
 use app\controllers\api\v1\BuyerController;
 use app\helpers\POSTHelper;
 use app\models\BuyerOffer;
@@ -24,7 +25,18 @@ class BuyerOfferController extends BuyerController
         $behaviors['verbFilter']['actions']['create'] = ['post'];
         $behaviors['verbFilter']['actions']['update'] = ['put'];
         $behaviors['verbFilter']['actions']['delete'] = ['delete'];
-
+        array_unshift($behaviors['access']['rules'], [
+            'actions' => ['create', 'update', 'delete'],
+            'allow' => false,
+            'matchCallback' => fn() => User::getIdentity()->role === User::ROLE_BUYER_DEMO,
+        ]);
+        $behaviors['access']['denyCallback'] = static function () {
+            $response =
+                User::getIdentity()->role === User::ROLE_BUYER_DEMO ?
+                ApiResponse::byResponseCode(ResponseCodes::getStatic()->NOT_AUTHENTICATED) :
+                false;
+            Yii::$app->response->data = $response;
+        };
         return $behaviors;
     }
 

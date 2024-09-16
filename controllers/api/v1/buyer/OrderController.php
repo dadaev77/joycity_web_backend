@@ -1,7 +1,9 @@
 <?php
 
 namespace app\controllers\api\v1\buyer;
+
 use app\components\ApiResponse;
+use app\components\response\ResponseCodes;
 use app\controllers\api\v1\BuyerController;
 use app\models\Order;
 use app\models\OrderDistribution;
@@ -23,7 +25,18 @@ class OrderController extends BuyerController
         $behaviors['verbFilter']['actions']['my'] = ['get'];
         $behaviors['verbFilter']['actions']['history'] = ['get'];
         $behaviors['verbFilter']['actions']['decline'] = ['put'];
-
+        array_unshift($behaviors['access']['rules'], [
+            'actions' => ['accept-order', 'decline-order', 'decline'],
+            'allow' => false,
+            'matchCallback' => fn() => User::getIdentity()->role === User::ROLE_BUYER_DEMO,
+        ]);
+        $behaviors['access']['denyCallback'] = static function () {
+            $response =
+                User::getIdentity()->role === User::ROLE_BUYER_DEMO ?
+                ApiResponse::byResponseCode(ResponseCodes::getStatic()->NOT_AUTHENTICATED) :
+                false;
+            Yii::$app->response->data = $response;
+        };
         return $behaviors;
     }
 

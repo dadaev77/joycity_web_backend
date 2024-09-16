@@ -3,6 +3,7 @@
 namespace app\controllers\api\v1\buyer;
 
 use app\components\ApiResponse;
+use app\components\response\ResponseCodes;
 use app\controllers\api\v1\BuyerController;
 use app\models\Base;
 use app\models\Order;
@@ -28,7 +29,18 @@ class ReportController extends BuyerController
         $behaviors['verbFilter']['actions']['submit-inspection'] = ['post'];
         $behaviors['verbFilter']['actions']['submit-stock-report'] = ['post'];
         $behaviors['verbFilter']['actions']['order-sent'] = ['post'];
-
+        array_unshift($behaviors['access']['rules'], [
+            'actions' => ['submit-inspection', 'submit-stock-report', 'order-sent'],
+            'allow' => false,
+            'matchCallback' => fn() => User::getIdentity()->role === User::ROLE_BUYER_DEMO,
+        ]);
+        $behaviors['access']['denyCallback'] = static function () {
+            $response =
+                User::getIdentity()->role === User::ROLE_BUYER_DEMO ?
+                ApiResponse::byResponseCode(ResponseCodes::getStatic()->NOT_AUTHENTICATED) :
+                false;
+            Yii::$app->response->data = $response;
+        };
         return $behaviors;
     }
 

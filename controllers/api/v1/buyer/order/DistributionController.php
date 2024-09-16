@@ -3,6 +3,7 @@
 namespace app\controllers\api\v1\buyer\order;
 
 use app\components\ApiResponse;
+use app\components\response\ResponseCodes;
 use app\controllers\api\v1\BuyerController;
 use app\models\Chat;
 use app\models\OrderDistribution;
@@ -24,7 +25,18 @@ class DistributionController extends BuyerController
         $behaviors['verbFilter']['actions']['status'] = ['get'];
         $behaviors['verbFilter']['actions']['accept'] = ['put'];
         $behaviors['verbFilter']['actions']['decline'] = ['put'];
-
+        array_unshift($behaviors['access']['rules'], [
+            'actions' => ['accept', 'decline'],
+            'allow' => false,
+            'matchCallback' => fn() => User::getIdentity()->role === User::ROLE_BUYER_DEMO,
+        ]);
+        $behaviors['access']['denyCallback'] = static function () {
+            $response =
+                User::getIdentity()->role === User::ROLE_BUYER_DEMO ?
+                ApiResponse::byResponseCode(ResponseCodes::getStatic()->NOT_AUTHENTICATED) :
+                false;
+            Yii::$app->response->data = $response;
+        };
         return $behaviors;
     }
 

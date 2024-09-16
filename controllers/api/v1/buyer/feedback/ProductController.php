@@ -3,6 +3,9 @@
 namespace app\controllers\api\v1\buyer\feedback;
 
 use app\components\ApiResponse;
+use app\components\response\ResponseCodes;
+use app\models\User;
+use Yii;
 use app\models\FeedbackProduct;
 use app\services\output\FeedbackProductOutputService;
 
@@ -12,6 +15,18 @@ class ProductController extends \app\controllers\api\v1\BuyerController
     {
         $behaviors = parent::behaviors();
         $behaviors['verbFilter']['actions']['collection'] = ['get'];
+        array_unshift($behaviors['access']['rules'], [
+            'actions' => ['collection'],
+            'allow' => false,
+            'matchCallback' => fn() => User::getIdentity()->role === User::ROLE_BUYER_DEMO,
+        ]);
+        $behaviors['access']['denyCallback'] = static function () {
+            $response =
+                User::getIdentity()->role === User::ROLE_BUYER_DEMO ?
+                ApiResponse::byResponseCode(ResponseCodes::getStatic()->NOT_AUTHENTICATED) :
+                false;
+            Yii::$app->response->data = $response;
+        };
 
         return $behaviors;
     }

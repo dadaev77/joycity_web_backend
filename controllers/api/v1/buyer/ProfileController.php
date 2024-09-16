@@ -11,6 +11,7 @@ use app\services\AttachmentService;
 use app\services\output\ProfileOutputService;
 use Throwable;
 use Yii;
+use app\components\response\ResponseCodes;
 use yii\db\Exception;
 use yii\web\UploadedFile;
 
@@ -23,6 +24,19 @@ class ProfileController extends BuyerController
         $behaviours['verbFilter']['actions']['upload-avatar'] = ['post'];
         $behaviours['verbFilter']['actions']['self'] = ['get'];
         $behaviours['verbFilter']['actions']['delete'] = ['delete'];
+        array_unshift($behaviours['access']['rules'], [
+            'actions' => ['update', 'delete', 'upload-avatar'],
+            'allow' => false,
+            'matchCallback' => fn() => User::getIdentity()->role === User::ROLE_BUYER_DEMO,
+        ]);
+
+        $behaviours['access']['denyCallback'] = static function () {
+            $response =
+                User::getIdentity()->role === User::ROLE_BUYER_DEMO ?
+                ApiResponse::byResponseCode(ResponseCodes::getStatic()->NOT_AUTHENTICATED) :
+                false;
+            Yii::$app->response->data = $response;
+        };
 
         return $behaviours;
     }

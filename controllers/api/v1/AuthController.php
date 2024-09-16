@@ -179,6 +179,7 @@ class AuthController extends V1Controller implements ApiAuth
 
             if (
                 $role === User::ROLE_BUYER ||
+                $role === User::ROLE_BUYER_DEMO ||
                 $role === User::ROLE_FULFILLMENT
             ) {
                 $requiredAttributes = array_merge($requiredAttributes, [
@@ -202,9 +203,10 @@ class AuthController extends V1Controller implements ApiAuth
                     $role,
                     [
                         User::ROLE_BUYER,
+                        User::ROLE_BUYER_DEMO, // demo buyer
                         User::ROLE_CLIENT,
                         User::ROLE_FULFILLMENT,
-                        User::ROLE_CLIENT_DEMO
+                        User::ROLE_CLIENT_DEMO, // demo client
                     ],
                     true,
                 )
@@ -221,6 +223,7 @@ class AuthController extends V1Controller implements ApiAuth
                     $user->getFirstErrors(),
                 );
             }
+
             LogService::success('created user ' . $request->post('email'));
             $user->personal_id = md5(time() . random_int(1e3, 9e3));
             $user->password = Yii::$app

@@ -3,6 +3,7 @@
 namespace app\controllers\api\v1\buyer;
 
 use app\components\ApiResponse;
+use app\components\response\ResponseCodes;
 use app\controllers\api\v1\BuyerController;
 use app\models\Category;
 use app\models\TypeDelivery;
@@ -24,7 +25,18 @@ class SettingsController extends BuyerController
         $behaviors['verbFilter']['actions']['set-packaging'] = ['put'];
         $behaviors['verbFilter']['actions']['set-delivery'] = ['put'];
         $behaviors['verbFilter']['actions']['set-categories'] = ['put'];
-
+        array_unshift($behaviors['access']['rules'], [
+            'actions' => ['set-packaging', 'set-delivery', 'set-categories'],
+            'allow' => false,
+            'matchCallback' => fn() => User::getIdentity()->role === User::ROLE_BUYER_DEMO,
+        ]);
+        $behaviors['access']['denyCallback'] = static function () {
+            $response =
+                User::getIdentity()->role === User::ROLE_BUYER_DEMO ?
+                ApiResponse::byResponseCode(ResponseCodes::getStatic()->NOT_AUTHENTICATED) :
+                false;
+            Yii::$app->response->data = $response;
+        };
         return $behaviors;
     }
 
@@ -86,7 +98,7 @@ class SettingsController extends BuyerController
                 return ApiResponse::byResponseCode($apiCodes->BAD_REQUEST, [
                     'errors' => [
                         'packaging_ids' =>
-                            'Одного из типа упаковки не существует',
+                        'Одного из типа упаковки не существует',
                     ],
                 ]);
             }
@@ -122,7 +134,7 @@ class SettingsController extends BuyerController
                 return ApiResponse::byResponseCode($apiCodes->BAD_REQUEST, [
                     'errors' => [
                         'delivery_ids' =>
-                            'Одного из типа доставки не существует',
+                        'Одного из типа доставки не существует',
                     ],
                 ]);
             }

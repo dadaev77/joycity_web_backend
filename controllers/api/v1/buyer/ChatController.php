@@ -3,6 +3,7 @@
 namespace app\controllers\api\v1\buyer;
 
 use app\components\ApiResponse;
+use app\components\response\ResponseCodes;
 use app\controllers\api\v1\BuyerController;
 use app\models\Chat;
 use app\models\User;
@@ -17,7 +18,20 @@ class ChatController extends BuyerController
     {
         $behaviors = parent::behaviors();
         $behaviors['verbFilter']['actions']['index'] = ['get'];
-
+        $behaviors['verbFilter']['actions']['search'] = ['get'];
+        $behaviors['verbFilter']['actions']['get-chat'] = ['get'];
+        array_unshift($behaviors['access']['rules'], [
+            'actions' => ['get-chat'],
+            'allow' => false,
+            'matchCallback' => fn() => User::getIdentity()->role === User::ROLE_BUYER_DEMO,
+        ]);
+        $behaviors['access']['denyCallback'] = static function () {
+            $response =
+                User::getIdentity()->role === User::ROLE_BUYER_DEMO ?
+                ApiResponse::byResponseCode(ResponseCodes::getStatic()->NOT_AUTHENTICATED) :
+                false;
+            Yii::$app->response->data = $response;
+        };
         return $behaviors;
     }
 

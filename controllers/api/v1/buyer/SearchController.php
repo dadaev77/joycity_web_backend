@@ -23,7 +23,18 @@ class SearchController extends BuyerController
         $behaviors['verbFilter']['actions']['search'] = ['get'];
         $behaviors['verbFilter']['actions']['popular'] = ['get'];
         $behaviors['verbFilter']['actions']['random'] = ['get'];
-
+        array_unshift($behaviors['access']['rules'], [
+            'actions' => ['@'],
+            'allow' => true,
+            'matchCallback' => fn() => User::getIdentity()->role === User::ROLE_BUYER_DEMO,
+        ]);
+        $behaviors['access']['denyCallback'] = static function () {
+            $response =
+                User::getIdentity()->role === User::ROLE_BUYER_DEMO ?
+                ApiResponse::byResponseCode(ResponseCodes::getStatic()->NOT_AUTHENTICATED) :
+                false;
+            Yii::$app->response->data = $response;
+        };
         return $behaviors;
     }
 

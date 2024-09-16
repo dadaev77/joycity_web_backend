@@ -9,6 +9,11 @@ use app\services\output\BuyerOutputService;
 
 class BuyerController extends BuyerControllerParent
 {
+    public function __construct()
+    {
+        return 'buyer controller';
+        die;
+    }
     public function behaviors()
     {
         $behaviours = parent::behaviors();
