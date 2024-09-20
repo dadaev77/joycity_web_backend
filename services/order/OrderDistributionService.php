@@ -42,7 +42,6 @@ class OrderDistributionService
         ]);
 
         if ($task->save()) {
-            CronDistributionService::createCronJob($task);
             return Result::success($task);
         }
 
