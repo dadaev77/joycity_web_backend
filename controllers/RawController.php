@@ -239,5 +239,9 @@ class RawController extends Controller
     public function actionCronTest()
     {
         LogService::info('Cron test for 1 minute');
+        return Yii::$app->response->setStatusCode(200)->data = [
+            'status' => 'success',
+            'message' => 'Response generated successfully',
+        ];
     }
 }
