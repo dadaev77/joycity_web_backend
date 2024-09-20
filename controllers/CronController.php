@@ -15,8 +15,8 @@ class CronController extends Controller
             Log::error('Task with id ' . $taskId . ' not found');
             return;
         }
-
         $buyerIds = explode(',', $actualTask->buyer_ids_list);
+
         foreach ($buyerIds as $key => $buyerId) {
             $actualTask->current_buyer_id = $buyerId;
             $actualTask->status = OrderDistribution::STATUS_IN_WORK;
@@ -25,7 +25,7 @@ class CronController extends Controller
                 Log::error('Failed to save task: ' . json_encode($actualTask->getErrors()));
             }
             Log::info('Task ' . $actualTask->id . ' assigned to buyer ' . $buyerId);
-            sleep(10);
+            sleep(60);
             unset($buyerIds[$key]);
         }
         $actualTask->status = OrderDistribution::STATUS_CLOSED;

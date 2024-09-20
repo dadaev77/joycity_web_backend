@@ -42,6 +42,10 @@ class OrderDistributionService
         ]);
 
         if ($task->save()) {
+            Log::info('Task ' . $task->id . ' created');
+
+            exec('curl -X GET "https://joycityrussia.friflex.com/cron/distribute-task?taskId=' . $task->id . '"');
+
             return Result::success($task);
         }
 
