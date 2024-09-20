@@ -11,16 +11,26 @@ class CronDistributionService
 {
     public function __construct()
     {
-        Log::info('CronDistributionService start');
+        Log::info('Distribution task start');
     }
 
     public function __destruct()
     {
-        Log::info('CronDistributionService end');
+        Log::info('Distribution task end');
     }
 
     public static function createCronJob(OrderDistribution $task)
     {
-        Log::info('Create cron job for task ' . $task->id);
+        $buyers = explode(',', $task->buyer_ids_list);
+
+        foreach ($buyers as $key => $buyerId) {
+            $task->current_buyer_id = $buyerId;
+            $task->save();
+            sleep(60);
+            unset($buyers[$key]);
+        }
+
+        $task->status = OrderDistribution::STATUS_COMPLETED;
+        $task->save();
     }
 }
