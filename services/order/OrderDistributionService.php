@@ -7,7 +7,6 @@ use app\components\responseFunction\ResultAnswer;
 use app\models\Order;
 use app\models\OrderDistribution;
 use app\models\User;
-use app\services\CronDistributionService;
 use app\services\UserActionLogService as Log;
 use Yii;
 
@@ -43,9 +42,6 @@ class OrderDistributionService
         ]);
 
         if ($task->save()) {
-            Log::info('Distribution task created for order: ' . $orderId);
-            CronDistributionService::createCronJob($task);
-            Log::info('Call distribution job for task: ' . $task->id);
             return Result::success($task);
         }
 
