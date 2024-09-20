@@ -8,13 +8,22 @@ use app\services\UserActionLogService as Log;
 
 class CronController extends Controller
 {
+    /**
+     * Distributes the task to the next buyer.
+     *
+     * @param int $taskId The ID of the task to distribute.
+     */
     public function actionDistributeTask($taskId)
     {
+        sleep(10); // Adding a 5-second timeout before execution
+
         $actualTask = OrderDistribution::findOne($taskId);
+
         if (!$actualTask) {
             Log::error('Task with id ' . $taskId . ' not found');
             return;
         }
+
         $buyerIds = explode(',', $actualTask->buyer_ids_list);
 
         foreach ($buyerIds as $key => $buyerId) {
