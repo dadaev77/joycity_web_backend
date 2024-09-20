@@ -2,9 +2,11 @@
 
 namespace app\controllers;
 
+use app\components\ApiResponse;
 use yii\web\Controller;
 use app\models\OrderDistribution;
 use app\services\UserActionLogService as Log;
+use Yii;
 
 class CronController extends Controller
 {
@@ -15,30 +17,66 @@ class CronController extends Controller
      */
     public function actionDistributeTask($taskId)
     {
-        sleep(10); // Adding a 5-second timeout before execution
+        Log::info("Distributing task with ID: $taskId");
 
         $actualTask = OrderDistribution::findOne($taskId);
-
         if (!$actualTask) {
-            Log::error('Task with id ' . $taskId . ' not found');
+            Log::warning("Task not found: $taskId");
+            return Yii::$app->response->setStatusCode(404, 'Task not found');
+        }
+
+        $buyersList = explode(',', $actualTask->buyer_ids_list);
+        Log::info("Buyers list: " . implode(', ', $buyersList));
+
+        $maxIterations = 4; // Limit to 4 iterations
+        foreach (array_slice($buyersList, 0, $maxIterations) as $buyerId) {
+            $command = "echo '* * * * * curl " . $_ENV['APP_URL'] . "/cron/dist-between-buyers?taskId=$taskId' | crontab -";
+            exec($command);
+        }
+    }
+
+    /**
+     * Distributes the task between buyers.
+     *
+     * @param int $taskId The ID of the task to distribute.
+     */
+    public function actionDistBetweenBuyers($taskId)
+    {
+        Log::info("Distributing between buyers for task ID: $taskId");
+
+        $currentTask = OrderDistribution::findOne($taskId);
+        if (!$currentTask) {
+            Log::warning("Task not found: $taskId");
+            return Yii::$app->response->setStatusCode(404, 'Task not found');
+        }
+
+        $currentBuyerId = $currentTask->current_buyer_id;
+        $buyersList = explode(',', $currentTask->buyer_ids_list);
+        Log::info("Current buyer ID: $currentBuyerId");
+
+        $nextBuyerId = $this->getNextBuyerId($buyersList, $currentBuyerId);
+        if (!$nextBuyerId) {
+            Log::info("No next buyer found, removing cron job.");
+            exec('crontab -r');
             return;
         }
 
-        $buyerIds = explode(',', $actualTask->buyer_ids_list);
+        $currentTask->current_buyer_id = $nextBuyerId;
+        if (!$currentTask->save()) {
+            Log::error("Failed to update current buyer ID: " . implode(', ', $currentTask->getErrors()));
+            return;
+        };
+        Log::info("Updated current buyer ID to: $nextBuyerId");
+    }
+    private function getNextBuyerId($buyersList, $currentBuyerId)
+    {
+        $currentIndex = array_search($currentBuyerId, $buyersList);
+        $nextIndex = $currentIndex + 1;
 
-        foreach ($buyerIds as $key => $buyerId) {
-            $actualTask->current_buyer_id = $buyerId;
-            $actualTask->status = OrderDistribution::STATUS_IN_WORK;
-            $actualTask->save();
-            if (!$actualTask->save()) {
-                Log::error('Failed to save task: ' . json_encode($actualTask->getErrors()));
-            }
-            Log::info('Task ' . $actualTask->id . ' assigned to buyer ' . $buyerId);
-            sleep(60);
-            unset($buyerIds[$key]);
+        if ($nextIndex == null || $nextIndex >= count($buyersList)) {
+            return false;
         }
-        $actualTask->status = OrderDistribution::STATUS_CLOSED;
-        $actualTask->save();
-        Log::info('Task ' . $actualTask->id . ' closed');
+
+        return $buyersList[$nextIndex];
     }
 }
