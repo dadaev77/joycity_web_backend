@@ -18,6 +18,7 @@ class OrderDistributionService
         int $orderId,
         int $onlyBuyerId = 0,
     ): ResultAnswer {
+
         $buyersList = $onlyBuyerId
             ? (string) $onlyBuyerId
             : self::createBuyersList(Order::findOne($orderId));
@@ -198,8 +199,8 @@ class OrderDistributionService
         $buyerIds = User::find()
             ->select(['id', 'rating'])
             ->with([
-                'categories' => fn ($q) => $q->where(['id' => $categoryId]),
-                'userSettings' => fn ($q) => $q->select([
+                'categories' => fn($q) => $q->where(['id' => $categoryId]),
+                'userSettings' => fn($q) => $q->select([
                     'id',
                     'user_id',
                     'use_only_selected_categories',

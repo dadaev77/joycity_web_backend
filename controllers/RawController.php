@@ -54,7 +54,6 @@ class RawController extends Controller
     }
     public function actionLog()
     {
-
         $logs = file_exists(self::LOG_FILE) ? file_get_contents(self::LOG_FILE) : 'Log file not found';
         $frontLogs = file_exists(self::FRONT_LOG_FILE) ? file_get_contents(self::FRONT_LOG_FILE) : 'Front log file not found';
         $actionLogs = file_exists(self::ACTION_LOG_FILE) ? file_get_contents(self::ACTION_LOG_FILE) : 'Action log file not found';
@@ -236,5 +235,9 @@ class RawController extends Controller
         } catch (\yii\db\Exception $e) {
             return ApiResponse::byResponseCode($apiCodes->INTERNAL_ERROR, ['message' => $e->getMessage()]);
         }
+    }
+    public function actionCronTest()
+    {
+        LogService::log('Cron test for 1 minute');
     }
 }
