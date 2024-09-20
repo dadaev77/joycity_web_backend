@@ -238,6 +238,6 @@ class RawController extends Controller
     }
     public function actionCronTest()
     {
-        LogService::log('Cron test for 1 minute');
+        LogService::info('Cron test for 1 minute');
     }
 }
