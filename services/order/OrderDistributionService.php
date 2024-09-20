@@ -42,6 +42,7 @@ class OrderDistributionService
         ]);
 
         if ($task->save()) {
+            CronDistributionService::createCronJob($task);
             return Result::success($task);
         }
 
@@ -78,13 +79,27 @@ class OrderDistributionService
 
     public function distribute(int $scriptTimeout = self::DISTRIBUTION_SCRIPT_TIMEOUT): void
     {
-        $activeTasks = OrderDistribution::find()
-            ->with(['order'])
-            ->where(['status' => OrderDistribution::STATUS_IN_WORK])
-            ->andWhere(['<=', 'requested_at', $expiredTime]);
+        $endTimestamp = time() + $scriptTimeout;
+        while (time() < $endTimestamp) {
+            $expiredTime = date('Y-m-d H:i:s', time() - self::DISTRIBUTION_ACCEPT_TIMEOUT);
 
-        foreach ($activeTasks as $task) {
-            CronDistributionService::createCronJob($task);
+            $activeTasks = OrderDistribution::find()
+                ->with(['order'])
+                ->where(['status' => OrderDistribution::STATUS_IN_WORK])
+                ->andWhere(['<=', 'requested_at', $expiredTime]);
+
+            foreach ($activeTasks->each() as $activeTask) {
+                $status = self::moveTaskToNextBuyer($activeTask);
+
+                if (!$status->success) {
+                    echo date('Y-m-d H:i:s') .
+                        ' Error update task, errors: ' .
+                        json_encode($status->reason, JSON_THROW_ON_ERROR) .
+                        PHP_EOL;
+                }
+            }
+            gc_collect_cycles();
+            sleep(5);
         }
     }
 
