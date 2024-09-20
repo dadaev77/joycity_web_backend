@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @link http://www.yiiframework.com/
  * @copyright Copyright (c) 2008 Yii Software LLC
@@ -15,8 +16,7 @@ class CronController extends Controller
 {
     public function actionOrderDistribution()
     {
-        $endTime =
-            time() + OrderDistributionService::DISTRIBUTION_SCRIPT_TIMEOUT;
+        $endTime = time() + OrderDistributionService::DISTRIBUTION_SCRIPT_TIMEOUT;
 
         for ($i = 0; $i < 5; $i++) {
             $timeout = $endTime - time();
