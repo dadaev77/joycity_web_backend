@@ -24,6 +24,7 @@ class CronDistributionService
         $buyers = explode(',', $task->buyer_ids_list);
 
         foreach ($buyers as $key => $buyerId) {
+            Log::info('current buyer id for task: ' . $task->id . ' is ' . $buyerId);
             $task->current_buyer_id = $buyerId;
             $task->save();
             sleep(60);
