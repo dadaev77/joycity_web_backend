@@ -104,11 +104,4 @@ class OrderDistribution extends Base
     {
         return $this->hasOne(Order::class, ['id' => 'order_id']);
     }
-
-    public function afterSave($insert, $changedAttributes)
-    {
-        if (!$insert) {
-            Log::info('OrderDistribution afterSave: ' . $this->id);
-        }
-    }
 }

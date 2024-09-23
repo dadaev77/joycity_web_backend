@@ -301,6 +301,9 @@ class OrderController extends ClientController
             $transaction?->commit();
 
             if ($orderSave->success) {
+                if (!$order->id) {
+                    LogService::warning('order hasnt got a product. Need to distribute');
+                }
                 LogService::success('order saved with id ' . $order->id . '. Flow is correct');
                 return ApiResponse::byResponseCode(null, [
                     'info' => OrderOutputService::getEntity($order->id),
