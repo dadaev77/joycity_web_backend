@@ -14,6 +14,11 @@ use app\services\UserActionLogService as LogService;
 
 class ChatController extends ManagerController
 {
+    public function init()
+    {
+        parent::init();
+        LogService::setController('ChatController');
+    }
     public function behaviors()
     {
         $behaviors = parent::behaviors();
@@ -26,7 +31,7 @@ class ChatController extends ManagerController
     {
         // define vars
         $user = User::getIdentity();
-        LogService::log('manager: ' . $user->name . '. ChatController::actionIndex');
+        LogService::log('manager: ' . $user->name);
         $request = Yii::$app->request;
         $type = $request->get('group', '');
         LogService::log('type: ' . $type);

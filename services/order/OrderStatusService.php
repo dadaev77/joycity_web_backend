@@ -16,6 +16,11 @@ use app\services\UserActionLogService as LogService;
 
 class OrderStatusService
 {
+    public function init()
+    {
+        LogService::setController('OrderStatusService');
+    }
+
     public static function created(int $orderId): ResultAnswer
     {
         return self::changeOrderStatus(Order::STATUS_CREATED, $orderId);
@@ -160,7 +165,7 @@ class OrderStatusService
 
     public static function completed(int $orderId): ResultAnswer
     {
-        LogService::info('OrderStatusService. order status for change for order id: ' . $orderId);
+        LogService::info('. order status for change for order id: ' . $orderId);
         $order = Order::find()
             ->select(['id', 'status', 'created_by'])
             ->where(['id' => $orderId])
@@ -169,7 +174,7 @@ class OrderStatusService
         if (!$order) {
             return Result::notFound();
         }
-        LogService::success('OrderStatusService. order found');
+        LogService::success('. order found');
         if (
             $order->status !== Order::STATUS_ARRIVED_TO_WAREHOUSE &&
             $order->status !== Order::STATUS_FULLY_PAID
@@ -178,20 +183,20 @@ class OrderStatusService
                 'status' => 'Order in current status cannot be completed',
             ]);
         }
-        LogService::success('OrderStatusService. order status is allowed for completion');
+        LogService::success('. order status is allowed for completion');
 
         $linkedChats = Chat::findAll(['order_id' => $orderId]);
-        LogService::success('OrderStatusService. linked chats found');
+        LogService::success('. linked chats found');
         $notifications = Notification::findAll([
             'entity_id' => $orderId,
             'entity_type' => Notification::ENTITY_TYPE_ORDER,
         ]);
-        LogService::success('OrderStatusService. notifications found');
+        LogService::success('. notifications found');
 
         $transaction = Yii::$app->db->beginTransaction();
-        LogService::success('OrderStatusService. transaction started');
+        LogService::success('. transaction started');
         try {
-            LogService::success('OrderStatusService. Start marking notifications as read for managmeent');
+            LogService::success('. Start marking notifications as read for managmeent');
             foreach ($notifications as $notification) {
                 $notificationIsRead = NotificationManagementService::markAsRead(
                     $notification->id,
@@ -203,8 +208,8 @@ class OrderStatusService
                     return $notificationIsRead;
                 }
             }
-            LogService::success('OrderStatusService. Notifications marked as read');
-            LogService::success('OrderStatusService. Start archiving chats ');
+            LogService::success('. Notifications marked as read');
+            LogService::success('. Start archiving chats ');
             if ($linkedChats) {
                 foreach ($linkedChats as $chat) {
                     $chatArchiveStatus = ChatArchiveService::archiveChat(
@@ -218,9 +223,9 @@ class OrderStatusService
                     }
                 }
             }
-            LogService::success('OrderStatusService. Chats archived');
+            LogService::success('. Chats archived');
             $transaction?->commit();
-            LogService::success('OrderStatusService. Start changing order status to completed');
+            LogService::success('. Start changing order status to completed');
             return self::changeOrderStatus(Order::STATUS_COMPLETED, $orderId);
         } catch (Throwable $e) {
             return Result::error(['errors' => ['base' => $e->getMessage()]]);
@@ -229,7 +234,7 @@ class OrderStatusService
 
     public static function cancelled(int $orderId): ResultAnswer
     {
-        LogService::info('OrderStatusService. Starting cancellation process for order id: ' . $orderId);
+        LogService::info('. Starting cancellation process for order id: ' . $orderId);
         $order = Order::find()
             ->select(['id', 'status', 'created_by'])
             ->where(['id' => $orderId])
@@ -249,7 +254,7 @@ class OrderStatusService
                 true,
             )
         ) {
-            LogService::danger('OrderStatusService. Order in current status cannot be cancelled');
+            LogService::danger('. Order in current status cannot be cancelled');
             return Result::error([
                 'errors' => [
                     'status' => 'Order in current status cannot be cancelled',
@@ -257,21 +262,21 @@ class OrderStatusService
             ]);
         }
 
-        LogService::success('OrderStatusService. Order status is allowed for cancellation');
+        LogService::success('. Order status is allowed for cancellation');
         $linkedChats = Chat::findAll(['order_id' => $orderId]);
-        LogService::success('OrderStatusService. Linked chats found');
+        LogService::success('. Linked chats found');
         $notifications = Notification::findAll([
             'entity_id' => $orderId,
             'entity_type' => Notification::ENTITY_TYPE_ORDER,
         ]);
-        LogService::log('OrderStatusService. Notifications found');
+        LogService::log('. Notifications found');
 
         $transaction = Yii::$app->db->beginTransaction();
-        LogService::log('OrderStatusService. Transaction started');
+        LogService::log('. Transaction started');
 
         try {
             if ($notifications) {
-                LogService::log('OrderStatusService. Start marking notifications as read');
+                LogService::log('. Start marking notifications as read');
                 foreach ($notifications as $notification) {
                     $notificationIsRead = NotificationManagementService::markAsRead(
                         $notification->id,
@@ -279,14 +284,14 @@ class OrderStatusService
 
                     if (!$notificationIsRead->success) {
                         $transaction?->rollBack();
-                        LogService::danger('OrderStatusService. Failed to mark notification as read');
+                        LogService::danger('. Failed to mark notification as read');
                         return $notificationIsRead;
                     }
-                    LogService::log('OrderStatusService. Notification marked as read :' . $notification->id);
+                    LogService::log('. Notification marked as read :' . $notification->id);
                 }
             }
             if ($linkedChats) {
-                LogService::log('OrderStatusService. Start archiving chats');
+                LogService::log('. Start archiving chats');
                 foreach ($linkedChats as $chat) {
                     $chatArchiveStatus = ChatArchiveService::archiveChat(
                         $chat->id,
@@ -294,14 +299,14 @@ class OrderStatusService
 
                     if (!$chatArchiveStatus->success) {
                         $transaction?->rollBack();
-                        LogService::danger('OrderStatusService. Failed to archive chat');
+                        LogService::danger('. Failed to archive chat');
                         return $chatArchiveStatus;
                     }
                 }
-                LogService::log('OrderStatusService. Chats archived');
+                LogService::log('. Chats archived');
             }
             $transaction?->commit();
-            LogService::log('OrderStatusService. Transaction committed');
+            LogService::log('. Transaction committed');
 
             $orderStatus = in_array(
                 $order->status,
@@ -311,11 +316,11 @@ class OrderStatusService
                 ? Order::STATUS_CANCELLED_ORDER
                 : Order::STATUS_CANCELLED_REQUEST;
 
-            LogService::log('OrderStatusService. Changing order status to ' . $orderStatus);
+            LogService::log('. Changing order status to ' . $orderStatus);
             return self::changeOrderStatus($orderStatus, $orderId);
         } catch (Throwable $e) {
             $transaction?->rollBack();
-            LogService::danger('OrderStatusService. Error during cancellation: ' . $e->getMessage());
+            LogService::danger('. Error during cancellation: ' . $e->getMessage());
             return Result::error(['errors' => ['base' => $e->getMessage()]]);
         }
     }
@@ -330,7 +335,7 @@ class OrderStatusService
             if (!$order) {
                 return Result::notFound();
             }
-            LogService::log('OrderStatusService. order found for change status in ChangeOrderStatus method');
+            LogService::log('. order found for change status in ChangeOrderStatus method');
             $order->status = $orderStatus;
 
             if (!$order->save(true, ['status'])) {
@@ -348,21 +353,21 @@ class OrderStatusService
                         $order->created_by,
                         $orderId,
                     );
-                    LogService::log('OrderStatusService. notification constructor for created by');
+                    LogService::log('. notification constructor for created by');
                     if ($order->buyer_id) {
                         NotificationConstructor::orderOrderStatusChange(
                             $order->buyer_id,
                             $orderId,
                         );
                     }
-                    LogService::log('OrderStatusService. notification constructor for buyer id');
+                    LogService::log('. notification constructor for buyer id');
                     if ($order->manager_id) {
                         NotificationConstructor::orderOrderStatusChange(
                             $order->manager_id,
                             $orderId,
                         );
                     }
-                    LogService::log('OrderStatusService. notification constructor for manager id');
+                    LogService::log('. notification constructor for manager id');
                     if (
                         $order->fulfillment_id &&
                         in_array(
@@ -376,7 +381,7 @@ class OrderStatusService
                             $orderId,
                         );
                     }
-                    LogService::log('OrderStatusService. notification constructor for fulfillment id');
+                    LogService::log('. notification constructor for fulfillment id');
                     if (
                         $order->status ===
                         Order::STATUS_PARTIALLY_DELIVERED_TO_MARKETPLACE
@@ -397,7 +402,7 @@ class OrderStatusService
                         $order->manager_id,
                         $orderId,
                     );
-                    LogService::log('OrderStatusService. notification constructor for manager id');
+                    LogService::log('. notification constructor for manager id');
                 }
             } else {
                 if ($order->manager_id) {

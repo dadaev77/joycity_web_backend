@@ -9,23 +9,27 @@ use app\services\UserActionLogService as LogService;
 
 class NotificationManagementService
 {
+    public function init()
+    {
+        LogService::setController('NotificationManagementService');
+    }
     public static function markAsRead(int $notificationId): ResultAnswer
     {
         $notification = Notification::findOne(['id' => $notificationId]);
-        LogService::log('NotificationManagementService. Notification found by id ' . $notificationId);
+        LogService::log('Notification found by id ' . $notificationId);
         if (!$notification) {
-            LogService::log('NotificationManagementService. Notification not found by id ' . $notificationId);
+            LogService::log('Notification not found by id ' . $notificationId);
             return Result::success();
         }
-        LogService::log('NotificationManagementService. Notification found by id ' . $notificationId);
+        LogService::log('Notification found by id ' . $notificationId);
         $notification->is_read = 1;
-        LogService::log('NotificationManagementService. Notification is_read set to 1');
+        LogService::log('Notification is_read set to 1');
 
         if (!$notification->save()) {
-            LogService::log('NotificationManagementService. Notification not saved');
+            LogService::log('Notification not saved');
             return Result::errors($notification->getFirstErrors());
         }
-        LogService::log('NotificationManagementService. Notification saved');
+        LogService::log('Notification saved');
 
         return Result::success();
     }
