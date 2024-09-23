@@ -7,6 +7,12 @@ use app\models\User;
 
 class UserActionLogService
 {
+    private static $controller = 'controller not defined';
+    public static function setController(string $controller): void
+    {
+        self::$controller = $controller;
+    }
+
     private static function prependLog(string $message): void
     {
         $logFile = RawController::ACTION_LOG_FILE;
@@ -14,7 +20,6 @@ class UserActionLogService
         $newContent = $message . $currentContent;
         file_put_contents($logFile, $newContent);
     }
-
     public static function info(mixed $message): void
     {
         self::prependLog(self::renderMessage($message, 'primary'));
@@ -56,6 +61,7 @@ class UserActionLogService
         $message = str_replace("\n", "<br>", $message);
         $message = str_replace("    ", "&nbsp;&nbsp;&nbsp;&nbsp;", $message);
 
-        return "<p class='text-$type'>[-][-] $email [-][-] " . date('Y-m-d H:i') . " [-][-] $message </p> \n";
+        return "<p class='text-$type'>[-][-] $email [-][-] " . date('Y-m-d H:i') . " [-][-] <span class='text-muted'> " . self::$controller . "</span> [-][-] $message </p> \n";
+        // return "<p class='text-$type'>[-][-] $email [-][-] " . date('Y-m-d H:i') . " [-][-] $message </p> \n";
     }
 }

@@ -30,6 +30,11 @@ use app\services\twilio\TwilioService;
 
 class OrderController extends ClientController
 {
+    public function init()
+    {
+        parent::init();
+        LogService::setController('OrderController');
+    }
     public function behaviors()
     {
         $behaviours = parent::behaviors();

@@ -12,6 +12,10 @@ use Yii;
 
 class OrderDistributionService
 {
+    public function init()
+    {
+        Log::setController('OrderDistributionService');
+    }
     public const DISTRIBUTION_SCRIPT_TIMEOUT = 300;
     public const DISTRIBUTION_ACCEPT_TIMEOUT = 65;
 

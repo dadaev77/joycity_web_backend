@@ -10,6 +10,11 @@ use Yii;
 
 class CronController extends Controller
 {
+    public function init()
+    {
+        parent::init();
+        Log::setController('CronController');
+    }
     /**
      * Distributes the task to the next buyer.
      *
@@ -81,7 +86,10 @@ class CronController extends Controller
 
     public function actionLastTask()
     {
-        $latestTask = OrderDistribution::find()->orderBy(['id' => SORT_DESC])->one();
-        return $latestTask;
+
+        Log::info('Last task');
+        // $latestTask = OrderDistribution::find()->orderBy(['id' => SORT_DESC])->one();
+        // return $latestTask;
+
     }
 }
