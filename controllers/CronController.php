@@ -79,7 +79,7 @@ class CronController extends Controller
         return $buyersList[$nextIndex];
     }
 
-    public function actionGetLatestTask()
+    public function actionLastTask()
     {
         $latestTask = OrderDistribution::find()->orderBy(['id' => SORT_DESC])->one();
         return $latestTask;
