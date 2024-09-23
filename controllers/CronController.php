@@ -22,16 +22,18 @@ class CronController extends Controller
      */
     public function actionDistributeTask($taskId)
     {
-        Log::info("Distributing task with ID: $taskId");
         $actualTask = OrderDistribution::find()->where(['id' => $taskId])->one();
+
         if (!$actualTask) {
             Log::warning("Task not found: $taskId");
             return Yii::$app->response->setStatusCode(404, 'Task not found');
         }
+
         $buyersList = explode(',', $actualTask->buyer_ids_list);
+
         Log::info("Buyers list: " . implode(', ', $buyersList));
-        $maxIterations = 4; // Limit to 4 iterations
-        foreach (array_slice($buyersList, 0, $maxIterations) as $buyerId) {
+
+        foreach ($buyersList as $buyerId) {
             $command = "echo '* * * * * curl " . $_ENV['APP_URL'] . "/cron/dist-between-buyers?taskId=$taskId' | crontab -";
             exec($command);
         }
@@ -82,14 +84,5 @@ class CronController extends Controller
         }
 
         return $buyersList[$nextIndex];
-    }
-
-    public function actionLastTask()
-    {
-
-        Log::info('Last task');
-        // $latestTask = OrderDistribution::find()->orderBy(['id' => SORT_DESC])->one();
-        // return $latestTask;
-
     }
 }

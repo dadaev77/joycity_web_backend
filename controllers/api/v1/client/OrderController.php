@@ -13,6 +13,7 @@ use app\models\TypeDeliveryPoint;
 use app\models\User;
 use app\services\AttachmentService;
 use app\services\chat\ChatConstructorService;
+use app\services\CronService;
 use app\services\notification\NotificationConstructor;
 use app\services\order\OrderDistributionService;
 use app\services\order\OrderStatusService;
@@ -219,10 +220,7 @@ class OrderController extends ClientController
 
                 LogService::success('created conversation between manager and buyer');
             } else {
-                $distributionStatus = OrderDistributionService::createDistributionTask(
-                    $order->id,
-                );
-                LogService::warning('created distribution task for order with id ' . $order->id . '. because buyer is not assigned');
+                $distributionStatus = OrderDistributionService::createDistributionTask($order->id);
                 if (!$distributionStatus->success) {
                     $transaction?->rollBack();
                     return ApiResponse::codeErrors(
@@ -230,6 +228,8 @@ class OrderController extends ClientController
                         $distributionStatus->reason,
                     );
                 }
+                CronService::runDistribution($distributionStatus->result->id);
+                LogService::warning('buyer not assigned. created distribution for orderID: ' . $order->id);
             }
 
             $attachmentsToLink = [];

@@ -50,10 +50,6 @@ class OrderDistributionService
             Log::error('Failed to save task: ' . json_encode($task->getErrors()));
             return Result::errors($task->getFirstErrors());
         }
-
-        Log::info('Task ' . $task->id . ' created');
-        exec('curl -X GET "https://joycityrussia.friflex.com/cron/distribute-task?taskId=' . $task->id . '"');
-        return Result::success($task);
     }
 
     /**
