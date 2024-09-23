@@ -29,6 +29,7 @@ use yii\web\UploadedFile;
 use app\services\UserActionLogService as LogService;
 use app\services\twilio\TwilioService;
 use app\controllers\CronController;
+use app\models\OrderDistribution;
 
 class OrderController extends ClientController
 {
@@ -308,7 +309,7 @@ class OrderController extends ClientController
                     LogService::success('Order created with product');
                 } else {
                     LogService::warning('Order created without product');
-                    $distTaskID = DistributionTask::find()->where(['order_id' => $order->id])->one();
+                    $distTaskID = OrderDistribution::find()->where(['order_id' => $order->id])->one();
                     if ($distTaskID) {
                         (new CronController())->actionDistribution($distTaskID->id);
                     } else {
