@@ -28,6 +28,7 @@ use yii\base\Exception;
 use yii\web\UploadedFile;
 use app\services\UserActionLogService as LogService;
 use app\services\twilio\TwilioService;
+use app\controllers\CronController;
 
 class OrderController extends ClientController
 {
@@ -304,9 +305,15 @@ class OrderController extends ClientController
 
             if ($orderSave->success) {
                 if ($withProduct) {
-                    LogService::success('Product isset');
+                    LogService::success('Order created with product');
                 } else {
-                    LogService::warning('Non product order');
+                    LogService::warning('Order created without product');
+                    $distTaskID = DistributionTask::find()->where(['order_id' => $order->id])->one();
+                    if ($distTaskID) {
+                        (new CronController())->actionDistribution($distTaskID->id);
+                    } else {
+                        LogService::danger('Distribution task not found');
+                    }
                 }
                 return ApiResponse::byResponseCode(null, [
                     'info' => OrderOutputService::getEntity($order->id),

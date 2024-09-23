@@ -177,20 +177,20 @@ class Order extends OrderStructure
             self::STATUS_ARRIVED_TO_WAREHOUSE => 'Прибыл на склад',
             //если фф выбран поставляется к фф
             self::STATUS_TRANSFERRING_TO_FULFILLMENT =>
-                'Поставка к фулфилменту',
+            'Поставка к фулфилменту',
             self::STATUS_ARRIVED_TO_FULFILLMENT => 'Прибыла к фулфилменту',
             // после прибытия заполнение отчетов
             self::STATUS_FULFILLMENT_INSPECTION_COMPLETE =>
-                'Инспекция фулфилмента пройдена',
+            'Инспекция фулфилмента пройдена',
             self::STATUS_FULFILLMENT_PACKAGE_LABELING_COMPLETE =>
-                'Маркировка и упаковка завершена',
+            'Маркировка и упаковка завершена',
             self::STATUS_READY_TRANSFERRING_TO_MARKETPLACE =>
-                'Готово к отправке на маркетплейс',
+            'Готово к отправке на маркетплейс',
             self::STATUS_PARTIALLY_DELIVERED_TO_MARKETPLACE =>
-                'Частично доставлен на маркетплейс',
+            'Частично доставлен на маркетплейс',
             self::STATUS_PARTIALLY_PAID => 'Частично оплачено',
             self::STATUS_FULLY_DELIVERED_TO_MARKETPLACE =>
-                'Полностью доставлено на маркетплейс',
+            'Полностью доставлено на маркетплейс',
             self::STATUS_FULLY_PAID => 'Полностью оплачен',
             //варианты закрытия
             self::STATUS_CANCELLED_REQUEST => 'Отмененная заявка',
