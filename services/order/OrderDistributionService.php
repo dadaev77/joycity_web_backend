@@ -32,7 +32,6 @@ class OrderDistributionService
      */
     public static function createDistributionTask(int $orderId, int $onlyBuyerId = 0): ResultAnswer
     {
-
         $buyersList = $onlyBuyerId
             ? (string) $onlyBuyerId
             : self::createBuyersList(Order::findOne($orderId));
@@ -44,7 +43,6 @@ class OrderDistributionService
             'status' => OrderDistribution::STATUS_IN_WORK,
             'buyer_ids_list' => $buyersList,
         ]);
-
 
         if (!$task->save()) {
             Log::error('Failed to save task: ' . json_encode($task->getErrors()));
