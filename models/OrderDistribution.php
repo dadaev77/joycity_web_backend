@@ -3,6 +3,7 @@
 namespace app\models;
 
 use yii\db\ActiveQuery;
+use app\services\UserActionLogService as Log;
 
 /**
  * This is the model class for table "order_distribution".
@@ -102,5 +103,12 @@ class OrderDistribution extends Base
     public function getOrder()
     {
         return $this->hasOne(Order::class, ['id' => 'order_id']);
+    }
+
+    public function afterSave($insert, $changedAttributes)
+    {
+        if (!$insert) {
+            Log::info('OrderDistribution afterSave: ' . $this->id);
+        }
     }
 }
