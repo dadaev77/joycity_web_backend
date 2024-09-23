@@ -44,10 +44,12 @@ class OrderDistributionService
             'buyer_ids_list' => $buyersList,
         ]);
 
-        if (!$task->save()) {
-            Log::error('Failed to save task: ' . json_encode($task->getErrors()));
-            return Result::errors($task->getFirstErrors());
+        if ($task->save()) {
+            Log::info('Distribution task created: ' . $task->id);
+            return Result::success($task);
         }
+        Log::error('Error creating distribution task: ' . json_encode($task->getFirstErrors(), JSON_THROW_ON_ERROR));
+        return Result::errors($task->getFirstErrors());
     }
 
     /**
