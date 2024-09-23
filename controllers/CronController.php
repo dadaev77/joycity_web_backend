@@ -18,16 +18,13 @@ class CronController extends Controller
     public function actionDistributeTask($taskId)
     {
         Log::info("Distributing task with ID: $taskId");
-
         $actualTask = OrderDistribution::findOne($taskId);
         if (!$actualTask) {
             Log::warning("Task not found: $taskId");
             return Yii::$app->response->setStatusCode(404, 'Task not found');
         }
-
         $buyersList = explode(',', $actualTask->buyer_ids_list);
         Log::info("Buyers list: " . implode(', ', $buyersList));
-
         $maxIterations = 4; // Limit to 4 iterations
         foreach (array_slice($buyersList, 0, $maxIterations) as $buyerId) {
             $command = "echo '* * * * * curl " . $_ENV['APP_URL'] . "/cron/dist-between-buyers?taskId=$taskId' | crontab -";
@@ -55,17 +52,19 @@ class CronController extends Controller
         Log::info("Current buyer ID: $currentBuyerId");
 
         $nextBuyerId = $this->getNextBuyerId($buyersList, $currentBuyerId);
-        if (!$nextBuyerId) {
-            Log::info("No next buyer found, removing cron job.");
-            exec('crontab -r');
-            return;
-        }
+        // if (!$nextBuyerId) {
+        //     Log::info("No next buyer found, removing cron job.");
+        //     exec('crontab -r');
+        //     return;
+        // }
 
         $currentTask->current_buyer_id = $nextBuyerId;
+
         if (!$currentTask->save()) {
             Log::error("Failed to update current buyer ID: " . implode(', ', $currentTask->getErrors()));
             return;
         };
+
         Log::info("Updated current buyer ID to: $nextBuyerId");
     }
     private function getNextBuyerId($buyersList, $currentBuyerId)
@@ -74,7 +73,7 @@ class CronController extends Controller
         $nextIndex = $currentIndex + 1;
 
         if ($nextIndex == null || $nextIndex >= count($buyersList)) {
-            return false;
+            return $buyersList[0];
         }
 
         return $buyersList[$nextIndex];
