@@ -18,7 +18,7 @@ class CronController extends Controller
     public function actionDistributeTask($taskId)
     {
         Log::info("Distributing task with ID: $taskId");
-        $actualTask = OrderDistribution::findOne($taskId);
+        $actualTask = OrderDistribution::find()->where(['id' => $taskId])->one();
         if (!$actualTask) {
             Log::warning("Task not found: $taskId");
             return Yii::$app->response->setStatusCode(404, 'Task not found');
