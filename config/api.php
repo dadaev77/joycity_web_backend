@@ -91,7 +91,7 @@ $config = [
         'urlManager' => [
             'enablePrettyUrl' => true,
             'enableStrictParsing' => false,
-            'showScriptName' => false,
+            'showScriptName' => true,
             'rules' => [
                 [
                     'class' => UrlRule::class,
@@ -160,7 +160,6 @@ $config = [
                     'pluralize' => false,
                 ],
                 'sign-up' => 'api/v1/auth/register',
-
                 'api/v1/<controller>/<id:\d+>/<action>' =>
                 'api/v1/<controller>/<action>',
                 'api/v1/<group>/<controller>/<action>' =>

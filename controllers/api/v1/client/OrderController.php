@@ -228,8 +228,6 @@ class OrderController extends ClientController
                         $distributionStatus->reason,
                     );
                 }
-                CronService::runDistribution($distributionStatus->result->id);
-                LogService::warning('buyer not assigned. created distribution for orderID: ' . $order->id);
             }
 
             $attachmentsToLink = [];
