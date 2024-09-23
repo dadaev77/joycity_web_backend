@@ -77,6 +77,7 @@ class OrderController extends ClientController
         $fulfillmentId = $request->post('fulfillment_id');
         $transaction = null;
         $typeDeliveryPointId = $request->post('type_delivery_point_id');
+        (bool) $withProduct = false;
 
         try {
             $randomManager = User::find()
@@ -151,6 +152,7 @@ class OrderController extends ClientController
             }
 
             if ($order->product_id) {
+                $withProduct = true;
                 $buyerId = $order->product->buyer_id;
                 $distributionStatus = OrderDistributionService::createDistributionTask($order->id, $buyerId);
                 LogService::success('add buyer to order. buyer id is ' . $buyerId);
@@ -301,10 +303,11 @@ class OrderController extends ClientController
             $transaction?->commit();
 
             if ($orderSave->success) {
-                if (!$order->id) {
-                    LogService::warning('order hasnt got a product. Need to distribute');
+                if ($withProduct) {
+                    LogService::success('Product isset');
+                } else {
+                    LogService::warning('Non product order');
                 }
-                LogService::success('order saved with id ' . $order->id . '. Flow is correct');
                 return ApiResponse::byResponseCode(null, [
                     'info' => OrderOutputService::getEntity($order->id),
                     'message' => 'Order created successfully',
