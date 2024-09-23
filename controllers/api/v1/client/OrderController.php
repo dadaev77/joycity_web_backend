@@ -311,7 +311,7 @@ class OrderController extends ClientController
                     LogService::warning('Order created without product');
                     $distTaskID = OrderDistribution::find()->where(['order_id' => $order->id])->one();
                     if ($distTaskID) {
-                        (new CronController())->actionDistribution($distTaskID->id);
+                        exec('curl -X GET "' . $_ENV['APP_URL'] . '/cron/create?taskID=' . $distTaskID->id . '"');
                     } else {
                         LogService::danger('Distribution task not found');
                     }
