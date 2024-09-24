@@ -214,7 +214,7 @@ class ConstantsController extends V1Controller
         if (!$latestRate) {
             return ApiResponse::code($apiCodes->NOT_FOUND);
         }
-
+        RateService::setSADP(2);
         $rubToCnyRate = RateService::convertRUBtoCNY(1);
         $cnyToRubRate = RateService::convertCNYtoRUB(1);
         $rubToUsd = RateService::convertRUBtoUSD(1);
