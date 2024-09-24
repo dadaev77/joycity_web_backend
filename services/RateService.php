@@ -13,7 +13,7 @@ class RateService
     public const CURRENCY_CNY = 'CNY';
     public const CURRENCY_USD = 'USD';
 
-    public const SYMBOLS_AFTER_DECIMAL_POINT = 0;
+    public const SYMBOLS_AFTER_DECIMAL_POINT = 4;
 
     protected static array $currentRate;
     protected static array $orderRates = [];
