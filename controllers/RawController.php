@@ -123,6 +123,7 @@ class RawController extends Controller
         $logs = json_encode($data, JSON_PRETTY_PRINT);
 
         $logs = htmlspecialchars_decode($logs);
+        $logs = str_replace(["\n", "\r"], '', $logs);
         $logs = '<pre class="format">' . $logs . '</pre>';
 
         if (file_exists(__DIR__ . '/../runtime/logs/front.log')) {
