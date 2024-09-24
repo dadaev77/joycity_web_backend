@@ -94,6 +94,7 @@
                                         <div class="col h-100">
                                             <ul class="list-unstyled p-0 card p-3 h-100">
                                                 <li class="d-block">
+                                                    <p class="mb-0">ID: <?= $buyer->id ?></p>
                                                     <p class="mb-0">Email: <?= $buyer->email ?></p>
                                                     <p class="mb-0">Name: <?= $buyer->name ?></p>
                                                     <p class="mb-0">Surname: <?= $buyer->surname ?></p>
