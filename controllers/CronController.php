@@ -48,7 +48,7 @@ class CronController extends Controller
     private function getNextBuyer(array $buyers, int $currentBuyer): int
     {
         $index = array_search($currentBuyer, $buyers);
-        if ($index === false) {
+        if ($index === false || $index === count($buyers) - 1) {
             return $buyers[0];
         }
         return $buyers[$index + 1];
