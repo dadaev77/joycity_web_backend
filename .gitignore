@@ -56,3 +56,4 @@ controllers/api/v1/user/RelationshipController.php
 config/db.php
 vendor
 config/smtp.php
+/entrypoint/api/attachments/
