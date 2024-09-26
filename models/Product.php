@@ -110,7 +110,7 @@ class Product extends Base
                 'match',
                 'pattern' => '/^[A-Za-zА-Яа-я0-9\s]{1,60}$/u',
                 'message' =>
-                    'Имя товара должно содержать кириллицу, латиницу, цифры и не превышать 60 символов. Допустимы символы: A-z, А-я, 0-9 и пробел.',
+                'Имя товара должно содержать кириллицу, латиницу, цифры и не превышать 60 символов. Допустимы символы: A-z, А-я, 0-9 и пробел.',
             ],
             [
                 ['subcategory_id'],
@@ -211,9 +211,21 @@ class Product extends Base
      */
     public function getAttachments()
     {
-        return $this->hasMany(Attachment::class, [
-            'id' => 'attachment_id',
-        ])->via('productLinkAttachments');
+        return $this->hasMany(Attachment::class, ['id' => 'attachment_id'])->via('productLinkAttachments');
+    }
+    public function getAttachmentsSmallSize()
+    {
+        return $this->hasMany(Attachment::class, ['id' => 'attachment_id'])->andOnCondition(['img_size' => 'small'])->via('productLinkAttachments');
+    }
+
+    public function getAttachmentsMediumSize()
+    {
+        return $this->hasMany(Attachment::class, ['id' => 'attachment_id'])->andOnCondition(['img_size' => 'medium'])->via('productLinkAttachments');
+    }
+
+    public function getAttachmentsLargeSize()
+    {
+        return $this->hasMany(Attachment::class, ['id' => 'attachment_id'])->andOnCondition(['img_size' => 'large'])->via('productLinkAttachments');
     }
 
     /**

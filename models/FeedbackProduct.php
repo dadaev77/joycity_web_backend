@@ -109,4 +109,25 @@ class FeedbackProduct extends \app\models\Base
             'id' => 'attachment_id',
         ])->via('feedbackProductLinkAttachments');
     }
+
+    public function getAttachmentsSmallSize()
+    {
+        return $this->getAttachments()->andOnCondition([
+            'img_size' => 'small',
+        ])->via('feedbackProductLinkAttachments');
+    }
+
+    public function getAttachmentsMediumSize()
+    {
+        return $this->getAttachments()->andOnCondition([
+            'img_size' => 'medium',
+        ])->via('feedbackProductLinkAttachments');
+    }
+
+    public function getAttachmentsLargeSize()
+    {
+        return $this->getAttachments()->andOnCondition([
+            'img_size' => 'large',
+        ])->via('feedbackProductLinkAttachments');
+    }
 }

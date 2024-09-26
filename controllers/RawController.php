@@ -16,6 +16,8 @@ use app\services\chat\ChatConstructorService;
 use app\services\twilio\TwilioService;
 use app\services\UserActionLogService as LogService;
 use Twilio\Rest\Client;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver as GdDriver;
 
 
 class RawController extends Controller
@@ -236,5 +238,21 @@ class RawController extends Controller
         } catch (\yii\db\Exception $e) {
             return ApiResponse::byResponseCode($apiCodes->INTERNAL_ERROR, ['message' => $e->getMessage()]);
         }
+    }
+    public function actionUpdateImageSizes()
+    {
+        $attachments = Attachment::find()->all();
+        $sizes = [256, 512, 1024];
+        foreach ($attachments as $attachment) {
+            if (!$attachment->img_size) {
+                $manager = new ImageManager(new GdDriver());
+                $image = $manager->read($attachment->path);
+                foreach ($sizes as $size) {
+                    $image->cover($size, $size)->toWebp(80)->save;
+                    $image->save($attachment->path . '_' . $size . '.jpg');
+                }
+            }
+        }
+        return ApiResponse::byResponseCode($apiCodes->SUCCESS, ['message' => 'Image sizes updated successfully']);
     }
 }

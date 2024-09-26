@@ -75,6 +75,8 @@ use yii\db\ActiveQuery;
  * @property OrderDistribution $orderDistribution
  * @property OrderLinkAttachment[] $orderLinkAttachments
  * @property Attachment[] $attachments
+ * //getter images with size
+ * @property string[] $attachmentsWithSize
  * @property OrderRate $orderRate
  * @property OrderTracking[] $orderTrackings
  * @property Product $product
@@ -236,7 +238,7 @@ class OrderStructure extends Base
                 'match',
                 'pattern' => '/^[A-Za-zА-Яа-я0-9\s]{1,60}$/u',
                 'message' =>
-                    'Имя товара должно содержать кириллицу, латиницу, цифры и не превышать 60 символов. Допустимы символы: A-z, А-я, 0-9 и пробел.',
+                'Имя товара должно содержать кириллицу, латиницу, цифры и не превышать 60 символов. Допустимы символы: A-z, А-я, 0-9 и пробел.',
             ],
         ];
     }
@@ -468,6 +470,18 @@ class OrderStructure extends Base
         return $this->hasMany(Attachment::class, [
             'id' => 'attachment_id',
         ])->via('orderLinkAttachments');
+    }
+    public function getAttachmentsSmallSize()
+    {
+        return $this->hasMany(Attachment::class, ['id' => 'attachment_id'])->andOnCondition(['img_size' => 'small'])->via('orderLinkAttachments');
+    }
+    public function getAttachmentsMediumSize()
+    {
+        return $this->hasMany(Attachment::class, ['id' => 'attachment_id'])->andOnCondition(['img_size' => 'medium'])->via('orderLinkAttachments');
+    }
+    public function getAttachmentsLargeSize()
+    {
+        return $this->hasMany(Attachment::class, ['id' => 'attachment_id'])->andOnCondition(['img_size' => 'large'])->via('orderLinkAttachments');
     }
 
     /**

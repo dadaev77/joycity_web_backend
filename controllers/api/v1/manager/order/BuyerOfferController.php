@@ -233,7 +233,11 @@ class BuyerOfferController extends ManagerController
             $transaction?->commit();
 
             return ApiResponse::info(
-                OrderOutputService::getEntity($buyerOffer->order_id),
+                OrderOutputService::getEntity(
+                    $buyerOffer->order_id,
+                    false, // Show deleted
+                    'small', // Size of output images
+                ),
             );
         } catch (Throwable $e) {
             isset($transaction) && $transaction->rollBack();

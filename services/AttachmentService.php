@@ -13,14 +13,20 @@ use Imagick;
 use Yii;
 use yii\web\HttpException;
 use yii\web\UploadedFile;
+// intervention image
 use Intervention\Image\ImageManager;
-use Intervention\Image\Image;
+use Intervention\Image\Drivers\Gd\Driver as GdDriver;
 
 class AttachmentService
 {
     public const PUBLIC_PATH = 'attachments';
     public const AllowedImageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'heic'];
     public const AllowedVideoExtensions = ['mp4', 'avi', 'mov'];
+    public const IMAGE_SIZES = [
+        ['width' => 256, 'height' => 256, 'name' => 'small'],
+        ['width' => 512, 'height' => 512, 'name' => 'medium'],
+        ['width' => 1024, 'height' => 1024, 'name' => 'large'],
+    ];
 
     /**
      * @throws HttpException
@@ -201,19 +207,23 @@ class AttachmentService
         $out = [];
 
         foreach ($files as $file) {
-            $fileModelResponse = self::writeFileWithModel($file);
+            // create images for all sizes
+            foreach (self::IMAGE_SIZES as $size) {
+                $fileModelResponse = self::writeFileWithModel($file, $size['width'], $size['height'], $size['name']);
 
-            if (!$fileModelResponse->success) {
-                $transaction?->rollBack();
 
-                return Result::error([
-                    'errors' => [
-                        'file_save' => 'Ошибка: ошибка записи файлов',
-                    ],
-                ]);
+                if (!$fileModelResponse->success) {
+                    $transaction?->rollBack();
+
+                    return Result::error([
+                        'errors' => [
+                            'file_save' => 'Ошибка: ошибка записи файлов',
+                        ],
+                    ]);
+                }
+
+                $out[] = $fileModelResponse->result;
             }
-
-            $out[] = $fileModelResponse->result;
         }
 
         $transaction?->commit();
@@ -221,46 +231,20 @@ class AttachmentService
         return Result::success($out);
     }
 
-    public static function writeFileWithModel(UploadedFile $file): ResultAnswer
+    public static function writeFileWithModel(UploadedFile $file, int $width = 1024, int $height = 1024, string $name = 'large'): ResultAnswer
     {
         $extension = pathinfo($file->name, PATHINFO_EXTENSION);
         $mimeType = $file->type;
-        $pathName = time() . '_' . random_int(1e3, 9e3) . '_' . md5(file_get_contents($file->tempName));
+        $pathName = $name . '--' . Yii::$app->security->generateRandomString(16);
         $path = '/' . self::PUBLIC_PATH . "/$pathName.$extension";
         $fullPath = self::getFilesPath() . "/$pathName.$extension";
         $size = $file->size;
 
         if (in_array($extension, self::AllowedImageExtensions, true)) {
 
-            $image = Image::make($file->tempName)
-                ->uniqname()
-                ->fit(1024, 1024, function ($constraint) {
-                    $constraint->aspectRatio();
-                    $constraint->upsize();
-                })
-                ->thumbnails([
-                    'small' => [256, 256],
-                    'medium' => [512, 512],
-                    'large' => [1024, 1024],
-                ])
-                ->encode('webp', 80);
-
-            $image->save($fullPath);
-            // $imageManager = new ImageManager(['driver' => 'gd']);
-            // $image = $imageManager->make($file->tempName)
-            //     ->uniqname()
-            //     ->fit(1024, 1024, function ($constraint) {
-            //         $constraint->aspectRatio();
-            //         $constraint->upsize();
-            //     })
-            //     ->thumbnails([
-            //         'small' => [256, 256],
-            //         'medium' => [512, 512],
-            //         'large' => [1024, 1024],
-            //     ])
-            //     ->encode('webp', 80);
-
-            // $image->save($fullPath);
+            $manager = new ImageManager(new GdDriver());
+            $image = $manager->read($file->tempName);
+            $image->cover($width, $height)->toWebp(80)->save($fullPath);
             $mimeType = mime_content_type($fullPath);
             $size = filesize($fullPath);
         } else {
@@ -281,6 +265,7 @@ class AttachmentService
             'size' => $size,
             'extension' => $extension,
             'mime_type' => $mimeType,
+            'img_size' => $name,
         ]);
 
         if (!$attachment->validate()) {

@@ -27,7 +27,10 @@ class ProductController extends ClientController
         }
 
         return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
-            'info' => ProductOutputService::getEntity($id),
+            'info' => ProductOutputService::getEntity(
+                $id,
+                'small'
+            ),
         ]);
     }
 }

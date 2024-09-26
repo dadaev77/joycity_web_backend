@@ -22,9 +22,7 @@ class OrderController extends FulfillmentController
         $behaviors['verbFilter']['actions']['history'] = ['get'];
         $behaviors['verbFilter']['actions']['arrived-to-fulfilment'] = ['put'];
         $behaviors['verbFilter']['actions']['view'] = ['get'];
-        $behaviors['verbFilter']['actions'][
-            'ready-transferring-marketplace'
-        ] = ['put'];
+        $behaviors['verbFilter']['actions']['ready-transferring-marketplace'] = ['put'];
         $behaviors['verbFilter']['actions']['finish-order'] = ['put'];
 
         return $behaviors;
@@ -47,7 +45,13 @@ class OrderController extends FulfillmentController
             return ApiResponse::code($apiCodes->NO_ACCESS);
         }
 
-        return ApiResponse::info(OrderOutputService::getEntity($id));
+        return ApiResponse::info(
+            OrderOutputService::getEntity(
+                $id,
+                false, // Show deleted
+                'small', // Size of output images
+            ),
+        );
     }
 
     public function actionMy()
@@ -62,7 +66,11 @@ class OrderController extends FulfillmentController
             ->orderBy(['id' => SORT_DESC]);
 
         return ApiResponse::collection(
-            OrderOutputService::getCollection($orderIds->column()),
+            OrderOutputService::getCollection(
+                $orderIds->column(),
+                false, // Show deleted
+                'small', // Size of output images
+            ),
         );
     }
 
@@ -115,7 +123,7 @@ class OrderController extends FulfillmentController
 
             if (
                 $order->status !==
-                    Order::STATUS_FULFILLMENT_PACKAGE_LABELING_COMPLETE ||
+                Order::STATUS_FULFILLMENT_PACKAGE_LABELING_COMPLETE ||
                 $order->fulfillment_id !== $user->id
             ) {
                 return ApiResponse::code($apiCodes->NO_ACCESS);
@@ -167,7 +175,11 @@ class OrderController extends FulfillmentController
             ->orderBy(['id' => SORT_DESC]);
 
         return ApiResponse::collection(
-            OrderOutputService::getCollection($orderIds->column()),
+            OrderOutputService::getCollection(
+                $orderIds->column(),
+                false, // Show deleted
+                'small', // Size of output images
+            ),
         );
     }
 
@@ -186,7 +198,7 @@ class OrderController extends FulfillmentController
             if (
                 $order->fulfillment_id !== $user->id ||
                 $order->type_delivery_point_id !==
-                    TypeDeliveryPoint::TYPE_FULFILLMENT ||
+                TypeDeliveryPoint::TYPE_FULFILLMENT ||
                 $order->status !== Order::STATUS_FULLY_PAID
             ) {
                 return ApiResponse::code($apiCodes->NO_ACCESS);
@@ -215,7 +227,13 @@ class OrderController extends FulfillmentController
 
             $transaction?->commit();
 
-            return ApiResponse::info(OrderOutputService::getEntity($order->id));
+            return ApiResponse::info(
+                OrderOutputService::getEntity(
+                    $order->id,
+                    false, // Show deleted
+                    'small', // Size of output images
+                ),
+            );
         } catch (Throwable $e) {
             isset($transaction) && $transaction->rollBack();
 

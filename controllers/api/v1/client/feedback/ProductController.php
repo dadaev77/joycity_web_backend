@@ -126,6 +126,7 @@ class ProductController extends ClientController
             return ApiResponse::code($apiCodes->SUCCESS, [
                 'info' => FeedbackProductOutputService::getEntity(
                     $newReview->id,
+                    'small',
                 ),
             ]);
         } catch (BaseException) {
@@ -152,6 +153,7 @@ class ProductController extends ClientController
             'count' => $count,
             'collection' => FeedbackProductOutputService::getCollection(
                 $collection,
+                'small',
             ),
         ]);
     }

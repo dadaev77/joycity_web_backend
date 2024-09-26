@@ -12,39 +12,54 @@ use app\services\SqlQueryService;
 
 class OrderOutputService extends OutputService
 {
-    public static function getEntity(int $id, $showDeleted = false): array
+    /**
+     * @param int $id
+     * @param bool $showDeleted
+     * @param string $imageSize ['small', 'medium', 'large']
+     * @return array
+     * @throws Exception\InvalidParamException
+     */
+    public static function getEntity(int $id, $showDeleted = false, $imageSize = 'large'): array
     {
-        return self::getCollection([$id], $showDeleted)[0];
+        return self::getCollection([$id], $showDeleted, $imageSize)[0];
     }
 
-    public static function getCollection(array $ids, $showDeleted = false): array
+    /**
+     * @param array $ids
+     * @param bool $showDeleted
+     * @param string $imageSize ['small', 'medium', 'large']
+     * @return array
+     * @throws Exception\InvalidParamException
+     */
+    public static function getCollection(array $ids, $showDeleted = false, $imageSize = 'large'): array
     {
+        $relations = [
+            'fulfillmentMarketplaceTransactions' => fn($q) => $q->orderBy(['id' => SORT_DESC]),
+            'createdBy' => fn($q) => $q->select(SqlQueryService::getUserSelect())->with(['avatar']),
+            'buyer' => fn($q) => $q->select(SqlQueryService::getBuyerSelect())->with(['avatar']),
+            'manager' => fn($q) => $q->select(SqlQueryService::getUserSelect())->with(['avatar']),
+            'buyerOffers' => fn($q) => $q->andWhere(['<>', 'status', BuyerOffer::STATUS_DECLINED])->orderBy(['status' => SORT_DESC]),
+            'fulfillment' => fn($q) => $q->select(SqlQueryService::getUserSelect())->with(['avatar']),
+            'fulfillmentOffer',
+            'buyerDeliveryOffer',
+            'deliveryPointAddress',
+            'typeDelivery',
+            'typeDeliveryPoint',
+            'typePackaging',
+            'chats',
+            'subcategory' => fn($q) => $q->with(['category']),
+            'product' => fn($q) => $q->select(['id', 'name', 'description', 'product_height', 'product_width', 'product_depth', 'product_weight'])->with(['attachments']),
+            'productInspectionReports',
+            'fulfillmentInspectionReport',
+            'fulfillmentStockReport' => fn($q) => $q->with(['attachments']),
+            'fulfillmentPackagingLabeling' => fn($q) => $q->with(['attachments']),
+            'productStockReports' => fn($q) => $q->with(['attachments']),
+            'orderTrackings',
+            'orderRate',
+        ];
+
         $query = Order::find()
-            ->with([
-                'fulfillmentMarketplaceTransactions' => fn ($q) => $q->orderBy(['id' => SORT_DESC]),
-                'attachments',
-                'createdBy' => fn ($q) => $q->select(SqlQueryService::getUserSelect())->with(['avatar']),
-                'buyer' => fn ($q) => $q->select(SqlQueryService::getBuyerSelect())->with(['avatar']),
-                'manager' => fn ($q) => $q->select(SqlQueryService::getUserSelect())->with(['avatar']),
-                'buyerOffers' => fn ($q) => $q->andWhere(['<>', 'status', BuyerOffer::STATUS_DECLINED])->orderBy(['status' => SORT_DESC]),
-                'fulfillment' => fn ($q) => $q->select(SqlQueryService::getUserSelect())->with(['avatar']),
-                'fulfillmentOffer',
-                'buyerDeliveryOffer',
-                'deliveryPointAddress',
-                'typeDelivery',
-                'typeDeliveryPoint',
-                'typePackaging',
-                'chats',
-                'subcategory' => fn ($q) => $q->with(['category']),
-                'product' => fn ($q) => $q->select(['id', 'name', 'description', 'product_height', 'product_width', 'product_depth', 'product_weight'])->with(['attachments']),
-                'productInspectionReports',
-                'fulfillmentInspectionReport',
-                'fulfillmentStockReport' => fn ($q) => $q->with(['attachments']),
-                'fulfillmentPackagingLabeling' => fn ($q) => $q->with(['attachments']),
-                'productStockReports' => fn ($q) => $q->with(['attachments']),
-                'orderTrackings',
-                'orderRate',
-            ])
+            ->with($relations)
             ->orderBy(self::getOrderByIdExpression($ids))
             ->where(['order.id' => $ids]);
 
@@ -52,7 +67,7 @@ class OrderOutputService extends OutputService
             $query->showWithDeleted();
         }
 
-        return array_map(static function ($model) {
+        return array_map(static function ($model) use ($imageSize) {
             $info = ModelTypeHelper::toArray($model);
             $fulfilmentMarketplaceDeliveryInfo = MarketplaceTransactionService::getDeliveredCountInfo($info['id']);
             $info['fulfilmentMarketplaceDeliveryInfo'] = $fulfilmentMarketplaceDeliveryInfo ?: null;
@@ -73,6 +88,13 @@ class OrderOutputService extends OutputService
                 unset($chat['order_id'], $chat['user_verification_request_id']);
             }
             unset($chat);
+
+            $info['attachments'] = match ($imageSize) {
+                'small' => $model->attachmentsSmallSize,
+                'medium' => $model->attachmentsMediumSize,
+                'large' => $model->attachmentsLargeSize,
+                default => $model->attachments,
+            };
 
             if ($info['product']) {
                 $info['attachments'] = array_merge(

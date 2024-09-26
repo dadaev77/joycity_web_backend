@@ -198,6 +198,7 @@ class SearchController extends ClientController
         return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
             'collection' => ProductOutputService::getCollection(
                 $query->column(),
+                'small', // Size of output images
             ),
         ]);
     }
@@ -218,6 +219,7 @@ class SearchController extends ClientController
         return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
             'collection' => ProductOutputService::getCollection(
                 $collectionQuery->column(),
+                'small', // Size of output images
             ),
         ]);
     }
@@ -246,6 +248,7 @@ class SearchController extends ClientController
         return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
             'collection' => ProductOutputService::getCollection(
                 $collectionQuery->column(),
+                'small', // Size of output images
             ),
         ]);
     }

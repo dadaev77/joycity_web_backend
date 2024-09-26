@@ -112,7 +112,13 @@ class OrderController extends ManagerController
             LogService::log('ManagerOrderController. order tracking constructor for order id: ' . $order_id . ' by Manager id: ' . $user->id);
             $transaction?->commit();
 
-            return ApiResponse::info(OrderOutputService::getEntity($order->id));
+            return ApiResponse::info(
+                OrderOutputService::getEntity(
+                    $order->id,
+                    false, // Show deleted
+                    'small', // Size of output images
+                ),
+            );
         } catch (Throwable $e) {
             LogService::danger('ManagerOrderController. Error finish order for order id: ' . $order_id . ' by Manager id: ' . $user->id);
             isset($transaction) && $transaction->rollBack();
@@ -174,7 +180,11 @@ class OrderController extends ManagerController
 
         return ApiResponse::codeCollection(
             $apiCodes->SUCCESS,
-            OrderOutputService::getCollection($queryModel->column()),
+            OrderOutputService::getCollection(
+                $queryModel->column(),
+                false, // Show deleted
+                'small', // Size of output images
+            ),
         );
     }
 
@@ -197,7 +207,11 @@ class OrderController extends ManagerController
 
         return ApiResponse::codeInfo(
             $apiCodes->SUCCESS,
-            OrderOutputService::getEntity($order->id),
+            OrderOutputService::getEntity(
+                $order->id,
+                false, // Show deleted
+                'small', // Size of output images
+            ),
         );
     }
 }

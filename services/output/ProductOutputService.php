@@ -9,16 +9,15 @@ use app\services\SqlQueryService;
 
 class ProductOutputService extends OutputService
 {
-    public static function getEntity(int $id, string $imageSize = 'small'): array
+    public static function getEntity(int $id, string $imageSize = 'large'): array
     {
         return self::getCollection([$id], $imageSize)[0];
     }
 
-    public static function getCollection(array $ids, string $imageSize = 'small'): array
+    public static function getCollection(array $ids, string $imageSize = 'large'): array
     {
         $query = Product::find()
             ->with([
-                'attachments',
                 'buyer' => fn($q) => $q
                     ->select(SqlQueryService::getBuyerSelect())
                     ->with(['avatar']),
@@ -27,7 +26,7 @@ class ProductOutputService extends OutputService
             ->orderBy(self::getOrderByIdExpression($ids))
             ->where(['id' => $ids]);
 
-        return array_map(static function ($model) {
+        return array_map(static function ($model) use ($imageSize) {
             $info = ModelTypeHelper::toArray($model);
 
             foreach ($info as $key => $value) {
@@ -35,6 +34,13 @@ class ProductOutputService extends OutputService
                     $info[$key] = RateService::outputInUserCurrency($value);
                 }
             }
+
+            $info['attachments'] = match ($imageSize) {
+                'small' => $model->getAttachmentsSmallSize,
+                'medium' => $model->getAttachmentsMediumSize,
+                'large' => $model->getAttachmentsLargeSize,
+                default => $model->attachments,
+            };
 
             $info['price'] = [
                 'min' => min(

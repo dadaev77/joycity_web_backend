@@ -317,7 +317,13 @@ class ReportController extends BuyerController
 
             $transaction?->commit();
 
-            return ApiResponse::info(OrderOutputService::getEntity($order_id));
+            return ApiResponse::info(
+                OrderOutputService::getEntity(
+                    $order_id,
+                    false, // Show deleted
+                    'small', // Size of output images
+                ),
+            );
         } catch (Throwable $e) {
             isset($transaction) && $transaction->rollBack();
 

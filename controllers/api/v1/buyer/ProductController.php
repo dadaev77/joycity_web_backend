@@ -114,7 +114,10 @@ class ProductController extends BuyerController
             $transaction?->commit();
 
             return ApiResponse::info(
-                ProductOutputService::getEntity($product->id),
+                ProductOutputService::getEntity(
+                    $product->id,
+                    'small'
+                ),
             );
         } catch (Throwable $e) {
             isset($transaction) && $transaction->rollBack();
@@ -242,7 +245,10 @@ class ProductController extends BuyerController
 
             $transaction?->commit();
 
-            return ApiResponse::info(ProductOutputService::getEntity($id));
+            return ApiResponse::info(ProductOutputService::getEntity(
+                $id,
+                'small'
+            ));
         } catch (Throwable $e) {
             $transaction?->rollBack();
 
@@ -260,7 +266,10 @@ class ProductController extends BuyerController
         }
 
         return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
-            'info' => ProductOutputService::getEntity($id),
+            'info' => ProductOutputService::getEntity(
+                $id,
+                'small'
+            ),
         ]);
     }
 
@@ -301,7 +310,10 @@ class ProductController extends BuyerController
             ->column();
 
         return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
-            'collection' => ProductOutputService::getCollection($idsCollection),
+            'collection' => ProductOutputService::getCollection(
+                $idsCollection,
+                'small'
+            ),
         ]);
     }
 }

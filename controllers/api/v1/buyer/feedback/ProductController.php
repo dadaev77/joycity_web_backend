@@ -48,6 +48,7 @@ class ProductController extends \app\controllers\api\v1\BuyerController
             'count' => $count,
             'collection' => FeedbackProductOutputService::getCollection(
                 $collection,
+                'small'
             ),
         ]);
     }

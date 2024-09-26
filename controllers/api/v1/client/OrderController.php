@@ -481,7 +481,11 @@ class OrderController extends ClientController
         }
 
         return ApiResponse::collection(
-            OrderOutputService::getCollection($orderIds->column()),
+            OrderOutputService::getCollection(
+                $orderIds->column(),
+                false, // Show deleted
+                'small', // Size of output images
+            ),
         );
     }
 
@@ -502,7 +506,11 @@ class OrderController extends ClientController
         }
 
         return ApiResponse::collection(
-            OrderOutputService::getCollection($orderIds->column()),
+            OrderOutputService::getCollection(
+                $orderIds->column(),
+                false, // Show deleted
+                'small', // Size of output images
+            ),
         );
     }
 

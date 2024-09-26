@@ -69,7 +69,11 @@ class OrderController extends InternalController
         }
 
         return ApiResponse::collection(
-            OrderOutputService::getCollection($queryModel->column()),
+            OrderOutputService::getCollection(
+                $queryModel->column(),
+                false, // Show deleted
+                'small', // Size of output images
+            ),
         );
     }
 
@@ -82,6 +86,12 @@ class OrderController extends InternalController
             return ApiResponse::code($apiCodes->NOT_FOUND);
         }
 
-        return ApiResponse::info(OrderOutputService::getEntity($id));
+        return ApiResponse::info(
+            OrderOutputService::getEntity(
+                $id,
+                false, // Show deleted
+                'small', // Size of output images
+            ),
+        );
     }
 }
