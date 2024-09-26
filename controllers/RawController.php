@@ -241,18 +241,33 @@ class RawController extends Controller
     }
     public function actionUpdateImageSizes()
     {
-        $attachments = Attachment::find()->all();
-        $sizes = [256, 512, 1024];
-        foreach ($attachments as $attachment) {
-            if (!$attachment->img_size) {
-                $manager = new ImageManager(new GdDriver());
-                $image = $manager->read($attachment->path);
-                foreach ($sizes as $size) {
-                    $image->cover($size, $size)->toWebp(80)->save;
-                    $image->save($attachment->path . '_' . $size . '.jpg');
+        try {
+            $attachments = \app\models\Attachment::find()
+                ->where(['img_size' => null])
+                ->all();
+            $sizes = [256, 512, 1024];
+            $apiCodes = Order::apiCodes();
+            $productIDs = [];
+            $attachmentIDs = [];
+            foreach ($attachments as $attachment) {
+
+                $attachmentIDs[] = $attachment->id;
+                $productLinkAttachment = \app\models\ProductLinkAttachment::find()
+                    ->where(['attachment_id' => $attachment->id])
+                    ->one();
+
+                if ($productLinkAttachment) {
+                    $productId = $productLinkAttachment->product_id;
+                    $productIDs[] = $productId;
                 }
             }
+            return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
+                'message' => 'Image sizes updated successfully',
+                'productIDs' => $productIDs,
+                'attachmentIDs' => $attachmentIDs
+            ]);
+        } catch (\Exception $e) {
+            return ApiResponse::byResponseCode($apiCodes->INTERNAL_ERROR, ['message' => $e->getMessage()]);
         }
-        return ApiResponse::byResponseCode($apiCodes->SUCCESS, ['message' => 'Image sizes updated successfully']);
     }
 }
