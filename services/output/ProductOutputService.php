@@ -9,12 +9,12 @@ use app\services\SqlQueryService;
 
 class ProductOutputService extends OutputService
 {
-    public static function getEntity(int $id): array
+    public static function getEntity(int $id, string $imageSize = 'small'): array
     {
-        return self::getCollection([$id])[0];
+        return self::getCollection([$id], $imageSize)[0];
     }
 
-    public static function getCollection(array $ids): array
+    public static function getCollection(array $ids, string $imageSize = 'small'): array
     {
         $query = Product::find()
             ->with([

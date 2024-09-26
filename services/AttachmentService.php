@@ -14,6 +14,7 @@ use Yii;
 use yii\web\HttpException;
 use yii\web\UploadedFile;
 use Intervention\Image\ImageManager;
+use Intervention\Image\Image;
 
 class AttachmentService
 {
@@ -230,15 +231,36 @@ class AttachmentService
         $size = $file->size;
 
         if (in_array($extension, self::AllowedImageExtensions, true)) {
-            $imageManager = new ImageManager(['driver' => 'imagick']);
-            $image = $imageManager->make($file->tempName)
-                ->resize(1024, 1024, function ($constraint) {
+
+            $image = Image::make($file->tempName)
+                ->uniqname()
+                ->fit(1024, 1024, function ($constraint) {
                     $constraint->aspectRatio();
                     $constraint->upsize();
                 })
-                ->encode('jpeg', 50);
+                ->thumbnails([
+                    'small' => [256, 256],
+                    'medium' => [512, 512],
+                    'large' => [1024, 1024],
+                ])
+                ->encode('webp', 80);
 
             $image->save($fullPath);
+            // $imageManager = new ImageManager(['driver' => 'gd']);
+            // $image = $imageManager->make($file->tempName)
+            //     ->uniqname()
+            //     ->fit(1024, 1024, function ($constraint) {
+            //         $constraint->aspectRatio();
+            //         $constraint->upsize();
+            //     })
+            //     ->thumbnails([
+            //         'small' => [256, 256],
+            //         'medium' => [512, 512],
+            //         'large' => [1024, 1024],
+            //     ])
+            //     ->encode('webp', 80);
+
+            // $image->save($fullPath);
             $mimeType = mime_content_type($fullPath);
             $size = filesize($fullPath);
         } else {
