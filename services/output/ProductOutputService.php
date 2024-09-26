@@ -36,9 +36,9 @@ class ProductOutputService extends OutputService
             }
 
             $info['attachments'] = match ($imageSize) {
-                'small' => $model->getAttachmentsSmallSize,
-                'medium' => $model->getAttachmentsMediumSize,
-                'large' => $model->getAttachmentsLargeSize,
+                'small' => $model->attachmentsSmallSize,
+                'medium' => $model->attachmentsMediumSize,
+                'large' => $model->attachmentsLargeSize,
                 default => $model->attachments,
             };
 
