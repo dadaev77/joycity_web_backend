@@ -16,6 +16,7 @@ use app\services\chat\ChatConstructorService;
 use app\services\twilio\TwilioService;
 use app\services\UserActionLogService as LogService;
 use Twilio\Rest\Client;
+// image processing
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver as GdDriver;
 
@@ -241,33 +242,44 @@ class RawController extends Controller
     }
     public function actionUpdateImageSizes()
     {
-        try {
-            $attachments = \app\models\Attachment::find()
-                ->where(['img_size' => null])
-                ->all();
-            $sizes = [256, 512, 1024];
-            $apiCodes = Order::apiCodes();
-            $productIDs = [];
-            $attachmentIDs = [];
-            foreach ($attachments as $attachment) {
+        $output = [];
+        // "/usr/local/var/www/joy_city/entrypoint/api/attachments"
+        $attachmentsRoot = Yii::getAlias('@webroot/attachments');
 
-                $attachmentIDs[] = $attachment->id;
-                $productLinkAttachment = \app\models\ProductLinkAttachment::find()
-                    ->where(['attachment_id' => $attachment->id])
-                    ->one();
 
-                if ($productLinkAttachment) {
-                    $productId = $productLinkAttachment->product_id;
-                    $productIDs[] = $productId;
+        // get list of all product link attachments
+        $attachLinks = \app\models\ProductLinkAttachment::find()->all();
+
+        // get list of all image sizes
+        $imageSizes = [
+            ['width' => 256, 'height' => 256, 'name' => 'small'],
+            ['width' => 512, 'height' => 512, 'name' => 'medium'],
+            ['width' => 1024, 'height' => 1024, 'name' => 'large'],
+        ];
+
+        // create image manager with gd driver
+        $imageManager = new ImageManager(new GdDriver());
+
+        // loop through all product link attachments
+        foreach ($attachLinks as $attachLink) {
+            if ($attachLink->attachment->img_size == null) {
+                // get product id
+                $product_id = $attachLink->product_id;
+                // get attachment
+                $currentAttachment = $attachLink->attachment;
+
+                //
+                $output[] = $currentAttachment->path;
+
+                //loop through all image sizes
+                foreach ($imageSizes as $imageSize) {
+                    // get image path
+                    $imagePath = $attachmentsRoot . '/' . $currentAttachment->path;
+                    //
+
                 }
             }
-            return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
-                'message' => 'Image sizes updated successfully',
-                'productIDs' => $productIDs,
-                'attachmentIDs' => $attachmentIDs
-            ]);
-        } catch (\Exception $e) {
-            return ApiResponse::byResponseCode($apiCodes->INTERNAL_ERROR, ['message' => $e->getMessage()]);
         }
+        return $output;
     }
 }
