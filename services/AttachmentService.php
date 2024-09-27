@@ -235,7 +235,7 @@ class AttachmentService
     {
         $extension = pathinfo($file->name, PATHINFO_EXTENSION);
         $mimeType = $file->type;
-        $pathName = $name . '--' . Yii::$app->security->generateRandomString(16);
+        $pathName = Yii::$app->security->generateRandomString(16);
         $path = '/' . self::PUBLIC_PATH . "/$pathName.$extension";
         $fullPath = self::getFilesPath() . "/$pathName.$extension";
         $size = $file->size;

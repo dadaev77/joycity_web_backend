@@ -243,9 +243,8 @@ class RawController extends Controller
     public function actionUpdateImageSizes()
     {
         $output = [];
-        // "/usr/local/var/www/joy_city/entrypoint/api/attachments"
-        $attachmentsRoot = Yii::getAlias('@webroot/attachments');
-
+        // "/usr/local/var/www/joy_city/entrypoint/api/"
+        $attachmentsRoot = Yii::getAlias('@webroot');
 
         // get list of all product link attachments
         $attachLinks = \app\models\ProductLinkAttachment::find()->all();
@@ -259,7 +258,7 @@ class RawController extends Controller
 
         // create image manager with gd driver
         $imageManager = new ImageManager(new GdDriver());
-
+        Yii::$app->db->createCommand('SET FOREIGN_KEY_CHECKS = 0;')->execute();
         // loop through all product link attachments
         foreach ($attachLinks as $attachLink) {
             if ($attachLink->attachment->img_size == null) {
@@ -267,16 +266,41 @@ class RawController extends Controller
                 $product_id = $attachLink->product_id;
                 // get attachment
                 $currentAttachment = $attachLink->attachment;
-
-                //
-                $output[] = $currentAttachment->path;
-
                 //loop through all image sizes
                 foreach ($imageSizes as $imageSize) {
                     // get image path
-                    $imagePath = $attachmentsRoot . '/' . $currentAttachment->path;
-                    //
+                    $extension = 'jpg';
+                    $mimeType = 'image/webp';
+                    $newName = Yii::$app->security->generateRandomString(16);
+                    $image = $imageManager->read($attachmentsRoot . $currentAttachment->path);
 
+                    $image
+                        ->cover($imageSize['width'], $imageSize['height'])
+                        ->save($attachmentsRoot . '/attachments/' . $newName . '.' . $extension);
+
+                    $output[] = [
+                        'product_id' => $product_id,
+                        'attachment_id' => $currentAttachment->id,
+                        'new_name' => $newName,
+                        'extension' => $extension,
+                        'path' => '/attachments/' . $newName . '.' . $extension,
+                        'mime_type' => $mimeType,
+                        'img_size' => $imageSize['name'],
+                    ];
+
+                    Yii::$app->db->createCommand('delete from product_link_attachment where id=' . $attachLink->id)->execute();
+
+                    $img = new \app\models\Attachment();
+                    $img->setAttributes([
+                        'path' => '/attachments/' . $newName . '.' . $extension,
+                        'size' => filesize($attachmentsRoot . '/attachments/' . $newName . '.' . $extension),
+                        'extension' => $extension,
+                        'mime_type' => $mimeType,
+                        'img_size' => $imageSize['name'],
+                    ]);
+                    if ($img->save()) {
+                        Yii::$app->db->createCommand('insert into product_link_attachment (product_id, attachment_id, type) values (' . $product_id . ', ' . $img->id . ', 0)')->execute();
+                    }
                 }
             }
         }

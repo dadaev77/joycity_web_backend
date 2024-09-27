@@ -42,6 +42,7 @@ class Attachment extends \app\models\Base
             [['path'], 'string'],
             [['size'], 'integer'],
             [['extension', 'mime_type'], 'string', 'max' => 255],
+            [['img_size'], 'string', 'max' => 255],
         ];
     }
 
@@ -56,6 +57,7 @@ class Attachment extends \app\models\Base
             'size' => 'Size',
             'extension' => 'Extension',
             'mime_type' => 'Mime Type',
+            'img_size' => 'Image Size',
         ];
     }
 
