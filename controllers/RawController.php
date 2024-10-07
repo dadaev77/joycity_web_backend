@@ -13,6 +13,7 @@ use app\models\User;
 use app\models\Product;
 use app\models\Order as OrderModel;
 use app\services\chat\ChatConstructorService;
+use app\services\ExchangeRateService;
 use app\services\twilio\TwilioService;
 use app\services\UserActionLogService as LogService;
 use Twilio\Rest\Client;
@@ -305,5 +306,20 @@ class RawController extends Controller
             }
         }
         return $output;
+    }
+    public function actionUpdateRates()
+    {
+        $rates = ExchangeRateService::getRate(['rub', 'cny'], 'USD');
+
+        if (!empty($rates['pairs'])) {
+
+            $rate = new \app\models\Rate();
+            $rate->RUB = 1;
+            $rate->USD = $rates['pairs']['USD_RUB'];
+            $rate->CNY = $rates['pairs']['USD_CNY'];
+            $rate->save();
+        }
+
+        return $rate;
     }
 }
