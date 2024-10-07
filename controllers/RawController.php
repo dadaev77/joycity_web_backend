@@ -315,8 +315,8 @@ class RawController extends Controller
 
             $rate = new \app\models\Rate();
             $rate->RUB = 1;
-            $rate->USD = $rates['pairs']['USD_RUB'];
-            $rate->CNY = $rates['pairs']['USD_CNY'];
+            $rate->USD = $rates['pairs']['USD_RUB'] * 1.02;
+            $rate->CNY = $rates['pairs']['USD_CNY'] * 1.05;
             $rate->save();
         }
 
