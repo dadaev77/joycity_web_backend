@@ -25,4 +25,26 @@ class TranslationService
 
         return Result::success($responseParsed['result']);
     }
+
+    public static function translateProductAttributes(string $productName, string $productDescription)
+    {
+        $apiUrl = $_ENV['APP_URL_AI'] . '/translate_product_attributes';
+        $curl = new Curl();
+
+        $response = $curl
+            ->setHeader('Content-Type', 'application/json')
+            ->setRawPostData(json_encode([
+                'product_name' => $productName,
+                'product_description' => $productDescription,
+            ]))
+            ->post($apiUrl);
+
+        $responseParsed = json_decode($response, true);
+
+        if (!$response || !$responseParsed['success']) {
+            return Result::error();
+        }
+
+        return Result::success($responseParsed['result']);
+    }
 }

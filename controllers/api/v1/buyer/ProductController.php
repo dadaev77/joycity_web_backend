@@ -16,6 +16,7 @@ use app\services\SaveModelService;
 use Throwable;
 use Yii;
 use yii\web\UploadedFile;
+use linslin\yii2\curl\Curl;
 
 class ProductController extends BuyerController
 {
@@ -58,7 +59,9 @@ class ProductController extends BuyerController
             }
 
             $transaction = Yii::$app->db->beginTransaction();
+
             $product = new Product();
+
             $product->load(
                 array_diff_key(
                     $request->post(),
@@ -71,6 +74,7 @@ class ProductController extends BuyerController
                 ),
                 '',
             );
+
             $product->buyer_id = $user->id;
             $product->range_1_price = $product->range_1_price
                 ? RateService::putInUserCurrency($product->range_1_price)
@@ -106,6 +110,9 @@ class ProductController extends BuyerController
                     ['images' => 'Failed to save images'],
                 );
             }
+
+
+
 
             $product->linkAll('attachments', $attachmentSaveResponse->result, [
                 'type' => ProductLinkAttachment::TYPE_DEFAULT,

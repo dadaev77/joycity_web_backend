@@ -12,14 +12,19 @@ use yii\filters\VerbFilter;
 use app\models\User;
 use app\models\Product;
 use app\models\Order as OrderModel;
-use app\services\chat\ChatConstructorService;
+
 use app\services\ExchangeRateService;
-use app\services\twilio\TwilioService;
+
 use app\services\UserActionLogService as LogService;
 use Twilio\Rest\Client;
 // image processing
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver as GdDriver;
+// Twilio 
+use app\services\twilio\TwilioService as Twilio;
+// curl
+use linslin\yii2\curl\Curl;
+use app\services\TranslationService;
 
 
 class RawController extends Controller
@@ -321,5 +326,24 @@ class RawController extends Controller
         }
 
         return $rate;
+    }
+
+    public function actionCreateChat()
+    {
+        $client = new Client(
+            $_ENV['TWILIO_ACCOUNT_SID'],
+            $_ENV['TWILIO_AUTH_TOKEN']
+        );
+
+        $conversation = $client->conversations->v1->conversations->read();
+        foreach ($conversation as $conv) {
+            var_dump($conv->links);
+        }
+    }
+    public function actionTestTranslation()
+    {
+        //
+        // TranslationService::translate('test product name');
+        TranslationService::translateProductAttributes('test product name', 'test product description');
     }
 }

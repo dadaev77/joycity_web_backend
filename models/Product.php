@@ -72,7 +72,13 @@ class Product extends Base
                 ],
                 'required',
             ],
-            [['description'], 'string', 'max' => 2000],
+            [
+                [
+                    'description',
+                ],
+                'string',
+                'max' => 2000
+            ],
             [
                 [
                     'rating',
@@ -136,8 +142,16 @@ class Product extends Base
     {
         return [
             'id' => 'ID',
+
+            // translations
             'name' => 'Name',
             'description' => 'Description',
+            'name_eng' => 'Name Eng',
+            'description_eng' => 'Description Eng',
+            'name_zh' => 'Name Zh',
+            'description_zh' => 'Description Zh',
+            // end translations
+
             'rating' => 'Rating',
             'feedback_count' => 'Feedback Count',
             'buyer_id' => 'Buyer ID',
