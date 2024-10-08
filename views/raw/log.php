@@ -163,7 +163,7 @@
                                         <div class="col h-100">
                                             <ul class="list-unstyled p-0 card p-3">
                                                 <li class="d-block">
-                                                    <p class="mb-0">Name: <?= $product->name ?></p>
+                                                    <p class="mb-0">Name: <?= $product->name_ru ?></p>
                                                     <p class="mb-0">Rating: <?= $product->rating ?></p>
                                                     <p class="mb-0">Buyer ID: <?= $product->buyer_id ?></p>
                                                     <p class="mb-0">Subcategory ID: <?= $product->subcategory_id ?></p>
@@ -184,7 +184,7 @@
                                                     <p class="mb-0">Buyer ID: <?= $order->buyer_id ?></p>
                                                     <p class="mb-0">Manager ID: <?= $order->manager_id ?></p>
                                                     <p class="mb-0">Fulfillment ID: <?= $order->fulfillment_id ?></p>
-                                                    <p class="mb-0">Product Name: <?= $order->product_name ?></p>
+                                                    <p class="mb-0">Product Name: <?= $order->product_name_ru ?></p>
                                                     <p class="mb-0">Subcategory ID: <?= $order->subcategory_id ?></p>
                                                     <p class="mb-0">Status: <?= $order->created_at ?></p>
                                                 </li>
