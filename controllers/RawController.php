@@ -344,6 +344,23 @@ class RawController extends Controller
     {
         //
         //return TranslationService::translate('test product name');
-        return TranslationService::translateProductAttributes('test product name', 'test product description');
+        // return TranslationService::translateProductAttributes('test product name', 'test product description');
+
+        $apiUrl = $_ENV['APP_URL_AI'] . '/translate_product_attributes';
+        $curl = new Curl();
+
+        $response = $curl
+            ->setHeader('Content-Type', 'application/json')
+            ->setRawPostData(json_encode([
+                'product_name' => $productName,
+                'product_description' => $productDescription,
+            ]))
+            ->post($apiUrl);
+
+        $responseParsed = json_decode(
+            $response,
+            true
+        );
+        return $responseParsed;
     }
 }
