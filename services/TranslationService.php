@@ -28,23 +28,37 @@ class TranslationService
 
     public static function translateProductAttributes(string $productName, string $productDescription)
     {
-        $apiUrl = $_ENV['APP_URL_AI'] . '/translate_product_attributes';
-        $curl = new Curl();
+        //
+        $aiSevice = $_ENV['APP_URL_AI'];
+        $path = '/translate_product_attributes';
+        $url = $aiSevice . $path;
 
-        $response = $curl
-            ->setHeader('Content-Type', 'application/json')
-            ->setRawPostData(json_encode([
+        try {
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
                 'product_name' => $productName,
-                'product_description' => $productDescription,
-            ]))
-            ->post($apiUrl);
+                'product_description' => $productDescription
+            ]));
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                'Content-Type: application/json',
+            ]);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            $response = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
 
-        $responseParsed = json_decode($response, true);
+            $responseParsed = json_decode($response, true);
 
-        if (!$response || !$responseParsed['success']) {
+            if ($httpCode !== 200 || !$responseParsed['success']) {
+                return Result::error();
+            }
+
+            return Result::success($responseParsed['result']);
+        } catch (Throwable $e) {
             return Result::error();
         }
-
-        return Result::success($responseParsed['result']);
     }
 }

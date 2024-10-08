@@ -342,25 +342,7 @@ class RawController extends Controller
     }
     public function actionTestTranslation()
     {
-        //
-        //return TranslationService::translate('test product name');
-        // return TranslationService::translateProductAttributes('test product name', 'test product description');
-
-        $apiUrl = $_ENV['APP_URL_AI'] . '/translate_product_attributes';
-        $curl = new Curl();
-
-        $response = $curl
-            ->setHeader('Content-Type', 'application/json')
-            ->setRawPostData(json_encode([
-                'product_name' => 'test product name',
-                'product_description' => 'test product description',
-            ]))
-            ->post($apiUrl);
-
-        $responseParsed = json_decode(
-            $response,
-            true
-        );
-        return $responseParsed;
+        $translation = TranslationService::translateProductAttributes('Sample Product', 'This is a sample product description.');
+        return $translation->result;
     }
 }
