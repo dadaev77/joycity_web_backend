@@ -352,8 +352,8 @@ class RawController extends Controller
         $response = $curl
             ->setHeader('Content-Type', 'application/json')
             ->setRawPostData(json_encode([
-                'product_name' => $productName,
-                'product_description' => $productDescription,
+                'product_name' => 'test product name',
+                'product_description' => 'test product description',
             ]))
             ->post($apiUrl);
 
