@@ -63,8 +63,8 @@ class Product extends Base
         return [
             [
                 [
-                    'name',
-                    'description',
+                    'name_ru',
+                    'description_ru',
                     'buyer_id',
                     'subcategory_id',
                     'range_1_max',
@@ -74,7 +74,7 @@ class Product extends Base
             ],
             [
                 [
-                    'description',
+                    'description_ru',
                 ],
                 'string',
                 'max' => 2000
@@ -110,9 +110,9 @@ class Product extends Base
                 ],
                 'integer',
             ],
-            [['name'], 'string', 'max' => 255],
+            [['name_ru'], 'string', 'max' => 255],
             [
-                ['name'],
+                ['name_ru'],
                 'match',
                 'pattern' => '/^[A-Za-zА-Яа-я0-9\s]{1,60}$/u',
                 'message' =>
@@ -144,8 +144,8 @@ class Product extends Base
             'id' => 'ID',
 
             // translations
-            'name' => 'Name',
-            'description' => 'Description',
+            'name_ru' => 'Name',
+            'description_ru' => 'Description',
             'name_eng' => 'Name Eng',
             'description_eng' => 'Description Eng',
             'name_zh' => 'Name Zh',

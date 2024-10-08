@@ -108,8 +108,14 @@ class OrderStructure extends Base
                     'created_at',
                     'status',
                     'created_by',
-                    'product_name',
-                    'product_description',
+
+                    'product_name_ru',
+                    'product_description_ru',
+                    'product_name_en',
+                    'product_description_en',
+                    'product_name_zh',
+                    'product_description_zh',
+
                     'expected_quantity',
                     'expected_price_per_item',
                     'subcategory_id',
@@ -154,7 +160,7 @@ class OrderStructure extends Base
             ],
             [['link_tz'], 'string'],
             [
-                ['status', 'product_name', 'product_description'],
+                ['status', 'product_name_ru', 'product_description_ru', 'product_name_en', 'product_description_en', 'product_name_zh', 'product_description_zh'],
                 'string',
                 'max' => 255,
             ],
@@ -234,7 +240,7 @@ class OrderStructure extends Base
             [['created_at'], 'safe'],
             [['status'], 'in', 'range' => Order::STATUS_GROUP_ALL],
             [
-                'product_name',
+                ['product_name_ru', 'product_description_ru', 'product_name_en', 'product_description_en'],
                 'match',
                 'pattern' => '/^[A-Za-zА-Яа-я0-9\s]{1,60}$/u',
                 'message' =>
@@ -280,10 +286,10 @@ class OrderStructure extends Base
             'product_id' => 'Product ID',
 
             // translations
-            'product_name' => 'Product Name',
-            'product_description' => 'Product Description',
-            'product_name_eng' => 'Product Name Eng',
-            'product_description_eng' => 'Product Description Eng',
+            'product_name_ru' => 'Product Name Ru',
+            'product_description_ru' => 'Product Description Ru',
+            'product_name_en' => 'Product Name En',
+            'product_description_en' => 'Product Description En',
             'product_name_zh' => 'Product Name Zh',
             'product_description_zh' => 'Product Description Zh',
             // end translations

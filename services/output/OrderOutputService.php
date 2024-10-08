@@ -9,6 +9,7 @@ use app\services\MarketplaceTransactionService;
 use app\services\price\OrderPriceService;
 use app\services\RateService;
 use app\services\SqlQueryService;
+use Yii;
 
 class OrderOutputService extends OutputService
 {
@@ -79,6 +80,7 @@ class OrderOutputService extends OutputService
                 unset($tracking['order_id']);
             }
             unset($tracking);
+
             foreach ($info as $key => $value) {
                 if ($value && (str_starts_with($key, 'price_') || $key === 'expected_price_per_item')) {
                     $info[$key] = RateService::outputInUserCurrency($value, $info['id']);
@@ -88,6 +90,35 @@ class OrderOutputService extends OutputService
                 unset($chat['order_id'], $chat['user_verification_request_id']);
             }
             unset($chat);
+
+            $keys = [
+                'product_name_ru',
+                'product_description_ru',
+                'product_name_en',
+                'product_description_en',
+                'product_name_zh',
+                'product_description_zh',
+            ];
+
+            foreach ($keys as $key) {
+                unset($info[$key]);
+            }
+
+            $userLanguage = Yii::$app->user->identity->getSettings()->application_language;
+            $info['product_name'] = match (strtolower($userLanguage)) {
+                'ru' => $model->product_name_ru,
+                'en' => $model->product_name_en,
+                'zh' => $model->product_name_zh,
+                default => $model->product_name_ru,
+            };
+
+            $info['product_description'] = match (strtolower($userLanguage)) {
+                'ru' => $model->product_description_ru,
+                'en' => $model->product_description_en,
+                'zh' => $model->product_description_zh,
+                default => $model->product_description_ru,
+            };
+
 
             $info['attachments'] = match ($imageSize) {
                 'small' => $model->attachmentsSmallSize,

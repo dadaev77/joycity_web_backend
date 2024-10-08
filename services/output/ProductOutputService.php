@@ -6,6 +6,7 @@ use app\helpers\ModelTypeHelper;
 use app\models\Product;
 use app\services\RateService;
 use app\services\SqlQueryService;
+use Yii;
 
 class ProductOutputService extends OutputService
 {
@@ -34,6 +35,36 @@ class ProductOutputService extends OutputService
                     $info[$key] = RateService::outputInUserCurrency($value);
                 }
             }
+
+
+            $language = Yii::$app->user->identity->getSettings()->application_language;
+
+            $keys = [
+                'name_ru',
+                'description_ru',
+                'name_en',
+                'description_en',
+                'name_zh',
+                'description_zh',
+            ];
+
+            foreach ($keys as $key) {
+                unset($info[$key]);
+            }
+
+            $info['name'] = match (strtolower($language)) {
+                'ru' => $model->name_ru,
+                'en' => $model->name_en,
+                'zh' => $model->name_zh,
+                default => $model->name_ru,
+            };
+
+            $info['description'] = match (strtolower($language)) {
+                'ru' => $model->description_ru,
+                'en' => $model->description_en,
+                'zh' => $model->description_zh,
+                default => $model->description_ru,
+            };
 
             $info['attachments'] = match ($imageSize) {
                 'small' => $model->attachmentsSmallSize,

@@ -30,6 +30,7 @@ use app\services\UserActionLogService as LogService;
 use app\services\twilio\TwilioService;
 use app\controllers\CronController;
 use app\models\OrderDistribution;
+use app\services\TranslationService;
 
 class OrderController extends ClientController
 {
@@ -94,6 +95,7 @@ class OrderController extends ClientController
             $order->status = Order::STATUS_CREATED;
             $order->manager_id = $randomManager->id;
             LogService::log('manager id is set to ' . $randomManager->id);
+
             $order->type_delivery_point_id = $typeDeliveryPointId;
             $order->expected_price_per_item = RateService::putInUserCurrency(
                 $request->post('expected_price_per_item', 0),
@@ -130,12 +132,33 @@ class OrderController extends ClientController
             }
 
             $transaction = Yii::$app->db->beginTransaction();
+
+
+
+            // translate order name and description
+            $translation = TranslationService::translateProductAttributes(
+                $request->post()['product_name'],
+                $request->post()['product_description'],
+            );
+            $translations = $translation->result;
+            foreach ($translations as $key => $value) {
+                $order->{'product_name_' . $key} = $value['name'];
+                $order->{'product_description_' . $key} = $value['description'];
+            }
+            // end translate order name and description
+
             $orderSave = SaveModelService::loadValidateAndSave(
                 $order,
                 [
                     'product_id',
                     'product_name',
                     'product_description',
+                    'product_name_ru',
+                    'product_description_ru',
+                    'product_name_en',
+                    'product_description_en',
+                    'product_name_zh',
+                    'product_description_zh',
                     'expected_quantity',
                     'expected_packaging_quantity',
                     'subcategory_id',
@@ -148,6 +171,7 @@ class OrderController extends ClientController
                 $transaction,
                 true,
             );
+
             LogService::log('order saved with id ' . $order->id);
             if (!$orderSave->success) {
                 return $orderSave->apiResponse;
@@ -301,6 +325,7 @@ class OrderController extends ClientController
                 );
             }
             //Twilio service end
+
 
             $transaction?->commit();
 

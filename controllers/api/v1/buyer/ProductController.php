@@ -17,6 +17,7 @@ use Throwable;
 use Yii;
 use yii\web\UploadedFile;
 use linslin\yii2\curl\Curl;
+use app\services\TranslationService;
 
 class ProductController extends BuyerController
 {
@@ -74,6 +75,15 @@ class ProductController extends BuyerController
                 ),
                 '',
             );
+            // translate product attributes
+
+            $translation = TranslationService::translateProductAttributes($request->post('name'), $request->post('description'));
+            $translations = $translation->result;
+
+            foreach ($translations as $key => $value) {
+                $product->{"name_$key"} = $value['name'];
+                $product->{"description_$key"} = $value['description'];
+            }
 
             $product->buyer_id = $user->id;
             $product->range_1_price = $product->range_1_price

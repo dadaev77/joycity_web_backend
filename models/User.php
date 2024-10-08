@@ -85,4 +85,9 @@ class User extends UserStructure implements IdentityInterface
     {
         return $this->access_token === $authKey;
     }
+
+    public function getSettings()
+    {
+        return $this->hasOne(UserSettings::class, ['user_id' => 'id'])->one();
+    }
 }
