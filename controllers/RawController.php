@@ -343,7 +343,7 @@ class RawController extends Controller
     public function actionTestTranslation()
     {
         //
-        // TranslationService::translate('test product name');
-        TranslationService::translateProductAttributes('test product name', 'test product description');
+        //return TranslationService::translate('test product name');
+        return TranslationService::translateProductAttributes('test product name', 'test product description');
     }
 }
