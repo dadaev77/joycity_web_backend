@@ -340,9 +340,4 @@ class RawController extends Controller
             var_dump($conv->links);
         }
     }
-    public function actionTestTranslation()
-    {
-        $translation = TranslationService::translateProductAttributes('Sample Product', 'This is a sample product description.');
-        return $translation->result;
-    }
 }
