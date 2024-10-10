@@ -210,8 +210,7 @@ class ConstantsController extends V1Controller
         $latestRate = Rate::find()
             ->orderBy(['id' => SORT_DESC])
             ->one();
-        var_dump($latestRate);
-        die;
+
         if (!$latestRate) {
             return ApiResponse::code($apiCodes->NOT_FOUND);
         }
