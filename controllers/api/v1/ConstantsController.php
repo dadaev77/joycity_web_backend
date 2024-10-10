@@ -217,9 +217,9 @@ class ConstantsController extends V1Controller
         // set sadp to 2 (SADP - SYMBOLS AFTER DECIMAL POINT)
         RateService::setSADP(2);
         $rubToCny = RateService::convertRUBtoCNY(1);
-        $cnyToRub = $latestRate['CNY']; //RateService::convertCNYtoRUB(1);
+        $cnyToRub = round($latestRate['CNY'], 2); //RateService::convertCNYtoRUB(1);
         $rubToUsd = RateService::convertRUBtoUSD(1);
-        $usdToRub =  $latestRate['USD']; //RateService::convertUSDtoRUB(1);
+        $usdToRub =  round($latestRate['USD'], 2); //RateService::convertUSDtoRUB(1);
         $cnyToUsd = RateService::convertCNYtoUSD(1);
         $usdToCny = RateService::convertUSDtoCNY(1);
 
