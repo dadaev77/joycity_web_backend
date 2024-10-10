@@ -6,8 +6,7 @@ namespace app\services;
 class ExchangeRateService
 {
     // use open api to get exchange rates
-    private const URL = "https://api.exchangerate-api.com/v4/latest/";
-    private static $baseCurrency;
+    private const URL = "https://www.cbr-xml-daily.ru/daily_json.js";
     private static $currencies;
 
     /**
@@ -15,23 +14,21 @@ class ExchangeRateService
      * @param string $baseCurrency
      * @return array
      */
-    public static function getRate(array $currencies, string $baseCurrency = 'USD')
+    public static function getRate(array $currencies)
     {
         try {
 
-            self::$baseCurrency = $baseCurrency;
-            $response = file_get_contents(self::URL . self::$baseCurrency);
-            $data = json_decode($response, true);
+            $response = json_decode(file_get_contents(self::URL), true);
+            $data = $response['Valute'];
 
             $outputPairs = [];
             foreach ($currencies as $currency) {
                 $currency = strtoupper($currency);
-                $outputPairs[self::$baseCurrency . '_' . $currency] = $data['rates'][$currency];
+                $outputPairs[$currency] = $data[$currency]['Value'];
             }
 
             return array(
-                'pairs' => $outputPairs,
-                'date' => $data['date'],
+                'data' => $outputPairs
             );
         } catch (\Exception $e) {
             return ['error' => $e->getMessage()];

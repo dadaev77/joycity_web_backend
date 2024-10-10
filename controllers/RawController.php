@@ -314,14 +314,13 @@ class RawController extends Controller
     }
     public function actionUpdateRates()
     {
-        $rates = ExchangeRateService::getRate(['rub', 'cny'], 'USD');
+        $rates = ExchangeRateService::getRate(['cny', 'usd']);
 
-        if (!empty($rates['pairs'])) {
-
+        if (!empty($rates['data'])) {
             $rate = new \app\models\Rate();
             $rate->RUB = 1;
-            $rate->USD = $rates['pairs']['USD_RUB'] * 1.02;
-            $rate->CNY = $rates['pairs']['USD_CNY'] * 1.05;
+            $rate->USD = round($rates['data']['USD'] * 1.02, 4);
+            $rate->CNY = round($rates['data']['CNY'] * 1.05, 4);
             $rate->save();
         }
 
