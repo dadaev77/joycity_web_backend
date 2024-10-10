@@ -27,7 +27,6 @@ class RateService
     protected static function getRate(): array
     {
         if (!empty(self::$currentRate)) return self::$currentRate;
-
         return self::$currentRate = Rate::find()->orderBy(['id' => SORT_DESC])->asArray()->one();
     }
 
@@ -65,25 +64,49 @@ class RateService
     // Convert amount from CNY to RUB
     public static function convertCNYtoRUB(float $amount, int $orderId = 0): float
     {
-        return self::convertSimpleRate(self::CURRENCY_CNY, self::CURRENCY_RUB, $amount, self::$SYMBOLS_AFTER_DECIMAL_POINT, $orderId);
+        return self::convertSimpleRate(
+            self::CURRENCY_CNY,
+            self::CURRENCY_RUB,
+            $amount,
+            self::$SYMBOLS_AFTER_DECIMAL_POINT,
+            $orderId
+        );
     }
 
     // Convert amount from RUB to CNY
     public static function convertRUBtoCNY(float $amount, int $orderId = 0): float
     {
-        return self::convertSimpleRate(self::CURRENCY_RUB, self::CURRENCY_CNY, $amount, self::$SYMBOLS_AFTER_DECIMAL_POINT, $orderId);
+        return self::convertSimpleRate(
+            self::CURRENCY_RUB,
+            self::CURRENCY_CNY,
+            $amount,
+            self::$SYMBOLS_AFTER_DECIMAL_POINT,
+            $orderId
+        );
     }
 
     // Convert amount from USD to CNY
     public static function convertUSDtoCNY(float $amount, int $orderId = 0): float
     {
-        return self::convertSimpleRate(self::CURRENCY_USD, self::CURRENCY_CNY, $amount, self::$SYMBOLS_AFTER_DECIMAL_POINT, $orderId);
+        return self::convertSimpleRate(
+            self::CURRENCY_USD,
+            self::CURRENCY_CNY,
+            $amount,
+            self::$SYMBOLS_AFTER_DECIMAL_POINT,
+            $orderId
+        );
     }
 
     // Convert amount from CNY to USD
     public static function convertCNYtoUSD(float $amount, int $orderId = 0): float
     {
-        return self::convertSimpleRate(self::CURRENCY_CNY, self::CURRENCY_USD, $amount, self::$SYMBOLS_AFTER_DECIMAL_POINT, $orderId);
+        return self::convertSimpleRate(
+            self::CURRENCY_CNY,
+            self::CURRENCY_USD,
+            $amount,
+            self::$SYMBOLS_AFTER_DECIMAL_POINT,
+            $orderId
+        );
     }
 
     // Convert amount from USD to RUB
@@ -101,7 +124,13 @@ class RateService
     // Convert amount from RUB to USD
     public static function convertRUBtoUSD(float $amount, int $orderId = 0): float
     {
-        return self::convertCrossRate(self::CURRENCY_RUB, self::CURRENCY_USD, $amount, self::$SYMBOLS_AFTER_DECIMAL_POINT, $orderId);
+        return self::convertCrossRate(
+            self::CURRENCY_RUB,
+            self::CURRENCY_USD,
+            $amount,
+            self::$SYMBOLS_AFTER_DECIMAL_POINT,
+            $orderId
+        );
     }
 
     // Convert amount using a simple rate conversion
@@ -114,7 +143,7 @@ class RateService
     // Convert amount using a cross rate conversion
     private static function convertCrossRate(string $fromCurrency, string $toCurrency, float $amount, int $orderId = 0): float
     {
-        $amountInBaseCurrency = self::convertSimpleRate($fromCurrency, self::CURRENCY_CNY, $amount, $orderId);
-        return self::convertSimpleRate(self::CURRENCY_CNY, $toCurrency, $amountInBaseCurrency, $orderId);
+        $amountInBaseCurrency = self::convertSimpleRate($fromCurrency, self::CURRENCY_RUB, $amount, $orderId);
+        return self::convertSimpleRate(self::CURRENCY_RUB, $toCurrency, $amountInBaseCurrency, $orderId);
     }
 }
