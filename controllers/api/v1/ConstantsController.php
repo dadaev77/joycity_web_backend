@@ -208,7 +208,7 @@ class ConstantsController extends V1Controller
     {
         $apiCodes = Rate::apiCodes();
         $latestRate = Rate::find()
-            ->orderBy(['created_at' => SORT_DESC])
+            ->orderBy(['id' => SORT_DESC])
             ->one();
 
         if (!$latestRate) {
