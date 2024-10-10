@@ -143,7 +143,7 @@ class RateService
     // Convert amount using a cross rate conversion
     private static function convertCrossRate(string $fromCurrency, string $toCurrency, float $amount, int $orderId = 0): float
     {
-        $amountInBaseCurrency = self::convertSimpleRate($fromCurrency, self::CURRENCY_RUB, $amount, $orderId);
-        return self::convertSimpleRate(self::CURRENCY_RUB, $toCurrency, $amountInBaseCurrency, $orderId);
+        $amountInBaseCurrency = self::convertSimpleRate($fromCurrency, self::CURRENCY_CNY, $amount, $orderId);
+        return self::convertSimpleRate(self::CURRENCY_CNY, $toCurrency, $amountInBaseCurrency, $orderId);
     }
 }
