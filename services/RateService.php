@@ -89,7 +89,13 @@ class RateService
     // Convert amount from USD to RUB
     public static function convertUSDtoRUB(float $amount, int $orderId = 0): float
     {
-        return self::convertCrossRate(self::CURRENCY_USD, self::CURRENCY_RUB, $amount, self::$SYMBOLS_AFTER_DECIMAL_POINT, $orderId);
+        return self::convertCrossRate(
+            self::CURRENCY_USD,
+            self::CURRENCY_RUB,
+            $amount,
+            self::$SYMBOLS_AFTER_DECIMAL_POINT,
+            $orderId
+        );
     }
 
     // Convert amount from RUB to USD

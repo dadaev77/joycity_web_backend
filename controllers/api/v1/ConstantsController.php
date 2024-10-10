@@ -216,21 +216,21 @@ class ConstantsController extends V1Controller
         }
         // set sadp to 2 (SADP - SYMBOLS AFTER DECIMAL POINT)
         RateService::setSADP(2);
-        $rubToCnyRate = RateService::convertRUBtoCNY(1);
-        $cnyToRubRate = RateService::convertCNYtoRUB(1);
-        $rubToUsd = RateService::convertRUBtoUSD(1);
+        // $rubToCny = RateService::convertRUBtoCNY(1);
+        $cnyToRub = RateService::convertCNYtoRUB(1);
+        // $rubToUsd = RateService::convertRUBtoUSD(1);
         $usdToRub = RateService::convertUSDtoRUB(1);
-        $cnyToUsd = RateService::convertCNYtoUSD(1);
-        $usdToCny = RateService::convertUSDtoCNY(1);
+        // $cnyToUsd = RateService::convertCNYtoUSD(1);
+        // $usdToCny = RateService::convertUSDtoCNY(1);
 
         $result = [
             'date' => $latestRate->created_at,
-            'RUB-CNY' => $rubToCnyRate,
-            'CNY-RUB' => $cnyToRubRate,
-            'RUB-USD' => $rubToUsd,
+            // 'RUB-CNY' => $rubToCny,
+            'CNY-RUB' => $cnyToRub,
+            // 'RUB-USD' => $rubToUsd,
             'USD-RUB' => $usdToRub,
-            'CNY-USD' => $cnyToUsd,
-            'USD-CNY' => $usdToCny,
+            // 'CNY-USD' => $cnyToUsd,
+            // 'USD-CNY' => $usdToCny,
         ];
 
         return ApiResponse::code($apiCodes->SUCCESS, $result);
