@@ -157,6 +157,7 @@ class AuthController extends V1Controller implements ApiAuth
             $country = $request->post('country');
             $city = $request->post('city');
             $address = $request->post('address');
+            $telegram = $request->post('telegram');
 
             $user = new User([
                 'email' => $email,
@@ -168,6 +169,7 @@ class AuthController extends V1Controller implements ApiAuth
                 'role' => $role,
                 'rating' => Yii::$app->params['baseRating'],
                 'phone_country_code' => $phone_country_code,
+                'telegram' => $telegram ?: null,
             ]);
 
             $requiredAttributes = [
@@ -228,6 +230,9 @@ class AuthController extends V1Controller implements ApiAuth
                     $user->getFirstErrors(),
                 );
             }
+
+            // generate uuid for user
+            $user->uuid = Yii::$app->security->generateRandomString(16);
 
             LogService::success('created user ' . $request->post('email'));
             $user->personal_id = md5(time() . random_int(1e3, 9e3));

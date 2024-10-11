@@ -161,7 +161,8 @@ class UserStructure extends Base
                 'targetClass' => Attachment::class,
                 'targetAttribute' => ['avatar_id' => 'id'],
             ],
-
+            //
+            [['telegram'], 'string', 'max' => 100, 'skipOnEmpty' => true],
             // кастомные валидации
             [['id'], 'integer', 'max' => 9999999999],
             [['email'], 'email'],
@@ -279,6 +280,7 @@ class UserStructure extends Base
             'mpstats_token' => 'Mpstats Token',
             'description' => 'Description',
             'phone_country_code' => 'Phone Country Code',
+            'telegram' => 'Telegram',
         ];
     }
 
