@@ -312,20 +312,6 @@ class RawController extends Controller
         }
         return $output;
     }
-    public function actionUpdateRates()
-    {
-        $rates = ExchangeRateService::getRate(['cny', 'usd']);
-
-        if (!empty($rates['data'])) {
-            $rate = new \app\models\Rate();
-            $rate->RUB = 1;
-            $rate->USD = round($rates['data']['USD'] * 1.02, 4);
-            $rate->CNY = round($rates['data']['CNY'] * 1.05, 4);
-            $rate->save();
-        }
-
-        return $rate;
-    }
 
     public function actionCreateChat()
     {

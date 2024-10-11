@@ -6,6 +6,7 @@ use Yii;
 use app\services\UserActionLogService as Log;
 use app\models\OrderDistribution;
 use yii\web\Controller;
+use app\services\ExchangeRateService;
 
 class CronController extends Controller
 {
@@ -52,5 +53,19 @@ class CronController extends Controller
             return $buyers[0];
         }
         return $buyers[$index + 1];
+    }
+    public function actionUpdateRates()
+    {
+        $rates = ExchangeRateService::getRate(['cny', 'usd']);
+
+        if (!empty($rates['data'])) {
+            $rate = new \app\models\Rate();
+            $rate->RUB = 1;
+            $rate->USD = round($rates['data']['USD'] * 1.02, 4);
+            $rate->CNY = round($rates['data']['CNY'] * 1.05, 4);
+            $rate->save();
+        }
+
+        return $rate;
     }
 }
