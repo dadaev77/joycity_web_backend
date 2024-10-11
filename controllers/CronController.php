@@ -5,6 +5,7 @@ namespace app\controllers;
 use Yii;
 use app\services\UserActionLogService as Log;
 use app\models\OrderDistribution;
+use app\models\Rate;
 use yii\web\Controller;
 use app\services\ExchangeRateService;
 
@@ -66,5 +67,14 @@ class CronController extends Controller
             $rate->save();
         }
         return $rate;
+    }
+    public function actionClearRates()
+    {
+        $rates = Rate::find()->orderBy(['id' => SORT_DESC])->all();
+        if (count($rates) > 1) {
+            foreach (array_slice($rates, 1) as $rate) {
+                $rate->delete();
+            }
+        }
     }
 }
