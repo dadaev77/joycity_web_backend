@@ -65,7 +65,6 @@ class CronController extends Controller
             $rate->CNY = round($rates['data']['CNY'] * 1.05, 4);
             $rate->save();
         }
-
         return $rate;
     }
 }
