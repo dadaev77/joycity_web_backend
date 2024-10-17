@@ -37,16 +37,7 @@
                             </li>
                             <!-- Add tabs for buyers list, clients list, manager list, fulfillment list, and products -->
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="buyers-tab" data-bs-toggle="tab" data-bs-target="#buyers" type="button" role="tab" aria-controls="buyers" aria-selected="false">Buyers List</button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="clients-tab" data-bs-toggle="tab" data-bs-target="#clients" type="button" role="tab" aria-controls="clients" aria-selected="false">Clients List</button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="managers-tab" data-bs-toggle="tab" data-bs-target="#managers" type="button" role="tab" aria-controls="managers" aria-selected="false">Managers List</button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="fulfillment-tab" data-bs-toggle="tab" data-bs-target="#fulfillment" type="button" role="tab" aria-controls="fulfillment" aria-selected="false">Fulfillment List</button>
+                                <button class="nav-link" id="users-tab" data-bs-toggle="tab" data-bs-target="#users" type="button" role="tab" aria-controls="users" aria-selected="false">Users</button>
                             </li>
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="products-tab" data-bs-toggle="tab" data-bs-target="#products" type="button" role="tab" aria-controls="products" aria-selected="false">Products</button>
@@ -84,73 +75,91 @@
                                 </div>
                             </div>
                             <!-- Add corresponding tab panes for the new tabs -->
-                            <div class="tab-pane fade" id="buyers" role="tabpanel" aria-labelledby="buyers-tab">
-                                <div class="row row-cols-1 row-cols-md-3">
-                                    <?php foreach ($buyers as $buyer) : ?>
-                                        <div class="col h-100">
-                                            <ul class="list-unstyled p-0 card p-3 h-100">
-                                                <li class="d-block">
-                                                    <p class="mb-0">ID: <?= $buyer->id ?></p>
-                                                    <p class="mb-0">Email: <?= $buyer->email ?></p>
-                                                    <p class="mb-0">Name: <?= $buyer->name ?></p>
-                                                    <p class="mb-0">Surname: <?= $buyer->surname ?></p>
-                                                    <p class="mb-0">Organization Name: <?= $buyer->organization_name ?></p>
-                                                    <p class="mb-0">Rating: <?= $buyer->rating ?></p>
-                                                </li>
-                                            </ul>
+                            <div class="tab-pane fade" id="users" role="tabpanel" aria-labelledby="users-tab">
+                                <ul class="nav nav-tabs" id="userRolesTab" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active" id="buyers-role-tab" data-bs-toggle="tab" data-bs-target="#buyers-role" type="button" role="tab" aria-controls="buyers-role" aria-selected="true">Buyers</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="clients-role-tab" data-bs-toggle="tab" data-bs-target="#clients-role" type="button" role="tab" aria-controls="clients-role" aria-selected="false">Clients</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="managers-role-tab" data-bs-toggle="tab" data-bs-target="#managers-role" type="button" role="tab" aria-controls="managers-role" aria-selected="false">Managers</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="fulfillment-role-tab" data-bs-toggle="tab" data-bs-target="#fulfillment-role" type="button" role="tab" aria-controls="fulfillment-role" aria-selected="false">Fulfillment</button>
+                                    </li>
+                                </ul>
+                                <div class="tab-content py-4" id="userRolesTabContent">
+                                    <div class="tab-pane fade show active" id="buyers-role" role="tabpanel" aria-labelledby="buyers-role-tab">
+                                        <div class="row row-cols-1 row-cols-md-3">
+                                            <?php foreach ($buyers as $buyer) : ?>
+                                                <div class="col h-100">
+                                                    <ul class="list-unstyled p-0 card p-3 h-100">
+                                                        <li class="d-block">
+                                                            <p class="mb-0">ID: <?= $buyer->id ?></p>
+                                                            <p class="mb-0">Email: <?= $buyer->email ?></p>
+                                                            <p class="mb-0">Name: <?= $buyer->name ?></p>
+                                                            <p class="mb-0">Surname: <?= $buyer->surname ?></p>
+                                                            <p class="mb-0">Organization Name: <?= $buyer->organization_name ?></p>
+                                                            <p class="mb-0">Rating: <?= $buyer->rating ?></p>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            <?php endforeach; ?>
                                         </div>
-                                    <?php endforeach; ?>
-                                </div>
-                            </div>
-                            <div class="tab-pane fade" id="clients" role="tabpanel" aria-labelledby="clients-tab">
-                                <div class="row row-cols-1 row-cols-md-3">
-                                    <?php foreach ($clients as $client) : ?>
-                                        <div class="col h-100">
-                                            <ul class="list-unstyled p-0 card p-3 h-100">
-                                                <li class="d-block">
-                                                    <p class="mb-0">Email: <?= $client->email ?></p>
-                                                    <p class="mb-0">Name: <?= $client->name ?></p>
-                                                    <p class="mb-0">Surname: <?= $client->surname ?></p>
-                                                    <p class="mb-0">Organization Name: <?= $client->organization_name ?></p>
-                                                    <p class="mb-0">Rating: <?= $client->rating ?></p>
-                                                </li>
-                                            </ul>
+                                    </div>
+                                    <div class="tab-pane fade" id="clients-role" role="tabpanel" aria-labelledby="clients-role-tab">
+                                        <div class="row row-cols-1 row-cols-md-3">
+                                            <?php foreach ($clients as $client) : ?>
+                                                <div class="col h-100">
+                                                    <ul class="list-unstyled p-0 card p-3 h-100">
+                                                        <li class="d-block">
+                                                            <p class="mb-0">Email: <?= $client->email ?></p>
+                                                            <p class="mb-0">Name: <?= $client->name ?></p>
+                                                            <p class="mb-0">Surname: <?= $client->surname ?></p>
+                                                            <p class="mb-0">Organization Name: <?= $client->organization_name ?></p>
+                                                            <p class="mb-0">Rating: <?= $client->rating ?></p>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            <?php endforeach; ?>
                                         </div>
-                                    <?php endforeach; ?>
-                                </div>
-                            </div>
-                            <div class="tab-pane fade" id="managers" role="tabpanel" aria-labelledby="managers-tab">
-                                <div class="row row-cols-1 row-cols-md-3 g-4">
-                                    <?php foreach ($managers as $manager) : ?>
-                                        <div class="col h-100">
-                                            <ul class="list-unstyled p-0 card p-3">
-                                                <li class="d-block">
-                                                    <p class="mb-0">Email: <?= $manager->email ?></p>
-                                                    <p class="mb-0">Name: <?= $manager->name ?></p>
-                                                    <p class="mb-0">Surname: <?= $manager->surname ?></p>
-                                                    <p class="mb-0">Organization Name: <?= $manager->organization_name ?></p>
-                                                    <p class="mb-0">Rating: <?= $manager->rating ?></p>
-                                                </li>
-                                            </ul>
+                                    </div>
+                                    <div class="tab-pane fade" id="managers-role" role="tabpanel" aria-labelledby="managers-role-tab">
+                                        <div class="row row-cols-1 row-cols-md-3 g-4">
+                                            <?php foreach ($managers as $manager) : ?>
+                                                <div class="col h-100">
+                                                    <ul class="list-unstyled p-0 card p-3">
+                                                        <li class="d-block">
+                                                            <p class="mb-0">Email: <?= $manager->email ?></p>
+                                                            <p class="mb-0">Name: <?= $manager->name ?></p>
+                                                            <p class="mb-0">Surname: <?= $manager->surname ?></p>
+                                                            <p class="mb-0">Organization Name: <?= $manager->organization_name ?></p>
+                                                            <p class="mb-0">Rating: <?= $manager->rating ?></p>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            <?php endforeach; ?>
                                         </div>
-                                    <?php endforeach; ?>
-                                </div>
-                            </div>
-                            <div class="tab-pane fade" id="fulfillment" role="tabpanel" aria-labelledby="fulfillment-tab">
-                                <div class="row row-cols-1 row-cols-md-3">
-                                    <?php foreach ($fulfillment as $fulfillment) : ?>
-                                        <div class="col h-100">
-                                            <ul class="list-unstyled p-0 card p-3">
-                                                <li class="d-block">
-                                                    <p class="mb-0">Email: <?= $fulfillment->email ?></p>
-                                                    <p class="mb-0">Name: <?= $fulfillment->name ?></p>
-                                                    <p class="mb-0">Surname: <?= $fulfillment->surname ?></p>
-                                                    <p class="mb-0">Organization Name: <?= $fulfillment->organization_name ?></p>
-                                                    <p class="mb-0">Rating: <?= $fulfillment->rating ?></p>
-                                                </li>
-                                            </ul>
+                                    </div>
+                                    <div class="tab-pane fade" id="fulfillment-role" role="tabpanel" aria-labelledby="fulfillment-role-tab">
+                                        <div class="row row-cols-1 row-cols-md-3">
+                                            <?php foreach ($fulfillment as $fulfillment) : ?>
+                                                <div class="col h-100">
+                                                    <ul class="list-unstyled p-0 card p-3">
+                                                        <li class="d-block">
+                                                            <p class="mb-0">Email: <?= $fulfillment->email ?></p>
+                                                            <p class="mb-0">Name: <?= $fulfillment->name ?></p>
+                                                            <p class="mb-0">Surname: <?= $fulfillment->surname ?></p>
+                                                            <p class="mb-0">Organization Name: <?= $fulfillment->organization_name ?></p>
+                                                            <p class="mb-0">Rating: <?= $fulfillment->rating ?></p>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            <?php endforeach; ?>
                                         </div>
-                                    <?php endforeach; ?>
+                                    </div>
                                 </div>
                             </div>
                             <div class="tab-pane fade" id="products" role="tabpanel" aria-labelledby="products-tab">
