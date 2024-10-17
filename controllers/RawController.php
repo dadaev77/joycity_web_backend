@@ -55,12 +55,6 @@ class RawController extends Controller
         $this->enableCsrfValidation = ($action->id == "acceptFrontLogs");
         return parent::beforeAction($action);
     }
-
-    public function actionIndex()
-    {
-        $orders = Order::find()->all();
-        include(__DIR__ . '/../views/raw/index.php');
-    }
     public function actionLog()
     {
         $logs = file_exists(self::LOG_FILE) ? file_get_contents(self::LOG_FILE) : 'Log file not found';
