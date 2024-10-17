@@ -82,7 +82,7 @@ class RawController extends Controller
 
         // format logs content
         $logs = nl2br($logs);
-        $frontLogs = nl2br($frontLogs);
+        // $frontLogs = nl2br($frontLogs);
 
         // Render the log view with logs and frontLogs variables
         $response = Yii::$app->response;

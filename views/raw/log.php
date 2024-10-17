@@ -75,9 +75,9 @@
                             </div>
                             <div class="tab-pane fade" id="frontend" role="tabpanel" aria-labelledby="frontend-tab">
                                 <div style="white-space: wrap; word-break: break-all; font-size: 12px;" id="frontend-logs">
-                                    <div class="format">
-                                        <?= $frontLogs ?>
-                                    </div>
+
+                                    <?= $frontLogs ?>
+
                                     <script>
                                         document.addEventListener('DOMContentLoaded', function() {
                                             var items = document.getElementsByClassName('format');
