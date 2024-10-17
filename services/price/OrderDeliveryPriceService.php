@@ -122,9 +122,32 @@ class OrderDeliveryPriceService extends PriceOutputService
             $depthPerItem,
             $weightPerItem,
         );
-        $densityPrice = self::getPriceByWeight($typeDeliveryId, $density);
 
-        return round($densityPrice * ($weightPerItem * $itemsCount), self::SYMBOLS_AFTER_DECIMAL_POINT);
+        // $densityPrice = self::getPriceByWeight($typeDeliveryId, $density);
+
+        //new logic
+        $volumeM2 = $widthPerItem * $heightPerItem * $depthPerItem;
+        $volumeM3 = $volumeM2 / 1000000;
+        $weightPerItemKg = $weightPerItem / 1000;
+        $density = $weightPerItemKg / $volumeM3;
+
+        $deliveryPrice = 0;
+
+        if ($density > 100) {
+
+            $totalWeight = ($itemsCount * $weightPerItemKg) + $packagingWeight;
+            $densityPrice = self::getPriceByWeight($typeDeliveryId, $density);
+            $deliveryPrice = $densityPrice * $totalWeight;
+        } else {
+            $deliveryPrice = ($volumeM3 * $itemsCount) * self::getPriceByVolume($typeDeliveryId);
+        }
+
+        return round($deliveryPrice, self::SYMBOLS_AFTER_DECIMAL_POINT);
+    }
+
+    private static function getPriceByVolume(int $typeDeliveryId): float
+    {
+        return 1;
     }
 
     public static function calculatePackagingPrice(
