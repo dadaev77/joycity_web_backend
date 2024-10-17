@@ -79,9 +79,6 @@ class OrderPriceService extends PriceOutputService
             $packagingQuantity,
         );
         // LogService::info('calculated packaging price: ' . $packagingPrice);
-        $out['product_inspection'] = $productInspectionPrice;
-        $out['fulfillment'] = RateService::convertRUBtoCNY($fulfillmentPrice);
-
         $out['delivery']['packaging'] = RateService::convertRUBtoUSD(
             $packagingPrice,
         );
@@ -90,6 +87,9 @@ class OrderPriceService extends PriceOutputService
         );
         $out['delivery']['overall'] =
             $out['delivery']['packaging'] + $out['delivery']['delivery'];
+
+        $out['product_inspection'] = $productInspectionPrice;
+        $out['fulfillment'] = RateService::convertRUBtoCNY($fulfillmentPrice);
 
         $out['product']['price_per_item'] = $productPrice;
         $out['product']['overall'] = round($productPrice * $productQuantity, self::SYMBOLS_AFTER_DECIMAL_POINT);

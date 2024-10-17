@@ -147,7 +147,7 @@ class OrderDeliveryPriceService extends PriceOutputService
 
     private static function getPriceByVolume(int $typeDeliveryId): float
     {
-        return 1;
+        return 350;
     }
 
     public static function calculatePackagingPrice(
