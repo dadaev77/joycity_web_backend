@@ -48,9 +48,6 @@
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="attachments-tab" data-bs-toggle="tab" data-bs-target="#attachments" type="button" role="tab" aria-controls="attachments" aria-selected="false">Attachments</button>
                             </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="new-tab" data-bs-toggle="tab" data-bs-target="#new" type="button" role="tab" aria-controls="new" aria-selected="false">Reset App</button>
-                            </li>
                         </ul>
                         <div class="tab-content py-4" id="myTabContent">
                             <div class="tab-pane fade show active" id="backend" role="tabpanel" aria-labelledby="backend-tab">
@@ -218,53 +215,6 @@
                                     <div class="col">
                                         <?= $actionLogs ?>
                                     </div>
-                                </div>
-                            </div>
-                            <div class="tab-pane fade" id="new" role="tabpanel" aria-labelledby="new-tab">
-                                <div>
-                                    <p>
-                                        To reset the app, you need to text the following message to the field: <span class="text-danger" id="text-field"></span>
-                                    </p>
-                                    <input type="text" class="form-control mt-2" placeholder="Enter the text here" id="reset-text">
-                                    <button class="btn btn-primary mt-2" id="reset-button">Reset</button>
-
-                                    <button class="btn btn-primary mt-2 d-none" disabled id="loader">
-                                        <div class="spinner-border-sm spinner-border" role="status">
-                                            <span class="visually-hidden">Loading...</span>
-                                        </div>
-                                    </button>
-
-                                    <script>
-                                        document.addEventListener('DOMContentLoaded', function() {
-                                            document.getElementById('text-field').innerText = Math.random().toString(36).substring(2, 12);
-                                        });
-                                        document.getElementById('reset-button').addEventListener('click', function() {
-                                            document.getElementById('reset-button').classList.add('d-none');
-                                            document.getElementById('loader').classList.remove('d-none');
-                                            async function reset() {
-                                                const response = await fetch('/raw/reset-app', {
-                                                    method: 'POST',
-                                                    body: JSON.stringify({
-                                                        text: document.getElementById('reset-text').value
-                                                    })
-                                                }).then(response => {
-                                                    if (response.ok) {
-                                                        alert('App reset successfully!\nReloading in 3 seconds...');
-                                                        document.getElementById('loader').classList.add('d-none');
-                                                        document.getElementById('reset-button').classList.remove('d-none');
-                                                        setTimeout(() => {
-                                                            location.reload();
-                                                        }, 3000);
-                                                    } else {
-                                                        alert('Failed to reset the app.');
-                                                    }
-                                                }).catch(error => {
-                                                    console.error('Error:', error);
-                                                });
-                                            }
-                                            reset();
-                                        });
-                                    </script>
                                 </div>
                             </div>
                         </div>
