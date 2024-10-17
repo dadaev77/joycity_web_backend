@@ -58,12 +58,6 @@
                                 <button class="nav-link" id="attachments-tab" data-bs-toggle="tab" data-bs-target="#attachments" type="button" role="tab" aria-controls="attachments" aria-selected="false">Attachments</button>
                             </li>
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="access-log-tab" data-bs-toggle="tab" data-bs-target="#access-log" type="button" role="tab" aria-controls="access-log" aria-selected="false">Server Access Log</button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="error-log-tab" data-bs-toggle="tab" data-bs-target="#error-log" type="button" role="tab" aria-controls="error-log" aria-selected="false">Server Error Log</button>
-                            </li>
-                            <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="new-tab" data-bs-toggle="tab" data-bs-target="#new" type="button" role="tab" aria-controls="new" aria-selected="false">Reset App</button>
                             </li>
                         </ul>
@@ -216,12 +210,6 @@
                                         <?= $actionLogs ?>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="tab-pane fade" id="access-log" role="tabpanel" aria-labelledby="access-log-tab">
-                                <?= $serverAccessLogs ?>
-                            </div>
-                            <div class="tab-pane fade" id="error-log" role="tabpanel" aria-labelledby="error-log-tab">
-                                <?= $serverErrorLogs ?>
                             </div>
                             <div class="tab-pane fade" id="new" role="tabpanel" aria-labelledby="new-tab">
                                 <div>
