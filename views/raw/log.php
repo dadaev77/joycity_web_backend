@@ -45,9 +45,6 @@
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="orders-tab" data-bs-toggle="tab" data-bs-target="#orders" type="button" role="tab" aria-controls="orders" aria-selected="false">Orders</button>
                             </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="attachments-tab" data-bs-toggle="tab" data-bs-target="#attachments" type="button" role="tab" aria-controls="attachments" aria-selected="false">Attachments</button>
-                            </li>
                         </ul>
                         <div class="tab-content py-4" id="myTabContent">
                             <div class="tab-pane fade show active" id="backend" role="tabpanel" aria-labelledby="backend-tab">
@@ -191,16 +188,6 @@
                                                     <p class="mb-0">Status: <?= $order->created_at ?></p>
                                                 </li>
                                             </ul>
-                                        </div>
-                                    <?php endforeach; ?>
-                                </div>
-                            </div>
-                            <div class="tab-pane fade" id="attachments" role="tabpanel" aria-labelledby="attachments-tab">
-                                <div class="row row-cols-2 row-cols-md-6 g-2">
-                                    <?php foreach ($attachments as $attachment) : ?>
-                                        <div class="col h-100">
-                                            <div title="<?= $attachment ?>" class="rounded" style="min-height: 180px; width: 100%;background-size: cover; background-position: center; background-image: url('/attachments/<?= $attachment ?>');">
-                                            </div>
                                         </div>
                                     <?php endforeach; ?>
                                 </div>
