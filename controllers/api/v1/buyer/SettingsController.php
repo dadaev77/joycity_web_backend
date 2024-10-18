@@ -25,18 +25,18 @@ class SettingsController extends BuyerController
         $behaviors['verbFilter']['actions']['set-packaging'] = ['put'];
         $behaviors['verbFilter']['actions']['set-delivery'] = ['put'];
         $behaviors['verbFilter']['actions']['set-categories'] = ['put'];
-        // array_unshift($behaviors['access']['rules'], [
-        //     // 'actions' => [''],
-        //     // 'allow' => false,
-        //     // 'matchCallback' => fn() => User::getIdentity()->role === User::ROLE_BUYER_DEMO,
-        // ]);
-        // $behaviors['access']['denyCallback'] = static function () {
-        //     // $response =
-        //     //     User::getIdentity()->role === User::ROLE_BUYER_DEMO ?
-        //     //     ApiResponse::byResponseCode(ResponseCodes::getStatic()->NOT_AUTHENTICATED) :
-        //     //     false;
-        //     // Yii::$app->response->data = $response;
-        // };
+        array_unshift($behaviors['access']['rules'], [
+            'actions' => ['*'],
+            'allow' => true,
+            'matchCallback' => fn() => User::getIdentity()->role === User::ROLE_BUYER_DEMO,
+        ]);
+        $behaviors['access']['denyCallback'] = static function () {
+            $response =
+                User::getIdentity()->role === User::ROLE_BUYER_DEMO ?
+                ApiResponse::byResponseCode(ResponseCodes::getStatic()->NOT_AUTHENTICATED) :
+                false;
+            Yii::$app->response->data = $response;
+        };
         return $behaviors;
     }
 
