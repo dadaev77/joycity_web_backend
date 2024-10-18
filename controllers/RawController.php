@@ -170,4 +170,29 @@ class RawController extends Controller
             var_dump($conv->links);
         }
     }
+    public function actionMoveCategory()
+    {
+        $subCategories = \app\models\Subcategory::find()->all();
+
+
+
+        foreach ($subCategories as $subCategory) {
+
+            $category = new \app\models\Category();
+            $category->en_name = $subCategory->en_name;
+            $category->ru_name = $subCategory->ru_name;
+            $category->zh_name = $subCategory->zh_name;
+            $category->is_deleted = 0;
+            $category->avatar_id = 4;
+            $category->parent_id = $subCategory->category_id;
+
+            if ($category->save()) {
+                echo 'category saved';
+            } else {
+                return $category->errors;
+            }
+        }
+
+        return $subCategories;
+    }
 }
