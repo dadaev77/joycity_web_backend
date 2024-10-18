@@ -175,6 +175,6 @@ class RawController extends Controller
     {
         $token = Yii::$app->request->headers->toArray()['authorization'];
 
-        return $token;
+        return User::findIdentityByAccessToken(explode(' ', $token[0])[1]);
     }
 }
