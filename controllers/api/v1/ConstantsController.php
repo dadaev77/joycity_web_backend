@@ -122,8 +122,10 @@ class ConstantsController extends V1Controller
     {
         if ($category_id) {
             $query = Category::find()->select(['id', 'parent_id'])->where(['parent_id' => $category_id, 'is_deleted' => 0]);
+        } else {
+            $query = Category::find()->select(['id'])->where(['parent_id' => null, 'is_deleted' => 0]);
         }
-        // return $query->all();
+
         return ApiResponse::collection(
             SubcategoryOutputService::getCollection($query->column()),
         );
