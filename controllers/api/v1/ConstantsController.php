@@ -112,7 +112,7 @@ class ConstantsController extends V1Controller
             CategoryOutputService::getCollection(
                 Category::find()
                     ->select(['id'])
-                    ->where(['parent_id' => null])
+                    ->where(['parent_id' => null, 'is_deleted' => 0])
                     ->column(),
             ),
         );
@@ -120,12 +120,10 @@ class ConstantsController extends V1Controller
 
     public function actionSubcategory($category_id = null)
     {
-        $query = Category::find()->select(['id', 'parent_id']);
-
         if ($category_id) {
-            $query->where(['parent_id' => $category_id]);
+            $query = Category::find()->select(['id', 'parent_id'])->where(['parent_id' => $category_id, 'is_deleted' => 0]);
         }
-
+        // return $query->all();
         return ApiResponse::collection(
             SubcategoryOutputService::getCollection($query->column()),
         );

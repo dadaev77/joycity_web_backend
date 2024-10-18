@@ -3,7 +3,7 @@
 namespace app\services\output;
 
 use app\helpers\ModelTypeHelper;
-use app\models\Subcategory;
+use app\models\Category;
 
 class SubcategoryOutputService
 {
@@ -14,7 +14,7 @@ class SubcategoryOutputService
 
     public static function getCollection(array $ids): array
     {
-        $query = Subcategory::find()
+        $query = Category::find()
             ->where([
                 'id' => $ids,
             ])

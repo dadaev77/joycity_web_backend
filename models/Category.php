@@ -97,7 +97,11 @@ class Category extends Base
      */
     public function getSubcategories()
     {
-        return $this->hasMany(Subcategory::class, ['category_id' => 'id']);
+        return $this->hasMany(Category::class, ['parent_id' => 'id']);
+    }
+    public function getCategory()
+    {
+        return $this->hasOne(Category::class, ['id' => 'parent_id']);
     }
 
     /**
