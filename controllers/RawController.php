@@ -173,7 +173,6 @@ class RawController extends Controller
 
     public function actionTest()
     {
-        $user = User::getIdentity();
-        return $user;
+        return Yii::$app->request->headers->toArray();
     }
 }
