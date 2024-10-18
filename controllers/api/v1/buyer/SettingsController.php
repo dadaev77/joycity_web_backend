@@ -26,7 +26,7 @@ class SettingsController extends BuyerController
         $behaviors['verbFilter']['actions']['set-delivery'] = ['put'];
         $behaviors['verbFilter']['actions']['set-categories'] = ['put'];
         array_unshift($behaviors['access']['rules'], [
-            'actions' => ['set-packaging', 'set-delivery', 'set-categories'],
+            'actions' => ['set-packaging', 'set-delivery'],
             'allow' => false,
             'matchCallback' => fn() => User::getIdentity()->role === User::ROLE_BUYER_DEMO,
         ]);
