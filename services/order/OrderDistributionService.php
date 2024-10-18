@@ -45,7 +45,7 @@ class OrderDistributionService
         ]);
 
         if ($task->save()) {
-            Log::info('Distribution task created: ' . $task->id);
+            // Log::info('Distribution task created: ' . $task->id);
             return Result::success($task);
         }
         Log::error('Error creating distribution task: ' . json_encode($task->getFirstErrors(), JSON_THROW_ON_ERROR));

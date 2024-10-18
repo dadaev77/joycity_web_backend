@@ -24,7 +24,7 @@ class CronController extends Controller
     }
     public function actionDistribution(string $taskID = null)
     {
-        Log::log('Distribution task started');
+        // Log::log('Distribution task started');
         $actualTask = OrderDistribution::find()->where(['id' => $taskID])->one();
 
         if (
@@ -36,12 +36,12 @@ class CronController extends Controller
             exec($command);
             return;
         }
-        Log::success('Task found. ID: ' . $actualTask->id);
+        // Log::success('Task found. ID: ' . $actualTask->id);
         $buyers = explode(',', $actualTask->buyer_ids_list);
         $currentBuyer = $actualTask->current_buyer_id;
         $nextBuyer = $this->getNextBuyer($buyers, $currentBuyer);
         $actualTask->current_buyer_id = $nextBuyer;
-        Log::success('Current buyer id for task ' . $actualTask->id . ' is: ' . $nextBuyer);
+        // Log::success('Current buyer id for task ' . $actualTask->id . ' is: ' . $nextBuyer);
         if (!$actualTask->save()) {
             Log::danger('Error saving task');
             return;
