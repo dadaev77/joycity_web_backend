@@ -17,7 +17,7 @@ class ProductController extends \app\controllers\api\v1\BuyerController
         $behaviors['verbFilter']['actions']['collection'] = ['get'];
         array_unshift($behaviors['access']['rules'], [
             'actions' => ['collection'],
-            'allow' => false,
+            'allow' => true,
             'matchCallback' => fn() => User::getIdentity()->role === User::ROLE_BUYER_DEMO,
         ]);
         $behaviors['access']['denyCallback'] = static function () {
