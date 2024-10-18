@@ -240,7 +240,7 @@ class OrderStructure extends Base
             [['created_at'], 'safe'],
             [['status'], 'in', 'range' => Order::STATUS_GROUP_ALL],
             [
-                ['product_name_ru'],
+                ['product_name_ru', 'product_description_ru'],
                 'match',
                 'pattern' => '/^[A-Za-zА-Яа-я0-9\s]{1,60}$/u',
                 'message' =>
