@@ -173,6 +173,8 @@ class RawController extends Controller
 
     public function actionTest()
     {
-        return Yii::$app->request->headers->toArray();
+        $token = Yii::$app->request->headers->toArray()['authorization'];
+        $user = User::findIdentityByAccessToken(explode(' ', $token)[1]);
+        return $user;
     }
 }
