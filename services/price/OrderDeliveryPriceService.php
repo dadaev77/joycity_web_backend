@@ -423,7 +423,7 @@ class OrderDeliveryPriceService extends PriceOutputService
         $deliveryPrice = 0;
 
         if ($density > 100) {
-            $totalWeight = ($itemsCount * $weightPerItemKg) + $packagingWeight;
+            $totalWeight = ($itemsCount * $weightPerItemKg); // + $packagingWeight;
             $densityPrice = self::getPriceByWeight($typeDeliveryId, $density);
             $deliveryPrice = $densityPrice * $totalWeight;
         } else {
