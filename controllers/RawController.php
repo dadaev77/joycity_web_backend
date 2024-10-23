@@ -194,49 +194,57 @@ class RawController extends Controller
 
             'Clothing' => [
                 // Clothing
-                ['id' => 8, 'en_name' => 'Men', 'ru_name' => 'Мужская одежда', 'zh_name' => "男装", "is_deleted" => 0, "parent_id" => 2, 'avatar_id' => "4"],
-                ['id' => 9, 'en_name' => 'Women', 'ru_name' => 'Женская одежда', 'zh_name' => "女装", "is_deleted" => 0, "parent_id" => 2, 'avatar_id' => "4"],
-                ['id' => 10, 'en_name' => 'Children', 'ru_name' => 'Детская одежда', 'zh_name' => "儿童服装", "is_deleted" => 0, "parent_id" => 2, 'avatar_id' => "4"],
-                ['id' => 11, 'en_name' => 'Baby', 'ru_name' => 'Одежда для малышей', 'zh_name' => "婴儿服装", "is_deleted" => 0, "parent_id" => 2, 'avatar_id' => "4"],
+                ['id' => 12, 'en_name' => 'Men', 'ru_name' => 'Мужская одежда', 'zh_name' => "男装", "is_deleted" => 0, "parent_id" => 2, 'avatar_id' => "4"],
+                ['id' => 13, 'en_name' => 'Women', 'ru_name' => 'Женская одежда', 'zh_name' => "女装", "is_deleted" => 0, "parent_id" => 2, 'avatar_id' => "4"],
+                ['id' => 14, 'en_name' => 'Children', 'ru_name' => 'Детская одежда', 'zh_name' => "儿童服装", "is_deleted" => 0, "parent_id" => 2, 'avatar_id' => "4"],
+                ['id' => 15, 'en_name' => 'Baby', 'ru_name' => 'Одежда для малышей', 'zh_name' => "婴儿服装", "is_deleted" => 0, "parent_id" => 2, 'avatar_id' => "4"],
             ],
 
             'Electronics' => [
                 // Electronics
-                ['id' => 12, 'en_name' => 'Smartphones', 'ru_name' => 'Смартфоны', 'zh_name' => "智能手机", "is_deleted" => 0, "parent_id" => 3, 'avatar_id' => "4"],
-                ['id' => 13, 'en_name' => 'Laptops', 'ru_name' => 'Ноутбуки', 'zh_name' => "笔记本电脑", "is_deleted" => 0, "parent_id" => 3, 'avatar_id' => "4"],
-                ['id' => 14, 'en_name' => 'Tablets', 'ru_name' => 'Планшеты', 'zh_name' => "平板电脑", "is_deleted" => 0, "parent_id" => 3, 'avatar_id' => "4"],
-                ['id' => 15, 'en_name' => 'Smartwatches', 'ru_name' => 'Умные часы', 'zh_name' => "智能手表", "is_deleted" => 0, "parent_id" => 3, 'avatar_id' => "4"],
+                ['id' => 16, 'en_name' => 'Smartphones', 'ru_name' => 'Смартфоны', 'zh_name' => "智能手机", "is_deleted" => 0, "parent_id" => 3, 'avatar_id' => "4"],
+                ['id' => 17, 'en_name' => 'Laptops', 'ru_name' => 'Ноутбуки', 'zh_name' => "笔记本电脑", "is_deleted" => 0, "parent_id" => 3, 'avatar_id' => "4"],
+                ['id' => 18, 'en_name' => 'Tablets', 'ru_name' => 'Планшеты', 'zh_name' => "平板电脑", "is_deleted" => 0, "parent_id" => 3, 'avatar_id' => "4"],
+                ['id' => 19, 'en_name' => 'Smartwatches', 'ru_name' => 'Умные часы', 'zh_name' => "智能手表", "is_deleted" => 0, "parent_id" => 3, 'avatar_id' => "4"],
             ],
             'Furniture' => [
                 // Furniture
-                ['id' => 16, 'en_name' => 'Beds', 'ru_name' => 'Мебель для дома', 'zh_name' => "家居家具", "is_deleted" => 0, "parent_id" => 4, 'avatar_id' => "4"],
-                ['id' => 17, 'en_name' => 'Sofas', 'ru_name' => 'Уличная мебель', 'zh_name' => "户外家具", "is_deleted" => 0, "parent_id" => 4, 'avatar_id' => "4"],
-                ['id' => 18, 'en_name' => 'Kitchen', 'ru_name' => 'Мебель для кухни', 'zh_name' => "厨房家具", "is_deleted" => 0, "parent_id" => 4, 'avatar_id' => "4"],
-                ['id' => 19, 'en_name' => 'Office', 'ru_name' => 'Мебель для офиса', 'zh_name' => "办公室家具", "is_deleted" => 0, "parent_id" => 4, 'avatar_id' => "4"],
+                ['id' => 20, 'en_name' => 'Beds', 'ru_name' => 'Мебель для дома', 'zh_name' => "家居家具", "is_deleted" => 0, "parent_id" => 4, 'avatar_id' => "4"],
+                ['id' => 21, 'en_name' => 'Sofas', 'ru_name' => 'Уличная мебель', 'zh_name' => "户外家具", "is_deleted" => 0, "parent_id" => 4, 'avatar_id' => "4"],
+                ['id' => 22, 'en_name' => 'Kitchen', 'ru_name' => 'Мебель для кухни', 'zh_name' => "厨房家具", "is_deleted" => 0, "parent_id" => 4, 'avatar_id' => "4"],
+                ['id' => 23, 'en_name' => 'Office', 'ru_name' => 'Мебель для офиса', 'zh_name' => "办公室家具", "is_deleted" => 0, "parent_id" => 4, 'avatar_id' => "4"],
             ],
             'Toys' => [
                 // Toys
-                ['id' => 20, 'en_name' => 'Baby', 'ru_name' => 'Игрушки для малышей', 'zh_name' => "婴儿玩具", "is_deleted" => 0, "parent_id" => 5, 'avatar_id' => "4"],
-                ['id' => 21, 'en_name' => 'Kids', 'ru_name' => 'Детские игрушки', 'zh_name' => "儿童玩具", "is_deleted" => 0, "parent_id" => 5, 'avatar_id' => "4"],
-                ['id' => 22, 'en_name' => 'Puzzles', 'ru_name' => 'Головоломки', 'zh_name' => "益智玩具", "is_deleted" => 0, "parent_id" => 5, 'avatar_id' => "4"],
-                ['id' => 23, 'en_name' => 'Building', 'ru_name' => 'Конструкторы', 'zh_name' => "积木玩具", "is_deleted" => 0, "parent_id" => 5, 'avatar_id' => "4"],
+                ['id' => 24, 'en_name' => 'Baby', 'ru_name' => 'Игрушки для малышей', 'zh_name' => "婴儿玩具", "is_deleted" => 0, "parent_id" => 5, 'avatar_id' => "4"],
+                ['id' => 25, 'en_name' => 'Kids', 'ru_name' => 'Детские игрушки', 'zh_name' => "儿童玩具", "is_deleted" => 0, "parent_id" => 5, 'avatar_id' => "4"],
+                ['id' => 26, 'en_name' => 'Puzzles', 'ru_name' => 'Головоломки', 'zh_name' => "益智玩具", "is_deleted" => 0, "parent_id" => 5, 'avatar_id' => "4"],
+                ['id' => 27, 'en_name' => 'Building', 'ru_name' => 'Конструкторы', 'zh_name' => "积木玩具", "is_deleted" => 0, "parent_id" => 5, 'avatar_id' => "4"],
             ],
             'Sports' => [
                 // Sports
-                ['id' => 25, 'en_name' => 'Balls', 'ru_name' => 'Мячи', 'zh_name' => "球类", "is_deleted" => 0, "parent_id" => 6, 'avatar_id' => "4"],
-                ['id' => 26, 'en_name' => 'Rackets', 'ru_name' => 'Ракетки', 'zh_name' => "球拍", "is_deleted" => 0, "parent_id" => 6, 'avatar_id' => "4"],
-                ['id' => 27, 'en_name' => 'Fitness', 'ru_name' => 'Фитнес', 'zh_name' => "健身", "is_deleted" => 0, "parent_id" => 6, 'avatar_id' => "4"],
+                ['id' => 28, 'en_name' => 'Balls', 'ru_name' => 'Мячи', 'zh_name' => "球类", "is_deleted" => 0, "parent_id" => 6, 'avatar_id' => "4"],
+                ['id' => 29, 'en_name' => 'Rackets', 'ru_name' => 'Ракетки', 'zh_name' => "球拍", "is_deleted" => 0, "parent_id" => 6, 'avatar_id' => "4"],
+                ['id' => 30, 'en_name' => 'Fitness', 'ru_name' => 'Фитнес', 'zh_name' => "健身", "is_deleted" => 0, "parent_id" => 6, 'avatar_id' => "4"],
             ],
             'Automotive' => [
                 // Automotive
-                ['id' => 28, 'en_name' => 'Parts', 'ru_name' => 'Запчасти', 'zh_name' => "汽车配件", "is_deleted" => 0, "parent_id" => 7, 'avatar_id' => "4"],
-                ['id' => 29, 'en_name' => 'Accessories', 'ru_name' => 'Аксессуары', 'zh_name' => "配件", "is_deleted" => 0, "parent_id" => 7, 'avatar_id' => "4"],
-                ['id' => 30, 'en_name' => 'Radio', 'ru_name' => 'Магнитолы', 'zh_name' => "车载音响", "is_deleted" => 0, "parent_id" => 7, 'avatar_id' => "4"],
-                ['id' => 31, 'en_name' => 'Batteries', 'ru_name' => 'Аккумуляторы', 'zh_name' => "蓄电池", "is_deleted" => 0, "parent_id" => 7, 'avatar_id' => "4"],
+                ['id' => 31, 'en_name' => 'Parts', 'ru_name' => 'Запчасти', 'zh_name' => "汽车配件", "is_deleted" => 0, "parent_id" => 7, 'avatar_id' => "4"],
+                ['id' => 32, 'en_name' => 'Accessories', 'ru_name' => 'Аксессуары', 'zh_name' => "配件", "is_deleted" => 0, "parent_id" => 7, 'avatar_id' => "4"],
+                ['id' => 33, 'en_name' => 'Radio', 'ru_name' => 'Магнитолы', 'zh_name' => "车载音响", "is_deleted" => 0, "parent_id" => 7, 'avatar_id' => "4"],
+                ['id' => 34, 'en_name' => 'Batteries', 'ru_name' => 'Аккумуляторы', 'zh_name' => "蓄电池", "is_deleted" => 0, "parent_id" => 7, 'avatar_id' => "4"],
             ],
         ];
 
         $subcategories = [
+            'Plants' => [
+                // Plants
+                ['id' => 35, 'en_name' => 'Vegetables', 'ru_name' => 'Овощи', 'zh_name' => "蔬菜", "is_deleted" => 0, "parent_id" => 8, 'avatar_id' => "4"],
+                ['id' => 36, 'en_name' => 'Fruits', 'ru_name' => 'Фрукты', 'zh_name' => "水果", "is_deleted" => 0, "parent_id" => 8, 'avatar_id' => "4"],
+                ['id' => 37, 'en_name' => 'Flowers', 'ru_name' => 'Цветы', 'zh_name' => "花卉", "is_deleted" => 0, "parent_id" => 8, 'avatar_id' => "4"],
+                ['id' => 38, 'en_name' => 'Trees', 'ru_name' => 'Деревья', 'zh_name' => "树木", "is_deleted" => 0, "parent_id" => 8, 'avatar_id' => "4"],
+
+            ],
             'Men' => [
                 // Men
                 ['id' => 32, 'en_name' => 'Men\'s Shirts', 'ru_name' => 'Рубашки для мужчин', 'zh_name' => "男士衬衫", "is_deleted" => 0, "parent_id" => 8, 'avatar_id' => "4"],
