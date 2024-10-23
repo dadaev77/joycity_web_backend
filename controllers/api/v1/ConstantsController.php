@@ -125,7 +125,7 @@ class ConstantsController extends V1Controller
 
     public function actionSubcategory($category_id = null)
     {
-        return $category_id;
+
         if ($category_id) {
             $query = Category::find()->select(['id', 'parent_id'])->where(['parent_id' => $category_id, 'is_deleted' => 0]);
         } else {
