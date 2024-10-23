@@ -189,7 +189,7 @@ class OrderStructure extends Base
                 ['subcategory_id'],
                 'exist',
                 'skipOnError' => true,
-                'targetClass' => Subcategory::class,
+                'targetClass' => Category::class,
                 'targetAttribute' => ['subcategory_id' => 'id'],
             ],
             [

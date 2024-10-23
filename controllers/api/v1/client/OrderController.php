@@ -148,6 +148,7 @@ class OrderController extends ClientController
             // end translate order name and description
 
             $orderSave = SaveModelService::loadValidateAndSave(
+
                 $order,
                 [
                     'product_id',
@@ -173,6 +174,7 @@ class OrderController extends ClientController
             );
 
             LogService::log('order saved with id ' . $order->id);
+
             if (!$orderSave->success) {
                 return $orderSave->apiResponse;
             }
