@@ -108,13 +108,18 @@ class ConstantsController extends V1Controller
 
     public function actionCategory()
     {
+        $rootCategoriesIds = Category::find()
+            ->select(['id'])
+            ->where(['parent_id' => null, 'is_deleted' => 0])
+            ->column();
+
+        $categoriesIds = Category::find()
+            ->select(['id', 'ru_name'])
+            ->where(['parent_id' => $rootCategoriesIds, 'is_deleted' => 0])
+            ->column();
+
         return ApiResponse::collection(
-            CategoryOutputService::getCollection(
-                Category::find()
-                    ->select(['id'])
-                    ->where(['parent_id' => null, 'is_deleted' => 0])
-                    ->column(),
-            ),
+            CategoryOutputService::getCollection($categoriesIds)
         );
     }
 
