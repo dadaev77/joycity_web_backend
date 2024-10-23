@@ -189,7 +189,7 @@ class OrderStructure extends Base
                 ['subcategory_id'],
                 'exist',
                 'skipOnError' => true,
-                'targetClass' => \app\Category::class,
+                'targetClass' => \app\models\Category::class,
                 'targetAttribute' => ['subcategory_id' => 'id'],
             ],
             [
