@@ -82,7 +82,7 @@ use yii\db\ActiveQuery;
  * @property Product $product
  * @property ProductInspectionReport[] $productInspectionReports
  * @property ProductStockReport[] $productStockReports
- * @property Subcategory $subcategory
+ * @property Category $category
  * @property TypeDelivery $typeDelivery
  * @property TypeDeliveryPoint $typeDeliveryPoint
  * @property TypePackaging $typePackaging
@@ -189,7 +189,7 @@ class OrderStructure extends Base
                 ['subcategory_id'],
                 'exist',
                 'skipOnError' => true,
-                'targetClass' => \app\models\Category::class,
+                'targetClass' => \app\Category::class,
                 'targetAttribute' => ['subcategory_id' => 'id'],
             ],
             [
@@ -551,13 +551,13 @@ class OrderStructure extends Base
     }
 
     /**
-     * Gets query for [[Subcategory]].
+     * Gets query for [[Category]].
      *
      * @return ActiveQuery
      */
-    public function getSubcategory()
+    public function getCategory()
     {
-        return $this->hasOne(Subcategory::class, ['id' => 'subcategory_id']);
+        return $this->hasOne(\app\models\Category::class, ['id' => 'parent_id']);
     }
 
     /**

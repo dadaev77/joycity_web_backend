@@ -227,8 +227,7 @@ class OrderDistributionService
     private static function createBuyersList(Order $order): mixed
     {
         $out = [];
-        $categoryId = $order->subcategory->category_id;
-
+        $categoryId = $order->subcategory_id;
         $buyerIds = User::find()
             ->select(['id', 'rating'])
             ->with([
