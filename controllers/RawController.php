@@ -239,10 +239,10 @@ class RawController extends Controller
         $subcategories = [
             'Plants' => [
                 // Plants
-                ['id' => 35, 'en_name' => 'Vegetables', 'ru_name' => 'Овощи', 'zh_name' => "蔬菜", "is_deleted" => 0, "parent_id" => 8, 'avatar_id' => "4"],
-                ['id' => 36, 'en_name' => 'Fruits', 'ru_name' => 'Фрукты', 'zh_name' => "水果", "is_deleted" => 0, "parent_id" => 8, 'avatar_id' => "4"],
-                ['id' => 37, 'en_name' => 'Flowers', 'ru_name' => 'Цветы', 'zh_name' => "花卉", "is_deleted" => 0, "parent_id" => 8, 'avatar_id' => "4"],
-                ['id' => 38, 'en_name' => 'Trees', 'ru_name' => 'Деревья', 'zh_name' => "树木", "is_deleted" => 0, "parent_id" => 8, 'avatar_id' => "4"],
+                ['id' => 35, 'en_name' => 'Vegetables', 'ru_name' => 'Овощи', 'zh_name' => "蔬菜", "is_deleted" => 0, "parent_id" => 10, 'avatar_id' => "4"],
+                ['id' => 36, 'en_name' => 'Fruits', 'ru_name' => 'Фрукты', 'zh_name' => "水果", "is_deleted" => 0, "parent_id" => 10, 'avatar_id' => "4"],
+                ['id' => 37, 'en_name' => 'Flowers', 'ru_name' => 'Цветы', 'zh_name' => "花卉", "is_deleted" => 0, "parent_id" => 10, 'avatar_id' => "4"],
+                ['id' => 38, 'en_name' => 'Trees', 'ru_name' => 'Деревья', 'zh_name' => "树木", "is_deleted" => 0, "parent_id" => 10, 'avatar_id' => "4"],
 
             ],
             'Men' => [

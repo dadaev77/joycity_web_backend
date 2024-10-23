@@ -114,9 +114,17 @@ class ConstantsController extends V1Controller
             ->column();
 
         $categoriesIds = Category::find()
-            ->select(['id', 'ru_name'])
+            ->select(['id'])
             ->where(['parent_id' => $rootCategoriesIds, 'is_deleted' => 0])
             ->column();
+
+        foreach (
+            Category::find()->where(['id' => $categoriesIds])->with(['subcategories'])->all() as $category
+        ) {
+            if (empty($category->subcategories)) {
+                array_splice($categoriesIds, array_search($category->id, $categoriesIds), 1);
+            }
+        }
 
         return ApiResponse::collection(
             CategoryOutputService::getCollection($categoriesIds)
