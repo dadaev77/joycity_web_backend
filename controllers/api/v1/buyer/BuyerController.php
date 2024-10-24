@@ -11,18 +11,33 @@ class BuyerController extends BuyerControllerParent
 {
     public function __construct()
     {
-        return 'buyer controller';
-        die;
+        // return 'buyer controller';
+        // die;
     }
     public function behaviors()
     {
         $behaviours = parent::behaviors();
         $behaviours['verbFilter']['actions']['view'] = ['get'];
+        $behaviours['verbFilter']['actions']['buyer'] = ['get'];
 
         return $behaviours;
     }
 
     public function actionView(int $id)
+    {
+        $apiCodes = User::apiCodes();
+        $isset = User::isset([
+            'id' => $id,
+            'role' => User::ROLE_BUYER || User::ROLE_BUYER_DEMO,
+        ]);
+        if (!$isset) {
+            return ApiResponse::code($apiCodes->NOT_FOUND);
+        }
+
+        return ApiResponse::info(BuyerOutputService::getEntity($id));
+    }
+
+    public function actionBuyer(int $id)
     {
         $apiCodes = User::apiCodes();
         $isset = User::isset([
