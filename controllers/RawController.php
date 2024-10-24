@@ -26,8 +26,6 @@ use app\services\twilio\TwilioService as Twilio;
 use linslin\yii2\curl\Curl;
 use app\services\TranslationService;
 
-use app\services\ChatConstructorService;
-
 
 class RawController extends Controller
 {
@@ -164,7 +162,7 @@ class RawController extends Controller
     {
         $order = Order::findOne(22);
 
-        $conversationFulfilment = ChatConstructorService::createChatOrder(
+        $conversationFulfilment = \app\services\chat\ChatConstructorService::createChatOrder(
             Chat::GROUP_CLIENT_FULFILMENT,
             [$order->created_by, $order->fulfillment_id, $order->manager_id],
             $order->id,
