@@ -2,41 +2,42 @@
 
 namespace app\services;
 
-use app\models\Subcategory;
 use app\models\TypeDelivery;
 use app\models\TypeDeliveryLinkCategory;
-use app\models\TypeDeliveryLinkSubcategory;
+
 use Throwable;
+use app\models\Category;
 
 class TypeDeliveryService
 {
-    public static function getTypeDeliveryIdsBySubcategory(
-        int $subcategoryId,
-    ): array {
+    public static function getTypeDeliveryIdsBySubcategory(int $subcategoryId): mixed //array
+    {
+
         try {
-            $typeDeliveryIds = TypeDeliveryLinkSubcategory::find()
+            $typeDeliveryIds = TypeDeliveryLinkCategory::find()
                 ->select(['type_delivery_id'])
-                ->where(['subcategory_id' => $subcategoryId])
+                ->where(['category_id' => $subcategoryId])
                 ->column();
 
             if (!$typeDeliveryIds) {
-                $categoryId = Subcategory::findOne(['id' => $subcategoryId])
-                    ?->category_id;
+                // get parent category
+                $category = Category::findOne(['id' => $subcategoryId]);
 
-                if ($categoryId) {
-                    $typeDeliveryIds = TypeDeliveryLinkCategory::find()
-                        ->select(['type_delivery_id'])
-                        ->where(['category_id' => $categoryId])
-                        ->column();
-                }
+                $parentCategory = Category::findOne([
+                    'id' => $category->parent_id,
+                ]);
 
-                if (!$typeDeliveryIds) {
-                    $typeDeliveryIds = TypeDelivery::find()
-                        ->where(['available_for_all' => 1])
-                        ->column();
-                }
+                $typeDeliveryIds = TypeDeliveryLinkCategory::find()
+                    ->select(['type_delivery_id'])
+                    ->where(['category_id' => $parentCategory->id])
+                    ->column();
             }
 
+            if (!$typeDeliveryIds) {
+                $typeDeliveryIds = TypeDelivery::find()
+                    ->where(['available_for_all' => 1])
+                    ->column();
+            }
             return $typeDeliveryIds;
         } catch (Throwable) {
             return [];

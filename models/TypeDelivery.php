@@ -99,7 +99,8 @@ class TypeDelivery extends Base
      */
     public function getTypeDeliveryLinkSubcategories()
     {
-        return $this->hasMany(TypeDeliveryLinkCategory::class, [
+        // TODO: remove this method
+        return $this->hasMany(TypeDeliveryLinkSubcategory::class, [
             'type_delivery_id' => 'id',
         ]);
     }
