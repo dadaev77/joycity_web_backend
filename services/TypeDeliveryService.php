@@ -14,30 +14,39 @@ class TypeDeliveryService
     {
 
         try {
-            $typeDeliveryIds = TypeDeliveryLinkCategory::find()
-                ->select(['type_delivery_id'])
-                ->where(['category_id' => $subcategoryId])
-                ->column();
+            $typeDeliveryIds = [];
+            $currentCategory = Category::findOne(['id' => $subcategoryId]);
+            if (!$currentCategory) return [];
 
-            if (!$typeDeliveryIds) {
-                // get parent category
-                $category = Category::findOne(['id' => $subcategoryId]);
+            $categoriesTree = [];
+            $categoriesTree[] = $currentCategory;
+            while ($currentCategory->parent_id) {
+                $currentCategory = Category::findOne(['id' => $currentCategory->parent_id]);
+                if ($currentCategory) {
+                    $categoriesTree[] = $currentCategory;
+                }
+            }
+            array_reverse($categoriesTree);
 
-                $parentCategory = Category::findOne([
-                    'id' => $category->parent_id,
-                ]);
-
+            foreach ($categoriesTree as $category) {
                 $typeDeliveryIds = TypeDeliveryLinkCategory::find()
                     ->select(['type_delivery_id'])
-                    ->where(['category_id' => $parentCategory->id])
+                    ->where(['category_id' => $category->id])
                     ->column();
+                if ($typeDeliveryIds) {
+                    $typeDeliveryIds = $typeDeliveryIds;
+                    break;
+                }
             }
 
+            // get type delivery that available for all
             if (!$typeDeliveryIds) {
                 $typeDeliveryIds = TypeDelivery::find()
                     ->where(['available_for_all' => 1])
                     ->column();
             }
+            // return type delivery ids
+
             return $typeDeliveryIds;
         } catch (Throwable) {
             return [];
