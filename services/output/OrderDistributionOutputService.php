@@ -17,7 +17,7 @@ class OrderDistributionOutputService extends OutputService
         $query = OrderDistribution::find()
             ->with([
                 'order' => fn($q) => $q->with([
-                    'subcategory' => fn($q) => $q->with(['category']),
+                    'category', // subcategory
                 ]),
             ])
             ->where(['id' => $ids]);
