@@ -27,7 +27,7 @@ class BuyerController extends BuyerControllerParent
         $apiCodes = User::apiCodes();
         $isset = User::isset([
             'id' => $id,
-            'role' => User::ROLE_BUYER,
+            'role' => User::ROLE_BUYER ?? User::ROLE_BUYER_DEMO,
         ]);
         if (!$isset) {
             return ApiResponse::code($apiCodes->NOT_FOUND);
