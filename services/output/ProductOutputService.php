@@ -22,7 +22,7 @@ class ProductOutputService extends OutputService
                 'buyer' => fn($q) => $q
                     ->select(SqlQueryService::getBuyerSelect())
                     ->with(['avatar']),
-                'subcategory' => fn($q) => $q->with(['category']),
+                'category', // subcategory
             ])
             ->orderBy(self::getOrderByIdExpression($ids))
             ->where(['id' => $ids]);

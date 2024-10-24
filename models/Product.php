@@ -249,6 +249,6 @@ class Product extends Base
      */
     public function getSubcategory()
     {
-        return $this->hasOne(Subcategory::class, ['id' => 'subcategory_id']);
+        return $this->hasOne(\app\models\Category::class, ['id' => 'parent_id']); // subcategory
     }
 }
