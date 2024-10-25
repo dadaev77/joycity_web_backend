@@ -241,10 +241,11 @@ class SearchController extends BuyerController
         $user = User::getIdentity();
         $selectedCategories = array_column($user->categories, 'id');
         $excludeIds = Yii::$app->request->get('exclude_id', []);
+
         $collectionQuery = Product::find()
             ->select(['product.id'])
             ->joinWith([
-                'subcategory' => fn($q) => $q->where([
+                'category' => fn($q) => $q->where([
                     'category.parent_id' => $selectedCategories,
                 ]),
             ])
