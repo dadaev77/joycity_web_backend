@@ -245,7 +245,7 @@ class SearchController extends BuyerController
             ->select(['product.id'])
             ->joinWith([
                 'subcategory' => fn($q) => $q->where([
-                    'category_id' => $selectedCategories,
+                    'subcategory.category_id' => $selectedCategories,
                 ]),
             ])
             ->orderBy('RAND()')
