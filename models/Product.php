@@ -247,8 +247,13 @@ class Product extends Base
      *
      * @return ActiveQuery
      */
-    public function getSubcategory()
+    // public function getSubcategory()
+    // {
+    //     return $this->hasOne(\app\models\Category::class, ['id' => 'parent_id']); // subcategory
+    // }
+
+    public function getCategory()
     {
-        return $this->hasOne(\app\models\Category::class, ['id' => 'parent_id']); // subcategory
+        return $this->hasOne(\app\models\Category::class, ['id' => 'parent_id']); // category
     }
 }
