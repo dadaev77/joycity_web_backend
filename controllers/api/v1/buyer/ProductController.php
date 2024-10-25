@@ -75,8 +75,8 @@ class ProductController extends BuyerController
                 ),
                 '',
             );
-            // translate product attributes
 
+            // translate product attributes
             $translation = TranslationService::translateProductAttributes($request->post('name'), $request->post('description'));
             $translations = $translation->result;
 
@@ -84,8 +84,9 @@ class ProductController extends BuyerController
                 $product->{"name_$key"} = $value['name'];
                 $product->{"description_$key"} = $value['description'];
             }
-
+            // set buyer id
             $product->buyer_id = $user->id;
+            // convert prices to user currency
             $product->range_1_price = $product->range_1_price
                 ? RateService::putInUserCurrency($product->range_1_price)
                 : $product->range_1_price;
