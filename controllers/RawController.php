@@ -158,20 +158,11 @@ class RawController extends Controller
         $participiants = $client->conversations->v1->conversations($chatSid)->participants->read();
         return $participiants;
     }
-    public function actionCreateChat()
+    public function actionClearFrontendLogs()
     {
-        $order = Order::findOne(22);
-
-        $conversationFulfilment = \app\services\chat\ChatConstructorService::createChatOrder(
-            Chat::GROUP_CLIENT_FULFILMENT,
-            [$order->created_by, $order->fulfillment_id, $order->manager_id],
-            $order->id,
-        );
-
-        if ($conversationFulfilment->success) {
-            return 'ok';
+        if (exec('echo "" > ' . __DIR__ . '/../runtime/logs/front.log')) {
+            return Yii::$app->response->redirect('/raw/log');
         }
-
-        return 'error';
+        return Yii::$app->response->redirect('/raw/log');
     }
 }

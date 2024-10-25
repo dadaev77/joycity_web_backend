@@ -54,7 +54,9 @@
                             </div>
                             <div class="tab-pane fade" id="frontend" role="tabpanel" aria-labelledby="frontend-tab">
                                 <div style="white-space: wrap; word-break: break-all; font-size: 12px;" id="frontend-logs">
-
+                                    <div class="mb-4">
+                                        <a href="/raw/clear-frontend-logs" class="btn btn-primary btn-sm">clear frontend logs</a>
+                                    </div>
                                     <?= $frontLogs ?>
 
                                     <script>
