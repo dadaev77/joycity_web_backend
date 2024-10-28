@@ -390,7 +390,7 @@ class OrderDeliveryPriceService extends PriceOutputService
     }
 
     public static function calculateDeliveryPrice(
-        int $orderId,
+        int $orderId = null,
         int $itemsCount,
         float $widthPerItem,
         float $heightPerItem,
@@ -400,9 +400,10 @@ class OrderDeliveryPriceService extends PriceOutputService
         int $typeDeliveryId,
     ): float {
 
+        $order = $orderId ? \app\models\Order::findOne($orderId) : null;
         \app\services\UserActionLogService::setController('OrderDeliveryPriceService');
         \app\services\UserActionLogService::warning('Call calculate delivery price :409');
-        \app\services\UserActionLogService::log('Order: ' . json_encode(\app\models\Order::findOne($orderId)));
+        \app\services\UserActionLogService::log('Order: ' . json_encode($order == null ? 'null' : $order));
 
         // $density = self::calculateProductDensity(
         //     $widthPerItem,
