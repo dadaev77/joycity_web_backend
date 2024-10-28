@@ -411,7 +411,7 @@ class OrderDeliveryPriceService extends PriceOutputService
         $order = \app\models\Order::findOne($orderId);
         $category = \app\models\Category::findOne($order->subcategory_id);
 
-        while ($category->parent_id && $category->parent_id != 1) {
+        while ($category->parent_id) {
             $category = \app\models\Category::findOne($category->parent_id);
             $parentsTree[] = $category->id;
         }
