@@ -17,7 +17,7 @@ class OrderPriceService extends PriceOutputService
             if (!$order) {
                 return self::getPricesConfig();
             }
-            // LogService::info('calculate order prices is called for order with id ' . $order->id);
+            LogService::info('calculate order prices is called for order with id ' . $order->id);
             $buyerOffers = $order->buyerOffers;
             $buyerOffer = array_pop($buyerOffers);
             $buyerDeliveryOffer = $order->buyerDeliveryOffer;
@@ -61,8 +61,10 @@ class OrderPriceService extends PriceOutputService
         float $fulfillmentPrice,
         string $calculationType,
     ): array {
+
         \app\services\UserActionLogService::setController('OrderPriceService');
         \app\services\UserActionLogService::warning('Call calculate abstract order prices');
+
         $out = self::getPricesConfig();
         $isTypePackaging =
             $calculationType === self::TYPE_CALCULATION_PACKAGING;
@@ -76,12 +78,14 @@ class OrderPriceService extends PriceOutputService
             $productWeight,
             $typeDeliveryId,
         );
-        // LogService::info('calculated delivery price: ' . $deliveryPrice);
+
+        LogService::info('calculated delivery price: ' . $deliveryPrice);
         $packagingPrice = OrderDeliveryPriceService::calculatePackagingPrice(
             $typePackagingId,
             $packagingQuantity,
         );
-        // LogService::info('calculated packaging price: ' . $packagingPrice);
+        LogService::info('calculated packaging price: ' . $packagingPrice);
+
         $out['delivery']['packaging'] = RateService::convertRUBtoUSD(
             $packagingPrice,
         );
