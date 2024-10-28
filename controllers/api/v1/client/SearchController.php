@@ -233,9 +233,7 @@ class SearchController extends ClientController
         $collectionQuery = Product::find()
             ->select(['product.id'])
             ->joinWith([
-                'subcategory' => fn($q) => $q->where([
-                    'category_id' => $selectedCategories,
-                ]),
+                'subcategory'
             ])
             ->orderBy('RAND()')
             ->limit(20)
