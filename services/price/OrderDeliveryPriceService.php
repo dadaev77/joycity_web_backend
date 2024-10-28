@@ -403,9 +403,11 @@ class OrderDeliveryPriceService extends PriceOutputService
         \app\services\UserActionLogService::warning('Call calculate delivery price :409');
 
         $order = !$orderId ? null : \app\models\Order::findOne($orderId);
+        \app\services\UserActionLogService::log('order: ' . json_encode($order));
         $parentsTree = [];
         if ($order) {
             $subCategory = Category::findOne(['id' => $order->subcategory_id]);
+            \app\services\UserActionLogService::log('subcategory: ' . json_encode($subCategory));
             while ($subCategory->parent_id) {
                 $subCategory = Category::findOne(['id' => $subCategory->parent_id]);
                 if ($subCategory) {
