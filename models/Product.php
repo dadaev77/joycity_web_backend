@@ -251,13 +251,13 @@ class Product extends Base
     {
         return $this->hasOne(\app\models\Category::class, ['id' => 'subcategory_id']);
     }
-    /**
-     * Gets query for [[Category]].
-     *
-     * @return ActiveQuery
-     */
-    public function getCategory()
-    {
-        return $this->hasOne(\app\models\Category::class, ['id' => 'parent_id']);
-    }
+    // /**
+    //  * Gets query for [[Category]].
+    //  *
+    //  * @return ActiveQuery
+    //  */
+    // public function getCategory()
+    // {
+    //     return $this->hasOne(\app\models\Category::class, ['id' => 'parent_id']);
+    // }
 }

@@ -133,9 +133,10 @@ class OrderOutputService extends OutputService
                     $info['product']['attachments'],
                 );
             }
-
+            \app\services\UserActionLogService::log($info['buyerOffer']);
             if ($info['buyerOffer']) {
                 foreach ($info['buyerOffer'] as $key => $value) {
+
                     if (
                         $value &&
                         (str_starts_with($key, 'price_') ||
