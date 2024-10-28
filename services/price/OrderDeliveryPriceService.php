@@ -400,10 +400,9 @@ class OrderDeliveryPriceService extends PriceOutputService
         int $typeDeliveryId,
     ): float {
         \app\services\UserActionLogService::setController('OrderDeliveryPriceService');
+        $order = $orderId ? \app\models\Order::findOne($orderId) : null;
+        \app\services\UserActionLogService::log($order);
 
-        $order = $orderId ? \app\models\Order::findOne($orderId)->one() : null;
-        $parentsTree = [];
-        \app\services\UserActionLogService::log('order: ' . json_encode($order));
         if ($order) {
             // $subCategory = Category::findOne(['id' => $order]);
             // while ($subCategory->parent_id) {
