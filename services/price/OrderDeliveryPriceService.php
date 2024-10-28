@@ -407,12 +407,19 @@ class OrderDeliveryPriceService extends PriceOutputService
         //     $weightPerItem,
         // );
         // $densityPrice = self::getPriceByWeight($typeDeliveryId, $density);
+        $parentsTree = [];
         $order = \app\models\Order::findOne($orderId);
         $category = \app\models\Category::findOne($order->subcategory_id);
 
-        \app\services\UserActionLogService::log('call calculate delivery price. orderId: ' . $orderId);
-        \app\services\UserActionLogService::log('category: ' . $category->id);
-        \app\services\UserActionLogService::log('category parent: ' . $category->parent_id);
+        while ($category->parent_id && $category->parent_id != 1) {
+            $category = \app\models\Category::findOne($category->parent_id);
+            $parentsTree[] = $category->id;
+        }
+
+        \app\services\UserActionLogService::success('call calculate delivery price. orderId: ' . $orderId);
+        \app\services\UserActionLogService::info('category: ' . $category->id);
+        \app\services\UserActionLogService::info('category parent: ' . $category->parent_id);
+        \app\services\UserActionLogService::info('parentsTree: ' . json_encode($parentsTree));
 
         //new logic
         $volumeM2 = $widthPerItem * $heightPerItem * $depthPerItem;
