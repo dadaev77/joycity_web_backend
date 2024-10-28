@@ -15,14 +15,7 @@ class OrderDeliveryPriceService extends PriceOutputService
     private static function typeDeliveryPriceConfig(int $typeDeliveryId): array
     {
         return [
-            1 => [],
-            2 => ['price' => 0],
-            3 => ['price' => 0],
-            4 => ['price' => 0],
-            5 => ['price' => 0],
-            6 => ['price' => 0],
-            7 => ['price' => 0],
-            8 => [ //slow car
+            8 => [
                 [
                     'id' => 1,
                     'density_from' => 1000,
@@ -397,6 +390,7 @@ class OrderDeliveryPriceService extends PriceOutputService
     }
 
     public static function calculateDeliveryPrice(
+        int $orderId,
         int $itemsCount,
         float $widthPerItem,
         float $heightPerItem,
@@ -408,6 +402,7 @@ class OrderDeliveryPriceService extends PriceOutputService
 
         \app\services\UserActionLogService::setController('OrderDeliveryPriceService');
         \app\services\UserActionLogService::warning('Call calculate delivery price :409');
+        \app\services\UserActionLogService::log('Order: ' . json_encode($orderId));
 
         // $density = self::calculateProductDensity(
         //     $widthPerItem,

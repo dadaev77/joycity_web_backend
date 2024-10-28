@@ -17,7 +17,6 @@ class OrderPriceService extends PriceOutputService
             if (!$order) {
                 return self::getPricesConfig();
             }
-            LogService::info('calculate order prices is called for order with id ' . $order->id);
             $buyerOffers = $order->buyerOffers;
             $buyerOffer = array_pop($buyerOffers);
             $buyerDeliveryOffer = $order->buyerDeliveryOffer;
@@ -26,6 +25,7 @@ class OrderPriceService extends PriceOutputService
             $product = $order->product;
 
             return self::calculateAbstractOrderPrices(
+                $order->id,
                 $lastOffer?->price_product ?: $order->expected_price_per_item,
                 $lastOffer?->total_quantity ?: $order->expected_quantity,
                 $lastOffer?->product_width ?: ($product?->product_width ?: 0),
@@ -48,6 +48,7 @@ class OrderPriceService extends PriceOutputService
     }
 
     public static function calculateAbstractOrderPrices(
+        int $orderId,
         float $productPrice,
         int $productQuantity,
         float $productWidth,
@@ -63,7 +64,7 @@ class OrderPriceService extends PriceOutputService
     ): array {
 
         \app\services\UserActionLogService::setController('OrderPriceService');
-        \app\services\UserActionLogService::warning('Call calculate abstract order prices');
+        \app\services\UserActionLogService::warning('Call calculate abstract order prices :52');
 
         $out = self::getPricesConfig();
         $isTypePackaging =
@@ -71,6 +72,7 @@ class OrderPriceService extends PriceOutputService
 
         \app\services\UserActionLogService::info('Call calculate delivery price :70');
         $deliveryPrice = OrderDeliveryPriceService::calculateDeliveryPrice(
+            $orderId,
             $isTypePackaging ? $packagingQuantity : $productQuantity,
             $productWidth,
             $productHeight,
