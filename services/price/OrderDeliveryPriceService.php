@@ -390,7 +390,7 @@ class OrderDeliveryPriceService extends PriceOutputService
     }
 
     public static function calculateDeliveryPrice(
-        int $orderId = null,
+        int $orderId,
         int $itemsCount,
         float $widthPerItem,
         float $heightPerItem,
@@ -400,20 +400,18 @@ class OrderDeliveryPriceService extends PriceOutputService
         int $typeDeliveryId,
     ): float {
         \app\services\UserActionLogService::setController('OrderDeliveryPriceService');
-        \app\services\UserActionLogService::warning('Call calculate delivery price :409');
 
         $order = !$orderId ? null : \app\models\Order::findOne($orderId);
-        \app\services\UserActionLogService::log('order: ' . json_encode($order));
         $parentsTree = [];
+        \app\services\UserActionLogService::log('order: ' . json_encode($order));
         if ($order) {
-            $subCategory = Category::findOne(['id' => $order->subcategory_id]);
-            \app\services\UserActionLogService::log('subcategory: ' . json_encode($subCategory));
-            while ($subCategory->parent_id) {
-                $subCategory = Category::findOne(['id' => $subCategory->parent_id]);
-                if ($subCategory) {
-                    $parentsTree[] = $subCategory->id;
-                }
-            }
+            // $subCategory = Category::findOne(['id' => $order]);
+            // while ($subCategory->parent_id) {
+            //     $subCategory = Category::findOne(['id' => $subCategory->parent_id]);
+            //     if ($subCategory) {
+            //         $parentsTree[] = $subCategory->id;
+            //     }
+            // }
         }
 
         array_reverse($parentsTree);
