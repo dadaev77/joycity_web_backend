@@ -402,7 +402,7 @@ class OrderDeliveryPriceService extends PriceOutputService
 
         \app\services\UserActionLogService::setController('OrderDeliveryPriceService');
         \app\services\UserActionLogService::warning('Call calculate delivery price :409');
-        \app\services\UserActionLogService::log('Order: ' . json_encode($orderId));
+        \app\services\UserActionLogService::log('Order: ' . json_encode(\app\models\Order::findOne($orderId)));
 
         // $density = self::calculateProductDensity(
         //     $widthPerItem,
