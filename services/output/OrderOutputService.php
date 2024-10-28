@@ -134,7 +134,8 @@ class OrderOutputService extends OutputService
                 );
             }
             \app\services\UserActionLogService::setController('OrderOutputService');
-            \app\services\UserActionLogService::log($info['buyerOffer']);
+            // Convert buyer offer prices to user currency
+            \app\services\UserActionLogService::info('Convert buyer offer prices to user currency');
             if ($info['buyerOffer']) {
                 foreach ($info['buyerOffer'] as $key => $value) {
 
@@ -151,6 +152,8 @@ class OrderOutputService extends OutputService
                 }
             }
             $info['type'] = in_array($info['status'], Order::STATUS_GROUP_ORDER, true) ? 'order' : 'request';
+            // Calculate order prices in user currency
+            \app\services\UserActionLogService::info('Calculate order prices in user currency');
             $info['price'] = OrderPriceService::outputOrderPricesInUserCurrency(OrderPriceService::calculateOrderPrices($info['id']));
 
             unset(
