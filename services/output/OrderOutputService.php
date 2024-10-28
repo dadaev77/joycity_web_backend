@@ -133,6 +133,7 @@ class OrderOutputService extends OutputService
                     $info['product']['attachments'],
                 );
             }
+            \app\services\UserActionLogService::setController('OrderOutputService');
             \app\services\UserActionLogService::log($info['buyerOffer']);
             if ($info['buyerOffer']) {
                 foreach ($info['buyerOffer'] as $key => $value) {
