@@ -135,8 +135,6 @@ class OrderOutputService extends OutputService
             }
             // OrderOutputService Logs Marker
             \app\services\UserActionLogService::setController('OrderOutputService');
-            \app\services\UserActionLogService::warning('Convert buyer offer prices to user currency :138');
-
             if ($info['buyerOffer']) {
                 foreach ($info['buyerOffer'] as $key => $value) {
 
@@ -154,7 +152,6 @@ class OrderOutputService extends OutputService
             }
             $info['type'] = in_array($info['status'], Order::STATUS_GROUP_ORDER, true) ? 'order' : 'request';
             // OrderOutputService Logs Marker
-            \app\services\UserActionLogService::warning('Calculate order prices in user currency :156');
             $info['price'] = OrderPriceService::outputOrderPricesInUserCurrency(OrderPriceService::calculateOrderPrices($info['id']));
             unset(
                 // TODO: remove after testing
