@@ -406,7 +406,7 @@ class OrderDeliveryPriceService extends PriceOutputService
         int $typeDeliveryId,
     ): float {
         \app\services\UserActionLogService::setController('OrderDeliveryPriceService');
-        \app\services\UserActionLogService::info('Call calculate delivery price :409');
+        \app\services\UserActionLogService::warning('Call calculate delivery price :409');
         // $density = self::calculateProductDensity(
         //     $widthPerItem,
         //     $heightPerItem,
@@ -431,7 +431,8 @@ class OrderDeliveryPriceService extends PriceOutputService
             $deliveryPrice = ($volumeM3 * $itemsCount) * self::getPriceByVolume($typeDeliveryId);
         }
         // Log delivery price
-        \app\services\UserActionLogService::info('Delivery price: ' . $deliveryPrice);
+        \app\services\UserActionLogService::success('Delivery price: ' . $deliveryPrice);
+
         return round($deliveryPrice, self::SYMBOLS_AFTER_DECIMAL_POINT);
     }
 

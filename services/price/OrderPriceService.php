@@ -62,7 +62,7 @@ class OrderPriceService extends PriceOutputService
         string $calculationType,
     ): array {
         \app\services\UserActionLogService::setController('OrderPriceService');
-        \app\services\UserActionLogService::info('Call calculate abstract order prices');
+        \app\services\UserActionLogService::warning('Call calculate abstract order prices');
         $out = self::getPricesConfig();
         $isTypePackaging =
             $calculationType === self::TYPE_CALCULATION_PACKAGING;
