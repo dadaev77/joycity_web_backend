@@ -401,7 +401,7 @@ class OrderDeliveryPriceService extends PriceOutputService
     ): float {
         \app\services\UserActionLogService::setController('OrderDeliveryPriceService');
 
-        $order = !$orderId ? null : \app\models\Order::findOne($orderId);
+        $order = $orderId ? \app\models\Order::findOne($orderId) : null;
         $parentsTree = [];
         \app\services\UserActionLogService::log('order: ' . json_encode($order));
         if ($order) {
