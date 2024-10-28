@@ -390,6 +390,7 @@ class OrderDeliveryPriceService extends PriceOutputService
     }
 
     public static function calculateDeliveryPrice(
+        int $orderId, // TODO: remove after testing
         int $itemsCount,
         float $widthPerItem,
         float $heightPerItem,
@@ -398,7 +399,7 @@ class OrderDeliveryPriceService extends PriceOutputService
         // int $categoryId,
         int $typeDeliveryId,
     ): float {
-        \app\services\UserActionLogService::log('call calculate delivery price');
+        \app\services\UserActionLogService::log('call calculate delivery price. orderId: ' . $orderId);
         // $density = self::calculateProductDensity(
         //     $widthPerItem,
         //     $heightPerItem,
@@ -435,6 +436,7 @@ class OrderDeliveryPriceService extends PriceOutputService
         int $packagingQuantity,
     ): float {
         try {
+            \app\services\UserActionLogService::log('call calculate packaging price');
             $typePackaging = TypePackaging::findOne([
                 'id' => $typePackagingId,
             ]);

@@ -12,6 +12,7 @@ class OrderPriceService extends PriceOutputService
 {
     public static function calculateOrderPrices(int $orderId): array
     {
+
         try {
             $order = Order::findOne(['id' => $orderId]);
             if (!$order) {
@@ -25,6 +26,7 @@ class OrderPriceService extends PriceOutputService
             $product = $order->product;
 
             return self::calculateAbstractOrderPrices(
+                $order->id, // TODO: remove after testing
                 $lastOffer?->price_product ?: $order->expected_price_per_item,
                 $lastOffer?->total_quantity ?: $order->expected_quantity,
                 $lastOffer?->product_width ?: ($product?->product_width ?: 0),
@@ -47,6 +49,7 @@ class OrderPriceService extends PriceOutputService
     }
 
     public static function calculateAbstractOrderPrices(
+        int $orderId, // TODO: remove after testing
         float $productPrice,
         int $productQuantity,
         float $productWidth,
@@ -65,6 +68,7 @@ class OrderPriceService extends PriceOutputService
         $isTypePackaging = $calculationType === self::TYPE_CALCULATION_PACKAGING;
 
         $deliveryPrice = OrderDeliveryPriceService::calculateDeliveryPrice(
+            $orderId, // TODO: remove after testing
             $isTypePackaging ? $packagingQuantity : $productQuantity,
             $productWidth,
             $productHeight,
