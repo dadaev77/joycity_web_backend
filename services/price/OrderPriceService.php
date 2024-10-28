@@ -61,10 +61,8 @@ class OrderPriceService extends PriceOutputService
         string $calculationType,
     ): array {
 
-        \app\services\UserActionLogService::setController('OrderPriceService');
         $out = self::getPricesConfig();
-        $isTypePackaging =
-            $calculationType === self::TYPE_CALCULATION_PACKAGING;
+        $isTypePackaging = $calculationType === self::TYPE_CALCULATION_PACKAGING;
 
         $deliveryPrice = OrderDeliveryPriceService::calculateDeliveryPrice(
             $isTypePackaging ? $packagingQuantity : $productQuantity,
@@ -74,13 +72,13 @@ class OrderPriceService extends PriceOutputService
             $productWeight,
             $typeDeliveryId,
         );
+        \app\services\UserActionLogService::log($deliveryPrice);
 
-        LogService::info('calculated delivery price: ' . $deliveryPrice);
         $packagingPrice = OrderDeliveryPriceService::calculatePackagingPrice(
             $typePackagingId,
             $packagingQuantity,
         );
-        LogService::info('calculated packaging price: ' . $packagingPrice);
+        \app\services\UserActionLogService::log($packagingPrice);
 
         $out['delivery']['packaging'] = RateService::convertRUBtoUSD(
             $packagingPrice,
