@@ -426,11 +426,12 @@ class OrderDeliveryPriceService extends PriceOutputService
             }
         }
 
-        \app\services\UserActionLogService::success('call calculate delivery price. orderId: ' . $orderId);
-        \app\services\UserActionLogService::info('category: ' . $category->id);
-        \app\services\UserActionLogService::info('category parent: ' . $category->parent_id);
-        \app\services\UserActionLogService::info('parentsTree: ' . json_encode($parentsTree));
-        \app\services\UserActionLogService::info('typeDeliveryIds: ' . json_encode($typeDeliveryIds));
+        \app\services\UserActionLogService::success([
+            'method' => 'calculateDeliveryPrice',
+            'orderId' => $orderId,
+            'typeDeliveryIds' => $typeDeliveryIds,
+            'parentsTree' => $parentsTree,
+        ]);
 
         //new logic
         $volumeM2 = $widthPerItem * $heightPerItem * $depthPerItem;
