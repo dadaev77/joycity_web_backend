@@ -415,11 +415,22 @@ class OrderDeliveryPriceService extends PriceOutputService
             $category = \app\models\Category::findOne($category->parent_id);
             $parentsTree[] = $category->id;
         }
+        array_reverse($parentsTree);
+
+        $typeDeliveryIds = [];
+        foreach ($parentsTree as $parentId) {
+            $typeDeliveryIds = \app\services\TypeDeliveryService::getTypeDeliveryIdsBySubcategory($parentId);
+            if ($typeDeliveryIds) {
+                $typeDeliveryIds = $typeDeliveryIds;
+                break;
+            }
+        }
 
         \app\services\UserActionLogService::success('call calculate delivery price. orderId: ' . $orderId);
         \app\services\UserActionLogService::info('category: ' . $category->id);
         \app\services\UserActionLogService::info('category parent: ' . $category->parent_id);
         \app\services\UserActionLogService::info('parentsTree: ' . json_encode($parentsTree));
+        \app\services\UserActionLogService::info('typeDeliveryIds: ' . json_encode($typeDeliveryIds));
 
         //new logic
         $volumeM2 = $widthPerItem * $heightPerItem * $depthPerItem;
