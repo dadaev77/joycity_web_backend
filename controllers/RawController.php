@@ -158,11 +158,4 @@ class RawController extends Controller
         $participiants = $client->conversations->v1->conversations($chatSid)->participants->read();
         return $participiants;
     }
-    public function actionClearFrontendLogs()
-    {
-        if (exec('echo "" > ' . __DIR__ . '/../runtime/logs/front.log')) {
-            return Yii::$app->response->redirect('/raw/log');
-        }
-        return Yii::$app->response->redirect('/raw/log');
-    }
 }
