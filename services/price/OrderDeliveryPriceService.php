@@ -432,9 +432,6 @@ class OrderDeliveryPriceService extends PriceOutputService
         } else {
             $deliveryPrice = ($volumeM3 * $itemsCount) * self::getPriceByVolume($typeDeliveryId);
         }
-        // Log delivery price
-        \app\services\UserActionLogService::success('Delivery price: ' . $deliveryPrice);
-
         return round($deliveryPrice, self::SYMBOLS_AFTER_DECIMAL_POINT);
     }
 
