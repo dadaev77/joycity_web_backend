@@ -403,20 +403,6 @@ class OrderDeliveryPriceService extends PriceOutputService
         $order = $orderId ? \app\models\Order::findOne($orderId) : null;
         \app\services\UserActionLogService::log($order);
 
-        if ($order) {
-            // $subCategory = Category::findOne(['id' => $order]);
-            // while ($subCategory->parent_id) {
-            //     $subCategory = Category::findOne(['id' => $subCategory->parent_id]);
-            //     if ($subCategory) {
-            //         $parentsTree[] = $subCategory->id;
-            //     }
-            // }
-        }
-
-        array_reverse($parentsTree);
-
-        \app\services\UserActionLogService::log('parent categories: ' . json_encode($parentsTree));
-
         // $density = self::calculateProductDensity(
         //     $widthPerItem,
         //     $heightPerItem,

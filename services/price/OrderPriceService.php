@@ -25,7 +25,6 @@ class OrderPriceService extends PriceOutputService
             $product = $order->product;
 
             return self::calculateAbstractOrderPrices(
-                $order->id,
                 $lastOffer?->price_product ?: $order->expected_price_per_item,
                 $lastOffer?->total_quantity ?: $order->expected_quantity,
                 $lastOffer?->product_width ?: ($product?->product_width ?: 0),
@@ -48,7 +47,6 @@ class OrderPriceService extends PriceOutputService
     }
 
     public static function calculateAbstractOrderPrices(
-        int $orderId,
         float $productPrice,
         int $productQuantity,
         float $productWidth,
@@ -69,7 +67,6 @@ class OrderPriceService extends PriceOutputService
             $calculationType === self::TYPE_CALCULATION_PACKAGING;
 
         $deliveryPrice = OrderDeliveryPriceService::calculateDeliveryPrice(
-            $orderId,
             $isTypePackaging ? $packagingQuantity : $productQuantity,
             $productWidth,
             $productHeight,
