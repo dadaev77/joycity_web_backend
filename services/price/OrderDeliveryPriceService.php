@@ -477,8 +477,8 @@ class OrderDeliveryPriceService extends PriceOutputService
                     "вес единицы" => $weightPerItem,
                 ],
                 "Плотность" => [
-                    'цена за кг' => $densityPrice,
-                    'вес груза' => $totalWeight,
+                    'цена за кг' => $densityPrice ?? 'Недостаточно данных',
+                    'вес груза' => $totalWeight ?? 'Недостаточно данных',
                 ],
                 "Цена доставки" => $deliveryPrice,
                 "ID типа доставки" => $typeDeliveryId,
