@@ -478,8 +478,8 @@ class OrderDeliveryPriceService extends PriceOutputService
                 ],
                 "Плотность" => [
                     'плотность' => $density,
-                    'цена за кг' => $densityPrice ?? 'Недостаточно данных',
-                    'вес груза' => $totalWeight ?? 'Недостаточно данных',
+                    'цена за кг' => $densityPrice . ' $' ?? 'Недостаточно данных',
+                    'вес груза' => $totalWeight . ' кг' ?? 'Недостаточно данных',
                 ],
                 "Цена доставки" => round($deliveryPrice, 2),
                 "ID типа доставки" => $typeDeliveryId,
