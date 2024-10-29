@@ -471,11 +471,11 @@ class OrderDeliveryPriceService extends PriceOutputService
                 ],
                 "Плотность" => [
                     'плотность' => $density,
-                    'цена за кг' => $densityPrice . ' $' ?? 'Недостаточно данных',
-                    'вес груза' => $totalWeight . ' кг' ?? 'Недостаточно данных',
+                    'цена за кг' => $densityPrice ? $densityPrice . ' $' : 'Недостаточно данных',
+                    'вес груза' => $totalWeight ? $totalWeight . ' кг' : 'Недостаточно данных',
                 ],
-                "Цена доставки $" => round($deliveryPrice, 2),
-                "Цена доставки в рублях" => \app\services\RateService::convertUSDtoRUB($deliveryPrice),
+                "Цена доставки $" => $deliveryPrice ? round($deliveryPrice, 2) : 'Недостаточно данных',
+                "Цена доставки в рублях" => $deliveryPrice ? \app\services\RateService::convertUSDtoRUB($deliveryPrice) : 'Недостаточно данных',
                 "ID типа доставки" => $typeDeliveryId,
                 "количество товаров" => $itemsCount,
             ];
