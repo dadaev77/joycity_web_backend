@@ -397,8 +397,7 @@ class OrderDeliveryPriceService extends PriceOutputService
         float $heightPerItem,
         float $depthPerItem,
         float $weightPerItem,
-        // int $categoryId,
-        int $typeDeliveryId,
+        int $typeDeliveryId
     ): mixed {
 
         /*
@@ -449,27 +448,20 @@ class OrderDeliveryPriceService extends PriceOutputService
         * Переводим размеры и вес в сантиметры и граммы
         * --------------------------------
         */
-        $widthPerItemCm = $widthPerItem * 100;
-        $heightPerItemCm = $heightPerItem * 100;
-        $depthPerItemCm = $depthPerItem * 100;
-        $weightPerItemG = $weightPerItem * 1000;
-
-        /*
-        * Вычисляем объем и плотность
-        * --------------------------------
-        */
+        $volumeCm3 = $widthPerItem * $heightPerItem * $depthPerItem; // Объем в см³
+        $volumeM3 = $volumeCm3 / 1000000; // Объем в м³
+        $weightPerItemKg = $weightPerItem / 1000; // Вес в кг
+        $density = $weightPerItemKg / $volumeM3; // Плотность в кг/м³
 
         $deliveryPrice = 0;
-        $volumeM2 = $widthPerItem * $heightPerItem * $depthPerItem;
-        $volumeM3 = $volumeM2 / 1000000;
-        $weightPerItemKg = $weightPerItem / 1000;
-        $density = $weightPerItemKg / $volumeM3;
 
         if ($density > 100) {
-            $totalWeight = ($itemsCount * $weightPerItemKg);
+            // Находим вес груза
+            $totalWeight = $itemsCount * $weightPerItemKg; // Убираем упаковку
             $densityPrice = self::getPriceByWeight($typeDeliveryId, $density);
-            $deliveryPrice = $densityPrice * $totalWeight;
+            $deliveryPrice = $densityPrice * $totalWeight; // Стоимость доставки в $
         } else {
+            // Стоимость доставки в $ для плотности < 100
             $deliveryPrice = ($volumeM3 * $itemsCount) * self::getPriceByVolume($typeDeliveryId);
         }
 
@@ -478,25 +470,26 @@ class OrderDeliveryPriceService extends PriceOutputService
         */
         if ($debug) {
             return [
-                'цена доставки' => round($deliveryPrice, self::SYMBOLS_AFTER_DECIMAL_POINT),
-                'объем м2' => $volumeM2,
-                'объем м3' => $volumeM3,
-                'вес за единицу кг' => $weightPerItemKg,
-                'плотность' => $density,
-                'ID типа доставки' => $typeDeliveryId,
-                'количество товаров' => $itemsCount,
-                'ширина единицы' => $widthPerItem,
-                'высота единицы' => $heightPerItem,
-                'объём единицы' => $depthPerItem,
-                'вес единицы' => $weightPerItem,
+                "Входные данные в м/кг" => [
+                    "ширина единицы" => $widthPerItem,
+                    "высота единицы" => $heightPerItem,
+                    "объём единицы" => $depthPerItem,
+                    "вес единицы" => $weightPerItem,
+                ],
+                "Плотность" => [
+                    'цена за кг' => $densityPrice,
+                    'вес груза' => $totalWeight,
+                ],
+                "Цена доставки" => $deliveryPrice,
+                "ID типа доставки" => $typeDeliveryId,
+                "количество товаров" => $itemsCount,
             ];
         }
 
-
         /*
-        * Возвращаем цену доставки
+        * Возвращаем стоимость доставки в $
         */
-        return round($deliveryPrice, self::SYMBOLS_AFTER_DECIMAL_POINT);
+        return $deliveryPrice; // Возвращаем стоимость в долларах
     }
 
     private static function getPriceByVolume(int $typeDeliveryId): float
