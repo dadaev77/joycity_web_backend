@@ -445,8 +445,10 @@ class OrderDeliveryPriceService extends PriceOutputService
         $weightPerItemKg = $weightPerItem / 1000; // Вес в кг
         $density = $weightPerItemKg / $volumeM3; // Плотность в кг/м³
 
+        // init variables
         $deliveryPrice = 0;
         $densityPrice = 0;
+        $totalWeight = 0;
 
         if ($density > 100) {
             // Находим вес груза
