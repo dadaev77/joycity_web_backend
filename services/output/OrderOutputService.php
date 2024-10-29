@@ -133,7 +133,8 @@ class OrderOutputService extends OutputService
                     $info['product']['attachments'],
                 );
             }
-            // OrderOutputService Logs Marker
+
+
             if ($info['buyerOffer']) {
                 foreach ($info['buyerOffer'] as $key => $value) {
 
@@ -151,9 +152,8 @@ class OrderOutputService extends OutputService
             }
             $info['type'] = in_array($info['status'], Order::STATUS_GROUP_ORDER, true) ? 'order' : 'request';
             // OrderOutputService Logs Marker
-            $info['price'] = OrderPriceService::outputOrderPricesInUserCurrency(
-                OrderPriceService::calculateOrderPrices($info['id'])
-            );
+            $info['price'] = OrderPriceService::calculateOrderPrices($info['id']);
+
             unset(
                 // TODO: remove after testing
                 // $info['created_at'],

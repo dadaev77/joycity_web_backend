@@ -66,6 +66,7 @@ class OrderPriceService extends PriceOutputService
 
         $out = self::getPricesConfig();
         $isTypePackaging = $calculationType === self::TYPE_CALCULATION_PACKAGING;
+
         \app\services\UserActionLogService::info('call method calculateDeliveryPrice in calculateAbstractOrderPrices');
         $deliveryPrice = OrderDeliveryPriceService::calculateDeliveryPrice(
             $orderId, // TODO: remove after testing
