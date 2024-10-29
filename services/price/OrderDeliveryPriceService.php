@@ -400,15 +400,22 @@ class OrderDeliveryPriceService extends PriceOutputService
         // int $categoryId,
         int $typeDeliveryId,
     ): mixed {
-        // TODO: remove if dont need
-        // $density = self::calculateProductDensity(
-        //     $widthPerItem,
-        //     $heightPerItem,
-        //     $depthPerItem,
-        //     $weightPerItem,
-        // );
-        // $densityPrice = self::getPriceByWeight($typeDeliveryId, $density);
 
+        /*
+        * Логика расчета цены доставки
+        * При запросе цены доставки, сначала определяем категорию товара,
+        * затем последовательно поднимаемся по иерархии категорий, пока не найдем ID типа доставки (первый найденный)
+        * Вес и размеры единицы товара нам интересны для определения плотности груза
+        * Используем граммы и сантиметры, плотность груза получится в кг/м3
+        * Если плотность груза больше 100, то считаем по плотности, иначе по объему
+        * Вычисляем цену доставки с учетом категории и иерархии категорий
+        * Модели: Order, Category, TypeDeliveryPrice
+        * --------------------------------
+        */
+
+        /*
+        * Определяем категорию товара
+        */
         $parentsTree = [];
         $order = \app\models\Order::findOne($orderId);
         $category = \app\models\Category::findOne($order->subcategory_id);
@@ -428,6 +435,9 @@ class OrderDeliveryPriceService extends PriceOutputService
             }
         }
 
+        /*
+        * Логируем данные для отладки
+        */
         \app\services\UserActionLogService::success([
             'method' => 'calculateDeliveryPrice',
             'orderId' => $orderId,
@@ -435,28 +445,37 @@ class OrderDeliveryPriceService extends PriceOutputService
             'parentsTree' => $parentsTree,
         ]);
 
-        /**
-         * new logic
-         * --------------------------------
-         * define new variables
-         * --------------------------------
-         */
+        /*
+        * Переводим размеры и вес в сантиметры и граммы
+        * --------------------------------
+        */
+        $widthPerItemCm = $widthPerItem * 100;
+        $heightPerItemCm = $heightPerItem * 100;
+        $depthPerItemCm = $depthPerItem * 100;
+        $weightPerItemG = $weightPerItem * 1000;
+
+        /*
+        * Вычисляем объем и плотность
+        * --------------------------------
+        */
+
         $deliveryPrice = 0;
         $volumeM2 = $widthPerItem * $heightPerItem * $depthPerItem;
         $volumeM3 = $volumeM2 / 1000000;
         $weightPerItemKg = $weightPerItem / 1000;
         $density = $weightPerItemKg / $volumeM3;
 
-
         if ($density > 100) {
-            $totalWeight = ($itemsCount * $weightPerItemKg); // + $packagingWeight;
+            $totalWeight = ($itemsCount * $weightPerItemKg);
             $densityPrice = self::getPriceByWeight($typeDeliveryId, $density);
             $deliveryPrice = $densityPrice * $totalWeight;
         } else {
             $deliveryPrice = ($volumeM3 * $itemsCount) * self::getPriceByVolume($typeDeliveryId);
         }
 
-        // debug calculate price
+        /*
+        * Логируем данные для отладки из RawController
+        */
         if ($debug) {
             return [
                 'цена доставки' => round($deliveryPrice, self::SYMBOLS_AFTER_DECIMAL_POINT),
@@ -474,7 +493,9 @@ class OrderDeliveryPriceService extends PriceOutputService
         }
 
 
-
+        /*
+        * Возвращаем цену доставки
+        */
         return round($deliveryPrice, self::SYMBOLS_AFTER_DECIMAL_POINT);
     }
 
