@@ -390,7 +390,7 @@ class OrderDeliveryPriceService extends PriceOutputService
     }
 
     public static function calculateDeliveryPrice(
-        bool $debug = false,
+        bool $debug = false, // TODO: remove after testing
         int $orderId, // TODO: remove after testing
         int $itemsCount,
         float $widthPerItem,

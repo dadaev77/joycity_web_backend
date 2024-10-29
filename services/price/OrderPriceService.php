@@ -71,6 +71,7 @@ class OrderPriceService extends PriceOutputService
 
         \app\services\UserActionLogService::info('call method calculateDeliveryPrice in calculateAbstractOrderPrices');
         $deliveryPrice = OrderDeliveryPriceService::calculateDeliveryPrice(
+            $debug = false, // TODO: remove after testing
             $orderId, // TODO: remove after testing
             $isTypePackaging ? $packagingQuantity : $productQuantity,
             $productWidth,
