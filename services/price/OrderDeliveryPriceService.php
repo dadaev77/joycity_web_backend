@@ -399,8 +399,7 @@ class OrderDeliveryPriceService extends PriceOutputService
         float $weightPerItem,
         int $typeDeliveryId
     ): float {
-        \app\services\UserActionLogService::setController(self::class);
-
+        \app\services\UserActionLogService::setController('OrderDeliveryPriceService');
         \app\services\UserActionLogService::log('call calculateDeliveryPrice');
 
         \app\services\UserActionLogService::log([
