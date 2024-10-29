@@ -84,6 +84,9 @@ class OrderPriceService extends PriceOutputService
 
         $out['delivery']['packaging'] = $packagingPrice;
         $out['delivery']['delivery'] = $deliveryPrice;
+        \app\services\UserActionLogService::info('deliveryPrice: ' . $deliveryPrice);
+        \app\services\UserActionLogService::info('packagingPrice: ' . $packagingPrice);
+
         $out['delivery']['overall'] =
             $out['delivery']['packaging'] + $out['delivery']['delivery'];
 
