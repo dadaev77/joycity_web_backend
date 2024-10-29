@@ -468,25 +468,25 @@ class OrderDeliveryPriceService extends PriceOutputService
         /*
         * Логируем данные для отладки из RawController
         */
-        if ($debug) {
-            return [
-                "Входные данные в м/кг" => [
-                    "ширина единицы" => $widthPerItem / 100 . ' м',
-                    "высота единицы" => $heightPerItem / 100 . ' м',
-                    "объём единицы" => $depthPerItem / 100 . ' м',
-                    "вес единицы" => $weightPerItem / 1000 . ' кг',
-                ],
-                "Плотность" => [
-                    'плотность' => $density,
-                    'цена за кг' => $densityPrice . ' $' ?? 'Недостаточно данных',
-                    'вес груза' => $totalWeight . ' кг' ?? 'Недостаточно данных',
-                ],
-                "Цена доставки $" => round($deliveryPrice, 2),
-                "Цена доставки в рублях" => \app\services\RateService::convertUSDtoRUB($deliveryPrice),
-                "ID типа доставки" => $typeDeliveryId,
-                "количество товаров" => $itemsCount,
-            ];
-        }
+        // if ($debug) {
+        //     return [
+        //         "Входные данные в м/кг" => [
+        //             "ширина единицы" => $widthPerItem / 100 . ' м',
+        //             "высота единицы" => $heightPerItem / 100 . ' м',
+        //             "объём единицы" => $depthPerItem / 100 . ' м',
+        //             "вес единицы" => $weightPerItem / 1000 . ' кг',
+        //         ],
+        //         "Плотность" => [
+        //             'плотность' => $density,
+        //             'цена за кг' => $densityPrice . ' $' ?? 'Недостаточно данных',
+        //             'вес груза' => $totalWeight . ' кг' ?? 'Недостаточно данных',
+        //         ],
+        //         "Цена доставки $" => round($deliveryPrice, 2),
+        //         "Цена доставки в рублях" => \app\services\RateService::convertUSDtoRUB($deliveryPrice),
+        //         "ID типа доставки" => $typeDeliveryId,
+        //         "количество товаров" => $itemsCount,
+        //     ];
+        // }
 
         \app\services\UserActionLogService::success(
             [
