@@ -25,7 +25,7 @@ class OrderPriceService extends PriceOutputService
             $lastOffer = $buyerDeliveryOffer ?: $buyerOffer;
             $product = $order->product;
 
-            \app\services\UserActionLogService::setController(self::class);
+            \app\services\UserActionLogService::info('OrderPriceService');
             \app\services\UserActionLogService::danger(
                 [
                     'order_id' => $order->id, // TODO: remove after testing
