@@ -25,24 +25,6 @@ class OrderPriceService extends PriceOutputService
             $lastOffer = $buyerDeliveryOffer ?: $buyerOffer;
             $product = $order->product;
 
-            \app\services\UserActionLogService::info('OrderPriceService');
-            \app\services\UserActionLogService::danger(
-                [
-                    'order_id' => $order->id, // TODO: remove after testing
-                    'price_product' => $lastOffer?->price_product ?: $order->expected_price_per_item,
-                    'total_quantity' => $lastOffer?->total_quantity ?: $order->expected_quantity,
-                    'product_width' => $lastOffer?->product_width ?: ($product?->product_width ?: 0),
-                    'product_height' => $lastOffer?->product_height ?: ($product?->product_height ?: 0),
-                    'product_depth' => $lastOffer?->product_depth ?: ($product?->product_depth ?: 0),
-                    'product_weight' => $lastOffer?->product_weight ?: ($product?->product_weight ?: 0),
-                    'total_packaging_quantity' => $buyerDeliveryOffer?->total_packaging_quantity ?: $order->expected_packaging_quantity,
-                    'type_delivery_id' => $order->type_delivery_id,
-                    'type_packaging_id' => $order->type_packaging_id,
-                    'price_inspection' => $buyerOffer?->price_inspection ?: 0,
-                    'overall_price' => $fulfillmentOffer?->overall_price ?: 0,
-                    'calculation_type' => $buyerDeliveryOffer ? self::TYPE_CALCULATION_PACKAGING : self::TYPE_CALCULATION_PRODUCT,
-                ]
-            );
             return self::calculateAbstractOrderPrices(
                 $order->id, // TODO: remove after testing
                 $lastOffer?->price_product ?: $order->expected_price_per_item,
@@ -94,13 +76,26 @@ class OrderPriceService extends PriceOutputService
             $productWeight,
             $typeDeliveryId,
         );
-        \app\services\UserActionLogService::log($deliveryPrice);
 
+        /**
+         * Логируем цену упаковки
+         */
+        \app\services\UserActionLogService::info('OrderDeliveryPriceService::calculateDeliveryPrice');
+        \app\services\UserActionLogService::log(
+            [
+                'orderId' => $orderId, // TODO: remove after testing
+                'quantity' => $isTypePackaging ? $packagingQuantity : $productQuantity,
+                'width' => $productWidth,
+                'height' => $productHeight,
+                'depth' => $productDepth,
+                'weight' => $productWeight,
+                'typeDeliveryId' => $typeDeliveryId,
+            ]
+        );
         $packagingPrice = OrderDeliveryPriceService::calculatePackagingPrice(
             $typePackagingId,
             $packagingQuantity,
         );
-        \app\services\UserActionLogService::log($packagingPrice);
 
         $out['delivery']['packaging'] = RateService::convertRUBtoUSD(
             $packagingPrice,
