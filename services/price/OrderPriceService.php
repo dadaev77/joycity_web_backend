@@ -24,7 +24,7 @@ class OrderPriceService extends PriceOutputService
             $fulfillmentOffer = $order->fulfillmentOffer;
             $lastOffer = $buyerDeliveryOffer ?: $buyerOffer;
             $product = $order->product;
-
+            \app\services\UserActionLogService::info('call calculateAbstractOrderPrices from OrderOutputService');
             return self::calculateAbstractOrderPrices(
                 $order->id, // TODO: remove after testing
                 $lastOffer?->price_product ?: $order->expected_price_per_item,

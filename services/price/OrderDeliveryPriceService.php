@@ -464,25 +464,25 @@ class OrderDeliveryPriceService extends PriceOutputService
         * Логируем данные для отладки из RawController
         */
 
-        if ($debug) {
-            return [
-                "Входные данные в м/кг" => [
-                    "ширина единицы" => $widthPerItem / 100 . ' м',
-                    "высота единицы" => $heightPerItem / 100 . ' м',
-                    "объём единицы" => $depthPerItem / 100 . ' м',
-                    "вес единицы" => $weightPerItem / 1000 . ' кг',
-                ],
-                "Плотность" => [
-                    'плотность' => $density,
-                    'цена за кг' => $densityPrice ? $densityPrice . ' $' : 'Недостаточно данных',
-                    'вес груза' => $totalWeight ? $totalWeight . ' кг' : 'Недостаточно данных',
-                ],
-                "Цена доставки $" => $deliveryPrice,
-                "Цена доставки в рублях" => $deliveryPrice ? \app\services\RateService::convertUSDtoRUB($deliveryPrice) : 'Недостаточно данных',
-                "ID типа доставки" => $typeDeliveryId,
-                "количество товаров" => $itemsCount,
-            ];
-        }
+        // if ($debug) {
+        //     return [
+        //         "Входные данные в м/кг" => [
+        //             "ширина единицы" => $widthPerItem / 100 . ' м',
+        //             "высота единицы" => $heightPerItem / 100 . ' м',
+        //             "объём единицы" => $depthPerItem / 100 . ' м',
+        //             "вес единицы" => $weightPerItem / 1000 . ' кг',
+        //         ],
+        //         "Плотность" => [
+        //             'плотность' => $density,
+        //             'цена за кг' => $densityPrice ? $densityPrice . ' $' : 'Недостаточно данных',
+        //             'вес груза' => $totalWeight ? $totalWeight . ' кг' : 'Недостаточно данных',
+        //         ],
+        //         "Цена доставки $" => $deliveryPrice,
+        //         "Цена доставки в рублях" => $deliveryPrice ? \app\services\RateService::convertUSDtoRUB($deliveryPrice) : 'Недостаточно данных',
+        //         "ID типа доставки" => $typeDeliveryId,
+        //         "количество товаров" => $itemsCount,
+        //     ];
+        // }
 
         /**
          * Конвертация валюты в рубли
