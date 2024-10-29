@@ -158,4 +158,50 @@ class RawController extends Controller
         $participiants = $client->conversations->v1->conversations($chatSid)->participants->read();
         return $participiants;
     }
+
+    public function actionTestDeliveryPrice()
+    {
+        // get request params
+        $request = Yii::$app->request;
+        $postData = $request->post();
+        $paramNames = [
+            'orderId' => 'int',
+            'itemsCount' => 'int',
+            'widthPerItem' => 'float',
+            'heightPerItem' => 'float',
+            'depthPerItem' => 'float',
+            'weightPerItem' => 'float',
+            'typeDeliveryId' => 'int',
+        ];
+        $errors = [];
+        foreach ($paramNames as $name => $type) {
+            if (!isset($postData[$name])) {
+                $errors[] = "Parameter '$name' is missing.";
+                continue;
+            }
+            ${$name} = match ($type) {
+                'int' => (int) ($postData[$name] ?? 0),
+                'float' => (float) ($postData[$name] ?? 0),
+                default => null,
+            };
+        }
+
+        if (!empty($errors)) {
+            return [
+                'status' => 'error',
+                'message' => $errors,
+            ];
+        }
+
+        return \app\services\price\OrderDeliveryPriceService::calculateDeliveryPrice(
+            $debug = true,
+            $orderId,
+            $itemsCount,
+            $widthPerItem,
+            $heightPerItem,
+            $depthPerItem,
+            $weightPerItem,
+            $typeDeliveryId,
+        );
+    }
 }

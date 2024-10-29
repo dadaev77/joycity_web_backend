@@ -390,6 +390,7 @@ class OrderDeliveryPriceService extends PriceOutputService
     }
 
     public static function calculateDeliveryPrice(
+        bool $debug = false,
         int $orderId, // TODO: remove after testing
         int $itemsCount,
         float $widthPerItem,
@@ -398,7 +399,7 @@ class OrderDeliveryPriceService extends PriceOutputService
         float $weightPerItem,
         // int $categoryId,
         int $typeDeliveryId,
-    ): float {
+    ): mixed {
         // TODO: remove if dont need
         // $density = self::calculateProductDensity(
         //     $widthPerItem,
@@ -446,14 +447,6 @@ class OrderDeliveryPriceService extends PriceOutputService
         $weightPerItemKg = $weightPerItem / 1000;
         $density = $weightPerItemKg / $volumeM3;
 
-        \app\services\UserActionLogService::info([
-            'density' => $density,
-            'volumeM2' => $volumeM2,
-            'volumeM3' => $volumeM3,
-            'weightPerItemKg' => $weightPerItemKg,
-        ]);
-
-
 
         if ($density > 100) {
             $totalWeight = ($itemsCount * $weightPerItemKg); // + $packagingWeight;
@@ -462,6 +455,26 @@ class OrderDeliveryPriceService extends PriceOutputService
         } else {
             $deliveryPrice = ($volumeM3 * $itemsCount) * self::getPriceByVolume($typeDeliveryId);
         }
+
+        // debug calculate price
+        if ($debug) {
+            var_dump([
+                'deliveryPrice' => $deliveryPrice,
+                'volumeM2' => $volumeM2,
+                'volumeM3' => $volumeM3,
+                'weightPerItemKg' => $weightPerItemKg,
+                'density' => $density,
+                'typeDeliveryId' => $typeDeliveryId,
+                'itemsCount' => $itemsCount,
+                'widthPerItem' => $widthPerItem,
+                'heightPerItem' => $heightPerItem,
+                'depthPerItem' => $depthPerItem,
+                'weightPerItem' => $weightPerItem,
+            ]);
+        }
+
+
+
         return round($deliveryPrice, self::SYMBOLS_AFTER_DECIMAL_POINT);
     }
 
