@@ -459,17 +459,17 @@ class OrderDeliveryPriceService extends PriceOutputService
         // debug calculate price
         if ($debug) {
             return [
-                'deliveryPrice' => $deliveryPrice,
-                'volumeM2' => $volumeM2,
-                'volumeM3' => $volumeM3,
-                'weightPerItemKg' => $weightPerItemKg,
-                'density' => $density,
-                'typeDeliveryId' => $typeDeliveryId,
-                'itemsCount' => $itemsCount,
-                'widthPerItem' => $widthPerItem,
-                'heightPerItem' => $heightPerItem,
-                'depthPerItem' => $depthPerItem,
-                'weightPerItem' => $weightPerItem,
+                'цена доставки' => round($deliveryPrice, self::SYMBOLS_AFTER_DECIMAL_POINT),
+                'объем м2' => $volumeM2,
+                'объем м3' => $volumeM3,
+                'вес за единицу кг' => $weightPerItemKg,
+                'плотность' => $density,
+                'ID типа доставки' => $typeDeliveryId,
+                'количество товаров' => $itemsCount,
+                'ширина единицы' => $widthPerItem,
+                'высота единицы' => $heightPerItem,
+                'объём единицы' => $depthPerItem,
+                'вес единицы' => $weightPerItem,
             ];
         }
 
