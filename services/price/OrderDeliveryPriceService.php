@@ -398,7 +398,21 @@ class OrderDeliveryPriceService extends PriceOutputService
         float $depthPerItem,
         float $weightPerItem,
         int $typeDeliveryId
-    ): mixed {
+    ): float {
+        \app\services\UserActionLogService::setController(self::class);
+
+        \app\services\UserActionLogService::log('call calculateDeliveryPrice');
+
+        \app\services\UserActionLogService::log([
+            'debug' => $debug,
+            'order_id' => $orderId,
+            'items_count' => $itemsCount,
+            'width_per_item' => $widthPerItem,
+            'height_per_item' => $heightPerItem,
+            'depth_per_item' => $depthPerItem,
+            'weight_per_item' => $weightPerItem,
+            'type_delivery_id' => $typeDeliveryId,
+        ]);
 
         /*
         * Логика расчета цены доставки
@@ -433,16 +447,6 @@ class OrderDeliveryPriceService extends PriceOutputService
                 break;
             }
         }
-
-        /*
-        * Логируем данные для отладки
-        */
-        \app\services\UserActionLogService::success([
-            'method' => 'calculateDeliveryPrice',
-            'orderId' => $orderId,
-            'typeDeliveryIds' => $typeDeliveryIds,
-            'parentsTree' => $parentsTree,
-        ]);
 
         /*
         * Переводим размеры и вес в сантиметры и граммы
@@ -487,26 +491,6 @@ class OrderDeliveryPriceService extends PriceOutputService
         //         "количество товаров" => $itemsCount,
         //     ];
         // }
-
-        \app\services\UserActionLogService::success(
-            [
-                "Входные данные в м/кг" => [
-                    "ширина единицы" => $widthPerItem / 100 . ' м',
-                    "высота единицы" => $heightPerItem / 100 . ' м',
-                    "объём единицы" => $depthPerItem / 100 . ' м',
-                    "вес единицы" => $weightPerItem / 1000 . ' кг',
-                ],
-                "Плотность" => [
-                    'плотность' => $density,
-                    'цена за кг' => $densityPrice . ' $' ?? 'Недостаточно данных',
-                    'вес груза' => $totalWeight . ' кг' ?? 'Недостаточно данных',
-                ],
-                "Цена доставки $" => round($deliveryPrice, 2),
-                "Цена доставки в рублях" => \app\services\RateService::convertUSDtoRUB($deliveryPrice),
-                "ID типа доставки" => $typeDeliveryId,
-                "количество товаров" => $itemsCount,
-            ]
-        );
 
         /**
          * Конвертация валюты в рубли

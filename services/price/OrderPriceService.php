@@ -24,6 +24,7 @@ class OrderPriceService extends PriceOutputService
             $fulfillmentOffer = $order->fulfillmentOffer;
             $lastOffer = $buyerDeliveryOffer ?: $buyerOffer;
             $product = $order->product;
+
             \app\services\UserActionLogService::setController(self::class);
             \app\services\UserActionLogService::log(
                 [
