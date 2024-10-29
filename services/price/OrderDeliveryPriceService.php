@@ -398,7 +398,7 @@ class OrderDeliveryPriceService extends PriceOutputService
         float $depthPerItem,
         float $weightPerItem,
         int $typeDeliveryId
-    ): float {
+    ): mixed {
 
         /*
         * Логика расчета цены доставки
