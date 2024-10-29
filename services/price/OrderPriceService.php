@@ -77,21 +77,6 @@ class OrderPriceService extends PriceOutputService
             $typeDeliveryId,
         );
 
-        /**
-         * Логируем цену упаковки
-         */
-        \app\services\UserActionLogService::info('OrderDeliveryPriceService::calculateDeliveryPrice');
-        \app\services\UserActionLogService::log(
-            [
-                'orderId' => $orderId, // TODO: remove after testing
-                'quantity' => $isTypePackaging ? $packagingQuantity : $productQuantity,
-                'width' => $productWidth,
-                'height' => $productHeight,
-                'depth' => $productDepth,
-                'weight' => $productWeight,
-                'typeDeliveryId' => $typeDeliveryId,
-            ]
-        );
         $packagingPrice = OrderDeliveryPriceService::calculatePackagingPrice(
             $typePackagingId,
             $packagingQuantity,

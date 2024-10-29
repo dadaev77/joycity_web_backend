@@ -495,7 +495,7 @@ class OrderDeliveryPriceService extends PriceOutputService
         /*
         * Возвращаем стоимость доставки в $
         */
-        return round(\app\services\RateService::convertUSDtoRUB($deliveryPrice), self::SYMBOLS_AFTER_DECIMAL_POINT); // Возвращаем стоимость в долларах
+        return $deliveryPrice;
     }
 
     private static function getPriceByVolume(int $typeDeliveryId): float
