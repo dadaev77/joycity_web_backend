@@ -457,7 +457,8 @@ class OrderDeliveryPriceService extends PriceOutputService
             $deliveryPrice = $densityPrice * $totalWeight; // Стоимость доставки в $
         } else {
             // Стоимость доставки в $ для плотности < 100
-            $deliveryPrice = ($volumeM3 * $itemsCount) * self::getPriceByVolume($typeDeliveryId);
+            // $deliveryPrice = ($volumeM3 * $itemsCount) * self::getPriceByVolume($typeDeliveryId);
+            $deliveryPrice = 1;
         }
 
         /*
