@@ -481,11 +481,20 @@ class OrderDeliveryPriceService extends PriceOutputService
                     'цена за кг' => $densityPrice . ' $' ?? 'Недостаточно данных',
                     'вес груза' => $totalWeight . ' кг' ?? 'Недостаточно данных',
                 ],
-                "Цена доставки" => round($deliveryPrice, 2),
+                "Цена доставки $" => round($deliveryPrice, 2),
+                "Цена доставки в рублях" => \app\services\RateService::convertUSDtoRUB($deliveryPrice),
                 "ID типа доставки" => $typeDeliveryId,
                 "количество товаров" => $itemsCount,
             ];
         }
+
+        /**
+         * Конвертация валюты в рубли
+         * --------------------------------
+         */
+        // RateService::convertUSDtoRUB($deliveryPrice);
+        // $deliveryPriceRub = $deliveryPrice * \app\services\CurrencyService::getCurrencyRate();
+
 
         /*
         * Возвращаем стоимость доставки в $
