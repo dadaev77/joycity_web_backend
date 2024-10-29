@@ -399,17 +399,6 @@ class OrderDeliveryPriceService extends PriceOutputService
         float $weightPerItem,
         int $typeDeliveryId
     ): float {
-        \app\services\UserActionLogService::info('OrderDeliveryPriceService');
-        \app\services\UserActionLogService::danger([
-            'debug' => $debug,
-            'order_id' => $orderId,
-            'items_count' => $itemsCount,
-            'width_per_item' => $widthPerItem,
-            'height_per_item' => $heightPerItem,
-            'depth_per_item' => $depthPerItem,
-            'weight_per_item' => $weightPerItem,
-            'type_delivery_id' => $typeDeliveryId,
-        ]);
 
         /*
         * Логика расчета цены доставки
@@ -426,6 +415,7 @@ class OrderDeliveryPriceService extends PriceOutputService
         /*
         * Определяем категорию товара
         */
+
         $parentsTree = [];
         $order = \app\models\Order::findOne($orderId);
         $category = \app\models\Category::findOne($order->subcategory_id);
@@ -449,6 +439,7 @@ class OrderDeliveryPriceService extends PriceOutputService
         * Переводим размеры и вес в сантиметры и граммы
         * --------------------------------
         */
+
         $volumeCm3 = $widthPerItem * $heightPerItem * $depthPerItem; // Объем в см³
         $volumeM3 = $volumeCm3 / 1000000; // Объем в м³
         $weightPerItemKg = $weightPerItem / 1000; // Вес в кг
@@ -469,25 +460,26 @@ class OrderDeliveryPriceService extends PriceOutputService
         /*
         * Логируем данные для отладки из RawController
         */
-        // if ($debug) {
-        //     return [
-        //         "Входные данные в м/кг" => [
-        //             "ширина единицы" => $widthPerItem / 100 . ' м',
-        //             "высота единицы" => $heightPerItem / 100 . ' м',
-        //             "объём единицы" => $depthPerItem / 100 . ' м',
-        //             "вес единицы" => $weightPerItem / 1000 . ' кг',
-        //         ],
-        //         "Плотность" => [
-        //             'плотность' => $density,
-        //             'цена за кг' => $densityPrice . ' $' ?? 'Недостаточно данных',
-        //             'вес груза' => $totalWeight . ' кг' ?? 'Недостаточно данных',
-        //         ],
-        //         "Цена доставки $" => round($deliveryPrice, 2),
-        //         "Цена доставки в рублях" => \app\services\RateService::convertUSDtoRUB($deliveryPrice),
-        //         "ID типа доставки" => $typeDeliveryId,
-        //         "количество товаров" => $itemsCount,
-        //     ];
-        // }
+
+        if ($debug) {
+            return [
+                "Входные данные в м/кг" => [
+                    "ширина единицы" => $widthPerItem / 100 . ' м',
+                    "высота единицы" => $heightPerItem / 100 . ' м',
+                    "объём единицы" => $depthPerItem / 100 . ' м',
+                    "вес единицы" => $weightPerItem / 1000 . ' кг',
+                ],
+                "Плотность" => [
+                    'плотность' => $density,
+                    'цена за кг' => $densityPrice . ' $' ?? 'Недостаточно данных',
+                    'вес груза' => $totalWeight . ' кг' ?? 'Недостаточно данных',
+                ],
+                "Цена доставки $" => round($deliveryPrice, 2),
+                "Цена доставки в рублях" => \app\services\RateService::convertUSDtoRUB($deliveryPrice),
+                "ID типа доставки" => $typeDeliveryId,
+                "количество товаров" => $itemsCount,
+            ];
+        }
 
         /**
          * Конвертация валюты в рубли
@@ -500,7 +492,7 @@ class OrderDeliveryPriceService extends PriceOutputService
         /*
         * Возвращаем стоимость доставки в $
         */
-        return \app\services\RateService::convertUSDtoRUB($deliveryPrice); // Возвращаем стоимость в долларах
+        return round(\app\services\RateService::convertUSDtoRUB($deliveryPrice), self::SYMBOLS_AFTER_DECIMAL_POINT); // Возвращаем стоимость в долларах
     }
 
     private static function getPriceByVolume(int $typeDeliveryId): float
