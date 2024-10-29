@@ -399,7 +399,7 @@ class OrderDeliveryPriceService extends PriceOutputService
         float $weightPerItem,
         int $typeDeliveryId
     ): mixed {
-
+        \app\services\UserActionLogService::info('OrderDeliveryPriceService::calculateDeliveryPrice');
         /*
         * Логика расчета цены доставки
         * При запросе цены доставки, сначала определяем категорию товара,
