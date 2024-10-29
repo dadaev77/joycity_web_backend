@@ -458,7 +458,7 @@ class OrderDeliveryPriceService extends PriceOutputService
 
         // debug calculate price
         if ($debug) {
-            var_dump([
+            return [
                 'deliveryPrice' => $deliveryPrice,
                 'volumeM2' => $volumeM2,
                 'volumeM3' => $volumeM3,
@@ -470,7 +470,7 @@ class OrderDeliveryPriceService extends PriceOutputService
                 'heightPerItem' => $heightPerItem,
                 'depthPerItem' => $depthPerItem,
                 'weightPerItem' => $weightPerItem,
-            ]);
+            ];
         }
 
 
