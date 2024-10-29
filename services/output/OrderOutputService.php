@@ -151,7 +151,6 @@ class OrderOutputService extends OutputService
                 }
             }
             $info['type'] = in_array($info['status'], Order::STATUS_GROUP_ORDER, true) ? 'order' : 'request';
-            // OrderOutputService Logs Marker
             $info['price'] = OrderPriceService::calculateOrderPrices($info['id']);
 
             unset(

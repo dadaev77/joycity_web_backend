@@ -194,7 +194,7 @@ class RawController extends Controller
         }
 
         return \app\services\price\OrderDeliveryPriceService::calculateDeliveryPrice(
-            $debug = true,
+            $debug = true, // TODO: remove after testing
             $orderId,
             $itemsCount,
             $widthPerItem,

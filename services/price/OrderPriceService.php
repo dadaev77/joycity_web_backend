@@ -12,7 +12,6 @@ class OrderPriceService extends PriceOutputService
 {
     public static function calculateOrderPrices(int $orderId): array
     {
-        \app\services\UserActionLogService::info('orderId: ' . $orderId . ' in calculateOrderPrices');
         try {
             $order = Order::findOne(['id' => $orderId]);
             if (!$order) {
@@ -69,18 +68,6 @@ class OrderPriceService extends PriceOutputService
         $out = self::getPricesConfig();
         $isTypePackaging = $calculationType === self::TYPE_CALCULATION_PACKAGING;
 
-        \app\services\UserActionLogService::info('call method calculateDeliveryPrice in calculateAbstractOrderPrices');
-        $deliveryPrice = OrderDeliveryPriceService::calculateDeliveryPrice(
-            $debug = false, // TODO: remove after testing
-            $orderId, // TODO: remove after testing
-            $isTypePackaging ? $packagingQuantity : $productQuantity,
-            $productWidth,
-            $productHeight,
-            $productDepth,
-            $productWeight,
-            $typeDeliveryId,
-        );
-
         $packagingPrice = OrderDeliveryPriceService::calculatePackagingPrice(
             $typePackagingId,
             $packagingQuantity,
@@ -88,14 +75,9 @@ class OrderPriceService extends PriceOutputService
 
         $out['delivery']['packaging'] = $packagingPrice;
         $out['delivery']['delivery'] = $deliveryPrice;
-        \app\services\UserActionLogService::info('deliveryPrice: ' . $deliveryPrice);
-        \app\services\UserActionLogService::info('packagingPrice: ' . $packagingPrice);
-
         $out['delivery']['overall'] =
             $out['delivery']['packaging'] + $out['delivery']['delivery'];
-
         $out['product_inspection'] = $productInspectionPrice;
-
         $out['fulfillment'] = RateService::convertRUBtoCNY($fulfillmentPrice);
 
         $out['product']['price_per_item'] = $productPrice;
