@@ -134,7 +134,6 @@ class OrderOutputService extends OutputService
                 );
             }
             // OrderOutputService Logs Marker
-            \app\services\UserActionLogService::setController('OrderOutputService');
             if ($info['buyerOffer']) {
                 foreach ($info['buyerOffer'] as $key => $value) {
 
