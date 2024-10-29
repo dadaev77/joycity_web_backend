@@ -66,7 +66,7 @@ class OrderPriceService extends PriceOutputService
 
         $out = self::getPricesConfig();
         $isTypePackaging = $calculationType === self::TYPE_CALCULATION_PACKAGING;
-
+        \app\services\UserActionLogService::info('call method calculateDeliveryPrice in calculateAbstractOrderPrices');
         $deliveryPrice = OrderDeliveryPriceService::calculateDeliveryPrice(
             $orderId, // TODO: remove after testing
             $isTypePackaging ? $packagingQuantity : $productQuantity,
@@ -82,16 +82,13 @@ class OrderPriceService extends PriceOutputService
             $packagingQuantity,
         );
 
-        $out['delivery']['packaging'] = RateService::convertRUBtoUSD(
-            $packagingPrice,
-        );
-        $out['delivery']['delivery'] = RateService::convertRUBtoUSD(
-            $deliveryPrice,
-        );
+        $out['delivery']['packaging'] = $packagingPrice;
+        $out['delivery']['delivery'] = $deliveryPrice;
         $out['delivery']['overall'] =
             $out['delivery']['packaging'] + $out['delivery']['delivery'];
 
         $out['product_inspection'] = $productInspectionPrice;
+
         $out['fulfillment'] = RateService::convertRUBtoCNY($fulfillmentPrice);
 
         $out['product']['price_per_item'] = $productPrice;
