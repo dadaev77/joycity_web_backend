@@ -471,16 +471,16 @@ class OrderDeliveryPriceService extends PriceOutputService
         if ($debug) {
             return [
                 "Входные данные в м/кг" => [
-                    "ширина единицы" => $widthPerItem,
-                    "высота единицы" => $heightPerItem,
-                    "объём единицы" => $depthPerItem,
-                    "вес единицы" => $weightPerItem,
+                    "ширина единицы" => $widthPerItem / 100 . ' м',
+                    "высота единицы" => $heightPerItem / 100 . ' м',
+                    "объём единицы" => $depthPerItem / 100 . ' м',
+                    "вес единицы" => $weightPerItem / 1000 . ' кг',
                 ],
                 "Плотность" => [
                     'цена за кг' => $densityPrice ?? 'Недостаточно данных',
                     'вес груза' => $totalWeight ?? 'Недостаточно данных',
                 ],
-                "Цена доставки" => $deliveryPrice,
+                "Цена доставки" => round($deliveryPrice, 2),
                 "ID типа доставки" => $typeDeliveryId,
                 "количество товаров" => $itemsCount,
             ];
