@@ -488,6 +488,26 @@ class OrderDeliveryPriceService extends PriceOutputService
             ];
         }
 
+        \app\services\UserActionLogService::success(
+            [
+                "Входные данные в м/кг" => [
+                    "ширина единицы" => $widthPerItem / 100 . ' м',
+                    "высота единицы" => $heightPerItem / 100 . ' м',
+                    "объём единицы" => $depthPerItem / 100 . ' м',
+                    "вес единицы" => $weightPerItem / 1000 . ' кг',
+                ],
+                "Плотность" => [
+                    'плотность' => $density,
+                    'цена за кг' => $densityPrice . ' $' ?? 'Недостаточно данных',
+                    'вес груза' => $totalWeight . ' кг' ?? 'Недостаточно данных',
+                ],
+                "Цена доставки $" => round($deliveryPrice, 2),
+                "Цена доставки в рублях" => \app\services\RateService::convertUSDtoRUB($deliveryPrice),
+                "ID типа доставки" => $typeDeliveryId,
+                "количество товаров" => $itemsCount,
+            ]
+        );
+
         /**
          * Конвертация валюты в рубли
          * --------------------------------
@@ -499,7 +519,7 @@ class OrderDeliveryPriceService extends PriceOutputService
         /*
         * Возвращаем стоимость доставки в $
         */
-        return $deliveryPrice; // Возвращаем стоимость в долларах
+        return \app\services\RateService::convertUSDtoRUB($deliveryPrice); // Возвращаем стоимость в долларах
     }
 
     private static function getPriceByVolume(int $typeDeliveryId): float
