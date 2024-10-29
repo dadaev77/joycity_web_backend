@@ -407,6 +407,7 @@ class OrderDeliveryPriceService extends PriceOutputService
         //     $weightPerItem,
         // );
         // $densityPrice = self::getPriceByWeight($typeDeliveryId, $density);
+
         $parentsTree = [];
         $order = \app\models\Order::findOne($orderId);
         $category = \app\models\Category::findOne($order->subcategory_id);
@@ -433,13 +434,26 @@ class OrderDeliveryPriceService extends PriceOutputService
             'parentsTree' => $parentsTree,
         ]);
 
-        //new logic
+        /**
+         * new logic
+         * --------------------------------
+         * define new variables
+         * --------------------------------
+         */
+        $deliveryPrice = 0;
         $volumeM2 = $widthPerItem * $heightPerItem * $depthPerItem;
         $volumeM3 = $volumeM2 / 1000000;
         $weightPerItemKg = $weightPerItem / 1000;
         $density = $weightPerItemKg / $volumeM3;
 
-        $deliveryPrice = 0;
+        \app\services\UserActionLogService::info([
+            'density' => $density,
+            'volumeM2' => $volumeM2,
+            'volumeM3' => $volumeM3,
+            'weightPerItemKg' => $weightPerItemKg,
+        ]);
+
+
 
         if ($density > 100) {
             $totalWeight = ($itemsCount * $weightPerItemKg); // + $packagingWeight;
