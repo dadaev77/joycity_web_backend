@@ -402,7 +402,7 @@ class OrderDeliveryPriceService extends PriceOutputService
         \app\services\UserActionLogService::setController('OrderDeliveryPriceService');
         \app\services\UserActionLogService::log('call calculateDeliveryPrice');
 
-        \app\services\UserActionLogService::log([
+        \app\services\UserActionLogService::warning([
             'debug' => $debug,
             'order_id' => $orderId,
             'items_count' => $itemsCount,
