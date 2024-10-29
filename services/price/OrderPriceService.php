@@ -15,7 +15,9 @@ class OrderPriceService extends PriceOutputService
         \app\services\UserActionLogService::info('orderId: ' . $orderId . ' in calculateOrderPrices');
         try {
             $order = Order::findOne(['id' => $orderId]);
+            \app\services\UserActionLogService::success('order: ' . $order);
             if (!$order) {
+                \app\services\UserActionLogService::danger('order not found');
                 return self::getPricesConfig();
             }
             $buyerOffers = $order->buyerOffers;
