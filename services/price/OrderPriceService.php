@@ -99,12 +99,25 @@ class OrderPriceService extends PriceOutputService
         );
 
 
-        $out['delivery']['packaging'] = $packagingPrice;
-        $out['delivery']['delivery'] = $deliveryPrice;
+        $out['delivery']['packaging'] = match ($currency) {
+            'rub' => $packagingPrice,
+            'cny' => RateService::convertUSDtoCNY($packagingPrice),
+            default => $packagingPrice,
+        };
+        $out['delivery']['delivery'] = match ($currency) {
+            'rub' => $deliveryPrice,
+            'cny' => RateService::convertUSDtoCNY($deliveryPrice),
+            default => $deliveryPrice,
+        };
         $out['delivery']['overall'] =
             $out['delivery']['packaging'] + $out['delivery']['delivery'];
+
         $out['product_inspection'] = $productInspectionPrice;
-        $out['fulfillment'] = RateService::convertRUBtoCNY($fulfillmentPrice);
+        $out['fulfillment'] = match ($currency) {
+            'rub' => $fulfillmentPrice,
+            'cny' => RateService::convertUSDtoCNY($fulfillmentPrice),
+            default => $fulfillmentPrice,
+        };
 
         $out['product']['price_per_item'] = $productPrice;
         $out['product']['overall'] = round($productPrice * $productQuantity, self::SYMBOLS_AFTER_DECIMAL_POINT);
