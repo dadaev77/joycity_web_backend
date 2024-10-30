@@ -151,18 +151,8 @@ class OrderOutputService extends OutputService
                 }
             }
             $info['type'] = in_array($info['status'], Order::STATUS_GROUP_ORDER, true) ? 'order' : 'request';
-
             $userCurrency = Yii::$app->user->getIdentity()->getSettings()->currency;
-            \app\services\UserActionLogService::log(json_encode($userCurrency));
-
-            $priceInUsd = OrderPriceService::calculateOrderPrices($info['id']);
-            \app\services\UserActionLogService::log(json_encode($priceInUsd));
-            $info['price'] = match (strtolower($userCurrency)) {
-                'rub' => \app\services\RateService::outputInUserCurrency($priceInUsd, $info['id']),
-                'cny' => \app\services\RateService::outputInUserCurrency($priceInUsd, $info['id']),
-                default => $priceInUsd,
-            };
-            \app\services\UserActionLogService::log(json_encode($info['price']));
+            $info['price'] = OrderPriceService::calculateOrderPrices($info['id'], strtolower($userCurrency));
             unset(
                 // TODO: remove after testing
                 // $info['created_at'],

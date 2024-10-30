@@ -10,7 +10,7 @@ use app\services\UserActionLogService as LogService;
 
 class OrderPriceService extends PriceOutputService
 {
-    public static function calculateOrderPrices(int $orderId): array
+    public static function calculateOrderPrices(int $orderId, string $currency = 'usd'): array
     {
         try {
             $order = Order::findOne(['id' => $orderId]);
@@ -26,6 +26,7 @@ class OrderPriceService extends PriceOutputService
             $product = $order->product;
 
             return self::calculateAbstractOrderPrices(
+                $currency,
                 $order->id, // TODO: remove after testing
                 $lastOffer?->price_product ?: $order->expected_price_per_item,
                 $lastOffer?->total_quantity ?: $order->expected_quantity,
@@ -59,6 +60,7 @@ class OrderPriceService extends PriceOutputService
     }
 
     public static function calculateAbstractOrderPrices(
+        string $currency,
         int $orderId, // TODO: remove after testing
         float $productPrice,
         int $productQuantity,
@@ -73,7 +75,7 @@ class OrderPriceService extends PriceOutputService
         float $fulfillmentPrice,
         string $calculationType,
     ): array {
-
+        \app\services\UserActionLogService::log(json_encode($currency));
         $out = self::getPricesConfig();
         $isTypePackaging = $calculationType === self::TYPE_CALCULATION_PACKAGING;
 
