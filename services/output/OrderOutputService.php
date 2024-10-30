@@ -158,7 +158,7 @@ class OrderOutputService extends OutputService
             $priceInUsd = OrderPriceService::calculateOrderPrices($info['id']);
             $info['price'] = match (strtolower($userCurrency)) {
                 'rub' => \app\services\RateService::outputInUserCurrency($priceInUsd, $info['id']),
-                'zh' => \app\services\RateService::outputInUserCurrency($priceInUsd, $info['id']),
+                'cny' => \app\services\RateService::outputInUserCurrency($priceInUsd, $info['id']),
                 default => $priceInUsd,
             };
 
