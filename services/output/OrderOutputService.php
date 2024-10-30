@@ -154,7 +154,16 @@ class OrderOutputService extends OutputService
 
             $userCurrency = Yii::$app->user->getIdentity()->getSettings()->currency;
             \app\services\UserActionLogService::log(json_encode($userCurrency));
-            $info['price'] = OrderPriceService::calculateOrderPrices($info['id']);
+
+            $priceInUsd = OrderPriceService::calculateOrderPrices($info['id']);
+            $info['price'] = match (strtolower($userCurrency)) {
+                'rub' => \app\services\RateService::outputInUserCurrency($priceInUsd, $info['id']),
+                'zh' => \app\services\RateService::outputInUserCurrency($priceInUsd, $info['id']),
+                default => $priceInUsd,
+            };
+
+            \app\services\UserActionLogService::log(json_encode($info['price']));
+
 
             unset(
                 // TODO: remove after testing
