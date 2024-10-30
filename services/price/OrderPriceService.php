@@ -73,6 +73,18 @@ class OrderPriceService extends PriceOutputService
             $packagingQuantity,
         );
 
+        $deliveryPrice = OrderDeliveryPriceService::calculateDeliveryPrice(
+            $debug = false, // TODO: remove after testing
+            $orderId, // TODO: remove after testing
+            $isTypePackaging ? $packagingQuantity : $productQuantity,
+            $productWidth,
+            $productHeight,
+            $productDepth,
+            $productWeight,
+            $typeDeliveryId,
+        );
+
+
         $out['delivery']['packaging'] = $packagingPrice;
         $out['delivery']['delivery'] = $deliveryPrice;
         $out['delivery']['overall'] =
