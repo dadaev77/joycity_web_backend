@@ -75,7 +75,10 @@ class OrderPriceService extends PriceOutputService
         float $fulfillmentPrice,
         string $calculationType,
     ): array {
+
+        \app\services\UserActionLogService::setController('OrderPriceService');
         \app\services\UserActionLogService::log(json_encode($currency));
+
         $out = self::getPricesConfig();
         $isTypePackaging = $calculationType === self::TYPE_CALCULATION_PACKAGING;
 
