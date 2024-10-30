@@ -152,8 +152,8 @@ class OrderOutputService extends OutputService
             }
             $info['type'] = in_array($info['status'], Order::STATUS_GROUP_ORDER, true) ? 'order' : 'request';
 
-            $userCurrency = Yii::$app->user->identity->getSettings()->currency;
-            \app\services\UserActionLogService::log('currency', $userCurrency);
+            $userCurrency = Yii::$app->user->identity->getSettings();
+            \app\services\UserActionLogService::log(json_encode($userCurrency));
             $info['price'] = OrderPriceService::calculateOrderPrices($info['id']);
 
             unset(
