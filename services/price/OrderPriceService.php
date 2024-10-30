@@ -44,7 +44,16 @@ class OrderPriceService extends PriceOutputService
                     : self::TYPE_CALCULATION_PRODUCT,
             );
         } catch (Throwable $e) {
-            \app\services\UserActionLogService::danger('error in OrderPriceService::calculateOrderPrices: ' . json_encode($e));
+            \app\services\UserActionLogService::danger(
+                'error in OrderPriceService::calculateOrderPrices: ' .
+                    json_encode([
+                        'message' => $e->getMessage(),
+                        'code' => $e->getCode(),
+                        'file' => $e->getFile(),
+                        'line' => $e->getLine(),
+                        'trace' => $e->getTraceAsString(),
+                    ])
+            );
             return self::getPricesConfig();
         }
     }
