@@ -41,7 +41,7 @@ class SettingsOutputService extends OutputService
                 );
             }
 
-            $info['telegram'] = $model->telegram;
+            $info['telegram'] = $model;
 
 
             if ($info['role'] !== User::ROLE_FULFILLMENT) {
