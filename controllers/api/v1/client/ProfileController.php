@@ -109,6 +109,7 @@ class ProfileController extends ClientController
             'phone_number',
             'organization_name',
             'phone_country_code',
+            'telegram',
         ]);
 
         $user->load($postParams, '');
@@ -118,11 +119,9 @@ class ProfileController extends ClientController
                 'phone_number' => $user->phone_number,
                 'phone_country_code' => $user->phone_country_code,
             ]);
-
             if ($existingUser) {
                 return ApiResponse::code($apiCodes->PHONE_NUMBER_EXISTS);
             }
-
             if (isset($postParams['phone_country_code'])) {
                 $user->phone_country_code = $postParams['phone_country_code'];
             }
