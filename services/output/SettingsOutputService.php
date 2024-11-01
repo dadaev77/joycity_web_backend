@@ -40,6 +40,9 @@ class SettingsOutputService extends OutputService
                     $info['userSettings']['use_only_selected_categories'],
                 );
             }
+            if ($model->telegram) {
+                $info['telegram'] = $model->telegram;
+            }
 
             if ($info['role'] !== User::ROLE_FULFILLMENT) {
                 unset($info['deliveryPointAddress']);
