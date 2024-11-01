@@ -41,7 +41,7 @@ class SettingsOutputService extends OutputService
                 );
             }
 
-            $info['telegram'] = $model;
+            $info['telegram'] = User::find()->where(['id' => $model->id])->one()->telegram;
 
 
             if ($info['role'] !== User::ROLE_FULFILLMENT) {
