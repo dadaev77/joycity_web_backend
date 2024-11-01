@@ -169,7 +169,7 @@ class AuthController extends V1Controller implements ApiAuth
                 'role' => $role,
                 'rating' => Yii::$app->params['baseRating'],
                 'phone_country_code' => $phone_country_code,
-                'telegram' => $telegram ?: null,
+                'telegram' => $telegram,
             ]);
 
             $requiredAttributes = [
@@ -182,6 +182,7 @@ class AuthController extends V1Controller implements ApiAuth
                 'role',
                 'phone_country_code',
                 'rating',
+                'telegram',
             ];
 
             if (
