@@ -28,8 +28,12 @@ class ProfileOutputService extends OutputService
 
         return array_map(static function ($model) {
             $info = ModelTypeHelper::toArray($model);
+            // get instance of user
+            $user = User::find()->where(['id' => $model->id])->one();
 
-            $info['telegram'] = User::find()->where(['id' => $model->id])->one()->telegram;
+            $info['telegram'] = $user->telegram;
+            $info['uuid'] = $user->uuid;
+
             unset($info['avatar_id']);
 
             return $info;
