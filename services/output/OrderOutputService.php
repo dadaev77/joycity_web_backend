@@ -86,7 +86,7 @@ class OrderOutputService extends OutputService
 
             foreach ($info as $key => $value) {
                 if ($value && (str_starts_with($key, 'price_') || $key === 'expected_price_per_item')) {
-                    $info[$key] = RateService::getInUserCurrencyInUserCurrency($value, $info['id']);
+                    $info[$key] = RateService::outputInUserCurrency($value, $info['id']);
                 }
             }
             foreach ($info['chats'] as &$chat) {
