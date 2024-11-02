@@ -13,8 +13,12 @@ use app\models\User;
 use app\models\Product;
 use app\models\Order as OrderModel;
 
+// rates service
 use app\services\ExchangeRateService;
+// modificators
+use app\services\modificators\RateService;
 
+// log service
 use app\services\UserActionLogService as LogService;
 use Twilio\Rest\Client;
 // image processing
@@ -173,6 +177,7 @@ class RawController extends Controller
             'weightPerItem' => 'float',
             'typeDeliveryId' => 'int',
         ];
+
         $errors = [];
         foreach ($paramNames as $name => $type) {
             if (!isset($postData[$name])) {
@@ -203,5 +208,16 @@ class RawController extends Controller
             $weightPerItem,
             $typeDeliveryId,
         );
+    }
+    public function actionRateService()
+    {
+        RateService::setSADP(2);
+        $response = new \stdClass();
+
+        $response->priceInRubles = RateService::convertFromCnyToRub(100);
+        $response->priceInUsd = RateService::convertFromCnyToUsd(100);
+        $response->convertedToRubles = RateService::convertToInitial(200, 'CNY');
+
+        return $response;
     }
 }

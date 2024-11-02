@@ -67,6 +67,7 @@ class ConstantsController extends V1Controller
     {
         return ApiResponse::collection(
             TypeDeliveryOutputService::getCollection(
+
                 TypeDelivery::find()->column(),
             ),
         );
