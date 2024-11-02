@@ -6,8 +6,11 @@ use app\helpers\ModelTypeHelper;
 use app\models\BuyerOffer;
 use app\models\Order;
 use app\services\MarketplaceTransactionService;
-use app\services\price\OrderPriceService;
-use app\services\RateService;
+
+// modified services
+use app\services\modificators\price\OrderPrice;
+use app\services\modificators\RateService;
+
 use app\services\SqlQueryService;
 use Yii;
 
@@ -83,7 +86,7 @@ class OrderOutputService extends OutputService
 
             foreach ($info as $key => $value) {
                 if ($value && (str_starts_with($key, 'price_') || $key === 'expected_price_per_item')) {
-                    $info[$key] = RateService::outputInUserCurrency($value, $info['id']);
+                    $info[$key] = RateService::getInUserCurrencyInUserCurrency($value, $info['id']);
                 }
             }
             foreach ($info['chats'] as &$chat) {
@@ -151,8 +154,9 @@ class OrderOutputService extends OutputService
                 }
             }
             $info['type'] = in_array($info['status'], Order::STATUS_GROUP_ORDER, true) ? 'order' : 'request';
+
             $userCurrency = Yii::$app->user->getIdentity()->getSettings()->currency;
-            $info['price'] = OrderPriceService::calculateOrderPrices($info['id'], strtolower($userCurrency));
+            $info['price'] = OrderPrice::calculateOrderPrices($info['id'], strtolower($userCurrency));
             unset(
                 // TODO: remove after testing
                 // $info['created_at'],
