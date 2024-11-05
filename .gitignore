@@ -7,7 +7,7 @@
 node_modules/
 dist/
 
-./logs/*
+logs/
 # Compiled Java class files
 *.class
 
