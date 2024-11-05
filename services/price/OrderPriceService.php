@@ -10,7 +10,7 @@ use app\services\UserActionLogService as LogService;
 
 class OrderPriceService extends PriceOutputService
 {
-    public static function calculateOrderPrices(int $orderId, string $currency = 'usd'): array
+    public static function calculateOrderPrices(int $orderId): array
     {
         try {
             $order = Order::findOne(['id' => $orderId]);
