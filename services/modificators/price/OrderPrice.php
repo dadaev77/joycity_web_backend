@@ -43,7 +43,7 @@ class OrderPrice extends OrderPriceService
      *   Returns the default prices configuration.
      */
 
-    public static function calculateOrderPrices(int $orderId, string $currency = 'usd'): array
+    public static function calculateOrderPrices(int $orderId): array
     {
         $output = self::defaultOutput();
 
@@ -56,7 +56,7 @@ class OrderPrice extends OrderPriceService
             $buyerDeliveryOffer = $order->buyerDeliveryOffer;
 
             $params = self::prepareOrderParams($order, $lastOffer, $product, $fulfillmentOffer, $buyerDeliveryOffer);
-            return self::calcOrderPrices($currency, $params);
+            return self::calcOrderPrices($params);
         } catch (Throwable $th) {
             Log::danger(self::logError('OrderPrice::calculateOrderPrices', $th));
             return self::defaultOutput();
@@ -95,8 +95,10 @@ class OrderPrice extends OrderPriceService
         ]);
     }
 
-    private static function calcOrderPrices(string $currency, array $params): array
+    private static function calcOrderPrices(array $params): array
     {
+        $currency = \Yii::$app->user->getIdentity()->getSettings()->currency;
+
         $out = self::defaultOutput();
         $isTypePackaging = $params['calculationType'] === self::TYPE_CALCULATION_PACKAGING;
 
