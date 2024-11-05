@@ -164,7 +164,7 @@ class OrderOutputService extends OutputService
             Yii::endProfile('OrderPrice');
 
             unset(
-                // TODO: remove after testing
+
                 // $info['created_at'],
                 // $info['status'],
                 // $info['created_by'],
