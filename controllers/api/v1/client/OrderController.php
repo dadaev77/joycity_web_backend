@@ -38,6 +38,7 @@ class OrderController extends ClientController
     {
         parent::init();
         LogService::setController('OrderController');
+        Yii::beginProfile('OrderOutput');
     }
     public function behaviors()
     {

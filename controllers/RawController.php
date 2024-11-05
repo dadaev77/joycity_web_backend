@@ -54,6 +54,11 @@ class RawController extends Controller
         'WEBSOCKET_CONTAINER_URL',
     ];
 
+    public function __construct($id, $module, $config = [])
+    {
+        parent::__construct($id, $module, $config);
+    }
+
     public function beforeAction($action)
     {
         $this->enableCsrfValidation = ($action->id == "acceptFrontLogs");
@@ -163,61 +168,16 @@ class RawController extends Controller
         return $participiants;
     }
 
-    public function actionTestDeliveryPrice()
+
+    /**
+     * PLESASE PLACE TEST METHODS UNDER THIS COMMENT
+     * TO SAVE TIME FOR DEVELOPERS
+     * AND TO STILL CODE CLEAN
+     */
+
+    public function actionTestTraceback()
     {
-        // get request params
-        $request = Yii::$app->request;
-        $postData = $request->post();
-        $paramNames = [
-            'orderId' => 'int',
-            'itemsCount' => 'int',
-            'widthPerItem' => 'float',
-            'heightPerItem' => 'float',
-            'depthPerItem' => 'float',
-            'weightPerItem' => 'float',
-            'typeDeliveryId' => 'int',
-        ];
-
-        $errors = [];
-        foreach ($paramNames as $name => $type) {
-            if (!isset($postData[$name])) {
-                $errors[] = "Parameter '$name' is missing.";
-                continue;
-            }
-            ${$name} = match ($type) {
-                'int' => (int) ($postData[$name] ?? 0),
-                'float' => (float) ($postData[$name] ?? 0),
-                default => null,
-            };
-        }
-
-        if (!empty($errors)) {
-            return [
-                'status' => 'error',
-                'message' => $errors,
-            ];
-        }
-
-        return \app\services\price\OrderDeliveryPriceService::calculateDeliveryPrice(
-            $debug = true, // TODO: remove after testing
-            $orderId,
-            $itemsCount,
-            $widthPerItem,
-            $heightPerItem,
-            $depthPerItem,
-            $weightPerItem,
-            $typeDeliveryId,
-        );
-    }
-    public function actionRateService()
-    {
-        RateService::setSADP(2);
-        $response = new \stdClass();
-
-        $response->priceInRubles = RateService::convertFromCnyToRub(100);
-        $response->priceInUsd = RateService::convertFromCnyToUsd(100);
-        $response->convertedToRubles = RateService::convertToInitial(200, 'CNY');
-
-        return $response;
+        Yii::$app->response->format = Response::FORMAT_JSON;
+        return ['status' => 'ok'];
     }
 }

@@ -11,7 +11,12 @@ $config = [
     'id' => 'basic',
     'basePath' => dirname(__DIR__),
     'timeZone' => 'Europe/Moscow',
-    'bootstrap' => ['log'],
+    'bootstrap' => ['debug'],
+    'modules' => [
+        'debug' => [
+            'class' => 'yii\debug\Module',
+        ]
+    ],
     'defaultRoute' => 'api',
     'language' => 'ru-RU',
     'aliases' => [
@@ -26,7 +31,9 @@ $config = [
                 ],
             ],
         ],
-
+        'profiling' => [
+            'class' => 'yii\debug\Profiler',
+        ],
         'response' => [
             'format' => yii\web\Response::FORMAT_JSON,
             'on beforeSend' => static function ($event) {
@@ -54,40 +61,22 @@ $config = [
         ],
         'mailer' => require __DIR__ . '/smtp.php',
         'log' => [
-            'traceLevel' => YII_DEBUG ? 3 : 0,
+            'traceLevel' => 3,
             'targets' => [
                 [
                     'class' => 'yii\log\FileTarget',
                     'levels' => ['error', 'warning'],
                 ],
                 [
-                    'class' => 'yii\log\FileTarget',
-                    'levels' => ['info'],
-                    'categories' => ['scanoil'],
-                    'logFile' => '@app/runtime/logs/reports/scanoil.log',
+                    'class' => 'app\components\logs\CustomFileTarget',
+                    'levels' => ['profile', 'info', 'trace'],
+                    'logFile' => '@app/runtime/logs/profiling.log',
                     'maxFileSize' => 1024 * 2,
                     'maxLogFiles' => 20,
-                ],
-                [
-                    'class' => 'yii\log\FileTarget',
-                    'levels' => ['info'],
-                    'categories' => ['mails'],
-                    'logFile' => '@app/runtime/logs/reports/mails.log',
-                    'maxFileSize' => 1024 * 2,
-                    'maxLogFiles' => 50,
-                ],
-                [
-                    'class' => 'yii\log\FileTarget',
-                    'levels' => ['info'],
-                    'categories' => ['login'],
-                    'logFile' => '@app/runtime/logs/reports/login.log',
-                    'maxFileSize' => 1024 * 2,
-                    'maxLogFiles' => 50,
                 ],
             ],
         ],
         'db' => require __DIR__ . '/db.php',
-
         'urlManager' => [
             'enablePrettyUrl' => true,
             'enableStrictParsing' => false,
@@ -186,19 +175,4 @@ $config = [
     'params' => $params,
 ];
 
-if (YII_ENV_DEV) {
-    // configuration adjustments for 'dev' environment
-    $config['bootstrap'][] = 'debug';
-    $config['modules']['debug'] = [
-        'class' => 'yii\debug\Module',
-        'allowedIPs' => ['*']
-    ];
-
-    $config['bootstrap'][] = 'gii';
-    $config['modules']['gii'] = [
-        'class' => 'yii\gii\Module',
-        'allowedIPs' => ['*'],
-    ];
-}
-// $config = ['debug' => true];
 return $config;

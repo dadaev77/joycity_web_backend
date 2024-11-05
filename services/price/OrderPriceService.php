@@ -18,11 +18,16 @@ class OrderPriceService extends PriceOutputService
                 \app\services\UserActionLogService::danger('order not found');
                 return self::getPricesConfig();
             }
+            // get offers 
             $buyerOffers = $order->buyerOffers;
             $buyerOffer = array_pop($buyerOffers);
+            // get delivery offer
             $buyerDeliveryOffer = $order->buyerDeliveryOffer;
+            // get fulfillment offer
             $fulfillmentOffer = $order->fulfillmentOffer;
+            // get last offer
             $lastOffer = $buyerDeliveryOffer ?: $buyerOffer;
+            // get product
             $product = $order->product;
 
             return self::calculateAbstractOrderPrices(
