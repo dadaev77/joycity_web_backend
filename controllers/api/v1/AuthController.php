@@ -232,8 +232,17 @@ class AuthController extends V1Controller implements ApiAuth
                 );
             }
 
-            // generate uuid for user
-            $user->uuid = Yii::$app->security->generateRandomString(16);
+            /**
+             * generate uuid for user as AAA-999
+             */
+            function generateCustomUUID()
+            {
+                $letters = chr(random_int(65, 90)) . chr(random_int(65, 90)) . chr(random_int(65, 90));
+                $numbers = random_int(100, 999);
+                return $letters . '-' . $numbers;
+            }
+
+            $user->uuid = generateCustomUUID();
 
             LogService::success('created user ' . $request->post('email'));
             $user->personal_id = md5(time() . random_int(1e3, 9e3));
@@ -291,6 +300,7 @@ class AuthController extends V1Controller implements ApiAuth
 
             return ApiResponse::code($apiCodes->SUCCESS, [
                 'access_token' => $user->access_token,
+                'uuid' => $user->uuid,
             ]);
         } catch (Throwable $e) {
             isset($transaction) && $transaction->rollBack();
