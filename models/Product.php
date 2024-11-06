@@ -42,6 +42,12 @@ use yii\db\ActiveQuery;
  */
 class Product extends Base
 {
+    public function beforeSave($insert)
+    {
+        \app\services\UserActionLogService::log('Product beforeSave', json_encode($insert));
+        return true;
+    }
+
     public static function apiCodes(): ResponseCodesModels
     {
         return ResponseCodesModels::getStatic();

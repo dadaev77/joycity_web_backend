@@ -17,6 +17,12 @@ class FulfillmentOffer extends FulfillmentOfferStructure
         self::STATUS_PAID,
     ];
 
+    public function beforeSave($insert)
+    {
+        \app\services\UserActionLogService::log('FulfillmentOffer beforeSave', json_encode($insert));
+        return true;
+    }
+
     public static function getStatusMap()
     {
         return [

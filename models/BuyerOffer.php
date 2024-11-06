@@ -11,6 +11,13 @@ class BuyerOffer extends BuyerOfferStructure
     public const STATUS_APPROVED = 1;
     public const STATUS_DECLINED = 2;
 
+
+    public function beforeSave($insert)
+    {
+        \app\services\UserActionLogService::log('BuyerOffer beforeSave', json_encode($insert));
+        return true;
+    }
+
     public static function getStatusMap()
     {
         return [

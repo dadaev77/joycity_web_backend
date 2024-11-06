@@ -159,12 +159,8 @@ class OrderOutputService extends OutputService
             }
             $info['type'] = in_array($info['status'], Order::STATUS_GROUP_ORDER, true) ? 'order' : 'request';
 
-            Yii::beginProfile('OrderPrice');
             $info['price'] = OrderPrice::calculateOrderPrices($info['id']);
-            Yii::endProfile('OrderPrice');
-
             unset(
-
                 // $info['created_at'],
                 // $info['status'],
                 // $info['created_by'],
