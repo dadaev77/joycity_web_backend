@@ -92,7 +92,8 @@ class OrderStructure extends Base
 
     public function beforeSave($insert)
     {
-        \app\services\UserActionLogService::log('Order beforeSave', json_encode($insert));
+        $currency = Yii::$app->user->getIdentity()->currency;
+        \app\services\UserActionLogService::log('Order beforeSave (User currency: ' . $currency . ')', json_encode($insert));
         return true;
     }
     /**
