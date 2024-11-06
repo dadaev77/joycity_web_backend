@@ -148,11 +148,7 @@ class Order extends OrderStructure
     ];
 
 
-    public function beforeSave($insert)
-    {
-        \app\services\UserActionLogService::log('Order beforeSave', json_encode($insert));
-        return true;
-    }
+
 
     public static function getStatusMap(array $statuses): array
     {

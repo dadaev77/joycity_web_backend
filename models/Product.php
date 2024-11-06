@@ -44,7 +44,9 @@ class Product extends Base
 {
     public function beforeSave($insert)
     {
-        \app\services\UserActionLogService::log('Product beforeSave', json_encode($insert));
+        $currency = Yii::$app->user->getIdentity()->currency;
+
+        \app\services\UserActionLogService::log('Product beforeSave (User currency: ' . $currency . ')', json_encode($insert));
         return true;
     }
 

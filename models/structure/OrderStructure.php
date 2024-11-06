@@ -89,6 +89,12 @@ use yii\db\ActiveQuery;
  */
 class OrderStructure extends Base
 {
+
+    public function beforeSave($insert)
+    {
+        \app\services\UserActionLogService::log('Order beforeSave', json_encode($insert));
+        return true;
+    }
     /**
      * {@inheritdoc}
      */
