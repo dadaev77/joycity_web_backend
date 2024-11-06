@@ -50,12 +50,14 @@ class OrderPrice extends OrderPriceService
         try {
             $order = Order::findOne($orderId);
             $buyerOffers = $order->buyerOffers;
+
             $lastOffer = array_pop($buyerOffers);
             $product = $order->product;
             $fulfillmentOffer = $order->fulfillmentOffer;
             $buyerDeliveryOffer = $order->buyerDeliveryOffer;
-
             $params = self::prepareOrderParams($order, $lastOffer, $product, $fulfillmentOffer, $buyerDeliveryOffer);
+            if (!$buyerOffers) return self::defaultOutput();
+
             return self::calcOrderPrices($params);
         } catch (Throwable $th) {
             Log::danger(self::logError('OrderPrice::calculateOrderPrices', $th));
