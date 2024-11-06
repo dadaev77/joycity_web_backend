@@ -173,7 +173,7 @@ class ApiResponse extends Response
     ): array {
         $payload = null;
 
-        if ($e && defined('YII_ENV') && YII_ENV == YII_ENV_DEV) {
+        if ($e) {
             $payload =
                 $e->getFile() .
                 '::' .
