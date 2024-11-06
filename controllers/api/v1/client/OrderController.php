@@ -357,7 +357,11 @@ class OrderController extends ClientController
             }
         } catch (Throwable $e) {
             $transaction?->rollBack();
-            return ApiResponse::internalError($e);
+            return ApiResponse::internalError([
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
         }
     }
 
