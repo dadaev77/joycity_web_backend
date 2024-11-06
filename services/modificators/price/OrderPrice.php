@@ -133,7 +133,6 @@ class OrderPrice extends OrderPriceService
     private static function calcPackagingPrice(int $typePackagingId, int $packagingQuantity): float
     {
         try {
-            Log::log('call calculate packaging price');
             $typePackaging = TypePackaging::findOne(['id' => $typePackagingId]);
             return round(($typePackaging?->price ?? 0) * $packagingQuantity, self::SYMBOLS_AFTER_DECIMAL_POINT);
         } catch (Throwable $th) {
@@ -145,8 +144,7 @@ class OrderPrice extends OrderPriceService
     private static function calcDeliveryPrice(array $dimensions, int $itemsCount, int $typeDeliveryId): float
     {
         try {
-            Log::log('call calculate delivery price');
-            Log::warning('dimensions: ' . json_encode($dimensions));
+
 
             $volumeCm3 = $dimensions['width'] * $dimensions['height'] * $dimensions['depth']; // Объем в см³
             $volumeM3 = $volumeCm3 / 1000000; // Объем в м³
@@ -162,8 +160,7 @@ class OrderPrice extends OrderPriceService
             } else {
                 $deliveryPrice = ($volumeM3 * $itemsCount) * self::getPriceByVolume($typeDeliveryId);
             }
-            Log::log('delivery price: ' . json_encode($deliveryPrice));
-            return (int) $deliveryPrice;
+            return (float) $deliveryPrice;
         } catch (Throwable $th) {
             Log::danger('error in OrderPrice::calcDeliveryPrice: ' . $th->getMessage());
             return self::defaultOutput();
