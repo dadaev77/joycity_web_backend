@@ -161,8 +161,7 @@ class OrderPrice extends OrderPriceService
                 $deliveryPrice = ($volumeM3 * $itemsCount) * self::getPriceByVolume($typeDeliveryId);
             }
             Log::log('delivery price: ' . json_encode($deliveryPrice));
-            die();
-            // return $deliveryPrice;
+            return (int) $deliveryPrice;
         } catch (Throwable $th) {
             Log::danger('error in OrderPrice::calcDeliveryPrice: ' . $th->getMessage());
             return self::defaultOutput();
