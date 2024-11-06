@@ -142,25 +142,30 @@ class OrderPrice extends OrderPriceService
 
     private static function calcDeliveryPrice(array $dimensions, int $itemsCount, int $typeDeliveryId): float
     {
-        Log::log('call calculate delivery price');
-        Log::warning('dimensions: ' . json_encode($dimensions));
+        try {
+            Log::log('call calculate delivery price');
+            Log::warning('dimensions: ' . json_encode($dimensions));
 
-        $volumeCm3 = $dimensions['width'] * $dimensions['height'] * $dimensions['depth']; // Объем в см³
-        $volumeM3 = $volumeCm3 / 1000000; // Объем в м³
-        $weightPerItemKg = $dimensions['weight'] / 1000; // Вес в кг
-        $density = $weightPerItemKg / $volumeM3; // Плотность в кг/м³
+            $volumeCm3 = $dimensions['width'] * $dimensions['height'] * $dimensions['depth']; // Объем в см³
+            $volumeM3 = $volumeCm3 / 1000000; // Объем в м³
+            $weightPerItemKg = $dimensions['weight'] / 1000; // Вес в кг
+            $density = $weightPerItemKg / $volumeM3; // Плотность в кг/м³
 
-        // init variables
-        $deliveryPrice = 0;
+            // init variables
+            $deliveryPrice = 0;
 
-        if ($density > 100) {
-            $totalWeight = $itemsCount * $weightPerItemKg; // Убираем упаковку
-            $deliveryPrice = self::getPriceByWeight($typeDeliveryId, $density) * $totalWeight; // Стоимость доставки в $
-        } else {
-            $deliveryPrice = ($volumeM3 * $itemsCount) * self::getPriceByVolume($typeDeliveryId);
+            if ($density > 100) {
+                $totalWeight = $itemsCount * $weightPerItemKg; // Убираем упаковку
+                $deliveryPrice = self::getPriceByWeight($typeDeliveryId, $density) * $totalWeight; // Стоимость доставки в $
+            } else {
+                $deliveryPrice = ($volumeM3 * $itemsCount) * self::getPriceByVolume($typeDeliveryId);
+            }
+
+            return $deliveryPrice;
+        } catch (Throwable $th) {
+            Log::danger('error in OrderPrice::calcDeliveryPrice: ' . $th->getMessage());
+            return self::defaultOutput();
         }
-
-        return $deliveryPrice;
     }
 
     public static function getPriceByWeight(int $typeDeliveryId, float $weight): float
