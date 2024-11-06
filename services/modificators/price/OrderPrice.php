@@ -140,7 +140,7 @@ class OrderPrice extends OrderPriceService
         }
     }
 
-    private static function calcDeliveryPrice(array $dimensions, int $itemsCount, int $typeDeliveryId): float
+    private static function calcDeliveryPrice(array $dimensions, int $itemsCount, int $typeDeliveryId): mixed
     {
         try {
             Log::log('call calculate delivery price');
@@ -160,7 +160,7 @@ class OrderPrice extends OrderPriceService
             } else {
                 $deliveryPrice = ($volumeM3 * $itemsCount) * self::getPriceByVolume($typeDeliveryId);
             }
-
+            Log::log('delivery price: ' . $deliveryPrice);
             return $deliveryPrice;
         } catch (Throwable $th) {
             Log::danger('error in OrderPrice::calcDeliveryPrice: ' . $th->getMessage());
