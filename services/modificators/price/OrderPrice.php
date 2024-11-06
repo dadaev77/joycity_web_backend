@@ -56,7 +56,7 @@ class OrderPrice extends OrderPriceService
             $fulfillmentOffer = $order->fulfillmentOffer;
             $buyerDeliveryOffer = $order->buyerDeliveryOffer;
             $params = self::prepareOrderParams($order, $lastOffer, $product, $fulfillmentOffer, $buyerDeliveryOffer);
-            if (empty($buyerOffers)) return self::defaultOutput();
+            if (empty($lastOffer)) return self::defaultOutput();
 
             return self::calcOrderPrices($params);
         } catch (Throwable $th) {
