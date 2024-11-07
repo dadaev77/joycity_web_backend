@@ -12,11 +12,11 @@ class BuyerOffer extends BuyerOfferStructure
     public const STATUS_DECLINED = 2;
 
 
-    public function beforeSave()
+    public function beforeSave($insert)
     {
         $currency = \Yii::$app->user->getIdentity()->settings->currency;
         \app\services\UserActionLogService::log('BuyerOffer beforeSave (User currency: ' . $currency . ')', json_encode($this));
-        return true;
+        return parent::beforeSave($insert);
     }
 
     public static function getStatusMap()
