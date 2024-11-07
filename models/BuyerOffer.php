@@ -15,10 +15,10 @@ class BuyerOffer extends BuyerOfferStructure
 
     public function beforeSave($insert)
     {
-        $currency = \Yii::$app->user->getIdentity()->settings->currency;
+        // $currency = \Yii::$app->user->getIdentity()->settings->currency;
 
-        $this->price_product = RateService::convertToInitial($this->price_product, $currency);
-        $this->price_inspection = RateService::convertToInitial($this->price_inspection, $currency);
+        // $this->price_product = RateService::convertToInitial($this->price_product, $currency);
+        // $this->price_inspection = RateService::convertToInitial($this->price_inspection, $currency);
 
         return parent::beforeSave($insert);
     }
