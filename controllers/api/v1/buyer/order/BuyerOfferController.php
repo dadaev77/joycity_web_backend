@@ -92,8 +92,8 @@ class BuyerOfferController extends BuyerController
             }
 
             if (
-                $order->buyer_id !== $user->id ||
-                $order->status !== Order::STATUS_BUYER_ASSIGNED
+                $order->buyer_id !== $user->id //||
+                // $order->status !== Order::STATUS_BUYER_ASSIGNED
             ) {
                 return ApiResponse::code($apiCodes->NO_ACCESS);
             }

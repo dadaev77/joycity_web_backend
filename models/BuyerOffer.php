@@ -4,6 +4,7 @@ namespace app\models;
 
 use app\models\responseCodes\BuyerOfferCodes;
 use app\models\structure\BuyerOfferStructure;
+use app\services\modificators\RateService;
 
 class BuyerOffer extends BuyerOfferStructure
 {
@@ -15,9 +16,11 @@ class BuyerOffer extends BuyerOfferStructure
     public function beforeSave($insert)
     {
         $currency = \Yii::$app->user->getIdentity()->settings->currency;
-        \app\services\UserActionLogService::log('BuyerOffer beforeSave (User currency: ' . $currency . ')');
-        \app\services\UserActionLogService::info(json_encode($this));
-        return true;
+
+        $this->price_product = RateService::convertToInitial($this->price_product, $currency);
+        $this->price_inspection = RateService::convertToInitial($this->price_inspection, $currency);
+
+        return parent::beforeSave($insert);
     }
 
     public static function getStatusMap()
