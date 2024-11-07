@@ -22,20 +22,13 @@ class ProductOutputService extends OutputService
                 'buyer' => fn($q) => $q
                     ->select(SqlQueryService::getBuyerSelect())
                     ->with(['avatar']),
-                'category', // subcategory
+                'subcategory', // subcategory
             ])
             ->orderBy(self::getOrderByIdExpression($ids))
             ->where(['id' => $ids]);
 
         return array_map(static function ($model) use ($imageSize) {
             $info = ModelTypeHelper::toArray($model);
-
-            foreach ($info as $key => $value) {
-                if ($value && str_ends_with($key, '_price')) {
-                    $info[$key] = RateService::outputInUserCurrency($value);
-                }
-            }
-
 
             $language = Yii::$app->user->identity->getSettings()->application_language;
 
@@ -88,7 +81,27 @@ class ProductOutputService extends OutputService
                 ),
             ];
 
-            unset($info['productLinkAttachments']);
+            $priceKeys = array_filter(array_keys($info), fn($key) => str_ends_with($key, '_price'));
+
+            foreach ($priceKeys as $key) {
+                $info[$key] = RateService::outputInUserCurrency($info[$key], $model->id, 'product');
+            }
+
+            $info['price']['min'] = RateService::outputInUserCurrency($info['price']['min'], $model->id, 'product');
+            $info['price']['max'] = RateService::outputInUserCurrency($info['price']['max'], $model->id, 'product');
+
+            unset(
+                $info['productLinkAttachments'],
+                // TODO: remove after testing
+                $info['feedback_count'],
+                $info['rating'],
+                $info['buyer_id'],
+                $info['subcategory_id'],
+                $info['is_deleted'],
+                $info['subcategory'],
+                $info['buyer'],
+                $info['attachments'],
+            );
 
             return $info;
         }, $query->all());

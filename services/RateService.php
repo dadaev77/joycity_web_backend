@@ -41,7 +41,7 @@ class RateService
     }
 
     // Output amount in user's currency
-    public static function outputInUserCurrency(float $amount, int $orderId = 0): float
+    public static function outputInUserCurrency(float $amount, int $orderId = 0)
     {
         $userCurrency = User::getIdentity()->userSettings->currency;
         return $userCurrency === self::CURRENCY_RUB ? round($amount, self::$SYMBOLS_AFTER_DECIMAL_POINT) : self::convertRUBtoCNY($amount, $orderId, self::$SYMBOLS_AFTER_DECIMAL_POINT);
@@ -50,9 +50,13 @@ class RateService
     // Convert amount to user's currency
     public static function putInUserCurrency(float $amount, int $orderId = 0): float
     {
-        $userCurrency = User::getIdentity()->userSettings->currency;
-
-        return $userCurrency === self::CURRENCY_RUB ? round($amount, self::$SYMBOLS_AFTER_DECIMAL_POINT) : self::convertRUBtoCNY($amount, $orderId, self::$SYMBOLS_AFTER_DECIMAL_POINT);
+        $userCurrency = User::getIdentity()->settings->currency;
+        if ($userCurrency === self::CURRENCY_RUB) {
+            return round($amount, self::$SYMBOLS_AFTER_DECIMAL_POINT);
+        } else {
+            $rates = self::getRate();
+            return round($amount * $rates[$userCurrency], self::$SYMBOLS_AFTER_DECIMAL_POINT);
+        }
     }
 
     // Convert amount from a specific currency to the initial currency
