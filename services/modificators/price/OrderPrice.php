@@ -85,6 +85,36 @@ class OrderPrice extends OrderPriceService
         ];
     }
 
+    private static function prepareOrderParamsForFacade(
+        float $productPrice,
+        int $productQuantity,
+        float $productWidth,
+        float $productHeight,
+        float $productDepth,
+        float $productWeight,
+        int $packagingQuantity,
+        int $typeDeliveryId,
+        int $typePackagingId,
+        string $calculationType,
+    ): array {
+        return [
+            'productPrice' => $productPrice,
+            'productQuantity' => $productQuantity,
+            'productDimensions' => [
+                'width' => $productWidth,
+                'height' => $productHeight,
+                'depth' => $productDepth,
+                'weight' => $productWeight,
+            ],
+            'packagingQuantity' => $packagingQuantity,
+            'typeDeliveryId' => $typeDeliveryId,
+            'typePackagingId' => $typePackagingId,
+            'productInspectionPrice' => 0,
+            'fulfillmentPrice' => 0,
+            'calculationType' => $calculationType,
+        ];
+    }
+
     private static function logError(string $context, Throwable $th): string
     {
         return json_encode([
@@ -100,8 +130,8 @@ class OrderPrice extends OrderPriceService
     private static function calcOrderPrices(array $params): array
     {
         $currency = \Yii::$app->user->getIdentity()->getSettings()->currency;
-
         $out = self::defaultOutput();
+
         $isTypePackaging = $params['calculationType'] === self::TYPE_CALCULATION_PACKAGING;
 
         $packagingPrice = self::calcPackagingPrice($params['typePackagingId'], $params['packagingQuantity']);
@@ -144,7 +174,6 @@ class OrderPrice extends OrderPriceService
     private static function calcDeliveryPrice(array $dimensions, int $itemsCount, int $typeDeliveryId): float
     {
         try {
-
 
             $volumeCm3 = $dimensions['width'] * $dimensions['height'] * $dimensions['depth']; // Объем в см³
             $volumeM3 = $volumeCm3 / 1000000; // Объем в м³
@@ -199,5 +228,38 @@ class OrderPrice extends OrderPriceService
             'fulfillment' => 0,
             'overall' => 0,
         ];
+    }
+
+    public static function calculatorFacade(
+        float $productPrice,
+        int $productQuantity,
+        float $productWidth,
+        float $productHeight,
+        float $productDepth,
+        float $productWeight,
+        int $packagingQuantity,
+        int $typeDeliveryId,
+        int $typePackagingId,
+        string $calculationType,
+    ): array {
+        try {
+            $params = self::prepareOrderParamsForFacade(
+                $productPrice,
+                $productQuantity,
+                $productWidth,
+                $productHeight,
+                $productDepth,
+                $productWeight,
+                $packagingQuantity,
+                $typeDeliveryId,
+                $typePackagingId,
+                $calculationType,
+            );
+
+            return self::calcOrderPrices($params);
+        } catch (Throwable $th) {
+            Log::danger('error in OrderPrice::calculatorFacade: ' . $th->getMessage());
+            return self::defaultOutput();
+        }
     }
 }

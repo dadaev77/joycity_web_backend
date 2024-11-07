@@ -72,7 +72,7 @@ $config = [
                     'levels' => ['profile', 'info', 'trace'],
                     'logFile' => '@app/runtime/logs/profiling.log',
                     'maxFileSize' => 1024 * 2,
-                    'maxLogFiles' => 20,
+                    'maxLogFiles' => 5,
                 ],
             ],
         ],

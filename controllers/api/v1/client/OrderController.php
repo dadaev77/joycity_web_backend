@@ -30,6 +30,7 @@ use app\services\UserActionLogService as LogService;
 use app\services\twilio\TwilioService;
 use app\controllers\CronController;
 use app\models\OrderDistribution;
+use app\services\modificators\price\OrderPrice;
 use app\services\TranslationService;
 
 class OrderController extends ClientController
@@ -51,7 +52,7 @@ class OrderController extends ClientController
         $behaviours['verbFilter']['actions']['my'] = ['get'];
         $behaviours['verbFilter']['actions']['history'] = ['get'];
         $behaviours['verbFilter']['actions']['fulfillment-list'] = ['get'];
-        $behaviours['verbFilter']['actions']['calculate-price'] = ['get'];
+        $behaviours['verbFilter']['actions']['calculate-price'] = ['post'];
         array_unshift($behaviours['access']['rules'], [
             'actions' => ['create', 'update', 'cancel'],
             'allow' => false,
@@ -596,35 +597,32 @@ class OrderController extends ClientController
         return ApiResponse::info(OrderOutputService::getEntity($order->id));
     }
 
-    public function actionCalculatePrice(
-        float $product_price,
-        int $product_quantity,
-        float $product_width,
-        float $product_height,
-        float $product_depth,
-        float $product_weight,
-        int $packaging_quantity,
-        int $type_delivery_id,
-        int $type_packaging_id,
-        string $calculation_type,
-    ) {
-        LogService::info('calculate price is called');
+    public function actionCalculatePrice()
+    {
+        $request = Yii::$app->request;
+        $product_price = $request->post('product_price');
+        $product_quantity = $request->post('product_quantity');
+        $product_width = $request->post('product_width');
+        $product_height = $request->post('product_height');
+        $product_depth = $request->post('product_depth');
+        $product_weight = $request->post('product_weight');
+        $packaging_quantity = $request->post('packaging_quantity');
+        $type_delivery_id = $request->post('type_delivery_id');
+        $type_packaging_id = $request->post('type_packaging_id');
+        $calculation_type = $request->post('calculation_type');
+
         return ApiResponse::info([
-            'price' => OrderPriceService::outputOrderPricesInUserCurrency(
-                OrderPriceService::calculateAbstractOrderPrices(
-                    RateService::putInUserCurrency($product_price),
-                    $product_quantity,
-                    $product_width,
-                    $product_height,
-                    $product_depth,
-                    $product_weight,
-                    $packaging_quantity,
-                    $type_delivery_id,
-                    $type_packaging_id,
-                    0,
-                    0,
-                    $calculation_type,
-                ),
+            'price' => OrderPrice::calculatorFacade(
+                $product_price,
+                $product_quantity,
+                $product_width,
+                $product_height,
+                $product_depth,
+                $product_weight,
+                $packaging_quantity,
+                $type_delivery_id,
+                $type_packaging_id,
+                $calculation_type,
             ),
         ]);
     }
