@@ -15,8 +15,9 @@ class BuyerOffer extends BuyerOfferStructure
     public function beforeSave($insert)
     {
         $currency = \Yii::$app->user->getIdentity()->settings->currency;
-        \app\services\UserActionLogService::log('BuyerOffer beforeSave (User currency: ' . $currency . ')', json_encode($this));
-        return parent::beforeSave($insert);
+        \app\services\UserActionLogService::log('BuyerOffer beforeSave (User currency: ' . $currency . ')');
+        \app\services\UserActionLogService::info(json_encode($this));
+        return true;
     }
 
     public static function getStatusMap()
