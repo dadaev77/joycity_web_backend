@@ -55,7 +55,9 @@ class OrderOutputService extends OutputService
             'typeDeliveryPoint',
             'typePackaging',
             'chats',
-            'category', // subcategory
+
+            'subcategory',
+
             'product' => fn($q) => $q->select(['id', 'name_ru', 'description_ru', 'product_height', 'product_width', 'product_depth', 'product_weight'])->with(['attachments']),
             'productInspectionReports',
             'fulfillmentInspectionReport',

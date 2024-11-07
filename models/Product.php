@@ -4,6 +4,7 @@ namespace app\models;
 
 use app\components\response\ResponseCodesModels;
 use yii\db\ActiveQuery;
+use app\services\modificators\RateService;
 
 /**
  * This is the model class for table "product".
@@ -45,9 +46,24 @@ class Product extends Base
     public function beforeSave($insert)
     {
         $currency = \Yii::$app->user->getIdentity()->settings->currency;
-
-        \app\services\UserActionLogService::log('Product beforeSave (User currency: ' . $currency . ')', json_encode($insert));
-        return true;
+        $attributesList = [
+            'range_1_min',
+            'range_1_max',
+            'range_1_price',
+            'range_2_min',
+            'range_2_max',
+            'range_2_price',
+            'range_3_min',
+            'range_3_max',
+            'range_3_price',
+            'range_4_min',
+            'range_4_max',
+            'range_4_price',
+        ];
+        foreach ($attributesList as $attribute) {
+            $this->$attribute = $this->$attribute ? RateService::convertToInitial($this->$attribute, $currency) : 0;
+        }
+        return parent::beforeSave($insert);
     }
 
     public static function apiCodes(): ResponseCodesModels

@@ -26,6 +26,7 @@ use app\models\TypeDelivery;
 use app\models\TypeDeliveryPoint;
 use app\models\TypePackaging;
 use app\models\User;
+use app\services\modificators\RateService;
 use yii\db\ActiveQuery;
 
 /**
@@ -92,9 +93,24 @@ class OrderStructure extends Base
 
     public function beforeSave($insert)
     {
+        // get currency in user settings
         $currency = \Yii::$app->user->getIdentity()->settings->currency;
-        \app\services\UserActionLogService::log('Order beforeSave (User currency: ' . $currency . ')', json_encode($insert));
-        return true;
+
+        // convert price attributes to initial currency
+        $priceAttributes = [
+            'expected_price_per_item',
+            'price_product',
+            'price_inspection',
+            'price_packaging',
+            'price_fulfilment',
+            'price_delivery',
+        ];
+
+        foreach ($priceAttributes as $attribute) {
+            $this->$attribute = $this->$attribute ? RateService::convertToInitial($this->$attribute, $currency) : 0;
+        }
+
+        return parent::beforeSave($insert);
     }
     /**
      * {@inheritdoc}
@@ -565,6 +581,10 @@ class OrderStructure extends Base
     public function getCategory()
     {
         return $this->hasOne(\app\models\Category::class, ['id' => 'parent_id']);
+    }
+    public function getSubcategory()
+    {
+        return $this->hasOne(\app\models\Category::class, ['id' => 'subcategory_id']);
     }
 
     /**

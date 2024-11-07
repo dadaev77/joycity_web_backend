@@ -38,7 +38,7 @@ class ProductController extends BuyerController
             $response =
                 User::getIdentity()->role === User::ROLE_BUYER_DEMO ?
                 ApiResponse::byResponseCode(ResponseCodes::getStatic()->NOT_AUTHENTICATED) :
-                false;
+                ApiResponse::code(ResponseCodes::getStatic()->NO_ACCESS);
             Yii::$app->response->data = $response;
         };
 
