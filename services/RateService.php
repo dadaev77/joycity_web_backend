@@ -41,10 +41,22 @@ class RateService
     }
 
     // Output amount in user's currency
-    public static function outputInUserCurrency(float $amount, int $orderId = 0)
+    public static function outputInUserCurrency(float $amount, int $orderId = 0, string $type = 'product'): float
     {
-        $userCurrency = User::getIdentity()->userSettings->currency;
-        return $userCurrency === self::CURRENCY_RUB ? round($amount, self::$SYMBOLS_AFTER_DECIMAL_POINT) : self::convertRUBtoCNY($amount, $orderId, self::$SYMBOLS_AFTER_DECIMAL_POINT);
+        $instanceCurrency = match ($type) {
+            'product' => \app\models\Product::find()->where(['id' => $orderId])->one()->currency,
+            'order' => \app\models\Order::find()->where(['id' => $orderId])->one()->currency,
+            default => \Yii::$app->user->getIdentity()->settings->currency,
+        };
+        $userCurrency = User::getIdentity()->settings->currency;
+        $rates = self::getRate();
+        if (!isset($rates[$instanceCurrency]) || !isset($rates[$userCurrency])) {
+            throw new \Exception("Не удалось найти курс для валюты");
+        }
+        $amountInBaseCurrency = $amount * $rates[$instanceCurrency];
+        $amountInUserCurrency = $amountInBaseCurrency / $rates[$userCurrency];
+
+        return round($amountInUserCurrency, self::$SYMBOLS_AFTER_DECIMAL_POINT);
     }
 
     // Convert amount to user's currency

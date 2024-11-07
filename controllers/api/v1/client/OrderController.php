@@ -80,10 +80,11 @@ class OrderController extends ClientController
         $repeatOrderId = $request->post('repeat_order_id');
         $repeatImagesToKeep = $request->post('repeat_images_to_keep');
         $fulfillmentId = $request->post('fulfillment_id');
+        $expected_price_per_item = $request->post('expected_price_per_item') ?? 0;
         $transaction = null;
         $typeDeliveryPointId = $request->post('type_delivery_point_id');
         (bool) $withProduct = false;
-
+        $currency = $user->settings->currency;
         try {
             $randomManager = User::find()
                 ->select(['id'])
@@ -97,11 +98,10 @@ class OrderController extends ClientController
             $order->status = Order::STATUS_CREATED;
             $order->manager_id = $randomManager->id;
             LogService::log('manager id is set to ' . $randomManager->id);
+            $order->currency = $currency;
 
             $order->type_delivery_point_id = $typeDeliveryPointId;
-            $order->expected_price_per_item = RateService::putInUserCurrency(
-                $request->post('expected_price_per_item', 0),
-            );
+            $order->expected_price_per_item = $expected_price_per_item;
 
             if ((int) $typeDeliveryPointId === TypeDeliveryPoint::TYPE_FULFILLMENT) {
                 $fulfillmentUser = User::find()

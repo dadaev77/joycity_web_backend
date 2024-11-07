@@ -93,14 +93,14 @@ class ProductOutputService extends OutputService
             unset(
                 $info['productLinkAttachments'],
                 // TODO: remove after testing
-                $info['feedback_count'],
-                $info['rating'],
-                $info['buyer_id'],
-                $info['subcategory_id'],
-                $info['is_deleted'],
-                $info['subcategory'],
-                $info['buyer'],
-                $info['attachments'],
+                // $info['feedback_count'],
+                // $info['rating'],
+                // $info['buyer_id'],
+                // $info['subcategory_id'],
+                // $info['is_deleted'],
+                // $info['subcategory'],
+                // $info['buyer'],
+                // $info['attachments'],
             );
 
             return $info;

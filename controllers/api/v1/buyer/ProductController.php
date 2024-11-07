@@ -87,10 +87,12 @@ class ProductController extends BuyerController
             // set buyer id
             $product->buyer_id = $user->id;
             // convert prices to user currency
-            $product->range_1_price = $product->range_1_price ? RateService::putInUserCurrency($product->range_1_price) : $product->range_1_price;
-            $product->range_2_price = $product->range_2_price ? RateService::putInUserCurrency($product->range_2_price) : $product->range_2_price;
-            $product->range_3_price = $product->range_3_price ? RateService::putInUserCurrency($product->range_3_price) : $product->range_3_price;
-            $product->range_4_price = $product->range_4_price ? RateService::putInUserCurrency($product->range_4_price) : $product->range_4_price;
+            $product->range_1_price = $request->post('range_1_price') ?? 0;
+            $product->range_2_price = $request->post('range_2_price') ?? 0;
+            $product->range_3_price = $request->post('range_3_price') ?? 0;
+            $product->range_4_price = $request->post('range_4_price') ?? 0;
+
+            $product->currency = $user->settings->currency;
 
             $productSave = SaveModelService::validateAndSave(
                 $product,
@@ -173,10 +175,11 @@ class ProductController extends BuyerController
                 ),
                 '',
             );
-            $product->range_1_price = $request->post('range_1_price') ? RateService::putInUserCurrency($request->post('range_1_price')) : $product->range_1_price;
-            $product->range_2_price = $request->post('range_2_price') ? RateService::putInUserCurrency($request->post('range_2_price')) : $product->range_2_price;
-            $product->range_3_price = $request->post('range_3_price') ? RateService::putInUserCurrency($request->post('range_3_price')) : $product->range_3_price;
-            $product->range_4_price = $request->post('range_4_price') ? RateService::putInUserCurrency($request->post('range_4_price')) : $product->range_4_price;
+            $product->range_1_price = $request->post('range_1_price') ?? 0;
+            $product->range_2_price = $request->post('range_2_price') ?? 0;
+            $product->range_3_price = $request->post('range_3_price') ?? 0;
+            $product->range_4_price = $request->post('range_4_price') ?? 0;
+            $product->currency = $user->settings->currency;
 
             $productSave = SaveModelService::validateAndSave(
                 $product,

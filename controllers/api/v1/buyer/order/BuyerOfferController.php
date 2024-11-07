@@ -115,6 +115,7 @@ class BuyerOfferController extends BuyerController
                 'product_width' => $params['product_width'],
                 'product_depth' => $params['product_depth'],
                 'product_weight' => $params['product_weight'],
+                'currency' => $user->settings->currency,
             ]);
 
             if (!$buyerOffer->save()) {

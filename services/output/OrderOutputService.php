@@ -9,17 +9,14 @@ use app\services\MarketplaceTransactionService;
 
 // modified services
 use app\services\modificators\price\OrderPrice;
-use app\services\modificators\RateService;
+use app\services\RateService;
+
 
 use app\services\SqlQueryService;
 use Yii;
 
 class OrderOutputService extends OutputService
 {
-    public function __destruct()
-    {
-        Yii::endProfile('OrderOutput');
-    }
     /**
      * @param int $id
      * @param bool $showDeleted
@@ -89,10 +86,9 @@ class OrderOutputService extends OutputService
                 unset($tracking['order_id']);
             }
             unset($tracking);
-
             foreach ($info as $key => $value) {
                 if ($value && (str_starts_with($key, 'price_') || $key === 'expected_price_per_item')) {
-                    $info[$key] = RateService::outputInUserCurrency($value, $info['id']);
+                    $info[$key] = RateService::outputInUserCurrency($value, $info['id'], 'order');
                 }
             }
             foreach ($info['chats'] as &$chat) {
