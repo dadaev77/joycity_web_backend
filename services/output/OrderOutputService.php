@@ -142,7 +142,6 @@ class OrderOutputService extends OutputService
 
             if ($info['buyerOffer']) {
                 foreach ($info['buyerOffer'] as $key => $value) {
-
                     if (
                         $value &&
                         (str_starts_with($key, 'price_') ||
@@ -151,6 +150,7 @@ class OrderOutputService extends OutputService
                         $info['buyerOffer'][$key] = RateService::outputInUserCurrency(
                             $value,
                             $info['id'],
+                            'order'
                         );
                     }
                 }

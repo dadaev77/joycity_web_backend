@@ -57,7 +57,9 @@ class OrderController extends BuyerController
             return ApiResponse::code($apiCodes->NO_ACCESS);
         }
 
-        return ApiResponse::info(OrderOutputService::getEntity($id));
+        return ApiResponse::info(
+            OrderOutputService::getEntity($id)
+        );
     }
 
     public function actionMy(string $type = 'request')
