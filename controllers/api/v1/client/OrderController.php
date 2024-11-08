@@ -237,16 +237,6 @@ class OrderController extends ClientController
                         $conversationManager->reason,
                     );
                 }
-
-                if (!$conversationManagerBuyer->success) {
-                    $transaction?->rollBack();
-                    return ApiResponse::codeErrors(
-                        $apiCodes->ERROR_SAVE,
-                        $conversationManagerBuyer->reason,
-                    );
-                }
-
-                LogService::success('created conversation between manager and buyer');
             } else {
                 $distributionStatus = OrderDistributionService::createDistributionTask($order->id);
                 if (!$distributionStatus->success) {
