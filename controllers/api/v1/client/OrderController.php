@@ -85,6 +85,7 @@ class OrderController extends ClientController
         $typeDeliveryPointId = $request->post('type_delivery_point_id');
         (bool) $withProduct = false;
         $currency = $user->settings->currency;
+
         try {
             $randomManager = User::find()
                 ->select(['id'])
@@ -224,8 +225,8 @@ class OrderController extends ClientController
                  * Create conversation between client, buyer and manager
                  */
                 $conversationManager = ChatConstructorService::createChatOrder(
-                    Chat::GROUP_CLIENT_BUYER,
-                    [$user->id, $buyerId],
+                    Chat::GROUP_CLIENT_BUYER_MANAGER,
+                    [$user->id, $buyerId, $randomManager->id],
                     $order->id,
                 );
 
@@ -236,13 +237,6 @@ class OrderController extends ClientController
                         $conversationManager->reason,
                     );
                 }
-
-                LogService::success('created conversation between client and buyer');
-                $conversationManagerBuyer = ChatConstructorService::createChatOrder(
-                    Chat::GROUP_MANAGER_BUYER,
-                    [$order->manager_id, $buyerId],
-                    $order->id,
-                );
 
                 if (!$conversationManagerBuyer->success) {
                     $transaction?->rollBack();
