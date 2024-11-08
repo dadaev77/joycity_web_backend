@@ -29,7 +29,7 @@ use app\services\twilio\TwilioService as Twilio;
 // curl
 use linslin\yii2\curl\Curl;
 use app\services\TranslationService;
-
+use Exception;
 
 class RawController extends Controller
 {
@@ -175,9 +175,37 @@ class RawController extends Controller
      * AND TO STILL CODE CLEAN
      */
 
-    public function actionTestTraceback()
+    public function actionConversations()
     {
-        Yii::$app->response->format = Response::FORMAT_JSON;
-        return ['status' => 'ok'];
+        try {
+
+            $twilio = \app\services\twilio\TwilioService::getClient();
+            $conversations = $twilio->conversations->v1->conversations->read();
+            echo '<pre>';
+            print_r($conversations);
+            echo '</pre>';
+        } catch (\Exception $e) {
+            return $e->getMessage();
+        }
+    }
+    public function actionCreateChat()
+    {
+        try {
+            // Данные для создания чата
+            $userIds = [1, 2, 3];
+            $verificationId = 123;
+            $group = 'verification_group';
+
+            // Создание чата для верификации
+            $result = \app\services\chat\ChatConstructorService::createChatOrder($group, $userIds, $verificationId);
+
+            if ($result->success) {
+                echo "Чат успешно создан с Twilio ID: " . $result->data->twilio_id . "\n";
+            } else {
+                throw new Exception("Ошибка создания чата: " . json_encode($result->errors));
+            }
+        } catch (Exception $e) {
+            echo "Общая ошибка при создании чата: " . $e->getMessage() . "\n";
+        }
     }
 }

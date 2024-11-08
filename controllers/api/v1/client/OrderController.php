@@ -220,10 +220,12 @@ class OrderController extends ClientController
                     );
                 }
 
-                // Добавить менеджера в чат при созданиии заявки
+                /**
+                 * Create conversation between client, buyer and manager
+                 */
                 $conversationManager = ChatConstructorService::createChatOrder(
                     Chat::GROUP_CLIENT_BUYER,
-                    [$user->id, $buyerId, $randomManager->id],
+                    [$user->id, $buyerId],
                     $order->id,
                 );
 
@@ -308,7 +310,9 @@ class OrderController extends ClientController
                 $order->linkAll('attachments', $attachmentsToLink);
             }
 
-            //Twilio service start
+            /**
+             * Create conversation between client and manager
+             */
             $conversationManager = ChatConstructorService::createChatOrder(
                 Chat::GROUP_CLIENT_MANAGER,
                 [$user->id, $randomManager->id],
