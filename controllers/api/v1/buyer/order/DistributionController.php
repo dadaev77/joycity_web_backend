@@ -106,7 +106,7 @@ class DistributionController extends BuyerController
             }
 
             $conversationClient = ChatConstructorService::createChatOrder(
-                Chat::GROUP_CLIENT_BUYER,
+                Chat::GROUP_CLIENT_BUYER_MANAGER,
                 [$user->id, $order->created_by, $order->manager_id],
                 $order->id,
             );
@@ -120,20 +120,20 @@ class DistributionController extends BuyerController
                 );
             }
 
-            $conversationManager = ChatConstructorService::createChatOrder(
-                Chat::GROUP_MANAGER_BUYER,
-                [$user->id, $order->manager_id],
-                $order->id,
-            );
+            // $conversationManager = ChatConstructorService::createChatOrder(
+            //     Chat::GROUP_MANAGER_BUYER,
+            //     [$user->id, $order->manager_id],
+            //     $order->id,
+            // );
 
-            if (!$conversationManager->success) {
-                $transaction?->rollBack();
+            // if (!$conversationManager->success) {
+            //     $transaction?->rollBack();
 
-                return ApiResponse::codeErrors(
-                    $apiCodes->ERROR_SAVE,
-                    $conversationManager->reason,
-                );
-            }
+            //     return ApiResponse::codeErrors(
+            //         $apiCodes->ERROR_SAVE,
+            //         $conversationManager->reason,
+            //     );
+            // }
 
             $transaction?->commit();
 
