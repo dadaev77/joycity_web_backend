@@ -13,6 +13,8 @@ use app\models\User;
 use app\models\Product;
 use app\models\Order as OrderModel;
 
+use app\services\chat\ChatConstructorService;
+
 // rates service
 use app\services\ExchangeRateService;
 // modificators
@@ -190,22 +192,54 @@ class RawController extends Controller
     }
     public function actionCreateChat()
     {
+        $clientID = 2;
+        $managerID = 5;
+        $buyerID = 11;
+        $fulfilmentID = 20;
+        $orderID = 43;
+
         try {
-            // Данные для создания чата
-            $userIds = [1, 2, 3];
-            $verificationId = 123;
-            $group = 'verification_group';
+            $client_manager = ChatConstructorService::createChatOrder(
+                Chat::GROUP_CLIENT_MANAGER,
+                [$clientID, $managerID],
+                $orderID ?? null,
+            );
 
-            // Создание чата для верификации
-            $result = \app\services\chat\ChatConstructorService::createChatOrder($group, $userIds, $verificationId);
+            $client_manager_buyer = ChatConstructorService::createChatOrder(
+                Chat::GROUP_CLIENT_BUYER_MANAGER,
+                [$clientID, $buyerID, $managerID],
+                $orderID ?? null,
+            );
 
-            if ($result->success) {
-                echo "Чат успешно создан с Twilio ID: " . $result->data->twilio_id . "\n";
+            $client_fulfilment_manager = ChatConstructorService::createChatOrder(
+                Chat::GROUP_CLIENT_FULFILMENT_MANAGER,
+                [$clientID, $fulfilmentID, $managerID],
+                $orderID ?? null,
+            );
+
+            if ($client_manager->success) {
+                echo "Чат [client_manager] успешно создан с Twilio ID: " . $client_manager->data->twilio_id . "\n";
             } else {
-                throw new Exception("Ошибка создания чата: " . json_encode($result->errors));
+                throw new Exception("Ошибка создания чата [client_manager]: " . json_encode($client_manager->errors));
+            }
+
+            if ($client_manager_buyer->success) {
+                echo "Чат [client_manager_buyer] успешно создан с Twilio ID: " . $client_manager_buyer->data->twilio_id . "\n";
+            } else {
+                throw new Exception("Ошибка создания чата [client_manager_buyer]: " . json_encode($client_manager_buyer->errors));
+            }
+
+            if ($client_fulfilment_manager->success) {
+                echo "Чат [client_fulfilment_manager] успешно создан с Twilio ID: " . $client_fulfilment_manager->data->twilio_id . "\n";
+            } else {
+                throw new Exception("Ошибка создания чата [client_fulfilment_manager]: " . json_encode($client_fulfilment_manager->errors));
             }
         } catch (Exception $e) {
-            echo "Общая ошибка при создании чата: " . $e->getMessage() . "\n";
+            return [
+                'client_manager' => $client_manager->reason,
+                'client_manager_buyer' => $client_manager_buyer->reason,
+                'client_fulfilment_manager' => $client_fulfilment_manager->reason,
+            ];
         }
     }
 }
