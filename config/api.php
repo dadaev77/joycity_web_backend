@@ -15,6 +15,7 @@ $config = [
     'modules' => [
         'debug' => [
             'class' => 'yii\debug\Module',
+            'allowedIPs' => ['*'],
         ]
     ],
     'defaultRoute' => 'api',
