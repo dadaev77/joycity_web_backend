@@ -13,10 +13,10 @@ $config = [
     'timeZone' => 'Europe/Moscow',
     'bootstrap' => ['debug'],
     'modules' => [
-        // 'debug' => [
-        //     'class' => 'yii\debug\Module',
-        //     'allowedIPs' => ['*'],
-        // ]
+        'debug' => [
+            'class' => 'yii\debug\Module',
+            'allowedIPs' => ['*'],
+        ]
     ],
     'defaultRoute' => 'api',
     'language' => 'ru-RU',
