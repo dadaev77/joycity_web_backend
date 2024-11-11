@@ -70,9 +70,7 @@ class VerificationController extends ClientController
                 'manager_id' => $randomManager->id,
                 'created_at' => date('Y-m-d H:i:s'),
                 'status' => UserVerificationRequest::STATUS_WAITING,
-                'amount' => RateService::convertRUBtoCNY(
-                    Yii::$app->params['verificationAmount'],
-                ),
+                'amount' => Yii::$app->params['verificationAmount'],
             ]);
 
             $transaction = Yii::$app->db->beginTransaction();
