@@ -34,9 +34,10 @@ class UserVerificationRequestOutputService extends OutputService
 
         return array_map(static function ($model) {
             $info = ModelTypeHelper::toArray($model);
-            $info['amount'] = RateService::outputInUserCurrency(
-                $info['amount'],
-            );
+            // $info['amount'] = RateService::outputInUserCurrency(
+            //     $info['amount'],
+
+            // );
 
             unset(
                 $info['created_by_id'],
