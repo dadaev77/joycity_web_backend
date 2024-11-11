@@ -59,6 +59,8 @@ class OrderPrice extends OrderPriceService
             if (empty($lastOffer)) return self::defaultOutput();
 
             return self::calcOrderPrices($params);
+            // TODO: add logic for order statuses
+
         } catch (Throwable $th) {
             Log::danger(self::logError('OrderPrice::calculateOrderPrices', $th));
             return self::defaultOutput();
@@ -130,6 +132,7 @@ class OrderPrice extends OrderPriceService
     private static function calcOrderPrices(array $params): array
     {
         $currency = \Yii::$app->user->getIdentity()->getSettings()->currency;
+        Log::info('OrderPrice::calcOrderPrices params: ' . json_encode($params) . ' currency: ' . $currency);
         $out = self::defaultOutput();
 
         $isTypePackaging = $params['calculationType'] === self::TYPE_CALCULATION_PACKAGING;
