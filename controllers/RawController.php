@@ -66,6 +66,7 @@ class RawController extends Controller
         $this->enableCsrfValidation = ($action->id == "acceptFrontLogs");
         return parent::beforeAction($action);
     }
+
     public function actionLog()
     {
         $logs = file_exists(self::LOG_FILE) ? file_get_contents(self::LOG_FILE) : 'Log file not found';
@@ -114,6 +115,7 @@ class RawController extends Controller
             'serverErrorLogs' => $serverErrorLogs,
         ], false);
     }
+
     public function actionClearLog()
     {
         if (file_put_contents(__DIR__ . '/../runtime/logs/app.log', '')) {
@@ -157,6 +159,7 @@ class RawController extends Controller
         }
         return $response;
     }
+
     public function actionFetchChats()
     {
         $client = new Client(
@@ -169,13 +172,6 @@ class RawController extends Controller
         $participiants = $client->conversations->v1->conversations($chatSid)->participants->read();
         return $participiants;
     }
-
-
-    /**
-     * PLESASE PLACE TEST METHODS UNDER THIS COMMENT
-     * TO SAVE TIME FOR DEVELOPERS
-     * AND TO STILL CODE CLEAN
-     */
 
     public function actionConversations()
     {
@@ -190,6 +186,7 @@ class RawController extends Controller
             return $e->getMessage();
         }
     }
+
     public function actionCreateChat()
     {
         $clientID = 2;

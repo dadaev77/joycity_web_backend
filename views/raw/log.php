@@ -32,7 +32,7 @@
                             </li>
                             -->
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="frontend-tab" data-bs-toggle="tab" data-bs-target="#frontend" type="button" role="tab" aria-controls="frontend" aria-selected="false">Frontend Logs</button>
+                                <button class="nav-link active" id="frontend-tab" data-bs-toggle="tab" data-bs-target="#frontend" type="button" role="tab" aria-controls="frontend" aria-selected="false">Frontend Logs</button>
                             </li>
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="invoices-tab" data-bs-toggle="tab" data-bs-target="#invoices" type="button" role="tab" aria-controls="invoices" aria-selected="false">Action Logs</button>
@@ -56,7 +56,7 @@
                                 </div>
                             </div>
                             -->
-                            <div class="tab-pane fade" id="frontend" role="tabpanel" aria-labelledby="frontend-tab">
+                            <div class="tab-pane fade show active" id="frontend" role="tabpanel" aria-labelledby="frontend-tab">
                                 <div style="white-space: wrap; word-break: break-all; font-size: 12px;" id="frontend-logs">
                                     <div class="mb-4">
                                         <a href="/raw/clear-frontend-logs" class="btn btn-primary btn-sm">clear frontend logs</a>
