@@ -67,13 +67,21 @@ class RawController extends Controller
         return parent::beforeAction($action);
     }
 
+    /**
+     * @OA\Get(
+     *     path="/raw/log",
+     *     summary="Получить логи",
+     *     @OA\Response(response="200", description="Логи успешно получены"),
+     *     @OA\Response(response="404", description="Файлы логов не найдены")
+     * )
+     */
     public function actionLog()
     {
-        $logs = file_exists(self::LOG_FILE) ? file_get_contents(self::LOG_FILE) : 'Log file not found';
-        $frontLogs = file_exists(self::FRONT_LOG_FILE) ? file_get_contents(self::FRONT_LOG_FILE) : 'Front log file not found';
-        $actionLogs = file_exists(self::ACTION_LOG_FILE) ? file_get_contents(self::ACTION_LOG_FILE) : 'Action log file not found';
-        $serverAccessLogs = 'Server access log file not found';
-        $serverErrorLogs = 'Server error log file not found';
+        $logs = file_exists(self::LOG_FILE) ? file_get_contents(self::LOG_FILE) : 'Файл лога не найден';
+        $frontLogs = file_exists(self::FRONT_LOG_FILE) ? file_get_contents(self::FRONT_LOG_FILE) : 'Файл фронт-логов не найден';
+        $actionLogs = file_exists(self::ACTION_LOG_FILE) ? file_get_contents(self::ACTION_LOG_FILE) : 'Файл логов действий не найден';
+        $serverAccessLogs = 'Файл логов доступа сервера не найден';
+        $serverErrorLogs = 'Файл логов ошибок сервера не найден';
         $clients = User::find()->where(['role' => 'client'])->orderBy(['id' => SORT_DESC])->all();
         $managers = User::find()->where(['role' => 'manager'])->orderBy(['id' => SORT_DESC])->all();
         $fulfillment = User::find()->where(['role' => 'fulfillment'])->orderBy(['id' => SORT_DESC])->all();
@@ -116,6 +124,14 @@ class RawController extends Controller
         ], false);
     }
 
+    /**
+     * @OA\Post(
+     *     path="/raw/clear-log",
+     *     summary="Очистить лог приложения",
+     *     @OA\Response(response="200", description="Лог очищен"),
+     *     @OA\Response(response="500", description="Ошибка очистки лога")
+     * )
+     */
     public function actionClearLog()
     {
         if (file_put_contents(__DIR__ . '/../runtime/logs/app.log', '')) {
@@ -124,6 +140,14 @@ class RawController extends Controller
         return 'error';
     }
 
+    /**
+     * @OA\Post(
+     *     path="/raw/accept-front-logs",
+     *     summary="Принять фронт-логи",
+     *     @OA\Response(response="200", description="Логи успешно приняты"),
+     *     @OA\Response(response="500", description="Не удалось добавить логи")
+     * )
+     */
     public function actionAcceptFrontLogs()
     {
         $response = Yii::$app->response;
@@ -148,18 +172,26 @@ class RawController extends Controller
             $response->statusCode = 200;
             $response->data = [
                 'status' => 'ok',
-                'message' => 'Logs prepended successfully'
+                'message' => 'Логи успешно добавлены'
             ];
         } else {
             $response->statusCode = 500;
             $response->data = [
                 'status' => 'error',
-                'message' => 'Failed to prepend logs'
+                'message' => 'Не удалось добавить логи'
             ];
         }
         return $response;
     }
 
+    /**
+     * @OA\Get(
+     *     path="/raw/fetch-chats",
+     *     summary="Получить чаты из Twilio",
+     *     @OA\Response(response="200", description="Чаты успешно получены"),
+     *     @OA\Response(response="404", description="Чат не найден")
+     * )
+     */
     public function actionFetchChats()
     {
         $client = new Client(
@@ -173,10 +205,17 @@ class RawController extends Controller
         return $participiants;
     }
 
+    /**
+     * @OA\Get(
+     *     path="/raw/conversations",
+     *     summary="Получить разговоры Twilio",
+     *     @OA\Response(response="200", description="Разговоры успешно получены"),
+     *     @OA\Response(response="500", description="Ошибка получения разговоров")
+     * )
+     */
     public function actionConversations()
     {
         try {
-
             $twilio = \app\services\twilio\TwilioService::getClient();
             $conversations = $twilio->conversations->v1->conversations->read();
             echo '<pre>';
@@ -187,6 +226,14 @@ class RawController extends Controller
         }
     }
 
+    /**
+     * @OA\Post(
+     *     path="/raw/create-chat",
+     *     summary="Создать чат",
+     *     @OA\Response(response="200", description="Чат успешно создан"),
+     *     @OA\Response(response="500", description="Ошибка создания чата")
+     * )
+     */
     public function actionCreateChat()
     {
         $clientID = 2;

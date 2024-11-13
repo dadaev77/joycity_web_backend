@@ -22,6 +22,14 @@ class TypeDeliveryLinkCategoryController extends InternalController
         return $behaviors;
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/internal/constants/type-delivery-link-category",
+     *     tags={"TypeDeliveryLinkCategory"},
+     *     summary="Get list of type delivery link categories",
+     *     @OA\Response(response="200", description="Successful response")
+     * )
+     */
     public function actionIndex($type_delivery_id = null, $category_id = null)
     {
         try {
@@ -54,6 +62,16 @@ class TypeDeliveryLinkCategoryController extends InternalController
         }
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/internal/constants/type-delivery-link-category/create",
+     *     tags={"TypeDeliveryLinkCategory"},
+     *     summary="Create a new type delivery link category",
+     *     @OA\Response(response="200", description="Type delivery link category created successfully"),
+     *     @OA\Response(response="400", description="Validation error"),
+     *     @OA\Response(response="500", description="Internal server error")
+     * )
+     */
     public function actionCreate()
     {
         try {
@@ -98,6 +116,18 @@ class TypeDeliveryLinkCategoryController extends InternalController
         }
     }
 
+
+    /**
+     * @OA\Delete(
+     *     path="/api/v1/internal/constants/type-delivery-link-category/delete/{id}",
+     *     tags={"TypeDeliveryLinkCategory"},
+     *     summary="Delete a type delivery link category",
+     *     @OA\Parameter(name="id", in="path", required=true, description="Type Delivery Link Category ID", @OA\Schema(type="integer")),
+     *     @OA\Response(response="200", description="Type delivery link category deleted successfully"),
+     *     @OA\Response(response="404", description="Type delivery link category not found"),
+     *     @OA\Response(response="500", description="Internal server error")
+     * )
+     */
     public function actionDelete(int $id)
     {
         try {

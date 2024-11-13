@@ -17,10 +17,26 @@ class ChatController extends FulfillmentController
     {
         $behaviors = parent::behaviors();
         $behaviors['verbFilter']['actions']['index'] = ['get'];
+        $behaviors['verbFilter']['actions']['search'] = ['post'];
+        $behaviors['verbFilter']['actions']['getChat'] = ['post'];
 
         return $behaviors;
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/fulfillment/chat",
+     *     summary="Получить список чатов",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Внутренняя ошибка сервера"
+     *     )
+     * )
+     */
     public function actionIndex()
     {
         try {
@@ -54,6 +70,29 @@ class ChatController extends FulfillmentController
             return ApiResponse::internalError($e);
         }
     }
+
+    /**
+     * @OA\Post(
+     *     path="/api/v1/fulfillment/chat/search",
+     *     summary="Поиск заказов по запросу",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ"
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Не авторизован"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Неверный запрос"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Не найдено"
+     *     )
+     * )
+     */
     public function actionSearch()
     {
         // define variables
@@ -99,6 +138,28 @@ class ChatController extends FulfillmentController
         return ApiResponse::collection($result);
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/fulfillment/chat/get-chat",
+     *     summary="Получить чаты для заказа",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ"
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Не авторизован"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Неверный запрос"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Не найдено"
+     *     )
+     * )
+     */
     public function actionGetChat()
     {
         // define variables

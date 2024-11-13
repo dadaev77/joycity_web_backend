@@ -34,6 +34,36 @@ class BuyerOfferController extends ManagerController
         return $behaviors;
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/v1/manager/order/buyer-offer/paid/{id}",
+     *     summary="Отметить предложение покупателя как оплаченное",
+     *     tags={"BuyerOffer"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID предложения покупателя",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Предложение покупателя успешно отмечено как оплаченное"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Предложение покупателя не найдено"
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Нет доступа к предложению"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Внутренняя ошибка сервера"
+     *     )
+     * )
+     */
     public function actionPaid(int $id)
     {
         $apiCodes = Order::apiCodes();
@@ -182,6 +212,43 @@ class BuyerOfferController extends ManagerController
         }
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/v1/manager/order/buyer-offer/update/{id}",
+     *     summary="Обновить предложение покупателя",
+     *     tags={"BuyerOffer"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID предложения покупателя",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="price_product", type="number", example=100.0),
+     *             @OA\Property(property="total_quantity", type="integer", example=10)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Предложение покупателя успешно обновлено"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Предложение покупателя не найдено"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Ошибка валидации параметров"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Внутренняя ошибка сервера"
+     *     )
+     * )
+     */
     public function actionUpdate(int $id)
     {
         $apiCodes = Order::apiCodes();

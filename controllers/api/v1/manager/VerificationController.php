@@ -23,6 +23,28 @@ class VerificationController extends ManagerController
         return $behaviors;
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/manager/view/{id}",
+     *     summary="Просмотр запроса на верификацию",
+     *     tags={"Verification"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID запроса на верификацию",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешно получен запрос на верификацию"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Запрос на верификацию не найден"
+     *     )
+     * )
+     */
     public function actionView(int $id)
     {
         $apiCodes = UserVerificationRequest::apiCodes();
@@ -38,6 +60,17 @@ class VerificationController extends ManagerController
         );
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/manager/index",
+     *     summary="Получить список запросов на верификацию",
+     *     tags={"Verification"},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешно получен список запросов на верификацию"
+     *     )
+     * )
+     */
     public function actionIndex()
     {
         $apiCodes = UserVerificationRequest::apiCodes();
@@ -55,6 +88,36 @@ class VerificationController extends ManagerController
         );
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/v1/manager/approve/{id}",
+     *     summary="Одобрить запрос на верификацию",
+     *     tags={"Verification"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID запроса на верификацию",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Запрос на верификацию успешно одобрен"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Запрос на верификацию не найден"
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Запрос уже одобрен"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Внутренняя ошибка сервера"
+     *     )
+     * )
+     */
     public function actionApprove(int $id)
     {
         $apiCodes = UserVerificationRequest::apiCodes();

@@ -26,6 +26,28 @@ class MarketplaceTransactionController extends FulfillmentController
         return $behaviors;
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/fulfillment/order/marketplace-transaction/create",
+     *     summary="Создать транзакцию на маркетплейсе",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Неверный запрос"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Заказ не найден"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Внутренняя ошибка сервера"
+     *     )
+     * )
+     */
     public function actionCreate()
     {
         try {

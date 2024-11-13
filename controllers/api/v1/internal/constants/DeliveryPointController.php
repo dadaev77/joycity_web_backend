@@ -22,6 +22,14 @@ class DeliveryPointController extends InternalController
         return $behaviors;
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/internal/constants/delivery-point",
+     *     tags={"DeliveryPoint"},
+     *     summary="Get list of delivery points",
+     *     @OA\Response(response="200", description="Successful response")
+     * )
+     */
     public function actionIndex()
     {
         $typeDeliveryPoint = TypeDeliveryPoint::find();
@@ -33,6 +41,16 @@ class DeliveryPointController extends InternalController
         );
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/internal/constants/delivery-point/create",
+     *     tags={"DeliveryPoint"},
+     *     summary="Create a new delivery point",
+     *     @OA\Response(response="200", description="Delivery point created successfully"),
+     *     @OA\Response(response="400", description="Validation error"),
+     *     @OA\Response(response="500", description="Internal server error")
+     * )
+     */
     public function actionCreate()
     {
         $apiCodes = TypeDeliveryPoint::apiCodes();
@@ -74,6 +92,18 @@ class DeliveryPointController extends InternalController
         }
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/v1/internal/constants/delivery-point/update/{id}",
+     *     tags={"DeliveryPoint"},
+     *     summary="Update an existing delivery point",
+     *     @OA\Parameter(name="id", in="path", required=true, description="Delivery Point ID", @OA\Schema(type="integer")),
+     *     @OA\Response(response="200", description="Delivery point updated successfully"),
+     *     @OA\Response(response="404", description="Delivery point not found"),
+     *     @OA\Response(response="400", description="Validation error"),
+     *     @OA\Response(response="500", description="Internal server error")
+     * )
+     */
     public function actionUpdate(int $id)
     {
         $apiCodes = TypeDeliveryPoint::apiCodes();
@@ -106,6 +136,50 @@ class DeliveryPointController extends InternalController
 
                 return ApiResponse::codeErrors(
                     $apiCodes->ERROR_SAVE,
+                    $typeDeliveryPoint->getFirstErrors(),
+                );
+            }
+
+            $transaction?->commit();
+
+            return ApiResponse::info(
+                TypeDeliveryPointOutputService::getEntity(
+                    $typeDeliveryPoint->id,
+                ),
+            );
+        } catch (Throwable $e) {
+            $transaction?->rollBack();
+            return ApiResponse::internalError($e);
+        }
+    }
+
+    /**
+     * @OA\Delete(
+     *     path="/api/v1/internal/constants/delivery-point/delete/{id}",
+     *     tags={"DeliveryPoint"},
+     *     summary="Delete a delivery point",
+     *     @OA\Parameter(name="id", in="path", required=true, description="Delivery Point ID", @OA\Schema(type="integer")),
+     *     @OA\Response(response="200", description="Delivery point deleted successfully"),
+     *     @OA\Response(response="404", description="Delivery point not found"),
+     *     @OA\Response(response="500", description="Internal server error")
+     * )
+     */
+    public function actionDelete(int $id)
+    {
+        $apiCodes = TypeDeliveryPoint::apiCodes();
+        $typeDeliveryPoint = TypeDeliveryPoint::findOne(['id' => $id]);
+
+        if (!$typeDeliveryPoint) {
+            return ApiResponse::code($apiCodes->NOT_FOUND);
+        }
+
+        $transaction = Yii::$app->db->beginTransaction();
+
+        try {
+            if (!$typeDeliveryPoint->delete()) {
+                $transaction?->rollBack();
+                return ApiResponse::codeErrors(
+                    $apiCodes->ERROR_DELETE,
                     $typeDeliveryPoint->getFirstErrors(),
                 );
             }

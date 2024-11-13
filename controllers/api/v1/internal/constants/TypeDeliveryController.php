@@ -23,6 +23,14 @@ class TypeDeliveryController extends InternalController
         return $behaviors;
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/internal/constants/type-delivery/",
+     *     tags={"TypeDelivery"},
+     *     summary="Get list of type deliveries",
+     *     @OA\Response(response="200", description="Successful response")
+     * )
+     */
     public function actionIndex()
     {
         try {
@@ -36,6 +44,16 @@ class TypeDeliveryController extends InternalController
         }
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/internal/constants/type-delivery/create",
+     *     tags={"TypeDelivery"},
+     *     summary="Create a new type delivery",
+     *     @OA\Response(response="200", description="Type delivery created successfully"),
+     *     @OA\Response(response="400", description="Validation error"),
+     *     @OA\Response(response="500", description="Internal server error")
+     * )
+     */
     public function actionCreate()
     {
         try {
@@ -60,7 +78,7 @@ class TypeDeliveryController extends InternalController
 
                 return ApiResponse::code($apiCodes->ERROR_SAVE, [
                     'type_delivery_prices' =>
-                        'Failed to save price range for type delivery',
+                    'Failed to save price range for type delivery',
                 ]);
             }
 
@@ -78,6 +96,18 @@ class TypeDeliveryController extends InternalController
         }
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/v1/internal/constants/type-delivery/update/{id}",
+     *     tags={"TypeDelivery"},
+     *     summary="Update an existing type delivery",
+     *     @OA\Parameter(name="id", in="path", required=true, description="Type Delivery ID", @OA\Schema(type="integer")),
+     *     @OA\Response(response="200", description="Type delivery updated successfully"),
+     *     @OA\Response(response="404", description="Type delivery not found"),
+     *     @OA\Response(response="400", description="Validation error"),
+     *     @OA\Response(response="500", description="Internal server error")
+     * )
+     */
     public function actionUpdate(int $id)
     {
         try {

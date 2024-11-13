@@ -40,6 +40,16 @@ class DistributionController extends BuyerController
         return $behaviors;
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/buyer/order/distribution/status",
+     *     summary="Получить статус активных задач для текущего пользователя",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ с коллекцией активных задач"
+     *     )
+     * )
+     */
     public function actionStatus()
     {
         $user = User::getIdentity();
@@ -63,6 +73,31 @@ class DistributionController extends BuyerController
         return ApiResponse::collection($activeTasks);
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/v1/buyer/order/distribution/accept/{id}",
+     *     summary="Принять задачу по ID для текущего пользователя",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID задачи для принятия",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ с информацией о принятой задаче"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Задача не найдена"
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Нет доступа к задаче"
+     *     )
+     * )
+     */
     public function actionAccept(int $id)
     {
         $apiCodes = OrderDistribution::apiCodes();
@@ -147,6 +182,27 @@ class DistributionController extends BuyerController
         }
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/v1/buyer/order/distribution/decline/{id}",
+     *     summary="Отклонить задачу по ID для текущего пользователя",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID задачи для отклонения",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ о том, что задача отклонена"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Задача не найдена"
+     *     )
+     * )
+     */
     public function actionDecline(int $id)
     {
         $apiCodes = OrderDistribution::apiCodes();
@@ -178,6 +234,23 @@ class DistributionController extends BuyerController
         }
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/buyer/order/distribution/cache-key/{userId}",
+     *     summary="Сгенерировать ключ кэша для задач распределения пользователя",
+     *     @OA\Parameter(
+     *         name="userId",
+     *         in="path",
+     *         required=true,
+     *         description="ID пользователя",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Ключ кэша для задач распределения"
+     *     )
+     * )
+     */
     private static function getCacheKey(int $userId): string
     {
         return str_replace(

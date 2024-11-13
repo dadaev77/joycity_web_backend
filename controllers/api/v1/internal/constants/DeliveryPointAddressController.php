@@ -17,10 +17,19 @@ class DeliveryPointAddressController extends InternalController
         $behaviors['verbFilter']['actions']['index'] = ['get'];
         $behaviors['verbFilter']['actions']['create'] = ['post'];
         $behaviors['verbFilter']['actions']['update'] = ['put'];
+        $behaviors['verbFilter']['actions']['delete'] = ['delete'];
 
         return $behaviors;
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/internal/constants/delivery-point-address",
+     *     tags={"DeliveryPointAddress"},
+     *     summary="Get list of delivery point addresses",
+     *     @OA\Response(response="200", description="Successful response")
+     * )
+     */
     public function actionIndex()
     {
         $typeDeliveryPoint = DeliveryPointAddress::find();
@@ -32,6 +41,16 @@ class DeliveryPointAddressController extends InternalController
         );
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/internal/constants/delivery-point-address",
+     *     tags={"DeliveryPointAddress"},
+     *     summary="Create a new delivery point address",
+     *     @OA\Response(response="200", description="Delivery point address created successfully"),
+     *     @OA\Response(response="400", description="Validation error"),
+     *     @OA\Response(response="500", description="Internal server error")
+     * )
+     */
     public function actionCreate()
     {
         $deliveryPointAddress = new DeliveryPointAddress();
@@ -55,6 +74,18 @@ class DeliveryPointAddressController extends InternalController
         );
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/v1/internal/constants/delivery-point-address/{id}",
+     *     tags={"DeliveryPointAddress"},
+     *     summary="Update an existing delivery point address",
+     *     @OA\Parameter(name="id", in="path", required=true, description="Delivery Point Address ID", @OA\Schema(type="integer")),
+     *     @OA\Response(response="200", description="Delivery point address updated successfully"),
+     *     @OA\Response(response="404", description="Delivery point address not found"),
+     *     @OA\Response(response="400", description="Validation error"),
+     *     @OA\Response(response="500", description="Internal server error")
+     * )
+     */
     public function actionUpdate(int $id)
     {
         $apiCodes = DeliveryPointAddress::apiCodes();
@@ -78,6 +109,18 @@ class DeliveryPointAddressController extends InternalController
             ),
         );
     }
+
+    /**
+     * @OA\Delete(
+     *     path="/api/v1/internal/constants/delivery-point-address/{id}",
+     *     tags={"DeliveryPointAddress"},
+     *     summary="Delete a delivery point address",
+     *     @OA\Parameter(name="id", in="path", required=true, description="Delivery Point Address ID", @OA\Schema(type="integer")),
+     *     @OA\Response(response="200", description="Delivery point address deleted successfully"),
+     *     @OA\Response(response="404", description="Delivery point address not found"),
+     *     @OA\Response(response="500", description="Internal server error")
+     * )
+     */
     public function actionDelete(int $id)
     {
         $apiCodes = DeliveryPointAddress::apiCodes();

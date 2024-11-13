@@ -32,6 +32,24 @@ class ReportController extends FulfillmentController
         return $behaviors;
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/fulfillment/report/submit-stock-report",
+     *     summary="Отправить отчет о запасах",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Неверный запрос"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Внутренняя ошибка сервера"
+     *     )
+     * )
+     */
     public function actionSubmitStockReport()
     {
         try {
@@ -153,6 +171,24 @@ class ReportController extends FulfillmentController
         }
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/fulfillment/report/submit-inspection",
+     *     summary="Отправить отчет о проверке",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Неверный запрос"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Внутренняя ошибка сервера"
+     *     )
+     * )
+     */
     public function actionSubmitInspection()
     {
         try {
@@ -226,6 +262,24 @@ class ReportController extends FulfillmentController
         }
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/fulfillment/report/submit-packaging-report",
+     *     summary="Отправить отчет о упаковке",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Неверный запрос"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Внутренняя ошибка сервера"
+     *     )
+     * )
+     */
     public function actionSubmitPackagingReport()
     {
         try {
@@ -245,7 +299,7 @@ class ReportController extends FulfillmentController
 
             if (
                 $order->status !==
-                    Order::STATUS_FULFILLMENT_INSPECTION_COMPLETE ||
+                Order::STATUS_FULFILLMENT_INSPECTION_COMPLETE ||
                 $order->fulfillment_id !== $user->id
             ) {
                 return ApiResponse::code($apiCodes->NO_ACCESS);
@@ -304,7 +358,8 @@ class ReportController extends FulfillmentController
 
                     return ApiResponse::codeErrors(
                         $apiCodes->INTERNAL_ERROR,
-                        ['images' => 'Не удалось сохранить картинку']);
+                        ['images' => 'Не удалось сохранить картинку']
+                    );
                 }
 
                 $stockReport->linkAll(

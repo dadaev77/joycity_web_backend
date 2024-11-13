@@ -23,10 +23,31 @@ class ChatController extends ManagerController
     {
         $behaviors = parent::behaviors();
         $behaviors['verbFilter']['actions']['index'] = ['get'];
+        $behaviors['verbFilter']['actions']['search'] = ['get'];
+        $behaviors['verbFilter']['actions']['getChat'] = ['get'];
 
         return $behaviors;
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/manager/chat",
+     *     summary="Получить список чатов",
+     *     tags={"Chat"},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Список чатов успешно получен"
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Не авторизован"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Неверный запрос"
+     *     )
+     * )
+     */
     public function actionIndex()
     {
         // define vars
@@ -56,6 +77,29 @@ class ChatController extends ManagerController
             return ApiResponse::internalError($e);
         }
     }
+    /**
+     * @OA\Get(
+     *     path="/api/v1/manager/chat/search",
+     *     summary="Поиск заказов по запросу",
+     *     tags={"Chat"},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Результаты поиска успешно получены"
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Не авторизован"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Неверный запрос"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Заказы не найдены"
+     *     )
+     * )
+     */
     public function actionSearch()
     {
         // define variables
@@ -105,6 +149,29 @@ class ChatController extends ManagerController
 
         return ApiResponse::collection($result);
     }
+    /**
+     * @OA\Get(
+     *     path="/api/v1/manager/chat/getChat",
+     *     summary="Получить чаты для заказа",
+     *     tags={"Chat"},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Чаты успешно получены"
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Не авторизован"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Неверный запрос"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Чаты не найдены"
+     *     )
+     * )
+     */
     public function actionGetChat()
     {
         // define variables

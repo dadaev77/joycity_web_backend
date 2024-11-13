@@ -28,6 +28,27 @@ class OrderController extends FulfillmentController
         return $behaviors;
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/fulfillment/order/view/{id}",
+     *     summary="Просмотр заказа",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID заказа",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Заказ не найден"
+     *     )
+     * )
+     */
     public function actionView(int $id)
     {
         $apiCodes = Order::apiCodes();
@@ -54,6 +75,16 @@ class OrderController extends FulfillmentController
         );
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/fulfillment/order/my",
+     *     summary="Получить мои заказы",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ"
+     *     )
+     * )
+     */
     public function actionMy()
     {
         $user = User::getIdentity();
@@ -74,6 +105,27 @@ class OrderController extends FulfillmentController
         );
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/v1/fulfillment/order/arrived-to-fulfilment/{id}",
+     *     summary="Заказ прибыл на выполнение",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID заказа",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Заказ не найден"
+     *     )
+     * )
+     */
     public function actionArrivedToFulfilment(int $id)
     {
         try {
@@ -109,6 +161,27 @@ class OrderController extends FulfillmentController
         }
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/v1/fulfillment/order/ready-transferring-marketplace/{id}",
+     *     summary="Готов к передаче на рынок",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID заказа",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Заказ не найден"
+     *     )
+     * )
+     */
     public function actionReadyTransferringMarketplace(int $id)
     {
         try {
@@ -163,6 +236,16 @@ class OrderController extends FulfillmentController
         }
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/fulfillment/order/history",
+     *     summary="История заказов",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ"
+     *     )
+     * )
+     */
     public function actionHistory()
     {
         $user = User::getIdentity();
@@ -182,7 +265,27 @@ class OrderController extends FulfillmentController
             ),
         );
     }
-
+    /**
+     * @OA\Put(
+     *     path="/api/v1/fulfillment/order/finish-order/{id}",
+     *     summary="Завершить заказ",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID заказа",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Заказ не найден"
+     *     )
+     * )
+     */
     public function actionFinishOrder(int $id)
     {
         $apiCodes = Order::apiCodes();

@@ -21,6 +21,40 @@ class MarketplaceTransactionController extends ManagerController
         return $behaviors;
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/v1/manager/order/marketplace-transaction/accept/{id}",
+     *     summary="Принять транзакцию на маркетплейсе",
+     *     tags={"MarketplaceTransaction"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID транзакции на маркетплейсе",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Транзакция на маркетплейсе успешно принята"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Транзакция на маркетплейсе не найдена"
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Нет доступа к транзакции на маркетплейсе"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Ошибка валидации параметров"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Внутренняя ошибка сервера"
+     *     )
+     * )
+     */
     public function actionAccept($id)
     {
         try {
@@ -39,7 +73,7 @@ class MarketplaceTransactionController extends ManagerController
             if (
                 $order->manager_id !== $user->id ||
                 $marketplaceTransaction->status ===
-                    FulfillmentMarketplaceTransaction::STATUS_PAID
+                FulfillmentMarketplaceTransaction::STATUS_PAID
             ) {
                 return ApiResponse::code($apiCodes->NO_ACCESS);
             }

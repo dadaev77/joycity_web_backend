@@ -11,9 +11,9 @@ class BuyerController extends BuyerControllerParent
 {
     public function __construct()
     {
-        // return 'buyer controller';
-        // die;
+        //
     }
+
     public function behaviors()
     {
         $behaviours = parent::behaviors();
@@ -23,13 +23,38 @@ class BuyerController extends BuyerControllerParent
         return $behaviours;
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/buyer/view/{id}",
+     *     summary="Получение информации о покупателе",
+     *     description="Этот метод возвращает информацию о покупателе по его ID.",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Информация о покупателе",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Покупатель не найден",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Покупатель не найден")
+     *         )
+     *     )
+     * )
+     */
     public function actionView(int $id)
     {
         $apiCodes = User::apiCodes();
-        $isset = User::isset([
-            'id' => $id,
-            'role' => User::ROLE_BUYER || User::ROLE_BUYER_DEMO,
-        ]);
+        $isset = User::isset(['id' => $id, 'role' => User::ROLE_BUYER || User::ROLE_BUYER_DEMO]);
         if (!$isset) {
             return ApiResponse::code($apiCodes->NOT_FOUND);
         }
@@ -37,13 +62,38 @@ class BuyerController extends BuyerControllerParent
         return ApiResponse::info(BuyerOutputService::getEntity($id));
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/buyer/buyer/{id}",
+     *     summary="Получение информации о покупателе (другой метод)",
+     *     description="Этот метод возвращает информацию о покупателе по его ID.",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Информация о покупателе",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Покупатель не найден",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Покупатель не найден")
+     *         )
+     *     )
+     * )
+     */
     public function actionBuyer(int $id)
     {
         $apiCodes = User::apiCodes();
-        $isset = User::isset([
-            'id' => $id,
-            'role' => User::ROLE_BUYER || User::ROLE_BUYER_DEMO,
-        ]);
+        $isset = User::isset(['id' => $id, 'role' => User::ROLE_BUYER || User::ROLE_BUYER_DEMO]);
         if (!$isset) {
             return ApiResponse::code($apiCodes->NOT_FOUND);
         }

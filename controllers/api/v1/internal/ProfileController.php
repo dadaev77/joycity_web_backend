@@ -17,6 +17,21 @@ class ProfileController extends InternalController
         return $behaviors;
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/internal/profile/self",
+     *     summary="Получить информацию о текущем пользователе",
+     *     tags={"Profile"},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Информация о пользователе успешно получена"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Пользователь не найден"
+     *     )
+     * )
+     */
     public function actionSelf()
     {
         $userId = Yii::$app->user->identity;

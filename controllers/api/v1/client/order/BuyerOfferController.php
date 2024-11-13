@@ -23,6 +23,34 @@ class BuyerOfferController extends ClientController
         return $behaviors;
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/v1/client/order/buyer-offer/{id}/accept",
+     *     summary="Accept a buyer offer",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Offer accepted successfully"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Offer not found"
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="No access to accept the offer"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error"
+     *     )
+     * )
+     */
     public function actionAccept(int $id)
     {
         $apiCodes = BuyerOffer::apiCodes();
@@ -92,6 +120,34 @@ class BuyerOfferController extends ClientController
         }
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/v1/client/order/buyer-offer/{id}/decline",
+     *     summary="Decline a buyer offer",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Offer declined successfully"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Offer not found"
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="No access to decline the offer"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error"
+     *     )
+     * )
+     */
     public function actionDecline(int $id)
     {
         $apiCodes = BuyerOffer::apiCodes();

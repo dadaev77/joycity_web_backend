@@ -17,6 +17,32 @@ class BuyerController extends ClientController
         return $behaviours;
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/client/buyer/view/{id}",
+     *     summary="Получить информацию о покупателе",
+     *     description="Возвращает информацию о покупателе по его ID.",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="id", type="integer", description="ID покупателя"),
+     *             @OA\Property(property="name", type="string", description="Имя покупателя"),
+     *             @OA\Property(property="email", type="string", description="Email покупателя")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Покупатель не найден"
+     *     )
+     * )
+     */
     public function actionView(int $id)
     {
         $apiCodes = User::apiCodes();

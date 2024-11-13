@@ -27,6 +27,36 @@ class SearchController extends ClientController
         return $behaviors;
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/client/search/hints",
+     *     summary="Получить подсказки по запросу",
+     *     description="Возвращает подсказки на основе введенного запроса.",
+     *     @OA\Parameter(
+     *         name="query",
+     *         in="query",
+     *         required=true,
+     *         description="Поисковый запрос",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ с подсказками",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="collection", type="array", @OA\Items(type="object")),
+     *             @OA\Property(property="type", type="string", example="category")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Некорректный запрос"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Подсказки не найдены"
+     *     )
+     * )
+     */
     public function actionHints()
     {
         $apiCodes = ResponseCodes::getStatic();
@@ -88,6 +118,70 @@ class SearchController extends ClientController
         ]);
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/client/search",
+     *     summary="Поиск продуктов",
+     *     description="Ищет продукты по заданным параметрам.",
+     *     @OA\Parameter(
+     *         name="subcategory_id",
+     *         in="query",
+     *         required=true,
+     *         description="ID подкатегории",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Parameter(
+     *         name="query",
+     *         in="query",
+     *         required=false,
+     *         description="Поисковый запрос",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="price_min",
+     *         in="query",
+     *         required=false,
+     *         description="Минимальная цена",
+     *         @OA\Schema(type="number", format="float")
+     *     ),
+     *     @OA\Parameter(
+     *         name="price_max",
+     *         in="query",
+     *         required=false,
+     *         description="Максимальная цена",
+     *         @OA\Schema(type="number", format="float")
+     *     ),
+     *     @OA\Parameter(
+     *         name="offset",
+     *         in="query",
+     *         required=false,
+     *         description="Смещение для пагинации",
+     *         @OA\Schema(type="integer", default=0)
+     *     ),
+     *     @OA\Parameter(
+     *         name="sort",
+     *         in="query",
+     *         required=false,
+     *         description="Сортировка результатов (asc, desc, popular)",
+     *         @OA\Schema(type="string", enum={"asc", "desc", "popular"})
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ с результатами поиска",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="collection", type="array", @OA\Items(type="object"))
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Некорректные данные"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Продукты не найдены"
+     *     )
+     * )
+     */
     public function actionSearch()
     {
         $apiCodes = ResponseCodes::getStatic();
@@ -203,6 +297,31 @@ class SearchController extends ClientController
         ]);
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/client/search/popular",
+     *     summary="Получить популярные продукты",
+     *     description="Возвращает список популярных продуктов.",
+     *     @OA\Parameter(
+     *         name="offset",
+     *         in="query",
+     *         required=false,
+     *         description="Смещение для пагинации",
+     *         @OA\Schema(type="integer", default=0)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ с популярными продуктами",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="collection", type="array", @OA\Items(type="object"))
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Популярные продукты не найдены"
+     *     )
+     * )
+     */
     public function actionPopular()
     {
         $offset = Yii::$app->request->get('offset', 0);
@@ -224,6 +343,27 @@ class SearchController extends ClientController
         ]);
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/client/search/random",
+     *     summary="Получить случайные продукты",
+     *     description="Возвращает случайные продукты.",
+     *     @OA\Parameter(
+     *         name="exclude_id",
+     *         in="query",
+     *         required=false,
+     *         description="ID продуктов, которые нужно исключить",
+     *         @OA\Schema(type="array", @OA\Items(type="integer"))
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ с случайными продуктами",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="collection", type="array", @OA\Items(type="object"))
+     *         )
+     *     )
+     * )
+     */
     public function actionRandom()
     {
         $apiCodes = ResponseCodes::getStatic();

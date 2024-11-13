@@ -12,6 +12,7 @@ use Yii;
 
 class TranslateController extends V1Controller
 {
+
     public function behaviors()
     {
         $behaviors = parent::behaviors();
@@ -20,9 +21,38 @@ class TranslateController extends V1Controller
         return $behaviors;
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/chat-message",
+     *     summary="Обработка сообщения чата",
+     *     description="Этот метод принимает оригинальный текст сообщения и возвращает переведенные тексты на русский, английский и китайский языки. Если перевод уже существует, он будет возвращен. В противном случае, создается новая запись.",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"original_text", "message_key", "chat_id"},
+     *             @OA\Property(property="original_text", type="string", example="Привет, как дела?"),
+     *             @OA\Property(property="message_key", type="string", example="unique_message_key"),
+     *             @OA\Property(property="chat_id", type="integer", example=123)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ с переведенными текстами"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Ошибка при сохранении перевода"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Внутренняя ошибка сервера"
+     *     )
+     * )
+     */
     public function actionChatMessage()
     {
         $request = Yii::$app->request;
+
         $apiCodes = ChatTranslate::apiCodes();
 
         try {

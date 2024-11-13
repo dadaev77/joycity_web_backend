@@ -41,6 +41,32 @@ class ProfileController extends ClientController
         return $behaviours;
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/client/profile/upload-avatar",
+     *     summary="Загрузить аватар пользователя",
+     *     description="Загружает аватар для текущего пользователя.",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"images"},
+     *             @OA\Property(property="images", type="array", @OA\Items(type="string", format="binary")),
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Аватар успешно загружен"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Некорректные данные"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Ошибка сервера"
+     *     )
+     * )
+     */
     public function actionUploadAvatar()
     {
         $apiCodes = User::apiCodes();
@@ -84,6 +110,21 @@ class ProfileController extends ClientController
         }
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/client/profile/self",
+     *     summary="Получить информацию о текущем пользователе",
+     *     description="Возвращает информацию о текущем пользователе.",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ с информацией о пользователе"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Пользователь не найден"
+     *     )
+     * )
+     */
     public function actionSelf()
     {
         $userId = Yii::$app->user->identity->id;
@@ -99,6 +140,37 @@ class ProfileController extends ClientController
         ]);
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/v1/client/profile/update",
+     *     summary="Обновить информацию о пользователе",
+     *     description="Обновляет информацию о пользователе на основе переданных данных.",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"name", "surname"},
+     *             @OA\Property(property="name", type="string", example="Иван"),
+     *             @OA\Property(property="surname", type="string", example="Иванов"),
+     *             @OA\Property(property="phone_number", type="string", example="+123456789"),
+     *             @OA\Property(property="organization_name", type="string", example="Организация"),
+     *             @OA\Property(property="phone_country_code", type="string", example="RU"),
+     *             @OA\Property(property="telegram", type="string", example="@ivan"),
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешное обновление информации о пользователе"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Некорректные данные"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Пользователь не найден"
+     *     )
+     * )
+     */
     public function actionUpdate()
     {
         $apiCodes = User::apiCodes();
@@ -149,6 +221,25 @@ class ProfileController extends ClientController
         }
     }
 
+    /**
+     * @OA\Delete(
+     *     path="/api/v1/client/profile/delete",
+     *     summary="Удалить профиль пользователя",
+     *     description="Удаляет профиль текущего пользователя, если у него нет активных заказов.",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Профиль успешно удален"
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="У пользователя есть активные заказы"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Ошибка сервера"
+     *     )
+     * )
+     */
     public function actionDelete()
     {
         $user = Yii::$app->user->identity;

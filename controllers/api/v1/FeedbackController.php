@@ -15,6 +15,54 @@ use yii\web\UploadedFile;
 
 class FeedbackController extends V1Controller
 {
+    /**
+     * @OA\Post(
+     *     path="/api/v1/feedback/create",
+     *     summary="Создание отзыва",
+     *     description="Этот метод позволяет пользователю создать новый отзыв. Пользователь должен предоставить причину и текст отзыва. Также можно прикрепить изображения.",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"reason", "text"},
+     *             @OA\Property(property="reason", type="string", example="Проблема с продуктом"),
+     *             @OA\Property(property="text", type="string", example="Я столкнулся с проблемой при использовании продукта."),
+     *             @OA\Property(property="images", type="array", @OA\Items(type="string", format="binary"))
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Отзыв успешно создан",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="id", type="integer", example=1),
+     *                 @OA\Property(property="reason", type="string", example="Проблема с продуктом"),
+     *                 @OA\Property(property="text", type="string", example="Я столкнулся с проблемой при использовании продукта."),
+     *                 @OA\Property(property="created_at", type="string", format="date-time", example="2023-10-01T12:00:00Z")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Ошибка валидации данных",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="errors", type="object",
+     *                 @OA\Property(property="reason", type="array", @OA\Items(type="string", example="Причина обязательна")),
+     *                 @OA\Property(property="text", type="array", @OA\Items(type="string", example="Текст отзыва обязателен"))
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Внутренняя ошибка сервера",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Внутренняя ошибка сервера")
+     *         )
+     *     )
+     * )
+     */
     public function actionCreate()
     {
         $user = Yii::$app->user->identity;

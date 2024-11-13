@@ -44,6 +44,15 @@ class ReportController extends BuyerController
         return $behaviors;
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/buyer/report/submit-stock-report",
+     *     summary="Отправить отчет о запасах",
+     *     @OA\Response(response="200", description="Успешный ответ"),
+     *     @OA\Response(response="400", description="Ошибка валидации"),
+     *     @OA\Response(response="500", description="Ошибка сервера")
+     * )
+     */
     public function actionSubmitStockReport()
     {
         try {
@@ -173,6 +182,15 @@ class ReportController extends BuyerController
         }
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/buyer/report/submit-inspection",
+     *     summary="Отправить отчет о проверке",
+     *     @OA\Response(response="200", description="Успешный ответ"),
+     *     @OA\Response(response="400", description="Ошибка валидации"),
+     *     @OA\Response(response="500", description="Ошибка сервера")
+     * )
+     */
     public function actionSubmitInspection()
     {
         try {
@@ -248,6 +266,15 @@ class ReportController extends BuyerController
         }
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/buyer/report/order-sent",
+     *     summary="Отметить заказ как отправленный",
+     *     @OA\Response(response="200", description="Успешный ответ"),
+     *     @OA\Response(response="400", description="Ошибка валидации"),
+     *     @OA\Response(response="500", description="Ошибка сервера")
+     * )
+     */
     public function actionOrderSent()
     {
         try {

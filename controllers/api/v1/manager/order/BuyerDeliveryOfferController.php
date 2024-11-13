@@ -15,6 +15,38 @@ use app\services\RateService;
 use Throwable;
 use Yii;
 
+/**
+ * @OA\Post(
+ *     path="/api/v1/manager/order/buyer-delivery-offer/create",
+ *     summary="Создать предложение по доставке",
+ *     tags={"BuyerDeliveryOffer"},
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\JsonContent(
+ *             @OA\Property(property="order_id", type="integer", example=1),
+ *             @OA\Property(property="price_product", type="number", example=100.0),
+ *             @OA\Property(property="total_quantity", type="integer", example=10),
+ *             @OA\Property(property="total_packaging_quantity", type="integer", example=5),
+ *             @OA\Property(property="product_height", type="number", example=10.0),
+ *             @OA\Property(property="product_width", type="number", example=5.0),
+ *             @OA\Property(property="product_depth", type="number", example=2.0),
+ *             @OA\Property(property="product_weight", type="number", example=1.0)
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Успешно создано предложение по доставке"
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="Ошибка валидации параметров"
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Внутренняя ошибка сервера"
+ *     )
+ * )
+ */
 class BuyerDeliveryOfferController extends ManagerController
 {
     public function behaviors()
@@ -99,6 +131,36 @@ class BuyerDeliveryOfferController extends ManagerController
         }
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/v1/manager/order/buyer-delivery-offer/paid/{id}",
+     *     summary="Отметить предложение по доставке как оплаченное",
+     *     tags={"BuyerDeliveryOffer"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID предложения по доставке",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Предложение по доставке успешно отмечено как оплаченное"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Предложение по доставке не найдено"
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Нет доступа к предложению"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Внутренняя ошибка сервера"
+     *     )
+     * )
+     */
     public function actionPaid(int $id)
     {
         try {

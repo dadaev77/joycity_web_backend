@@ -39,6 +39,36 @@ class VerificationController extends ClientController
         return $behaviours;
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/client/verification/create",
+     *     summary="Создать запрос на верификацию",
+     *     description="Создает новый запрос на верификацию для текущего пользователя.",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"amount"},
+     *             @OA\Property(property="amount", type="number", format="float", example=100.00),
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Запрос на верификацию успешно создан"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Некорректные данные"
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Пользователь уже верифицирован или есть активный запрос"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Ошибка сервера"
+     *     )
+     * )
+     */
     public function actionCreate()
     {
         $apiCodes = UserVerificationRequest::apiCodes();

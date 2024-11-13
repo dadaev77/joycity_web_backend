@@ -22,6 +22,14 @@ class SubcategoryController extends InternalController
         return $behaviors;
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/internal/constants/subcategory/",
+     *     tags={"Subcategory"},
+     *     summary="Get list of subcategories",
+     *     @OA\Response(response="200", description="Successful response")
+     * )
+     */
     public function actionIndex()
     {
         $subCategoryIds = Subcategory::find();
@@ -31,6 +39,16 @@ class SubcategoryController extends InternalController
         );
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/internal/constants/subcategory/create",
+     *     tags={"Subcategory"},
+     *     summary="Create a new subcategory",
+     *     @OA\Response(response="200", description="Subcategory created successfully"),
+     *     @OA\Response(response="400", description="Validation error"),
+     *     @OA\Response(response="500", description="Internal server error")
+     * )
+     */
     public function actionCreate()
     {
         $apiCodes = Subcategory::apiCodes();
@@ -71,6 +89,18 @@ class SubcategoryController extends InternalController
         }
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/v1/internal/constants/subcategory/update/{id}",
+     *     tags={"Subcategory"},
+     *     summary="Update an existing subcategory",
+     *     @OA\Parameter(name="id", in="path", required=true, description="Subcategory ID", @OA\Schema(type="integer")),
+     *     @OA\Response(response="200", description="Subcategory updated successfully"),
+     *     @OA\Response(response="404", description="Subcategory not found"),
+     *     @OA\Response(response="400", description="Validation error"),
+     *     @OA\Response(response="500", description="Internal server error")
+     * )
+     */
     public function actionUpdate(int $id)
     {
         $apiCodes = Subcategory::apiCodes();
@@ -118,6 +148,17 @@ class SubcategoryController extends InternalController
         }
     }
 
+    /**
+     * @OA\Delete(
+     *     path="/api/v1/internal/constants/subcategory/delete/{id}",
+     *     tags={"Subcategory"},
+     *     summary="Delete a subcategory",
+     *     @OA\Parameter(name="id", in="path", required=true, description="Subcategory ID", @OA\Schema(type="integer")),
+     *     @OA\Response(response="200", description="Subcategory deleted successfully"),
+     *     @OA\Response(response="404", description="Subcategory not found"),
+     *     @OA\Response(response="500", description="Internal server error")
+     * )
+     */
     public function actionDelete(int $id)
     {
         $apiCodes = Subcategory::apiCodes();

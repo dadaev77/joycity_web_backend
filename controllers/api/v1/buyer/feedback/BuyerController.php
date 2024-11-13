@@ -31,6 +31,38 @@ class BuyerController extends \app\controllers\api\v1\BuyerController
         return $behaviors;
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/buyer/feedback/buyer/collection/{id}",
+     *     summary="Получить коллекцию отзывов для покупателя",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID покупателя",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Parameter(
+     *         name="offset",
+     *         in="query",
+     *         required=false,
+     *         description="Смещение для пагинации",
+     *         @OA\Schema(type="integer", default=0)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ с коллекцией отзывов",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="count", type="integer", description="Общее количество отзывов"),
+     *             @OA\Property(property="collection", type="array", @OA\Items(type="object"), description="Список отзывов")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Покупатель не найден"
+     *     )
+     * )
+     */
     public function actionCollection(int $id, int $offset = 0)
     {
         $apiCodes = FeedbackBuyer::apiCodes();

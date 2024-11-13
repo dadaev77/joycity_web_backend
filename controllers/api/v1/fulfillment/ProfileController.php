@@ -25,6 +25,25 @@ class ProfileController extends FulfillmentController
 
         return $behaviours;
     }
+
+    /**
+     * @OA\Post(
+     *     path="/api/v1/fulfillment/profile/upload-avatar",
+     *     summary="Загрузить аватар",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Неверный запрос"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Внутренняя ошибка сервера"
+     *     )
+     * )
+     */
     public function actionUploadAvatar()
     {
         $apiCodes = User::apiCodes();
@@ -68,6 +87,20 @@ class ProfileController extends FulfillmentController
         }
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/fulfillment/profile/self",
+     *     summary="Получить информацию о себе",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Пользователь не найден"
+     *     )
+     * )
+     */
     public function actionSelf()
     {
         $userId = Yii::$app->user->identity->id;
@@ -81,6 +114,24 @@ class ProfileController extends FulfillmentController
         return ApiResponse::info(ProfileOutputService::getEntity($userId));
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/v1/fulfillment/profile/update",
+     *     summary="Обновить профиль",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Неверный запрос"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Внутренняя ошибка сервера"
+     *     )
+     * )
+     */
     public function actionUpdate()
     {
         $apiCodes = User::apiCodes();
@@ -157,6 +208,20 @@ class ProfileController extends FulfillmentController
         }
     }
 
+    /**
+     * @OA\Delete(
+     *     path="/api/v1/fulfillment/profile/delete",
+     *     summary="Удалить профиль",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Внутренняя ошибка сервера"
+     *     )
+     * )
+     */
     public function actionDelete()
     {
         try {

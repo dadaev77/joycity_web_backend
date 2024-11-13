@@ -40,6 +40,38 @@ class BuyerOfferController extends BuyerController
         return $behaviors;
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/buyer/order/buyer-offer/create",
+     *     summary="Создать новое предложение покупателя",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"order_id", "price_product", "price_inspection", "total_quantity"},
+     *             @OA\Property(property="order_id", type="integer", example=1),
+     *             @OA\Property(property="price_product", type="number", format="float", example=99.99),
+     *             @OA\Property(property="price_inspection", type="number", format="float", example=9.99),
+     *             @OA\Property(property="total_quantity", type="integer", example=10),
+     *             @OA\Property(property="product_height", type="number", format="float", example=1.5),
+     *             @OA\Property(property="product_width", type="number", format="float", example=2.0),
+     *             @OA\Property(property="product_depth", type="number", format="float", example=3.0),
+     *             @OA\Property(property="product_weight", type="number", format="float", example=1.0)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Предложение успешно создано."
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Неверный запрос."
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Ошибка сервера."
+     *     )
+     * )
+     */
     public function actionCreate()
     {
         $apiCodes = BuyerOffer::apiCodes();
@@ -152,6 +184,44 @@ class BuyerOfferController extends BuyerController
         }
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/v1/buyer/order/buyer-offer/update/{id}",
+     *     summary="Обновить предложение покупателя",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID предложения.",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"price_product", "price_inspection", "total_quantity"},
+     *             @OA\Property(property="price_product", type="number", format="float", example=89.99),
+     *             @OA\Property(property="price_inspection", type="number", format="float", example=8.99),
+     *             @OA\Property(property="total_quantity", type="integer", example=5)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Предложение успешно обновлено."
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Предложение не найдено."
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Нет доступа к предложению."
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Ошибка сервера."
+     *     )
+     * )
+     */
     public function actionUpdate(int $id)
     {
         $apiCodes = BuyerOffer::apiCodes();
@@ -212,6 +282,86 @@ class BuyerOfferController extends BuyerController
         }
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/buyer/order/buyer-offer/view/{id}",
+     *     summary="Получить информацию о предложении покупателя",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID предложения.",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Информация о предложении успешно получена."
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Предложение не найдено."
+     *     )
+     * )
+     */
+    public function actionView(int $id)
+    {
+        $apiCodes = BuyerOffer::apiCodes();
+
+        try {
+            $user = User::getIdentity();
+            $buyerOffer = BuyerOffer::findOne(['id' => $id]);
+
+            if (!$buyerOffer) {
+                return ApiResponse::code($apiCodes->NOT_FOUND);
+            }
+
+            if (
+                $buyerOffer->buyer_id !== $user->id ||
+                !in_array(
+                    $buyerOffer->order->status,
+                    [
+                        Order::STATUS_BUYER_OFFER_CREATED,
+                        Order::STATUS_BUYER_OFFER_ACCEPTED,
+                    ],
+                    true,
+                )
+            ) {
+                return ApiResponse::code($apiCodes->NO_ACCESS);
+            }
+
+            return ApiResponse::info(
+                BuyerOfferOutputService::getEntity($buyerOffer->id),
+            );
+        } catch (Throwable $e) {
+            return ApiResponse::internalError($e);
+        }
+    }
+
+    /**
+     * @OA\Delete(
+     *     path="/api/v1/buyer/order/buyer-offer/delete/{id}",
+     *     summary="Удалить предложение покупателя",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID предложения.",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Предложение успешно удалено."
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Предложение не найдено."
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Нет доступа к предложению."
+     *     )
+     * )
+     */
     public function actionDelete(int $id)
     {
         $apiCodes = BuyerOffer::apiCodes();
@@ -290,6 +440,47 @@ class BuyerOfferController extends BuyerController
         } catch (Throwable $e) {
             isset($transaction) && $transaction->rollBack();
 
+            return ApiResponse::internalError($e);
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/v1/buyer/order/buyer-offer/my",
+     *     summary="Получить мои предложения",
+     *     @OA\Parameter(
+     *         name="offset",
+     *         in="query",
+     *         required=false,
+     *         description="Смещение для пагинации.",
+     *         @OA\Schema(type="integer", default=0)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Список предложений успешно получен."
+     *     )
+     * )
+     */
+    public function actionMy(int $offset = 0)
+    {
+        $apiCodes = BuyerOffer::apiCodes();
+
+        try {
+            $user = User::getIdentity();
+            $buyerOffers = BuyerOffer::find()
+                ->where(['buyer_id' => $user->id])
+                ->offset($offset)
+                ->limit(10)
+                ->all();
+
+            if (!$buyerOffers) {
+                return ApiResponse::code($apiCodes->NOT_FOUND);
+            }
+
+            return ApiResponse::info(
+                BuyerOfferOutputService::getEntities($buyerOffers),
+            );
+        } catch (Throwable $e) {
             return ApiResponse::internalError($e);
         }
     }

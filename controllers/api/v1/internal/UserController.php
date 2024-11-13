@@ -26,6 +26,37 @@ class UserController extends InternalController
         return $behaviors;
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/internal/user/register",
+     *     summary="Регистрация нового пользователя",
+     *     tags={"User"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="email", type="string", example="user@example.com"),
+     *             @OA\Property(property="password", type="string", example="password123"),
+     *             @OA\Property(property="confirm_password", type="string", example="password123"),
+     *             @OA\Property(property="phone_number", type="string", example="+1234567890"),
+     *             @OA\Property(property="surname", type="string", example="Doe"),
+     *             @OA\Property(property="name", type="string", example="John"),
+     *             @OA\Property(property="role", type="string", example="manager")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Пользователь успешно зарегистрирован"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Ошибка валидации параметров"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Внутренняя ошибка сервера"
+     *     )
+     * )
+     */
     public function actionRegister()
     {
         $request = Yii::$app->request;
@@ -122,8 +153,8 @@ class UserController extends InternalController
             $settings->user_id = $user->id;
             $settings->currency =
                 $user->role === User::ROLE_MANAGER
-                    ? UserSettings::CURRENCY_CNY
-                    : UserSettings::CURRENCY_RUB;
+                ? UserSettings::CURRENCY_CNY
+                : UserSettings::CURRENCY_RUB;
             $settings->application_language =
                 UserSettings::APPLICATION_LANGUAGE_RU;
             $settings->chat_language = UserSettings::CHAT_LANGUAGE_RU;
@@ -145,6 +176,44 @@ class UserController extends InternalController
         }
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/v1/internal/user/update/{id}",
+     *     summary="Обновить информацию о пользователе",
+     *     tags={"User"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID пользователя",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="name", type="string", example="John"),
+     *             @OA\Property(property="surname", type="string", example="Doe"),
+     *             @OA\Property(property="phone_number", type="string", example="+1234567890"),
+     *             @OA\Property(property="organization_name", type="string", example="Company Inc."),
+     *             @OA\Property(property="role", type="string", example="manager"),
+     *             @OA\Property(property="email", type="string", example="user@example.com"),
+     *             @OA\Property(property="is_deleted", type="boolean", example=false)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Пользователь успешно обновлен"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Пользователь не найден"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Ошибка валидации параметров"
+     *     )
+     * )
+     */
     public function actionUpdate($id)
     {
         $apiCodes = User::apiCodes();
@@ -246,6 +315,38 @@ class UserController extends InternalController
         }
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/internal/user",
+     *     summary="Получить список пользователей",
+     *     tags={"User"},
+     *     @OA\Parameter(
+     *         name="is_deleted",
+     *         in="query",
+     *         required=false,
+     *         description="Флаг удаления пользователя",
+     *         @OA\Schema(type="boolean")
+     *     ),
+     *     @OA\Parameter(
+     *         name="role",
+     *         in="query",
+     *         required=false,
+     *         description="Роль пользователя",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="email",
+     *         in="query",
+     *         required=false,
+     *         description="Email пользователя",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Список пользователей успешно получен"
+     *     )
+     * )
+     */
     public function actionIndex()
     {
         $request = Yii::$app->request;
@@ -268,6 +369,28 @@ class UserController extends InternalController
         );
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/internal/user/view/{id}",
+     *     summary="Просмотр информации о пользователе",
+     *     tags={"User"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID пользователя",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Пользователь успешно найден"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Пользователь не найден"
+     *     )
+     * )
+     */
     public function actionView(int $id)
     {
         $apiCodes = User::apiCodes();

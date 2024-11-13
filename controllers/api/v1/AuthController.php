@@ -29,29 +29,46 @@ class AuthController extends V1Controller implements ApiAuth
     private const PASSWORD_RESET_CODE_KEY = 'password_reset_code_<CODE>';
     private const EMAIL_UPDATE_CODE_KEY = 'email_update_code_<CODE>';
 
-    public function behaviors()
-    {
-        $behaviors = parent::behaviors();
-        $behaviors['verbFilter']['actions']['login'] = ['post'];
-        $behaviors['verbFilter']['actions']['logout'] = ['post'];
-        $behaviors['verbFilter']['actions']['register'] = ['post'];
-        $behaviors['verbFilter']['actions']['email-check'] = ['post'];
-        $behaviors['verbFilter']['actions']['update-email-step-1'] = ['put'];
-        $behaviors['verbFilter']['actions']['update-email-step-2'] = ['put'];
-        $behaviors['verbFilter']['actions']['change-password'] = ['put'];
-        $behaviors['verbFilter']['actions']['twilio-token'] = ['get'];
-        $behaviors['authenticator']['except'] = [
-            'login',
-            'email-check',
-            'register',
-            'reset-password-step-1',
-            'reset-password-step-2',
-            'reset-password-step-3',
-        ];
-
-        return $behaviors;
-    }
-
+    /**
+     * @OA\Post(
+     *     path="/api/v1/auth/login",
+     *     summary="Вход пользователя",
+     *     description="Этот метод позволяет пользователю войти в систему, предоставив свои учетные данные.",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"role", "password"},
+     *             @OA\Property(property="role", type="string", example="buyer"),
+     *             @OA\Property(property="password", type="string", example="your_password"),
+     *             @OA\Property(property="phone_number", type="string", example="1234567890"),
+     *             @OA\Property(property="email", type="string", example="user@example.com")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный вход",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="access_token", type="string", example="your_access_token")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Ошибка валидации данных",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Неверные учетные данные")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Внутренняя ошибка сервера",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Внутренняя ошибка сервера")
+     *         )
+     *     )
+     * )
+     */
     public function actionLogin()
     {
         $params = POSTHelper::getPostWithKeys(
@@ -109,6 +126,29 @@ class AuthController extends V1Controller implements ApiAuth
         ]);
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/auth/logout",
+     *     summary="Выход пользователя",
+     *     description="Этот метод позволяет пользователю выйти из системы.",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный выход",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="message", type="string", example="Вы успешно вышли")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Внутренняя ошибка сервера",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Внутренняя ошибка сервера")
+     *         )
+     *     )
+     * )
+     */
     public function actionLogout()
     {
         $user = User::getIdentity();
@@ -121,6 +161,44 @@ class AuthController extends V1Controller implements ApiAuth
         return ApiResponse::code(ResponseCodes::getSelf()->SUCCESS);
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/auth/email-check",
+     *     summary="Проверка существования email",
+     *     description="Этот метод позволяет проверить, существует ли указанный email в системе.",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"email"},
+     *             @OA\Property(property="email", type="string", example="user@example.com")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Email существует",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Email уже существует")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=204,
+     *         description="Email не существует",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="message", type="string", example="Email доступен")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Внутренняя ошибка сервера",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Внутренняя ошибка сервера")
+     *         )
+     *     )
+     * )
+     */
     public function actionEmailCheck()
     {
         $apiCodes = User::apiCodes();
@@ -138,6 +216,60 @@ class AuthController extends V1Controller implements ApiAuth
         return ApiResponse::code($apiCodes->SUCCESS);
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/auth/register",
+     *     summary="Регистрация пользователя",
+     *     description="Этот метод позволяет пользователю зарегистрироваться в системе.",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"email", "password", "confirm_password", "phone_number", "organization_name", "surname", "name", "role"},
+     *             @OA\Property(property="email", type="string", example="user@example.com"),
+     *             @OA\Property(property="password", type="string", example="your_password"),
+     *             @OA\Property(property="confirm_password", type="string", example="your_password"),
+     *             @OA\Property(property="phone_number", type="string", example="1234567890"),
+     *             @OA\Property(property="organization_name", type="string", example="My Organization"),
+     *             @OA\Property(property="surname", type="string", example="Иванов"),
+     *             @OA\Property(property="name", type="string", example="Иван"),
+     *             @OA\Property(property="role", type="string", example="buyer"),
+     *             @OA\Property(property="phone_country_code", type="string", example="+1"),
+     *             @OA\Property(property="country", type="string", example="Россия"),
+     *             @OA\Property(property="city", type="string", example="Москва"),
+     *             @OA\Property(property="address", type="string", example="Улица Пушкина, дом 1"),
+     *             @OA\Property(property="telegram", type="string", example="@username")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Пользователь успешно зарегистрирован",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="access_token", type="string", example="your_access_token"),
+     *             @OA\Property(property="uuid", type="string", example="AAA-999")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Ошибка валидации данных",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="errors", type="object",
+     *                 @OA\Property(property="email", type="array", @OA\Items(type="string", example="Некорректный email")),
+     *                 @OA\Property(property="password", type="array", @OA\Items(type="string", example="Пароли не совпадают"))
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Внутренняя ошибка сервера",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Внутренняя ошибка сервера")
+     *         )
+     *     )
+     * )
+     */
     public function actionRegister()
     {
         $request = Yii::$app->request;
@@ -309,6 +441,46 @@ class AuthController extends V1Controller implements ApiAuth
         }
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/auth/update-email-step-1",
+     *     summary="Обновление email - шаг 1",
+     *     description="Этот метод позволяет инициировать процесс обновления email, отправив код на текущий email пользователя.",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"email"},
+     *             @OA\Property(property="email", type="string", example="new_email@example.com")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Код для подтверждения email отправлен",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="message", type="string", example="Код для подтверждения email отправлен")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Ошибка валидации данных",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="errors", type="object",
+     *                 @OA\Property(property="email", type="array", @OA\Items(type="string", example="Некорректный email"))
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Внутренняя ошибка сервера",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Внутренняя ошибка сервера")
+     *         )
+     *     )
+     * )
+     */
     public function actionUpdateEmailStep1()
     {
         $apiCodes = User::apiCodes();
@@ -359,6 +531,44 @@ class AuthController extends V1Controller implements ApiAuth
         }
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/auth/update-email-step-2",
+     *     summary="Обновление email - шаг 2",
+     *     description="Этот метод позволяет подтвердить новый email, используя код, отправленный на старый email.",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"code"},
+     *             @OA\Property(property="code", type="string", example="1234")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Email успешно обновлен",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="message", type="string", example="Email успешно обновлен")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Неверный код",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Неверный код")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Внутренняя ошибка сервера",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Внутренняя ошибка сервера")
+     *         )
+     *     )
+     * )
+     */
     public function actionUpdateEmailStep2()
     {
         $apiCodes = User::apiCodes();
@@ -394,6 +604,44 @@ class AuthController extends V1Controller implements ApiAuth
         }
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/auth/reset-password-step-1",
+     *     summary="Запрос на сброс пароля - шаг 1",
+     *     description="Этот метод позволяет инициировать процесс сброса пароля, отправив код на указанный email.",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"email"},
+     *             @OA\Property(property="email", type="string", example="user@example.com")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Код для сброса пароля отправлен",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="message", type="string", example="Код для сброса пароля отправлен на email")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Email не существует",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Email не существует")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Внутренняя ошибка сервера",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Внутренняя ошибка сервера")
+     *         )
+     *     )
+     * )
+     */
     public function actionResetPasswordStep1()
     {
         $apiCodes = User::apiCodes();
@@ -429,6 +677,45 @@ class AuthController extends V1Controller implements ApiAuth
         }
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/auth/reset-password-step-2",
+     *     summary="Проверка кода сброса пароля - шаг 2",
+     *     description="Этот метод позволяет проверить код, отправленный на email, для сброса пароля.",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"code", "email"},
+     *             @OA\Property(property="code", type="string", example="1234"),
+     *             @OA\Property(property="email", type="string", example="user@example.com")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Код подтвержден",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="message", type="string", example="Код подтвержден")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Неверный код",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Неверный код")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Внутренняя ошибка сервера",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Внутренняя ошибка сервера")
+     *         )
+     *     )
+     * )
+     */
     public function actionResetPasswordStep2()
     {
         $apiCodes = User::apiCodes();
@@ -455,6 +742,50 @@ class AuthController extends V1Controller implements ApiAuth
         }
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/auth/reset-password-step-3",
+     *     summary="Сброс пароля - шаг 3",
+     *     description="Этот метод позволяет установить новый пароль после подтверждения кода.",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"code", "email", "new_password", "confirm_password"},
+     *             @OA\Property(property="code", type="string", example="1234"),
+     *             @OA\Property(property="email", type="string", example="user@example.com"),
+     *             @OA\Property(property="new_password", type="string", example="new_password"),
+     *             @OA\Property(property="confirm_password", type="string", example="new_password")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Пароль успешно сброшен",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="message", type="string", example="Пароль успешно сброшен")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Ошибка валидации данных",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="errors", type="object",
+     *                 @OA\Property(property="new_password", type="array", @OA\Items(type="string", example="Пароль слишком короткий")),
+     *                 @OA\Property(property="confirm_password", type="array", @OA\Items(type="string", example="Пароли не совпадают"))
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Внутренняя ошибка сервера",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Внутренняя ошибка сервера")
+     *         )
+     *     )
+     * )
+     */
     public function actionResetPasswordStep3()
     {
         $apiCodes = User::apiCodes();
@@ -522,6 +853,49 @@ class AuthController extends V1Controller implements ApiAuth
         }
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/auth/update-password",
+     *     summary="Обновление пароля",
+     *     description="Этот метод позволяет пользователю обновить свой пароль.",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"old_password", "new_password", "confirm_password"},
+     *             @OA\Property(property="old_password", type="string", example="old_password"),
+     *             @OA\Property(property="new_password", type="string", example="new_password"),
+     *             @OA\Property(property="confirm_password", type="string", example="new_password")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Пароль успешно обновлен",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="message", type="string", example="Пароль успешно обновлен")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Ошибка валидации данных",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="errors", type="object",
+     *                 @OA\Property(property="new_password", type="array", @OA\Items(type="string", example="Пароль слишком короткий")),
+     *                 @OA\Property(property="confirm_password", type="array", @OA\Items(type="string", example="Пароли не совпадают"))
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Внутренняя ошибка сервера",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Внутренняя ошибка сервера")
+     *         )
+     *     )
+     * )
+     */
     public function actionUpdatePassword()
     {
         $apiCodes = User::apiCodes();
@@ -578,6 +952,29 @@ class AuthController extends V1Controller implements ApiAuth
         }
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/auth/twilio-token",
+     *     summary="Получение токена Twilio",
+     *     description="Этот метод позволяет получить токен для работы с Twilio.",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Токен успешно получен",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="access_token", type="string", example="your_twilio_access_token")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Внутренняя ошибка сервера",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Внутренняя ошибка сервера")
+     *         )
+     *     )
+     * )
+     */
     public function actionTwilioToken()
     {
         $user = User::getIdentity();

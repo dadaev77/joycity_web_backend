@@ -23,6 +23,45 @@ class VerificationController extends InternalController
         return $behaviors;
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/internal/verification",
+     *     summary="Получить список запросов на верификацию",
+     *     tags={"Verification"},
+     *     @OA\Parameter(
+     *         name="role",
+     *         in="query",
+     *         required=false,
+     *         description="Роль пользователя, создавшего запрос",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="from",
+     *         in="query",
+     *         required=false,
+     *         description="Дата начала создания запроса",
+     *         @OA\Schema(type="string", format="date")
+     *     ),
+     *     @OA\Parameter(
+     *         name="to",
+     *         in="query",
+     *         required=false,
+     *         description="Дата окончания создания запроса",
+     *         @OA\Schema(type="string", format="date")
+     *     ),
+     *     @OA\Parameter(
+     *         name="status",
+     *         in="query",
+     *         required=false,
+     *         description="Статус запроса",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Список запросов на верификацию успешно получен"
+     *     )
+     * )
+     */
     public function actionIndex()
     {
         try {
@@ -70,6 +109,32 @@ class VerificationController extends InternalController
         }
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/v1/internal/verification/approve/{id}",
+     *     summary="Одобрить запрос на верификацию",
+     *     tags={"Verification"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID запроса на верификацию",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Запрос на верификацию успешно одобрен"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Запрос на верификацию не найден"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Ошибка валидации параметров"
+     *     )
+     * )
+     */
     public function actionApprove(int $id)
     {
         $apiCodes = UserVerificationRequest::apiCodes();
@@ -124,6 +189,28 @@ class VerificationController extends InternalController
         }
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/internal/verification/view/{id}",
+     *     summary="Просмотр запроса на верификацию",
+     *     tags={"Verification"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID запроса на верификацию",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Запрос на верификацию успешно найден"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Запрос на верификацию не найден"
+     *     )
+     * )
+     */
     public function actionView(int $id)
     {
         $apiCodes = User::apiCodes();

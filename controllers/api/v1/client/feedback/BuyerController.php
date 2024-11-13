@@ -40,6 +40,31 @@ class BuyerController extends ClientController
         return $behaviors;
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/client/feedback/create",
+     *     summary="Create a new feedback",
+     *     @OA\RequestBody(
+     *         required=true
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Feedback created successfully"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Bad request"
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="No access to create feedback"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error"
+     *     )
+     * )
+     */
     public function actionCreate()
     {
         $apiCodes = FeedbackBuyer::apiCodes();
@@ -131,6 +156,30 @@ class BuyerController extends ClientController
         }
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/client/feedback/collection/{id}",
+     *     summary="Get feedback collection for a buyer",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Feedback collection retrieved successfully"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Buyer not found"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error"
+     *     )
+     * )
+     */
     public function actionCollection(int $id, int $offset = 0)
     {
         $apiCodes = FeedbackBuyer::apiCodes();
@@ -152,6 +201,30 @@ class BuyerController extends ClientController
         ]);
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/client/feedback/can-create-feedback/{id}",
+     *     summary="Check if feedback can be created for a buyer",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Feedback creation allowed"
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="No access to create feedback"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error"
+     *     )
+     * )
+     */
     public function actionCanCreateFeedback(int $id)
     {
         $userId = Yii::$app->user->id;

@@ -24,6 +24,40 @@ class NotificationsController extends V1Controller
         return $behaviors;
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/notifications/index",
+     *     summary="Получение уведомлений",
+     *     description="Этот метод возвращает список уведомлений для текущего пользователя.",
+     *     @OA\Parameter(
+     *         name="offset",
+     *         in="query",
+     *         required=false,
+     *         @OA\Schema(type="integer", example=0)
+     *     ),
+     *     @OA\Parameter(
+     *         name="entityId",
+     *         in="query",
+     *         required=false,
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Список уведомлений",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", type="array", @OA\Items(type="object"))
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Внутренняя ошибка сервера",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Внутренняя ошибка сервера")
+     *         )
+     *     )
+     * )
+     */
     public function actionIndex(int $offset = 0, int $entityId = null)
     {
         try {
@@ -46,6 +80,28 @@ class NotificationsController extends V1Controller
         }
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/notifications/unread",
+     *     summary="Получение непрочитанных уведомлений",
+     *     description="Этот метод возвращает список непрочитанных уведомлений для текущего пользователя.",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Список непрочитанных уведомлений",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", type="array", @OA\Items(type="object"))
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Внутренняя ошибка сервера",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Внутренняя ошибка сервера")
+     *         )
+     *     )
+     * )
+     */
     public function actionUnread()
     {
         try {
@@ -64,6 +120,44 @@ class NotificationsController extends V1Controller
         }
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/v1/notifications/mark-as-read-entity",
+     *     summary="Пометить уведомления как прочитанные по сущности",
+     *     description="Этот метод помечает уведомления как прочитанные для указанной сущности.",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"entity_id", "entity_type"},
+     *             @OA\Property(property="entity_id", type="integer", example=1),
+     *             @OA\Property(property="entity_type", type="string", example="order")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Уведомления успешно помечены как прочитанные",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", type="array", @OA\Items(type="integer"))
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Уведомления не найдены",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Уведомления не найдены")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Внутренняя ошибка сервера",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Внутренняя ошибка сервера")
+     *         )
+     *     )
+     * )
+     */
     public function actionMarkAsReadEntity()
     {
         try {
@@ -113,6 +207,42 @@ class NotificationsController extends V1Controller
         }
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/v1/notifications/mark-as-read/{id}",
+     *     summary="Пометить уведомление как прочитанное",
+     *     description="Этот метод помечает указанное уведомление как прочитанное.",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Уведомление успешно помечено как прочитанное",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Уведомление не найдено",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Уведомление не найдено")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Внутренняя ошибка сервера",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Внутренняя ошибка сервера")
+     *         )
+     *     )
+     * )
+     */
     public function actionMarkAsRead(int $id)
     {
         try {

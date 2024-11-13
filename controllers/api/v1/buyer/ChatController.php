@@ -35,6 +35,24 @@ class ChatController extends BuyerController
         return $behaviors;
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/buyer/chat",
+     *     summary="Получить список чатов",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Список чатов успешно получен."
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Пользователь не авторизован."
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Неверный запрос."
+     *     )
+     * )
+     */
     public function actionIndex()
     {
         try {
@@ -68,6 +86,36 @@ class ChatController extends BuyerController
             return ApiResponse::internalError($e);
         }
     }
+
+    /**
+     * @OA\Get(
+     *     path="/api/v1/buyer/chat/search",
+     *     summary="Поиск заказов и чатов",
+     *     @OA\Parameter(
+     *         name="query",
+     *         in="query",
+     *         required=true,
+     *         description="Поисковый запрос.",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Список заказов и связанных с ними чатов успешно получен."
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Пользователь не авторизован."
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Неверный запрос."
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Заказы не найдены."
+     *     )
+     * )
+     */
     public function actionSearch()
     {
         // define variables
@@ -111,6 +159,36 @@ class ChatController extends BuyerController
         }
         return ApiResponse::collection($result);
     }
+
+    /**
+     * @OA\Get(
+     *     path="/api/v1/buyer/chat/get-chat",
+     *     summary="Получить чаты для заказа",
+     *     @OA\Parameter(
+     *         name="order_id",
+     *         in="query",
+     *         required=true,
+     *         description="ID заказа.",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Список чатов для указанного заказа успешно получен."
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Пользователь не авторизован."
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Неверный запрос."
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Чаты не найдены."
+     *     )
+     * )
+     */
     public function actionGetChat()
     {
         // define variables

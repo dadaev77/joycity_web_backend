@@ -38,6 +38,24 @@ class SettingsController extends ClientController
         return $behaviours;
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/client/settings/self",
+     *     summary="Получить настройки текущего пользователя",
+     *     description="Возвращает настройки текущего пользователя.",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ с настройками пользователя",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", type="object", example={"enable_notifications": true, "currency": "USD", "application_language": "en", "chat_language": "en"})
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Пользователь не найден"
+     *     )
+     * )
+     */
     public function actionSelf()
     {
         $user = User::getIdentity();
@@ -45,6 +63,38 @@ class SettingsController extends ClientController
         return ApiResponse::info(SettingsOutputService::getEntity($user->id));
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/v1/client/settings/update",
+     *     summary="Обновить настройки пользователя",
+     *     description="Обновляет настройки текущего пользователя на основе переданных данных.",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"enable_notifications", "currency", "application_language", "chat_language"},
+     *             @OA\Property(property="enable_notifications", type="boolean"),
+     *             @OA\Property(property="currency", type="string"),
+     *             @OA\Property(property="application_language", type="string"),
+     *             @OA\Property(property="chat_language", type="string")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешное обновление настроек пользователя",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", type="object", example={"enable_notifications": true, "currency": "USD", "application_language": "en", "chat_language": "en"})
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Некорректные данные"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Ошибка сервера"
+     *     )
+     * )
+     */
     public function actionUpdate()
     {
         $apiCodes = User::apiCodes();
@@ -76,6 +126,37 @@ class SettingsController extends ClientController
         }
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/v1/client/settings/set-categories",
+     *     summary="Установить категории для пользователя",
+     *     description="Устанавливает категории для текущего пользователя на основе переданных идентификаторов.",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"category_ids"},
+     *             @OA\Property(property="category_ids", type="array", @OA\Items(type="integer"))
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешное обновление категорий пользователя",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", type="object", 
+     *                 @OA\Property(property="categories", type="array", @OA\Items(type="integer"))
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Некорректные данные"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Ошибка сервера"
+     *     )
+     * )
+     */
     public function actionSetCategories()
     {
         $apiCodes = UserSettings::apiCodes();

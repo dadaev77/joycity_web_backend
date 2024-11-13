@@ -45,6 +45,34 @@ class ProductController extends BuyerController
         return $behaviors;
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/buyer/product/create",
+     *     summary="Создать новый продукт",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"name", "price"},
+     *             @OA\Property(property="name", type="string", example="Продукт 1"),
+     *             @OA\Property(property="price", type="number", format="float", example=99.99),
+     *             @OA\Property(property="description", type="string", example="Описание продукта"),
+     *             @OA\Property(property="subcategory_id", type="integer", example=1)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Продукт успешно создан."
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Неверный запрос."
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Ошибка сервера."
+     *     )
+     * )
+     */
     public function actionCreate()
     {
         try {
@@ -138,6 +166,45 @@ class ProductController extends BuyerController
         }
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/v1/buyer/product/update/{id}",
+     *     summary="Обновить продукт",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID продукта.",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"name", "price"},
+     *             @OA\Property(property="name", type="string", example="Обновленный продукт"),
+     *             @OA\Property(property="price", type="number", format="float", example=89.99),
+     *             @OA\Property(property="description", type="string", example="Обновленное описание продукта"),
+     *             @OA\Property(property="subcategory_id", type="integer", example=1)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Продукт успешно обновлен."
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Продукт не найден."
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Нет доступа к продукту."
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Ошибка сервера."
+     *     )
+     * )
+     */
     public function actionUpdate(int $id)
     {
         $apiCodes = Product::apiCodes();
@@ -253,6 +320,27 @@ class ProductController extends BuyerController
         }
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/buyer/product/view/{id}",
+     *     summary="Получить информацию о продукте",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID продукта.",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Информация о продукте успешно получена."
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Продукт не найден."
+     *     )
+     * )
+     */
     public function actionView(int $id)
     {
         $apiCodes = Product::apiCodes();
@@ -270,6 +358,31 @@ class ProductController extends BuyerController
         ]);
     }
 
+    /**
+     * @OA\Delete(
+     *     path="/api/v1/buyer/product/delete/{id}",
+     *     summary="Удалить продукт",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID продукта.",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Продукт успешно удален."
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Продукт не найден."
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Нет доступа к продукту."
+     *     )
+     * )
+     */
     public function actionDelete(int $id)
     {
         $apiCodes = Product::apiCodes();
@@ -295,6 +408,23 @@ class ProductController extends BuyerController
         return ApiResponse::byResponseCode($apiCodes->SUCCESS);
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/buyer/product/my",
+     *     summary="Получить мои продукты",
+     *     @OA\Parameter(
+     *         name="offset",
+     *         in="query",
+     *         required=false,
+     *         description="Смещение для пагинации.",
+     *         @OA\Schema(type="integer", default=0)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Список продуктов успешно получен."
+     *     )
+     * )
+     */
     public function actionMy(int $offset = 0)
     {
         $apiCodes = Product::apiCodes();

@@ -17,6 +17,31 @@ class ProductController extends ClientController
         return $behaviors;
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/client/product/view",
+     *     summary="Получить информацию о продукте по ID",
+     *     description="Возвращает информацию о продукте по указанному ID.",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID продукта",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ с информацией о продукте",
+     *         @OA\JsonContent(type="object", properties={
+     *             @OA\Property(property="info", type="object")
+     *         })
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Продукт не найден"
+     *     )
+     * )
+     */
     public function actionView(int $id)
     {
         $apiCodes = Product::apiCodes();

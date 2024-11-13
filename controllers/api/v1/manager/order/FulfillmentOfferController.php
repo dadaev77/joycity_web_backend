@@ -22,6 +22,40 @@ class FulfillmentOfferController extends ManagerController
         return $behaviors;
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/v1/manager/order/fulfillment-offer/paid/{id}",
+     *     summary="Отметить предложение выполнения как оплаченное",
+     *     tags={"FulfillmentOffer"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID предложения выполнения",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Предложение выполнения успешно отмечено как оплаченное"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Предложение выполнения или заказ не найден"
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Нет доступа к предложению выполнения"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Ошибка валидации параметров"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Внутренняя ошибка сервера"
+     *     )
+     * )
+     */
     public function actionPaid(int $id)
     {
         $apiCodes = Order::apiCodes();
@@ -44,7 +78,7 @@ class FulfillmentOfferController extends ManagerController
 
             if (
                 $order->status !==
-                    Order::STATUS_FULLY_DELIVERED_TO_MARKETPLACE ||
+                Order::STATUS_FULLY_DELIVERED_TO_MARKETPLACE ||
                 $order->manager_id !== $user->id
             ) {
                 return ApiResponse::code($apiCodes->NO_ACCESS);

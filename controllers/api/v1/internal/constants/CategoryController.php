@@ -24,6 +24,14 @@ class CategoryController extends InternalController
         return $behaviors;
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/internal/constants/category",
+     *     tags={"Category"},
+     *     summary="Get list of categories",
+     *     @OA\Response(response="200", description="Successful response")
+     * )
+     */
     public function actionIndex()
     {
         $categoryIds = Category::find();
@@ -33,6 +41,16 @@ class CategoryController extends InternalController
         );
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/internal/constants/category",
+     *     tags={"Category"},
+     *     summary="Create a new category",
+     *     @OA\Response(response="200", description="Category created successfully"),
+     *     @OA\Response(response="400", description="Validation error"),
+     *     @OA\Response(response="500", description="Internal server error")
+     * )
+     */
     public function actionCreate()
     {
         $apiCodes = Category::apiCodes();
@@ -92,6 +110,18 @@ class CategoryController extends InternalController
         }
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/v1/internal/constants/category/{id}",
+     *     tags={"Category"},
+     *     summary="Update an existing category",
+     *     @OA\Parameter(name="id", in="path", required=true, description="Category ID", @OA\Schema(type="integer")),
+     *     @OA\Response(response="200", description="Category updated successfully"),
+     *     @OA\Response(response="404", description="Category not found"),
+     *     @OA\Response(response="400", description="Validation error"),
+     *     @OA\Response(response="500", description="Internal server error")
+     * )
+     */
     public function actionUpdate(int $id)
     {
         $apiCodes = Category::apiCodes();
@@ -156,6 +186,17 @@ class CategoryController extends InternalController
         }
     }
 
+    /**
+     * @OA\Delete(
+     *     path="/api/v1/internal/constants/category/{id}",
+     *     tags={"Category"},
+     *     summary="Delete a category",
+     *     @OA\Parameter(name="id", in="path", required=true, description="Category ID", @OA\Schema(type="integer")),
+     *     @OA\Response(response="200", description="Category deleted successfully"),
+     *     @OA\Response(response="404", description="Category not found"),
+     *     @OA\Response(response="500", description="Internal server error")
+     * )
+     */
     public function actionDelete(int $id)
     {
         $apiCodes = Category::apiCodes();

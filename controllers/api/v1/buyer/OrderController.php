@@ -40,6 +40,31 @@ class OrderController extends BuyerController
         return $behaviors;
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/buyer/order/view/{id}",
+     *     summary="Получить информацию о заказе",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID заказа.",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Информация о заказе успешно получена."
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Заказ не найден."
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Нет доступа к заказу."
+     *     )
+     * )
+     */
     public function actionView(int $id)
     {
         $apiCodes = Order::apiCodes();
@@ -62,6 +87,23 @@ class OrderController extends BuyerController
         );
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/buyer/order/my",
+     *     summary="Получить мои заказы",
+     *     @OA\Parameter(
+     *         name="type",
+     *         in="query",
+     *         required=false,
+     *         description="Тип заказов (request или order).",
+     *         @OA\Schema(type="string", default="request")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Список заказов успешно получен."
+     *     )
+     * )
+     */
     public function actionMy(string $type = 'request')
     {
         $user = User::getIdentity();
@@ -81,6 +123,23 @@ class OrderController extends BuyerController
         );
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/buyer/order/history",
+     *     summary="Получить историю заказов",
+     *     @OA\Parameter(
+     *         name="type",
+     *         in="query",
+     *         required=false,
+     *         description="Тип истории заказов (request или order).",
+     *         @OA\Schema(type="string", default="request")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="История заказов успешно получена."
+     *     )
+     * )
+     */
     public function actionHistory(string $type = 'request')
     {
         $user = User::getIdentity();
@@ -102,6 +161,35 @@ class OrderController extends BuyerController
         );
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/v1/buyer/order/decline/{id}",
+     *     summary="Отклонить заказ",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID заказа.",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Заказ успешно отклонен."
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Заказ не найден."
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Нет доступа к заказу."
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Ошибка сервера."
+     *     )
+     * )
+     */
     public function actionDecline(int $id)
     {
         $user = User::getIdentity();

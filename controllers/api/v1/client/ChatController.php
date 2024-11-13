@@ -21,6 +21,28 @@ class ChatController extends ClientController
         return $behaviors;
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/client/chat",
+     *     summary="Получить список чатов",
+     *     description="Возвращает список чатов для текущего пользователя.",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ",
+     *         @OA\JsonContent(type="array", @OA\Items(
+     *             @OA\Property(property="id", type="integer", description="ID чата"),
+     *             @OA\Property(property="name", type="string", description="Название чата"),
+     *             @OA\Property(property="last_message", type="string", description="Последнее сообщение"),
+     *             @OA\Property(property="created_at", type="string", format="date-time", description="Дата создания чата"),
+     *             @OA\Property(property="updated_at", type="string", format="date-time", description="Дата последнего обновления чата")
+     *         ))
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Внутренняя ошибка сервера"
+     *     )
+     * )
+     */
     public function actionIndex()
     {
         try {
@@ -54,6 +76,39 @@ class ChatController extends ClientController
             return ApiResponse::internalError($e);
         }
     }
+
+    /**
+     * @OA\Get(
+     *     path="/api/v1/client/chat/search",
+     *     summary="Поиск чатов",
+     *     description="Ищет чаты по заданному запросу.",
+     *     @OA\Parameter(
+     *         name="query",
+     *         in="query",
+     *         required=true,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ",
+     *         @OA\JsonContent(type="array", @OA\Items(
+     *             @OA\Property(property="id", type="integer", description="ID чата"),
+     *             @OA\Property(property="name", type="string", description="Название чата"),
+     *             @OA\Property(property="last_message", type="string", description="Последнее сообщение"),
+     *             @OA\Property(property="created_at", type="string", format="date-time", description="Дата создания чата"),
+     *             @OA\Property(property="updated_at", type="string", format="date-time", description="Дата последнего обновления чата")
+     *         ))
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Неверный запрос"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Чаты не найдены"
+     *     )
+     * )
+     */
     public function actionSearch()
     {
         // define variables
@@ -99,6 +154,39 @@ class ChatController extends ClientController
         // return chats
         return ApiResponse::collection($result);
     }
+
+    /**
+     * @OA\Get(
+     *     path="/api/v1/client/chat/get-chat",
+     *     summary="Получить чат по ID заказа",
+     *     description="Возвращает чаты для указанного ID заказа.",
+     *     @OA\Parameter(
+     *         name="order_id",
+     *         in="query",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ",
+     *         @OA\JsonContent(type="array", @OA\Items(
+     *             @OA\Property(property="id", type="integer", description="ID чата"),
+     *             @OA\Property(property="name", type="string", description="Название чата"),
+     *             @OA\Property(property="last_message", type="string", description="Последнее сообщение"),
+     *             @OA\Property(property="created_at", type="string", format="date-time", description="Дата создания чата"),
+     *             @OA\Property(property="updated_at", type="string", format="date-time", description="Дата последнего обновления чата")
+     *         ))
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Неверный запрос"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Чаты не найдены"
+     *     )
+     * )
+     */
     public function actionGetChat()
     {
         // define variables

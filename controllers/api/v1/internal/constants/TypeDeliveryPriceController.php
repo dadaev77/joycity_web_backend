@@ -20,6 +20,14 @@ class TypeDeliveryPriceController extends InternalController
         return $behaviors;
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/internal/constants/type-delivery-price",
+     *     summary="Get collection of Type Delivery Prices",
+     *     @OA\Response(response="200", description="Successful response"),
+     *     @OA\Response(response="500", description="Internal server error")
+     * )
+     */
     public function actionIndex(int $type_delivery_id)
     {
         try {
@@ -35,6 +43,16 @@ class TypeDeliveryPriceController extends InternalController
         }
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/v1/internal/constants/type-delivery-price/update/{id}",
+     *     summary="Update a Type Delivery Price",
+     *     @OA\Parameter(name="id", in="path", required=true, description="ID of the Type Delivery Price to update", @OA\Schema(type="integer")),
+     *     @OA\Response(response="200", description="Successful update"),
+     *     @OA\Response(response="404", description="Not found"),
+     *     @OA\Response(response="500", description="Internal server error")
+     * )
+     */
     public function actionUpdate(int $id)
     {
         try {

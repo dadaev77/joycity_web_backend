@@ -19,6 +19,66 @@ class OrderController extends InternalController
         return $behaviors;
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/internal/order/index",
+     *     summary="Получить список заказов",
+     *     tags={"Order"},
+     *     @OA\Parameter(
+     *         name="type",
+     *         in="query",
+     *         required=false,
+     *         description="Тип заказа (order/request)",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="query",
+     *         in="query",
+     *         required=false,
+     *         description="Поиск по ID заказа",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="from",
+     *         in="query",
+     *         required=false,
+     *         description="Дата начала создания заказа",
+     *         @OA\Schema(type="string", format="date")
+     *     ),
+     *     @OA\Parameter(
+     *         name="to",
+     *         in="query",
+     *         required=false,
+     *         description="Дата окончания создания заказа",
+     *         @OA\Schema(type="string", format="date")
+     *     ),
+     *     @OA\Parameter(
+     *         name="status",
+     *         in="query",
+     *         required=false,
+     *         description="Статус заказа",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="email_buyer",
+     *         in="query",
+     *         required=false,
+     *         description="Email покупателя",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="email_client",
+     *         in="query",
+     *         required=false,
+     *         description="Email клиента",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Список заказов успешно получен"
+     *     )
+     * )
+     */
     public function actionIndex()
     {
         $request = Yii::$app->request;
@@ -77,6 +137,28 @@ class OrderController extends InternalController
         );
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/internal/order/view/{id}",
+     *     summary="Просмотр заказа",
+     *     tags={"Order"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID заказа",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Заказ успешно найден"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Заказ не найден"
+     *     )
+     * )
+     */
     public function actionView(int $id)
     {
         $apiCodes = Order::apiCodes();

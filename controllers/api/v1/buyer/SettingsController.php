@@ -40,6 +40,20 @@ class SettingsController extends BuyerController
         return $behaviors;
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/buyer/settings/self",
+     *     summary="Получить информацию о текущем пользователе",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Информация о пользователе успешно получена."
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Пользователь не авторизован."
+     *     )
+     * )
+     */
     public function actionSelf()
     {
         $user = User::getIdentity();
@@ -47,6 +61,35 @@ class SettingsController extends BuyerController
         return ApiResponse::info(SettingsOutputService::getEntity($user->id));
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/v1/buyer/settings/update",
+     *     summary="Обновить настройки пользователя",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"enable_notifications", "currency", "application_language"},
+     *             @OA\Property(property="enable_notifications", type="boolean", example=true),
+     *             @OA\Property(property="currency", type="string", example="USD"),
+     *             @OA\Property(property="application_language", type="string", example="en"),
+     *             @OA\Property(property="chat_language", type="string", example="en"),
+     *             @OA\Property(property="selected_categories", type="array", @OA\Items(type="integer"), example={1, 2, 3})
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Настройки успешно обновлены."
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Ошибка валидации."
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Ошибка сервера."
+     *     )
+     * )
+     */
     public function actionUpdate()
     {
         try {
@@ -74,6 +117,31 @@ class SettingsController extends BuyerController
         }
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/v1/buyer/settings/set-packaging",
+     *     summary="Установить упаковку",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"packaging_ids"},
+     *             @OA\Property(property="packaging_ids", type="array", @OA\Items(type="integer"), example={1, 2, 3})
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Упаковка успешно установлена."
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Ошибка валидации."
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Ошибка сервера."
+     *     )
+     * )
+     */
     public function actionSetPackaging()
     {
         $request = Yii::$app->request;
@@ -110,6 +178,31 @@ class SettingsController extends BuyerController
         ]);
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/v1/buyer/settings/set-delivery",
+     *     summary="Установить доставку",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"delivery_ids"},
+     *             @OA\Property(property="delivery_ids", type="array", @OA\Items(type="integer"), example={1, 2, 3})
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Доставка успешно установлена."
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Ошибка валидации."
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Ошибка сервера."
+     *     )
+     * )
+     */
     public function actionSetDelivery()
     {
         $request = Yii::$app->request;
@@ -146,6 +239,31 @@ class SettingsController extends BuyerController
         ]);
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/v1/buyer/settings/set-categories",
+     *     summary="Установить категории",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"category_ids"},
+     *             @OA\Property(property="category_ids", type="array", @OA\Items(type="integer"), example={1, 2, 3})
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Категории успешно установлены."
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Ошибка валидации."
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Ошибка сервера."
+     *     )
+     * )
+     */
     public function actionSetCategories()
     {
         $apiCodes = UserSettings::apiCodes();

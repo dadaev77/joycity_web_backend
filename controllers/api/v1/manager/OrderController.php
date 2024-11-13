@@ -27,6 +27,32 @@ class OrderController extends ManagerController
         return $behaviors;
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/v1/manager/order/arrived-to-warehouse/{id}",
+     *     summary="Отметить заказ как прибывший на склад",
+     *     tags={"Order"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID заказа",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Заказ успешно отмечен как прибывший на склад"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Заказ не найден"
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Нет доступа к заказу"
+     *     )
+     * )
+     */
     public function actionArrivedToWarehouse(int $id)
     {
         try {
@@ -62,6 +88,31 @@ class OrderController extends ManagerController
         }
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/manager/order/finish-order",
+     *     summary="Завершить заказ",
+     *     tags={"Order"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="order_id", type="integer", example=1)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Заказ успешно завершен"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Заказ не найден"
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Нет доступа к заказу"
+     *     )
+     * )
+     */
     public function actionFinishOrder()
     {
         $apiCodes = Order::apiCodes();
@@ -126,6 +177,17 @@ class OrderController extends ManagerController
         }
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/manager/order",
+     *     summary="Получить список заказов",
+     *     tags={"Order"},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешно получен список заказов"
+     *     )
+     * )
+     */
     public function actionIndex()
     {
         $apiCodes = Order::apiCodes();
@@ -188,6 +250,28 @@ class OrderController extends ManagerController
         );
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/manager/order/{id}",
+     *     summary="Получить информацию о заказе",
+     *     tags={"Order"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID заказа",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешно получена информация о заказе"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Заказ не найден"
+     *     )
+     * )
+     */
     public function actionView(int $id)
     {
         $apiCodes = Order::apiCodes();

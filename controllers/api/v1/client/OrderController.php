@@ -70,6 +70,42 @@ class OrderController extends ClientController
         return $behaviours;
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/client/order/create",
+     *     summary="Создать заказ",
+     *     description="Создает новый заказ для текущего пользователя.",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="product_id", type="integer", description="ID продукта"),
+     *             @OA\Property(property="product_name", type="string", description="Название продукта"),
+     *             @OA\Property(property="product_description", type="string", description="Описание продукта"),
+     *             @OA\Property(property="expected_quantity", type="integer", description="Ожидаемое количество"),
+     *             @OA\Property(property="type_delivery_id", type="integer", description="ID типа доставки"),
+     *             @OA\Property(property="type_delivery_point_id", type="integer", description="ID точки доставки"),
+     *             @OA\Property(property="delivery_point_address_id", type="integer", description="ID адреса доставки"),
+     *             @OA\Property(property="images", type="array", @OA\Items(type="string"), description="Изображения заказа")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Заказ успешно создан",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="info", type="object", description="Информация о заказе"),
+     *             @OA\Property(property="message", type="string", description="Сообщение об успешном создании")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Неверный запрос"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Внутренняя ошибка сервера"
+     *     )
+     * )
+     */
     public function actionCreate()
     {
         $user = User::getIdentity();
@@ -350,6 +386,42 @@ class OrderController extends ClientController
         }
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/v1/client/order/update/{id}",
+     *     summary="Обновить заказ",
+     *     description="Обновляет существующий заказ по ID.",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="expected_quantity", type="integer", description="Ожидаемое количество"),
+     *             @OA\Property(property="expected_price_per_item", type="number", format="float", description="Ожидаемая цена за единицу")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Заказ успешно обновлен",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="info", type="object", description="Информация о заказе"),
+     *             @OA\Property(property="message", type="string", description="Сообщение об успешном обновлении")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Заказ не найден"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Неверный запрос"
+     *     )
+     * )
+     */
     public function actionUpdate(int $id)
     {
         try {
@@ -431,6 +503,35 @@ class OrderController extends ClientController
         }
     }
 
+    /**
+     * @OA\Delete(
+     *     path="/api/v1/client/order/cancel/{id}",
+     *     summary="Отменить заказ",
+     *     description="Отменяет заказ по ID.",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Заказ успешно отменен",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="info", type="object", description="Информация о заказе"),
+     *             @OA\Property(property="message", type="string", description="Сообщение об успешной отмене")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Заказ не найден"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Неверный запрос"
+     *     )
+     * )
+     */
     public function actionCancel(int $id)
     {
         LogService::info('OrderController. actionCancel is called by user with email ' . User::getIdentity()->email);
@@ -459,6 +560,30 @@ class OrderController extends ClientController
         ]);
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/client/order/view/{id}",
+     *     summary="Получить информацию о заказе",
+     *     description="Возвращает информацию о заказе по ID.",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="info", type="object", description="Информация о заказе")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Заказ не найден"
+     *     )
+     * )
+     */
     public function actionView(int $id)
     {
         $apiCodes = Order::apiCodes();

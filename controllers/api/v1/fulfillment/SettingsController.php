@@ -21,6 +21,20 @@ class SettingsController extends FulfillmentController
         return $behaviors;
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/fulfillment/settings/self",
+     *     summary="Получить информацию о пользователе",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Пользователь не найден"
+     *     )
+     * )
+     */
     public function actionSelf()
     {
         $user = User::getIdentity();
@@ -28,6 +42,24 @@ class SettingsController extends FulfillmentController
         return ApiResponse::info(SettingsOutputService::getEntity($user->id));
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/v1/fulfillment/settings/update",
+     *     summary="Обновить настройки пользователя",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Неверный запрос"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Внутренняя ошибка сервера"
+     *     )
+     * )
+     */
     public function actionUpdate()
     {
         $apiCodes = User::apiCodes();

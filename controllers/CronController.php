@@ -16,12 +16,32 @@ class CronController extends Controller
         parent::init();
         Log::setController('CronController');
     }
+
+    /**
+     * @OA\Get(
+     *     path="/cron/create",
+     *     summary="Создать задачу cron",
+     *     @OA\Parameter(name="taskID", in="query", required=true, description="ID задачи"),
+     *     @OA\Response(response="200", description="Задача cron создана"),
+     *     @OA\Response(response="400", description="Неверный ID задачи")
+     * )
+     */
     public function actionCreate(string $taskID = null)
     {
         if (!$taskID) return;
         $command = '* * * * * curl -X GET "' . $_ENV['APP_URL'] . '/cron/distribution?taskID=' . $taskID . '"';
         exec(" crontab -l | { cat; echo '$command'; } | crontab - ");
     }
+
+    /**
+     * @OA\Get(
+     *     path="/cron/distribution",
+     *     summary="Распределить заказы",
+     *     @OA\Parameter(name="taskID", in="query", required=true, description="ID задачи"),
+     *     @OA\Response(response="200", description="Задача распределения выполнена"),
+     *     @OA\Response(response="404", description="Задача не найдена")
+     * )
+     */
     public function actionDistribution(string $taskID = null)
     {
         // Log::log('Distribution task started');
@@ -31,7 +51,7 @@ class CronController extends Controller
             !$actualTask ||
             $actualTask->status !== OrderDistribution::STATUS_IN_WORK
         ) {
-            Log::danger('Task not found or status is not "in_work. Removing job from list"');
+            Log::danger('Задача не найдена или статус не "в работе". Удаление задания из списка');
             $command = "crontab -l | grep -v 'taskID={$taskID}' | crontab -";
             exec($command);
             return;
@@ -41,12 +61,13 @@ class CronController extends Controller
         $currentBuyer = $actualTask->current_buyer_id;
         $nextBuyer = $this->getNextBuyer($buyers, $currentBuyer);
         $actualTask->current_buyer_id = $nextBuyer;
-        // Log::success('Current buyer id for task ' . $actualTask->id . ' is: ' . $nextBuyer);
+        // Log::success('Текущий ID покупателя для задачи ' . $actualTask->id . ' : ' . $nextBuyer);
         if (!$actualTask->save()) {
-            Log::danger('Error saving task');
+            Log::danger('Ошибка сохранения задачи');
             return;
         }
     }
+
     private function getNextBuyer(array $buyers, int $currentBuyer): int
     {
         $index = array_search($currentBuyer, $buyers);
@@ -55,6 +76,15 @@ class CronController extends Controller
         }
         return $buyers[$index + 1];
     }
+
+    /**
+     * @OA\Get(
+     *     path="/cron/update-rates",
+     *     summary="Обновить курсы валют",
+     *     @OA\Response(response="200", description="Курсы обновлены"),
+     *     @OA\Response(response="500", description="Ошибка сохранения курсов")
+     * )
+     */
     public function actionUpdateRates()
     {
         $rates = ExchangeRateService::getRate(['cny', 'usd']);
@@ -68,6 +98,15 @@ class CronController extends Controller
         }
         return $rate;
     }
+
+    /**
+     * @OA\Get(
+     *     path="/cron/clear-rates",
+     *     summary="Очистить старые курсы",
+     *     @OA\Response(response="200", description="Курсы очищены"),
+     *     @OA\Response(response="500", description="Ошибка очистки курсов")
+     * )
+     */
     public function actionClearRates()
     {
         $rates = Rate::find()->orderBy(['id' => SORT_DESC])->all();

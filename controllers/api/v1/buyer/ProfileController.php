@@ -41,6 +41,33 @@ class ProfileController extends BuyerController
         return $behaviours;
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/buyer/profile/self",
+     *     summary="Получить информацию о текущем пользователе",
+     *     @OA\Response(response="200", description="Успешный ответ")
+     * )
+     */
+    public function actionSelf()
+    {
+        $apiCodes = User::apiCodes();
+        $user = User::getIdentity();
+
+        return ApiResponse::codeInfo(
+            $apiCodes->SUCCESS,
+            ProfileOutputService::getEntity($user->id),
+        );
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/v1/buyer/profile/upload-avatar",
+     *     summary="Загрузить аватар пользователя",
+     *     @OA\Response(response="200", description="Успешный ответ"),
+     *     @OA\Response(response="400", description="Ошибка запроса"),
+     *     @OA\Response(response="500", description="Ошибка сервера")
+     * )
+     */
     public function actionUploadAvatar()
     {
         $apiCodes = User::apiCodes();
@@ -84,17 +111,15 @@ class ProfileController extends BuyerController
         }
     }
 
-    public function actionSelf()
-    {
-        $apiCodes = User::apiCodes();
-        $user = User::getIdentity();
-
-        return ApiResponse::codeInfo(
-            $apiCodes->SUCCESS,
-            ProfileOutputService::getEntity($user->id),
-        );
-    }
-
+    /**
+     * @OA\Put(
+     *     path="/api/v1/buyer/profile/update",
+     *     summary="Обновить информацию о пользователе",
+     *     @OA\Response(response="200", description="Успешный ответ"),
+     *     @OA\Response(response="400", description="Ошибка валидации"),
+     *     @OA\Response(response="500", description="Ошибка сервера")
+     * )
+     */
     public function actionUpdate()
     {
         $apiCodes = User::apiCodes();
@@ -150,6 +175,15 @@ class ProfileController extends BuyerController
         }
     }
 
+    /**
+     * @OA\Delete(
+     *     path="/api/v1/buyer/profile/delete",
+     *     summary="Удалить профиль пользователя",
+     *     @OA\Response(response="200", description="Успеш��ый ответ"),
+     *     @OA\Response(response="400", description="Ошибка при удалении"),
+     *     @OA\Response(response="500", description="Ошибка сервера")
+     * )
+     */
     public function actionDelete()
     {
         $user = Yii::$app->user->identity;

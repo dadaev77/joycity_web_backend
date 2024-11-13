@@ -20,6 +20,33 @@ class RateController extends InternalController
         return $behaviors;
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/internal/constants/rate/",
+     *     tags={"Rate"},
+     *     summary="Get list of rates",
+     *     @OA\Response(response="200", description="Successful response")
+     * )
+     */
+    public function actionIndex()
+    {
+        $rate = Rate::find();
+
+        return ApiResponse::collection(
+            RateOutputService::getCollection($rate->column()),
+        );
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/v1/internal/constants/rate/create",
+     *     tags={"Rate"},
+     *     summary="Create a new rate",
+     *     @OA\Response(response="200", description="Rate created successfully"),
+     *     @OA\Response(response="400", description="Validation error"),
+     *     @OA\Response(response="500", description="Internal server error")
+     * )
+     */
     public function actionCreate()
     {
         $rate = new Rate();
@@ -38,6 +65,18 @@ class RateController extends InternalController
         return ApiResponse::info(RateOutputService::getEntity($rate->id));
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/v1/internal/constants/rate/update/{id}",
+     *     tags={"Rate"},
+     *     summary="Update an existing rate",
+     *     @OA\Parameter(name="id", in="path", required=true, description="Rate ID", @OA\Schema(type="integer")),
+     *     @OA\Response(response="200", description="Rate updated successfully"),
+     *     @OA\Response(response="404", description="Rate not found"),
+     *     @OA\Response(response="400", description="Validation error"),
+     *     @OA\Response(response="500", description="Internal server error")
+     * )
+     */
     public function actionUpdate(int $id)
     {
         $apiCodes = Rate::apiCodes();
@@ -62,12 +101,28 @@ class RateController extends InternalController
         return ApiResponse::info(RateOutputService::getEntity($rate->id));
     }
 
-    public function actionIndex()
+    /**
+     * @OA\Delete(
+     *     path="/api/v1/internal/constants/rate/delete/{id}",
+     *     tags={"Rate"},
+     *     summary="Delete a rate",
+     *     @OA\Parameter(name="id", in="path", required=true, description="Rate ID", @OA\Schema(type="integer")),
+     *     @OA\Response(response="200", description="Rate deleted successfully"),
+     *     @OA\Response(response="404", description="Rate not found"),
+     *     @OA\Response(response="500", description="Internal server error")
+     * )
+     */
+    public function actionDelete(int $id)
     {
-        $rate = Rate::find();
+        $apiCodes = Rate::apiCodes();
+        $rate = Rate::findOne(['id' => $id]);
 
-        return ApiResponse::collection(
-            RateOutputService::getCollection($rate->column()),
-        );
+        if (!$rate) {
+            return ApiResponse::code($apiCodes->NOT_FOUND);
+        }
+
+        $rate->delete();
+
+        return ApiResponse::code($apiCodes->SUCCESS);
     }
 }

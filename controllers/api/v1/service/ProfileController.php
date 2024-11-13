@@ -19,6 +19,15 @@ class ProfileController extends ServiceController
         return $behaviors;
     }
 
+    /**
+     * @OA\Get(
+     *   path="/api/v1/service/profile/info",
+     *   summary="Get user info",
+     *   @OA\Response(response=200, description="OK"),
+     *   @OA\Response(response=401, description="Unauthorized"),
+     *   @OA\Response(response=404, description="Not Found")
+     * )
+     */
     public function actionInfo()
     {
         try {

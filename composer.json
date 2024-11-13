@@ -7,6 +7,11 @@
     "basic",
     "project template"
   ],
+  "autoload": {
+    "psr-4": {
+      "app\\": "./"
+    }
+  },
   "homepage": "http://www.yiiframework.com/",
   "type": "project",
   "license": "BSD-3-Clause",
@@ -58,6 +63,7 @@
     }
   },
   "scripts": {
+    "swagger": "./vendor/bin/openapi -o ./swagger.json ./controllers",
     "post-create-project-cmd": [
       "yii\\composer\\Installer::postCreateProject"
     ]

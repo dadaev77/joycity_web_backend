@@ -21,6 +21,34 @@ class FulfillmentOfferController extends ClientController
         return $behaviors;
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/v1/client/order/fulfillment-offer/{id}/accept",
+     *     summary="Accept a fulfillment offer",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Offer accepted successfully"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Offer not found"
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="No access to accept the offer"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error"
+     *     )
+     * )
+     */
     public function actionAccept(int $id)
     {
         $apiCodes = FulfillmentOffer::apiCodes();
@@ -35,7 +63,7 @@ class FulfillmentOfferController extends ClientController
 
             if (
                 $fulfillmentOffer->status !==
-                    FulfillmentOffer::STATUS_CREATED ||
+                FulfillmentOffer::STATUS_CREATED ||
                 $fulfillmentOffer->order->created_by !== $user->id
             ) {
                 return ApiResponse::code($apiCodes->NO_ACCESS);

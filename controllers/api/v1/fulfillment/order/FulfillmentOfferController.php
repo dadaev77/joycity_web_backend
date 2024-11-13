@@ -22,6 +22,28 @@ class FulfillmentOfferController extends FulfillmentController
         return $behaviors;
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/fulfillment/order/offer/create",
+     *     summary="Создать предложение по выполнению",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Неверный запрос"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Заказ не найден"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Внутренняя ошибка сервера"
+     *     )
+     * )
+     */
     public function actionCreate()
     {
         $apiCodes = FulfillmentOffer::apiCodes();
@@ -97,6 +119,31 @@ class FulfillmentOfferController extends FulfillmentController
         }
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/v1/fulfillment/order/offer/update/{id}",
+     *     summary="Обновить предложение по выполнению",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID предложения",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Предложение не найдено"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Внутренняя ошибка сервера"
+     *     )
+     * )
+     */
     public function actionUpdate(int $id)
     {
         $apiCodes = FulfillmentOffer::apiCodes();
