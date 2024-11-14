@@ -1,31 +1,33 @@
-<!DOCTYPE html>
-<html lang="en">
+<?php
 
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="SwaggerUI" />
-    <title>SwaggerUI</title>
-    <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui.css" />
-</head>
+$loginPage = './login.php';
+$contentPage = './content.php';
+$getAuth = $_COOKIE['auth'] ?? false;
 
-<body>
-    <div id="swagger-ui"></div>
-    <script src="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui-bundle.js" crossorigin></script>
-    <script src="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui-standalone-preset.js" crossorigin></script>
-    <script>
-        window.onload = () => {
-            window.ui = SwaggerUIBundle({
-                url: './swagger.json',
-                dom_id: '#swagger-ui',
-                presets: [
-                    SwaggerUIBundle.presets.apis,
-                    SwaggerUIStandalonePreset
-                ],
-                layout: "StandaloneLayout",
-            });
-        };
-    </script>
-</body>
+$authData = [
+    'login' => 'joycity',
+    'password' => 'friflex'
+];
 
-</html>
+$postData = $_POST ?? [];
+
+$isAuth = auth($postData, $authData);
+
+
+if ($isAuth) {
+    setcookie('auth', true, time() + 3600, '/');
+}
+
+if ($isAuth) {
+    include $contentPage;
+} else {
+    include $loginPage;
+}
+
+function auth($postData, $authData)
+{
+    if (!empty($postData)) {
+        return $postData['login'] === $authData['login'] && $postData['password'] === $authData['password'];
+    }
+    return false;
+}
