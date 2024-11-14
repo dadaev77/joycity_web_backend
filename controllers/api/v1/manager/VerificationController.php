@@ -25,7 +25,7 @@ class VerificationController extends ManagerController
 
     /**
      * @OA\Get(
-     *     path="/api/v1/manager/view/{id}",
+     *     path="/api/v1/manager/verification/{id}",
      *     summary="Просмотр запроса на верификацию",
      *     tags={"Verification"},
      *     @OA\Parameter(
@@ -62,7 +62,7 @@ class VerificationController extends ManagerController
 
     /**
      * @OA\Get(
-     *     path="/api/v1/manager/index",
+     *     path="/api/v1/manager/verification",
      *     summary="Получить список запросов на верификацию",
      *     tags={"Verification"},
      *     @OA\Response(
@@ -90,7 +90,7 @@ class VerificationController extends ManagerController
 
     /**
      * @OA\Put(
-     *     path="/api/v1/manager/approve/{id}",
+     *     path="/api/v1/manager/verification/approve/{id}",
      *     summary="Одобрить запрос на верификацию",
      *     tags={"Verification"},
      *     @OA\Parameter(

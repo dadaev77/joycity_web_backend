@@ -63,7 +63,7 @@
     }
   },
   "scripts": {
-    "swagger": "./vendor/bin/openapi -o ./swagger.json ./controllers",
+    "swagger": "./vendor/bin/openapi -o ./entrypoint/api/swagger/swagger.json ./controllers",
     "post-create-project-cmd": [
       "yii\\composer\\Installer::postCreateProject"
     ]

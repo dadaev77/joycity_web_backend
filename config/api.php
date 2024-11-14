@@ -149,6 +149,7 @@ $config = [
                     ],
                     'pluralize' => false,
                 ],
+                'swagger' => '/swagger',
                 'sign-up' => 'api/v1/auth/register',
                 'api/v1/<controller>/<id:\d+>/<action>' =>
                 'api/v1/<controller>/<action>',

@@ -127,7 +127,7 @@ class AuthController extends V1Controller implements ApiAuth
             ->one();
 
         if (!$user) {
-            return ApiResponse::code(User::apiCodes()->CREDENTIALS_NOT_PASSED);
+            return ApiResponse::code(User::apiCodes()->CREDENTIALS_NOT_FOUND);
         }
         if ($user->role !== $params['role']) {
             return ApiResponse::code(
