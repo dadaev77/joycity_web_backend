@@ -29,6 +29,28 @@ class AuthController extends V1Controller implements ApiAuth
     private const PASSWORD_RESET_CODE_KEY = 'password_reset_code_<CODE>';
     private const EMAIL_UPDATE_CODE_KEY = 'email_update_code_<CODE>';
 
+    public function behaviors()
+    {
+        $behaviors = parent::behaviors();
+        $behaviors['verbFilter']['actions']['login'] = ['post'];
+        $behaviors['verbFilter']['actions']['logout'] = ['post'];
+        $behaviors['verbFilter']['actions']['register'] = ['post'];
+        $behaviors['verbFilter']['actions']['email-check'] = ['post'];
+        $behaviors['verbFilter']['actions']['update-email-step-1'] = ['put'];
+        $behaviors['verbFilter']['actions']['update-email-step-2'] = ['put'];
+        $behaviors['verbFilter']['actions']['change-password'] = ['put'];
+        $behaviors['verbFilter']['actions']['twilio-token'] = ['get'];
+        $behaviors['authenticator']['except'] = [
+            'login',
+            'email-check',
+            'register',
+            'reset-password-step-1',
+            'reset-password-step-2',
+            'reset-password-step-3',
+        ];
+
+        return $behaviors;
+    }
     /**
      * @OA\Post(
      *     path="/api/v1/auth/login",
