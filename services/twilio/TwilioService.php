@@ -74,7 +74,11 @@ class TwilioService
     // todo #implement
     public static function closeConversation()
     {
-        //
+        /**
+         * Удаление чатов
+         * Поставить все сообщения в статус прочитано
+         * 
+         */
     }
 
     public static function generateJWT(

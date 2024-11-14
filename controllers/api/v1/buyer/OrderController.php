@@ -42,7 +42,7 @@ class OrderController extends BuyerController
 
     /**
      * @OA\Get(
-     *     path="/api/v1/buyer/order/view/{id}",
+     *     path="/api/v1/buyer/order/{id}",
      *     summary="Получить информацию о заказе",
      *     @OA\Parameter(
      *         name="id",

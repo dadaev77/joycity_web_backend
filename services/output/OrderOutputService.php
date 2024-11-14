@@ -56,6 +56,7 @@ class OrderOutputService extends OutputService
             'subcategory',
 
             'product' => fn($q) => $q->select(['id', 'name_ru', 'description_ru', 'product_height', 'product_width', 'product_depth', 'product_weight'])->with(['attachments']),
+
             'productInspectionReports',
             'fulfillmentInspectionReport',
             'fulfillmentStockReport' => fn($q) => $q->with(['attachments']),
@@ -133,6 +134,9 @@ class OrderOutputService extends OutputService
             };
 
             if ($info['product']) {
+
+                // TODO: add product name, description
+
                 $info['attachments'] = array_merge(
                     $info['attachments'],
                     $info['product']['attachments'],

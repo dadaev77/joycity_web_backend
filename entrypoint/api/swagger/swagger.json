@@ -125,7 +125,7 @@
         "/raw/fetch-chats": {
             "get": {
                 "summary": "Получить чаты из Twilio",
-                "operationId": "05eb30259de4131a1245ef88702e4bbd",
+                "operationId": "e1b2cc31a4752e1168e013e55c9b9576",
                 "responses": {
                     "200": {
                         "description": "Чаты успешно получены"
@@ -150,16 +150,16 @@
                 }
             }
         },
-        "/raw/create-chat": {
-            "post": {
-                "summary": "Создать чат",
-                "operationId": "89e40eb8fec88ba260505283d5a0b408",
+        "/raw/truncate-tables": {
+            "get": {
+                "summary": "Очистить таблицы",
+                "operationId": "bc8eed8b17e7647cc627d2591c832c16",
                 "responses": {
                     "200": {
-                        "description": "Чат успешно создан"
+                        "description": "Таблицы успешно очищены"
                     },
                     "500": {
-                        "description": "Ошибка создания чата"
+                        "description": "Ошибка очистки таблиц"
                     }
                 }
             }
@@ -2503,10 +2503,10 @@
                 }
             }
         },
-        "/api/v1/buyer/order/view/{id}": {
+        "/api/v1/buyer/order/{id}": {
             "get": {
                 "summary": "Получить информацию о заказе",
-                "operationId": "fc5ba0fdf995e6820483b7198b9db6b0",
+                "operationId": "15ae0e11a2256ce37d1c6d29ae8467f6",
                 "parameters": [
                     {
                         "name": "id",

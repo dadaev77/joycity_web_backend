@@ -192,17 +192,11 @@ class RawController extends Controller
      *     @OA\Response(response="404", description="Чат не найден")
      * )
      */
-    public function actionFetchChats()
+    public function actionDropChats()
     {
-        $client = new Client(
-            $_ENV['TWILIO_ACCOUNT_SID'],
-            $_ENV['TWILIO_AUTH_TOKEN']
-        );
-
-        $chatSid = 'CH2c3f2f19547d46d08afb084eaa9256b6';
-        $conversation = $client->conversations->v1->conversations($chatSid)->fetch();
-        $participiants = $client->conversations->v1->conversations($chatSid)->participants->read();
-        return $participiants;
+        $twilio = \app\services\twilio\TwilioService::getClient();
+        $conversations = $twilio->conversations->v1->conversations->read();
+        var_dump($conversations);
     }
 
     /**
@@ -227,63 +221,79 @@ class RawController extends Controller
     }
 
     /**
-     * @OA\Post(
-     *     path="/raw/create-chat",
-     *     summary="Создать чат",
-     *     @OA\Response(response="200", description="Чат успешно создан"),
-     *     @OA\Response(response="500", description="Ошибка создания чата")
+     * @OA\Get(
+     *     path="/raw/truncate-tables",
+     *     summary="Очистить таблицы",
+     *     @OA\Response(response="200", description="Таблицы успешно очищены"),
+     *     @OA\Response(response="500", description="Ошибка очистки таблиц")
      * )
      */
-    public function actionCreateChat()
+    public function actionTruncateTables()
     {
-        $clientID = 2;
-        $managerID = 5;
-        $buyerID = 11;
-        $fulfilmentID = 20;
-        $orderID = 43;
-
+        //
+        $tables = [
+            // 'app_option',
+            'attachment',
+            'buyer_delivery_offer',
+            'buyer_offer',
+            // 'category',
+            'chat',
+            'chat_translate',
+            'chat_user',
+            // 'delivery_point_address',
+            'feedback_buyer',
+            'feedback_buyer_link_attachment',
+            'feedback_product',
+            'feedback_product_link_attachment',
+            'feedback_user',
+            'feedback_user_link_attachment',
+            'fulfillment_inspection_report',
+            'fulfillment_marketplace_transaction',
+            'fulfillment_offer',
+            'fulfillment_packaging_labeling',
+            'fulfillment_stock_report',
+            'fulfillment_stock_report_link_attachment',
+            // 'migration',
+            'notification',
+            'order',
+            'order_distribution',
+            'order_link_attachment',
+            'order_rate',
+            'order_tracking',
+            'packaging_report_link_attachment',
+            // 'privacy_policy',
+            'product',
+            'product_inspection_report',
+            'product_link_attachment',
+            'product_stock_report',
+            'product_stock_report_link_attachment',
+            // 'rate',
+            // 'type_delivery',
+            // 'type_delivery_link_category',
+            // 'type_delivery_point',
+            // 'type_delivery_price',
+            // 'type_packaging',
+            // 'user',
+            // 'user_link_category',
+            // 'user_link_type_delivery',
+            // 'user_link_type_packaging',
+            // 'user_settings',
+            'user_verification_request',
+        ];
         try {
-            $client_manager = ChatConstructorService::createChatOrder(
-                Chat::GROUP_CLIENT_MANAGER,
-                [$clientID, $managerID],
-                $orderID ?? null,
-            );
+            Yii::$app->db->createCommand("SET foreign_key_checks = 0")->execute();
 
-            $client_manager_buyer = ChatConstructorService::createChatOrder(
-                Chat::GROUP_CLIENT_BUYER_MANAGER,
-                [$clientID, $buyerID, $managerID],
-                $orderID ?? null,
-            );
-
-            $client_fulfilment_manager = ChatConstructorService::createChatOrder(
-                Chat::GROUP_CLIENT_FULFILMENT_MANAGER,
-                [$clientID, $fulfilmentID, $managerID],
-                $orderID ?? null,
-            );
-
-            if ($client_manager->success) {
-                echo "Чат [client_manager] успешно создан с Twilio ID: " . $client_manager->data->twilio_id . "\n";
-            } else {
-                throw new Exception("Ошибка создания чата [client_manager]: " . json_encode($client_manager->errors));
+            foreach ($tables as $table) {
+                Yii::$app->db->createCommand()->truncateTable($table)->execute();
             }
-
-            if ($client_manager_buyer->success) {
-                echo "Чат [client_manager_buyer] успешно создан с Twilio ID: " . $client_manager_buyer->data->twilio_id . "\n";
-            } else {
-                throw new Exception("Ошибка создания чата [client_manager_buyer]: " . json_encode($client_manager_buyer->errors));
-            }
-
-            if ($client_fulfilment_manager->success) {
-                echo "Чат [client_fulfilment_manager] успешно создан с Twilio ID: " . $client_fulfilment_manager->data->twilio_id . "\n";
-            } else {
-                throw new Exception("Ошибка создания чата [client_fulfilment_manager]: " . json_encode($client_fulfilment_manager->errors));
-            }
-        } catch (Exception $e) {
+            Yii::$app->db->createCommand("SET foreign_key_checks = 1")->execute();
+            Yii::$app->response->format = Response::FORMAT_JSON;
             return [
-                'client_manager' => $client_manager->reason,
-                'client_manager_buyer' => $client_manager_buyer->reason,
-                'client_fulfilment_manager' => $client_fulfilment_manager->reason,
+                'status' => 'ok',
+                'message' => 'Таблицы успешно очищены'
             ];
+        } catch (\Exception $e) {
+            return $e->getMessage();
         }
     }
 }
