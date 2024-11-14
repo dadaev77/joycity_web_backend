@@ -78,9 +78,9 @@ class ProductStockReport extends \app\models\Base
     }
     public function getAttachments()
     {
-        return $this->hasMany(Attachment::class, [
-            'id' => 'attachment_id',
-        ])->via('productStockReportLinkAttachments');
+        return $this->hasMany(Attachment::class, ['id' => 'attachment_id'])
+            ->andOnCondition(['img_size' => 'small'])
+            ->via('productStockReportLinkAttachments');
     }
 
     public static function apiCodes(): BuyerStockReportCodes

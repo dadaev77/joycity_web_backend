@@ -7098,7 +7098,12 @@
                     "403": {
                         "description": "Нет доступа к заказу"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
             }
         },
         "/api/v1/manager/order/finish-order": {
@@ -7134,7 +7139,12 @@
                     "403": {
                         "description": "Нет доступа к заказу"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
             }
         },
         "/api/v1/manager/order": {
@@ -7148,7 +7158,12 @@
                     "200": {
                         "description": "Успешно получен список заказов"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
             }
         },
         "/api/v1/manager/order/{id}": {
@@ -7176,7 +7191,12 @@
                     "404": {
                         "description": "Заказ не найден"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
             }
         },
         "/api/v1/manager/verification/{id}": {

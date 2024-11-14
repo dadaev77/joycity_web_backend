@@ -30,6 +30,7 @@ class OrderController extends ManagerController
     /**
      * @OA\Put(
      *     path="/api/v1/manager/order/arrived-to-warehouse/{id}",
+     *     security={{"Bearer": {}}},
      *     summary="Отметить заказ как прибывший на склад",
      *     tags={"Order"},
      *     @OA\Parameter(
@@ -91,6 +92,7 @@ class OrderController extends ManagerController
     /**
      * @OA\Post(
      *     path="/api/v1/manager/order/finish-order",
+     *     security={{"Bearer": {}}},
      *     summary="Завершить заказ",
      *     tags={"Order"},
      *     @OA\RequestBody(
@@ -180,6 +182,7 @@ class OrderController extends ManagerController
     /**
      * @OA\Get(
      *     path="/api/v1/manager/order",
+     *     security={{"Bearer": {}}},
      *     summary="Получить список заказов",
      *     tags={"Order"},
      *     @OA\Response(
@@ -253,6 +256,7 @@ class OrderController extends ManagerController
     /**
      * @OA\Get(
      *     path="/api/v1/manager/order/{id}",
+     *     security={{"Bearer": {}}},
      *     summary="Получить информацию о заказе",
      *     tags={"Order"},
      *     @OA\Parameter(
