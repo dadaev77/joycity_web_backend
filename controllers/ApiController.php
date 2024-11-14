@@ -15,6 +15,13 @@ use yii\web\Response;
  *     description="Документация API для приложения JoyCity"
  * )
  * @OA\PathItem(path="/api")
+ * @OA\SecurityScheme(
+ *     securityScheme="Bearer",
+ *     type="http",
+ *     scheme="bearer",
+ *     bearerFormat="JWT",
+ *     description="Введите ваш Bearer токен в формате JWT"
+ * )
  */
 class ApiController extends ActiveController
 {

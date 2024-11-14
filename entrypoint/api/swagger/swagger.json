@@ -3972,7 +3972,12 @@
                     "500": {
                         "description": "Внутренняя ошибка сервера"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
             }
         },
         "/api/v1/client/order/update/{id}": {
@@ -4038,7 +4043,12 @@
                     "400": {
                         "description": "Неверный запрос"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
             }
         },
         "/api/v1/client/order/cancel/{id}": {
@@ -4083,14 +4093,19 @@
                     "400": {
                         "description": "Неверный запрос"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
             }
         },
-        "/api/v1/client/order/view/{id}": {
+        "/api/v1/client/order/{id}": {
             "get": {
                 "summary": "Получить информацию о заказе",
                 "description": "Возвращает информацию о заказе по ID.",
-                "operationId": "de5b84163f36c34f784cc35635ce97c7",
+                "operationId": "d11a2b82baa0184e419b7c0a8dfc1ff1",
                 "parameters": [
                     {
                         "name": "id",
@@ -4121,7 +4136,283 @@
                     "404": {
                         "description": "Заказ не найден"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/client/order/my": {
+            "get": {
+                "summary": "Получить мои заказы",
+                "description": "Возвращает заказы текущего пользователя.",
+                "operationId": "ac7e6a2dcb66b70be1d56b4e0e94efbd",
+                "parameters": [
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "request"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешный ответ",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "info": {
+                                            "description": "Список заказов",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/client/order/history": {
+            "get": {
+                "summary": "Получить историю заказов",
+                "description": "Возвращает историю заказов текущего пользователя.",
+                "operationId": "bf567e1e41e4614b21e5ddb63b8e5347",
+                "parameters": [
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "request"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешный ответ",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "info": {
+                                            "description": "Список заказов",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/client/order/fulfillment-list": {
+            "get": {
+                "summary": "Получить список фулфилмента",
+                "description": "Возвращает список пользователей с ролью фулфилмента.",
+                "operationId": "e66230797fbdd6a552d0fa6929d0dc0f",
+                "responses": {
+                    "200": {
+                        "description": "Успешный ответ",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "info": {
+                                            "description": "Список фулфилмента",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/client/order/set-link-tz/{id}": {
+            "post": {
+                "summary": "Установить ссылку на TZ",
+                "description": "Устанавливает ссылку на TZ для заказа по ID.",
+                "operationId": "970315b6b5e6b47313a51db68f2a95fa",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "link_tz": {
+                                        "description": "Ссылка на TZ",
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Ссылка на TZ успешно установлена",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "info": {
+                                            "description": "Информация о заказе",
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Заказ не найден"
+                    },
+                    "400": {
+                        "description": "Неверный запрос"
+                    }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/client/order/calculate-price": {
+            "post": {
+                "summary": "Рассчитать цену",
+                "description": "Рассчитывает цену на основе переданных параметров.",
+                "operationId": "7241ed5db7fbd7cf0dc968d71ee02574",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "product_price": {
+                                        "description": "Цена продукта",
+                                        "type": "number",
+                                        "format": "float"
+                                    },
+                                    "product_quantity": {
+                                        "description": "Количество продукта",
+                                        "type": "integer"
+                                    },
+                                    "product_width": {
+                                        "description": "Ширина продукта",
+                                        "type": "number",
+                                        "format": "float"
+                                    },
+                                    "product_height": {
+                                        "description": "Высота продукта",
+                                        "type": "number",
+                                        "format": "float"
+                                    },
+                                    "product_depth": {
+                                        "description": "Глубина продукта",
+                                        "type": "number",
+                                        "format": "float"
+                                    },
+                                    "product_weight": {
+                                        "description": "Вес продукта",
+                                        "type": "number",
+                                        "format": "float"
+                                    },
+                                    "packaging_quantity": {
+                                        "description": "Количество упаковок",
+                                        "type": "integer"
+                                    },
+                                    "type_delivery_id": {
+                                        "description": "ID типа доставки",
+                                        "type": "integer"
+                                    },
+                                    "type_packaging_id": {
+                                        "description": "ID типа упаковки",
+                                        "type": "integer"
+                                    },
+                                    "calculation_type": {
+                                        "description": "Тип расчета",
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Успешный ответ с рассчитанной ценой",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "price": {
+                                            "description": "Рассчитанная цена",
+                                            "type": "number",
+                                            "format": "float"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
             }
         },
         "/api/v1/client/product/view": {
@@ -4199,7 +4490,12 @@
                     "500": {
                         "description": "Ошибка сервера"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
             }
         },
         "/api/v1/client/profile/self": {
@@ -4214,7 +4510,12 @@
                     "404": {
                         "description": "Пользователь не найден"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
             }
         },
         "/api/v1/client/profile/update": {
@@ -4272,7 +4573,12 @@
                     "404": {
                         "description": "Пользователь не найден"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
             }
         },
         "/api/v1/client/profile/delete": {
@@ -4290,7 +4596,12 @@
                     "500": {
                         "description": "Ошибка сервера"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
             }
         },
         "/api/v1/client/search/hints": {
@@ -7219,6 +7530,16 @@
                         "description": "Not Found"
                     }
                 }
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "Bearer": {
+                "type": "http",
+                "description": "Введите ваш Bearer токен в формате JWT",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
             }
         }
     },

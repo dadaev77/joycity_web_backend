@@ -135,8 +135,10 @@ class OrderOutputService extends OutputService
 
             if ($info['product']) {
 
-                // TODO: add product name, description
-
+                $info['product']['name'] = $model->product_name_ru;
+                $info['product']['description'] = $model->product_description_ru;
+                unset($info['product']['name_ru']);
+                unset($info['product']['description_ru']);
                 $info['attachments'] = array_merge(
                     $info['attachments'],
                     $info['product']['attachments'],

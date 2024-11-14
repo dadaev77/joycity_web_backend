@@ -44,6 +44,7 @@ class ProfileController extends ClientController
     /**
      * @OA\Post(
      *     path="/api/v1/client/profile/upload-avatar",
+     *     security={{"Bearer":{}}},
      *     summary="Загрузить аватар пользователя",
      *     description="Загружает аватар для текущего пользователя.",
      *     @OA\RequestBody(
@@ -113,6 +114,7 @@ class ProfileController extends ClientController
     /**
      * @OA\Get(
      *     path="/api/v1/client/profile/self",
+     *     security={{"Bearer":{}}},
      *     summary="Получить информацию о текущем пользователе",
      *     description="Возвращает информацию о текущем пользователе.",
      *     @OA\Response(
@@ -143,6 +145,7 @@ class ProfileController extends ClientController
     /**
      * @OA\Put(
      *     path="/api/v1/client/profile/update",
+     *     security={{"Bearer":{}}},
      *     summary="Обновить информацию о пользователе",
      *     description="Обновляет информацию о пользователе на основе переданных данных.",
      *     @OA\RequestBody(
@@ -224,6 +227,7 @@ class ProfileController extends ClientController
     /**
      * @OA\Delete(
      *     path="/api/v1/client/profile/delete",
+     *     security={{"Bearer":{}}},
      *     summary="Удалить профиль пользователя",
      *     description="Удаляет профиль текущего пользователя, если у него нет активных заказов.",
      *     @OA\Response(

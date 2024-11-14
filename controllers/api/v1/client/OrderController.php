@@ -73,6 +73,7 @@ class OrderController extends ClientController
     /**
      * @OA\Post(
      *     path="/api/v1/client/order/create",
+     *     security={{"Bearer":{}}},
      *     summary="Создать заказ",
      *     description="Создает новый заказ для текущего пользователя.",
      *     @OA\RequestBody(
@@ -389,6 +390,7 @@ class OrderController extends ClientController
     /**
      * @OA\Put(
      *     path="/api/v1/client/order/update/{id}",
+     *     security={{"Bearer":{}}},
      *     summary="Обновить заказ",
      *     description="Обновляет существующий заказ по ID.",
      *     @OA\Parameter(
@@ -506,6 +508,7 @@ class OrderController extends ClientController
     /**
      * @OA\Delete(
      *     path="/api/v1/client/order/cancel/{id}",
+     *     security={{"Bearer":{}}},
      *     summary="Отменить заказ",
      *     description="Отменяет заказ по ID.",
      *     @OA\Parameter(
@@ -562,7 +565,8 @@ class OrderController extends ClientController
 
     /**
      * @OA\Get(
-     *     path="/api/v1/client/order/view/{id}",
+     *     path="/api/v1/client/order/{id}",
+     *     security={{"Bearer":{}}},
      *     summary="Получить информацию о заказе",
      *     description="Возвращает информацию о заказе по ID.",
      *     @OA\Parameter(
@@ -606,6 +610,27 @@ class OrderController extends ClientController
         ]);
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/client/order/my",
+     *     security={{"Bearer": {}}},
+     *     summary="Получить мои заказы",
+     *     description="Возвращает заказы текущего пользователя.",
+     *     @OA\Parameter(
+     *         name="type",
+     *         in="query",
+     *         required=false,
+     *         @OA\Schema(type="string", default="request")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="info", type="array", @OA\Items(type="object"), description="Список заказов")
+     *         )
+     *     )
+     * )
+     */
     public function actionMy(string $type = 'request')
     {
         $user = User::getIdentity();
@@ -631,6 +656,27 @@ class OrderController extends ClientController
         );
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/client/order/history",
+     *     security={{"Bearer": {}}},
+     *     summary="Получить историю заказов",
+     *     description="Возвращает историю заказов текущего пользователя.",
+     *     @OA\Parameter(
+     *         name="type",
+     *         in="query",
+     *         required=false,
+     *         @OA\Schema(type="string", default="request")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="info", type="array", @OA\Items(type="object"), description="Список заказов")
+     *         )
+     *     )
+     * )
+     */
     public function actionHistory(string $type = 'request')
     {
         $user = User::getIdentity();
@@ -656,6 +702,21 @@ class OrderController extends ClientController
         );
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/client/order/fulfillment-list",
+     *     security={{"Bearer": {}}},
+     *     summary="Получить список фулфилмента",
+     *     description="Возвращает список пользователей с ролью фулфилмента.",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="info", type="array", @OA\Items(type="object"), description="Список фулфилмента")
+     *         )
+     *     )
+     * )
+     */
     public function actionFulfillmentList()
     {
         $users = User::find()
@@ -685,6 +746,41 @@ class OrderController extends ClientController
         return ApiResponse::collection($result);
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/client/order/set-link-tz/{id}",
+     *     security={{"Bearer": {}}},
+     *     summary="Установить ссылку на TZ",
+     *     description="Устанавливает ссылку на TZ для заказа по ID.",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="link_tz", type="string", description="Ссылка на TZ")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Ссылка на TZ успешно установлена",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="info", type="object", description="Информация о заказе")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Заказ не найден"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Неверный запрос"
+     *     )
+     * )
+     */
     public function actionSetLinkTz($id)
     {
         $request = Yii::$app->request;
@@ -710,6 +806,36 @@ class OrderController extends ClientController
         return ApiResponse::info(OrderOutputService::getEntity($order->id));
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/client/order/calculate-price",
+     *     security={{"Bearer": {}}},
+     *     summary="Рассчитать цену",
+     *     description="Рассчитывает цену на основе переданных параметров.",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="product_price", type="number", format="float", description="Цена продукта"),
+     *             @OA\Property(property="product_quantity", type="integer", description="Количество продукта"),
+     *             @OA\Property(property="product_width", type="number", format="float", description="Ширина продукта"),
+     *             @OA\Property(property="product_height", type="number", format="float", description="Высота продукта"),
+     *             @OA\Property(property="product_depth", type="number", format="float", description="Глубина продукта"),
+     *             @OA\Property(property="product_weight", type="number", format="float", description="Вес продукта"),
+     *             @OA\Property(property="packaging_quantity", type="integer", description="Количество упаковок"),
+     *             @OA\Property(property="type_delivery_id", type="integer", description="ID типа доставки"),
+     *             @OA\Property(property="type_packaging_id", type="integer", description="ID типа упаковки"),
+     *             @OA\Property(property="calculation_type", type="string", description="Тип расчета")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ с рассчитанной ценой",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="price", type="number", format="float", description="Рассчитанная цена")
+     *         )
+     *     )
+     * )
+     */
     public function actionCalculatePrice()
     {
         $request = Yii::$app->request;
