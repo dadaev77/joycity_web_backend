@@ -14,6 +14,7 @@ use app\services\output\BuyerDeliveryOfferOutputService;
 use app\services\RateService;
 use Throwable;
 use Yii;
+use app\services\UserActionLogService as Log;
 
 /**
  * @OA\Post(
@@ -168,25 +169,30 @@ class BuyerDeliveryOfferController extends ManagerController
             $user = User::getIdentity();
 
             $buyerDeliveryOffer = BuyerDeliveryOffer::findOne(['id' => $id]);
-
+            Log::log('buyerDeliveryOffer: ' . json_encode($buyerDeliveryOffer));
             if (!$buyerDeliveryOffer) {
+                Log::danger('buyerDeliveryOffer not found');
                 return ApiResponse::code($apiCodes->NOT_FOUND);
             }
 
             $order = $buyerDeliveryOffer->order;
+            Log::log('order: ' . json_encode($order));
 
             if (
                 $order->manager_id !== $user->id ||
                 $buyerDeliveryOffer->status === BuyerDeliveryOffer::STATUS_PAID
             ) {
+                Log::danger('no access');
                 return ApiResponse::code($apiCodes->NO_ACCESS);
             }
 
             $transaction = Yii::$app->db->beginTransaction();
 
             $buyerDeliveryOffer->status = BuyerDeliveryOffer::STATUS_PAID;
+            Log::log('buyerDeliveryOffer status: ' . $buyerDeliveryOffer->status);
 
             if (!$buyerDeliveryOffer->save()) {
+                Log::danger('buyerDeliveryOffer save error: ' . json_encode($buyerDeliveryOffer->getFirstErrors()));
                 return ApiResponse::transactionCodeErrors(
                     $transaction,
                     $apiCodes->ERROR_SAVE,
@@ -219,6 +225,7 @@ class BuyerDeliveryOfferController extends ManagerController
                 BuyerDeliveryOfferOutputService::getEntity($id),
             );
         } catch (Throwable $e) {
+            Log::danger('error: ' . json_encode($e->getMessage()));
             isset($transaction) && $transaction->rollBack();
 
             return ApiResponse::internalError($e);
