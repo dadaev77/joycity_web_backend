@@ -39,6 +39,63 @@ class ProfileController extends ManagerController
         return $behaviours;
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/manager/profile/self",
+     *     security={{"Bearer":{}}},
+     *     summary="Получить информацию о текущем пользователе",
+     *     description="Возвращает информацию о текущем пользователе.",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ"
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Не авторизован"
+     *     )
+     * )
+     */
+    public function actionSelf()
+    {
+        $userId = Yii::$app->user->identity->id;
+        $apiCodes = User::apiCodes();
+        $isset = User::isset(['id' => $userId]);
+
+        if (!$isset) {
+            return ApiResponse::byResponseCode($apiCodes->NOT_FOUND);
+        }
+
+        return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
+            'info' => ProfileOutputService::getEntity($userId),
+        ]);
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/v1/manager/profile/upload-avatar",
+     *     security={{"Bearer":{}}},
+     *     summary="Загрузить аватар пользователя",
+     *     description="Позволяет пользователю загрузить аватар.",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="images", type="array", @OA\Items(type="string", format="binary"))
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Ошибка валидации"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Внутренняя ошибка сервера"
+     *     )
+     * )
+     */
     public function actionUploadAvatar()
     {
         $apiCodes = User::apiCodes();
@@ -81,20 +138,38 @@ class ProfileController extends ManagerController
             return ApiResponse::byResponseCode($apiCodes->INTERNAL_ERROR);
         }
     }
-    public function actionSelf()
-    {
-        $userId = Yii::$app->user->identity->id;
-        $apiCodes = User::apiCodes();
-        $isset = User::isset(['id' => $userId]);
 
-        if (!$isset) {
-            return ApiResponse::byResponseCode($apiCodes->NOT_FOUND);
-        }
-
-        return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
-            'info' => ProfileOutputService::getEntity($userId),
-        ]);
-    }
+    /**
+     * @OA\Put(
+     *     path="/api/v1/manager/profile/update",
+     *     security={{"Bearer":{}}},
+     *     summary="Обновить информацию о пользователе",
+     *     description="Обновляет информацию о текущем пользователе.",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="name", type="string"),
+     *             @OA\Property(property="surname", type="string"),
+     *             @OA\Property(property="phone_number", type="string"),
+     *             @OA\Property(property="organization_name", type="string"),
+     *             @OA\Property(property="phone_country_code", type="string"),
+     *             @OA\Property(property="telegram", type="string")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Ошибка валидации"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Внутренняя ошибка сервера"
+     *     )
+     * )
+     */
     public function actionUpdate()
     {
         $apiCodes = User::apiCodes();
@@ -144,6 +219,27 @@ class ProfileController extends ManagerController
             return ApiResponse::internalError($e);
         }
     }
+
+    /**
+     * @OA\Delete(
+     *     path="/api/v1/manager/profile/delete",
+     *     security={{"Bearer":{}}},
+     *     summary="Удалить пользователя",
+     *     description="Удаляет текущего пользователя.",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Ошибка валидации"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Внутренняя ошибка сервера"
+     *     )
+     * )
+     */
     public function actionDelete()
     {
         $user = Yii::$app->user->identity;

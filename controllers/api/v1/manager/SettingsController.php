@@ -38,12 +38,58 @@ class SettingsController extends ManagerController
         return $behaviours;
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/manager/settings/self",
+     *     security={{"Bearer":{}}},
+     *     summary="Получить настройки текущего пользователя",
+     *     description="Возвращает настройки текущего пользователя.",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ"
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Не авторизован"
+     *     )
+     * )
+     */
     public function actionSelf()
     {
         $user = User::getIdentity();
 
         return ApiResponse::info(SettingsOutputService::getEntity($user->id));
     }
+
+    /**
+     * @OA\Put(
+     *     path="/api/v1/manager/settings/update",
+     *     security={{"Bearer":{}}},
+     *     summary="Обновить настройки пользователя",
+     *     description="Обновляет настройки текущего пользователя.",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="enable_notifications", type="boolean"),
+     *             @OA\Property(property="currency", type="string"),
+     *             @OA\Property(property="application_language", type="string"),
+     *             @OA\Property(property="chat_language", type="string")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Ошибка валидации"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Внутренняя ошибка сервера"
+     *     )
+     * )
+     */
     public function actionUpdate()
     {
         $apiCodes = User::apiCodes();
@@ -74,6 +120,33 @@ class SettingsController extends ManagerController
             return ApiResponse::internalError($e);
         }
     }
+
+    /**
+     * @OA\Put(
+     *     path="/api/v1/manager/settings/set-categories",
+     *     security={{"Bearer":{}}},
+     *     summary="Установить категории для пользователя",
+     *     description="Устанавливает категории для текущего пользователя.",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="category_ids", type="array", @OA\Items(type="integer"))
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Ошибка валидации"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Внутренняя ошибка сервера"
+     *     )
+     * )
+     */
     public function actionSetCategories()
     {
         $apiCodes = UserSettings::apiCodes();

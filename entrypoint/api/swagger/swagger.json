@@ -7199,6 +7199,252 @@
                 ]
             }
         },
+        "/api/v1/manager/profile/self": {
+            "get": {
+                "summary": "Получить информацию о текущем пользователе",
+                "description": "Возвращает информацию о текущем пользователе.",
+                "operationId": "be851845abfa791387da3e69065eede4",
+                "responses": {
+                    "200": {
+                        "description": "Успешный ответ"
+                    },
+                    "401": {
+                        "description": "Не авторизован"
+                    }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/manager/profile/upload-avatar": {
+            "post": {
+                "summary": "Загрузить аватар пользователя",
+                "description": "Позволяет пользователю загрузить аватар.",
+                "operationId": "deee54ba1fc517d61b2ed14d3ce9b8d1",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "images": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "format": "binary"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Успешный ответ"
+                    },
+                    "400": {
+                        "description": "Ошибка валидации"
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера"
+                    }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/manager/profile/update": {
+            "put": {
+                "summary": "Обновить информацию о пользователе",
+                "description": "Обновляет информацию о текущем пользователе.",
+                "operationId": "18b9ea4f97a3d6d3fc6ffc82239b12fd",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "surname": {
+                                        "type": "string"
+                                    },
+                                    "phone_number": {
+                                        "type": "string"
+                                    },
+                                    "organization_name": {
+                                        "type": "string"
+                                    },
+                                    "phone_country_code": {
+                                        "type": "string"
+                                    },
+                                    "telegram": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Успешный ответ"
+                    },
+                    "400": {
+                        "description": "Ошибка валидации"
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера"
+                    }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/manager/profile/delete": {
+            "delete": {
+                "summary": "Удалить пользователя",
+                "description": "Удаляет текущего пользователя.",
+                "operationId": "fb63d3038b8bdf371e521824ba367173",
+                "responses": {
+                    "200": {
+                        "description": "Успешный ответ"
+                    },
+                    "400": {
+                        "description": "Ошибка валидации"
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера"
+                    }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/manager/settings/self": {
+            "get": {
+                "summary": "Получить настройки текущего пользователя",
+                "description": "Возвращает настройки текущего пользователя.",
+                "operationId": "8018bd49e7dd2c04253dcf3cf6fc63b3",
+                "responses": {
+                    "200": {
+                        "description": "Успешный ответ"
+                    },
+                    "401": {
+                        "description": "Не авторизован"
+                    }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/manager/settings/update": {
+            "put": {
+                "summary": "Обновить настройки пользователя",
+                "description": "Обновляет настройки текущего пользователя.",
+                "operationId": "36559ba117b850e711f33532aca07781",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "enable_notifications": {
+                                        "type": "boolean"
+                                    },
+                                    "currency": {
+                                        "type": "string"
+                                    },
+                                    "application_language": {
+                                        "type": "string"
+                                    },
+                                    "chat_language": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Успешный ответ"
+                    },
+                    "400": {
+                        "description": "Ошибка валидации"
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера"
+                    }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/manager/settings/set-categories": {
+            "put": {
+                "summary": "Установить категории для пользователя",
+                "description": "Устанавливает категории для текущего пользователя.",
+                "operationId": "95349be5e1ef9da75e5c00fdd0755943",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "category_ids": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Успешный ответ"
+                    },
+                    "400": {
+                        "description": "Ошибка валидации"
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера"
+                    }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
+            }
+        },
         "/api/v1/manager/verification/{id}": {
             "get": {
                 "tags": [
