@@ -18,7 +18,6 @@ class BuyerDeliveryOfferOutputService extends OutputService
 
         return array_map(static function ($model) {
             $info = ModelTypeHelper::toArray($model);
-
             return $info;
         }, $query->all());
     }

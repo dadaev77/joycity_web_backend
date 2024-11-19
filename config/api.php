@@ -40,6 +40,7 @@ $config = [
             'on beforeSend' => static function ($event) {
                 ApiResponse::handleErrors($event->sender);
             },
+            'charset' => 'UTF-8',
         ],
 
         'request' => [

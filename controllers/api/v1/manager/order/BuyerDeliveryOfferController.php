@@ -226,8 +226,8 @@ class BuyerDeliveryOfferController extends ManagerController
             );
         } catch (Throwable $e) {
             Log::danger('error: ' . json_encode($e->getMessage()));
-            isset($transaction) && $transaction->rollBack();
 
+            isset($transaction) && $transaction->rollBack();
             return ApiResponse::internalError($e);
         }
     }
