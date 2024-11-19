@@ -125,7 +125,7 @@ class BuyerOfferController extends ManagerController
                 );
 
                 $conversationFulfilment = ChatConstructorService::createChatOrder(
-                    Chat::GROUP_CLIENT_FULFILMENT,
+                    Chat::GROUP_CLIENT_FULFILMENT_MANAGER,
                     [$order->created_by, $order->fulfillment_id, $order->manager_id],
                     $order->id,
                 );
