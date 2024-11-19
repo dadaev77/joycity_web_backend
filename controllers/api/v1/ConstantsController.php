@@ -221,7 +221,6 @@ class ConstantsController extends V1Controller
                 array_splice($categoriesIds, array_search($category->id, $categoriesIds), 1);
             }
         }
-
         return ApiResponse::collection(
             CategoryOutputService::getCollection($categoriesIds)
         );
