@@ -40,11 +40,6 @@ class Category extends Base
             [['en_name', 'ru_name', 'zh_name', 'avatar_id'], 'required'],
             [['is_deleted', 'avatar_id'], 'integer'],
             [['en_name', 'ru_name', 'zh_name'], 'string', 'max' => 255],
-            // [
-            //     ['en_name', 'ru_name', 'zh_name'],
-            //     'unique',
-            //     'targetClass' => self::class,
-            // ],
             [
                 ['avatar_id'],
                 'exist',
@@ -52,6 +47,7 @@ class Category extends Base
                 'targetClass' => Attachment::class,
                 'targetAttribute' => ['avatar_id' => 'id'],
             ],
+            [['parent_id'], 'integer'],
         ];
     }
 
@@ -67,6 +63,7 @@ class Category extends Base
             'zh_name' => 'Zh Name',
             'is_deleted' => 'Is Deleted',
             'avatar_id' => 'Avatar ID',
+            'parent_id' => 'Parent ID',
         ];
     }
 
