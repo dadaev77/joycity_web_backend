@@ -61,6 +61,11 @@ class BuyerDeliveryOfferController extends ManagerController
 
     public function actionCreate()
     {
+        /**
+         * Формируем:
+         * JoyCity313+Уникальный номер клиента в БД+номер груза+сколько мест занимает груз
+         * Например: JoyCity313-HMR 579-1378-7
+         */
         $apiCodes = Order::apiCodes();
 
         try {
@@ -75,6 +80,7 @@ class BuyerDeliveryOfferController extends ManagerController
                     'product_width',
                     'product_depth',
                     'product_weight',
+                    'amount_of_space',
                 ],
                 true,
             );
