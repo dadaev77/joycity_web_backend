@@ -67,12 +67,12 @@ class ProductOutputService extends OutputService
             };
 
             $info['price'] = [
-                'min' => min(
+                'min' => min(array_filter([
                     $info['range_1_price'],
                     $info['range_2_price'] ?? $info['range_1_price'],
                     $info['range_3_price'] ?? $info['range_1_price'],
                     $info['range_4_price'] ?? $info['range_1_price'],
-                ),
+                ], fn($price) => $price > 0)),
                 'max' => max(
                     $info['range_1_price'],
                     $info['range_2_price'] ?? $info['range_1_price'],
