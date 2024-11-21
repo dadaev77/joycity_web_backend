@@ -67,7 +67,6 @@ class BuyerOfferStructure extends Base
                 ],
                 'number',
             ],
-
             [
                 ['order_id'],
                 'exist',
