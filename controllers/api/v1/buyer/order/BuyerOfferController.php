@@ -157,7 +157,7 @@ class BuyerOfferController extends BuyerController
         } catch (Throwable $e) {
             isset($transaction) && $transaction->rollBack();
 
-            return ApiResponse::internalError($e->getMessage());
+            return ApiResponse::internalError($e);
         }
     }
 
