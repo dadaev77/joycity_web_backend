@@ -149,8 +149,8 @@ class OrderStructure extends Base
                 ],
                 'required',
             ],
-            ['amount_of_space', 'integer', 'min' => 1, 'max' => 6],
-            ['cargo_number', 'string', 'max' => 255],
+            ['amount_of_space', 'integer', 'min' => 1, 'max' => 6, 'default' => null],
+            ['cargo_number', 'string', 'max' => 255, 'default' => null],
             [['created_at'], 'safe'],
             [
                 [

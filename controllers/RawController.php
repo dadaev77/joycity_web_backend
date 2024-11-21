@@ -747,12 +747,12 @@ class RawController extends Controller
 
         echo "PDF создан: $pdfPath";
     }
-    // public function actionPdf()
-    // {
-    //     //  
-    //     $response = Yii::$app->response;
-    //     $response->format = Response::FORMAT_HTML;
+    public function actionPdf()
+    {
+        //  
+        $response = Yii::$app->response;
+        $response->format = Response::FORMAT_HTML;
 
-    //     return $this->renderPartial('@app/views/pdf/templates/invoce');
-    // }
+        return $this->renderPartial('@app/views/pdf/templates/invoce');
+    }
 }

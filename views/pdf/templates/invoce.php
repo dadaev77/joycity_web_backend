@@ -108,37 +108,65 @@
                 <td class="details-cell">Номер грузов</td>
                 <td colspan="2" class="details-cell">JoyCity313-HMR 579-1378-7</td>
                 <td class="details-cell">Итого количество(шт)</td>
-                <td colspan="2" class="details-cell">хоз-товар</td>
-                <td class="details-cell"></td>
-                <td class="details-cell"></td>
+                <td colspan="2" class="details-cell">---</td>
+                <td class="details-cell">Ассортимент</td>
+                <td class="details-cell">---</td>
             </tr>
             <tr>
                 <td class="details-cell">Единичная цена на таможенную пошлину($/пара)</td>
-                <td class="details-cell">Объём (м³)</td>
-                <td class="details-cell">1,897</td>
-                <td class="details-cell">Вес (Kg)</td>
-                <td colspan="2" class="details-cell">141,5</td>
-                <td class="details-cell"></td>
+                <td class="details-cell">---</td>
+                <td class="details-cell">Итого количество(пар)</td>
+                <td class="details-cell">---</td>
+                <td colspan="2" class="details-cell">Итог таможенной пошлины($)</td>
+                <td class="details-cell">---</td>
                 <td class="details-cell"></td>
             </tr>
             <tr>
-                <td class="details-cell">Сумма страхования (¥)</td>
+                <td class="details-cell">Единичная цена на объем($/м³)</td>
+                <td class="details-cell">---</td>
+                <td class="details-cell">Объем(м³)</td>
+                <td class="details-cell">---</td>
+                <td colspan="2" class="details-cell">Расходы на объем($)</td>
+                <td class="details-cell">---</td>
+                <td class="details-cell"></td>
+            </tr>
+            <tr>
+                <td class="details-cell">Единичная цена на вес($/Kg)</td>
+                <td class="details-cell">---</td>
+                <td class="details-cell">Вес(Kg)</td>
+                <td class="details-cell">---</td>
+                <td colspan="2" class="details-cell">Расходы на вес ($)</td>
+                <td class="details-cell">---</td>
+                <td class="details-cell"></td>
+            </tr>
+            <tr>
+                <td class="details-cell">Сумма страхования(¥) - (себестоимость в юань)</td>
+                <td class="details-cell">---</td>
                 <td class="details-cell">Страховая ставка</td>
-                <td class="details-cell">0,01</td>
-                <td class="details-cell">Расходы на страхование ($)</td>
-                <td colspan="2" class="details-cell">19,00</td>
-                <td class="details-cell"></td>
+                <td class="details-cell">---</td>
+                <td colspan="2" class="details-cell">Расходы на страхование($)</td>
+                <td class="details-cell">---</td>
                 <td class="details-cell"></td>
             </tr>
             <tr>
-                <td class="details-cell">Авансирование на территории Китая ($)</td>
-                <td class="details-cell">Расходы на упаковку ($)</td>
-                <td class="details-cell">14,00</td>
-                <td class="details-cell">Итого</td>
-                <td colspan="2" class="details-cell">507,03</td>
-                <td class="details-cell"></td>
+                <td class="details-cell">Авансирование на территории Китая($) (можно отредактировать)</td>
+                <td class="details-cell">---</td>
+                <td class="details-cell">Расходы на упаковку($)</td>
+                <td class="details-cell">---</td>
+                <td colspan="2" class="details-cell">Расходы на инспекцию качества товаров($)</td>
+                <td class="details-cell">---</td>
                 <td class="details-cell"></td>
             </tr>
+            <tr>
+                <td class="details-cell">Оплата в Китае($)</td>
+                <td class="details-cell">---</td>
+                <td class="details-cell">Оплата за границей($)</td>
+                <td class="details-cell">---</td>
+                <td colspan="2" class="details-cell"><b>Итог оплаты($)</b></td>
+                <td class="details-cell">---</td>
+                <td class="details-cell"></td>
+            </tr>
+
             <!-- Footer Rows -->
             <tr>
                 <td colspan="8" class="header-cell" style="text-align:start">Исполнитель:</td>
