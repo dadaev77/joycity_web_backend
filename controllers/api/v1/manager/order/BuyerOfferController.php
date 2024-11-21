@@ -102,6 +102,7 @@ class BuyerOfferController extends ManagerController
 
             $order->price_product = $buyerOffer->price_product;
             $order->price_inspection = $buyerOffer->price_inspection;
+            $order->amount_of_space = null;
 
             if (!$order->save()) {
                 return ApiResponse::transactionCodeErrors(
