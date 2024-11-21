@@ -140,21 +140,20 @@ class BuyerOfferController extends ManagerController
                     );
                 }
 
+                // $conversationManagerFulfilment = ChatConstructorService::createChatOrder(
+                //     Chat::GROUP_CLIENT_FULFILMENT_MANAGER,
+                //     [$order->fulfillment_id, $order->manager_id],
+                //     $order->id,
+                // );
 
-                $conversationManagerFulfilment = ChatConstructorService::createChatOrder(
-                    Chat::GROUP_MANAGER_FULFILMENT,
-                    [$order->fulfillment_id, $order->manager_id],
-                    $order->id,
-                );
+                // if (!$conversationManagerFulfilment->success) {
+                //     $transaction?->rollBack();
 
-                if (!$conversationManagerFulfilment->success) {
-                    $transaction?->rollBack();
-
-                    return ApiResponse::codeErrors(
-                        $apiCodes->ERROR_SAVE,
-                        $conversationManagerFulfilment->reason,
-                    );
-                }
+                //     return ApiResponse::codeErrors(
+                //         $apiCodes->ERROR_SAVE,
+                //         $conversationManagerFulfilment->reason,
+                //     );
+                // }
             }
 
             if (!$orderStatusChange->success) {
