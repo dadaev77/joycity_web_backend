@@ -82,7 +82,7 @@ class BuyerOfferController extends BuyerController
                 [
                     'order_id',
                     'price_product',
-                    'price_inspection',
+                    // 'price_inspection',
                     'total_quantity',
                     'product_height',
                     'product_width',
