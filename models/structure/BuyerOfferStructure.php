@@ -67,6 +67,7 @@ class BuyerOfferStructure extends Base
                 ],
                 'number',
             ],
+            [['price_product', 'price_inspection'], 'skipOnEmpty' => true],
             [
                 ['order_id'],
                 'exist',
