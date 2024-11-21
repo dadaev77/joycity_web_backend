@@ -49,11 +49,11 @@ class BuyerOfferStructure extends Base
                     'buyer_id',
                     'status',
                     'price_product',
-                    'price_inspection',
                     'total_quantity',
                 ],
                 'required',
             ],
+            [['price_inspection'], 'skipOnEmpty' => true],
             [['created_at'], 'safe'],
             [['order_id', 'buyer_id', 'status', 'total_quantity'], 'integer'],
             [
@@ -67,7 +67,7 @@ class BuyerOfferStructure extends Base
                 ],
                 'number',
             ],
-            [['price_product', 'price_inspection'], 'skipOnEmpty' => true],
+
             [
                 ['order_id'],
                 'exist',
