@@ -80,7 +80,7 @@ class BuyerDeliveryOfferController extends ManagerController
                     'product_width',
                     'product_depth',
                     'product_weight',
-                    'amount_of_space',
+                    // 'amount_of_space', TODO: добавить после добавления на фронте
                 ],
                 true,
             );
