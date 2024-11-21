@@ -149,8 +149,9 @@ class OrderStructure extends Base
                 ],
                 'required',
             ],
-            ['amount_of_space', 'integer', 'min' => 1, 'max' => 6, 'skipOnEmpty' => true, 'allowEmptyString' => true],
             ['amount_of_space', 'default', 'value' => null],
+            ['amount_of_space', 'integer', 'min' => 1, 'max' => 6, 'skipOnEmpty' => true],
+            ['amount_of_space', 'safe'],
             ['cargo_number', 'string', 'max' => 255],
             [['created_at'], 'safe'],
             [
