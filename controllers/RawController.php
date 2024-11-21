@@ -728,4 +728,31 @@ class RawController extends Controller
     //         'message' => 'Data processed successfully',
     //     ];
     // }
+    public function actionPdfTest()
+    {
+        //
+        $data = [
+            'invoiceNumber' => '12345',
+            'date' => date('d.m.Y'),
+            'clientName' => 'ООО "Рога и Копыта"',
+            'items' => [
+                ['name' => 'Товар 1', 'quantity' => 2, 'price' => 100],
+                ['name' => 'Товар 2', 'quantity' => 1, 'price' => 200],
+            ],
+            'total' => 400,
+        ];
+
+        $template = \Yii::getAlias('@app/views/pdf/templates/invoce.php');
+        $pdfPath = \app\services\PdfService::generateInvoice($data, $template, 'horizontal');
+
+        echo "PDF создан: $pdfPath";
+    }
+    // public function actionPdf()
+    // {
+    //     //  
+    //     $response = Yii::$app->response;
+    //     $response->format = Response::FORMAT_HTML;
+
+    //     return $this->renderPartial('@app/views/pdf/templates/invoce');
+    // }
 }

@@ -47,7 +47,8 @@
     "vlucas/phpdotenv": "^5.5",
     "linslin/yii2-curl": "^1.5",
     "ext-imagick": "*",
-    "intervention/image": "^3.8"
+    "intervention/image": "^3.8",
+    "mpdf/mpdf": "^8.2"
   },
   "require-dev": {
     
