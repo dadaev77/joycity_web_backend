@@ -90,13 +90,8 @@ class Product extends Base
                 ],
                 'required',
             ],
-            [
-                [
-                    'description_ru',
-                ],
-                'string',
-                'max' => 2000
-            ],
+            [['description_ru'], 'string', 'max' => 260],
+            [['description_ru'], 'match', 'pattern' => '/^[a-zA-Zа-яА-ЯёЁ0-9\s\-.,;:!?()\"\'“”‘’]+$/u'],
             [
                 [
                     'rating',
@@ -132,9 +127,8 @@ class Product extends Base
             [
                 ['name_ru'],
                 'match',
-                'pattern' => '/^[A-Za-zА-Яа-я0-9\s]{1,60}$/u',
-                'message' =>
-                'Имя товара должно содержать кириллицу, латиницу, цифры и не превышать 60 символов. Допустимы символы: A-z, А-я, 0-9 и пробел.',
+                'pattern' => '/^[a-zA-Zа-яА-ЯёЁ0-9\s\-.,;:!?()\"\'“”‘’]+$/u',
+                'message' => 'Name can only contain letters, numbers, spaces, and hyphens.',
             ],
             [
                 ['subcategory_id'],
