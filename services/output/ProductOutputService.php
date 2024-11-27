@@ -27,7 +27,9 @@ class ProductOutputService extends OutputService
             ->orderBy(self::getOrderByIdExpression($ids))
             ->where(['id' => $ids]);
 
-        return array_map(static function ($model) use ($imageSize) {
+        $userCurrency = Yii::$app->user->identity->getSettings()->currency;
+
+        return array_map(static function ($model) use ($imageSize, $userCurrency) {
             $info = ModelTypeHelper::toArray($model);
 
             $language = Yii::$app->user->identity->getSettings()->application_language;
@@ -102,6 +104,9 @@ class ProductOutputService extends OutputService
                 // $info['buyer'],
                 // $info['attachments'],
             );
+
+            // Конвертация цен в валюту пользователя
+            $info = RateService::convertDataPrices($info, ['price', 'range_1_price', 'range_2_price', 'range_3_price', 'range_4_price'], $info['currency'], $userCurrency);
 
             return $info;
         }, $query->all());

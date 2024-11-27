@@ -75,7 +75,9 @@ class OrderOutputService extends OutputService
             $query->showWithDeleted();
         }
 
-        return array_map(static function ($model) use ($imageSize) {
+        $userCurrency = Yii::$app->user->identity->getSettings()->currency;
+
+        return array_map(static function ($model) use ($imageSize, $userCurrency) {
             $info = ModelTypeHelper::toArray($model);
             $fulfilmentMarketplaceDeliveryInfo = MarketplaceTransactionService::getDeliveredCountInfo($info['id']);
             $info['fulfilmentMarketplaceDeliveryInfo'] = $fulfilmentMarketplaceDeliveryInfo ?: null;
@@ -147,18 +149,41 @@ class OrderOutputService extends OutputService
 
 
             if ($info['buyerOffer']) {
-                foreach ($info['buyerOffer'] as $key => $value) {
-                    if (
-                        $value &&
-                        (str_starts_with($key, 'price_') ||
-                            $key === 'expected_price_per_item')
-                    ) {
-                        $info['buyerOffer'][$key] = $value;
-                    }
-                }
+                $info['buyerOffer'] = RateService::convertDataPrices(
+                    $info['buyerOffer'],
+                    ['price_product', 'price_inspection', 'expected_price_per_item'],
+                    $info['currency'],
+                    $userCurrency
+                );
             }
             $info['type'] = in_array($info['status'], Order::STATUS_GROUP_ORDER, true) ? 'order' : 'request';
             $info['price'] = OrderPrice::calculateOrderPrices($info['id']);
+
+            // Конвертация цен в валюту пользователя
+            $info['price'] = RateService::convertDataPrices(
+                $info['price'],
+                [
+                    'product.price_per_item',
+                    'product.overall',
+                    'product_inspection',
+                    'delivery.packaging',
+                    'delivery.delivery',
+                    'delivery.overall',
+                    'fulfillment',
+                    'overall',
+                ],
+                $info['currency'],
+                $userCurrency
+            );
+
+            if ($info['buyerOffer']) {
+                $info['buyerOffer'] = RateService::convertDataPrices(
+                    $info['buyerOffer'],
+                    ['price_product', 'price_inspection', 'expected_price_per_item'],
+                    $info['currency'],
+                    $userCurrency
+                );
+            }
 
             unset(
                 // $info['created_at'],

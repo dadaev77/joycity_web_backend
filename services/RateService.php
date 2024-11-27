@@ -40,126 +40,49 @@ class RateService
         return self::$orderRates[$orderId];
     }
 
-    // Output amount in user's currency
-    public static function outputInUserCurrency(float $amount, int $orderId = 0, string $type = 'product'): float
+    // Метод для конвертации отдельного значения
+    public static function convertValue(float $value, string $fromCurrency, string $toCurrency): float
     {
-        $instanceCurrency = match ($type) {
-            'product' => \app\models\Product::find()->where(['id' => $orderId])->one()->currency,
-            'order' => \app\models\Order::find()->where(['id' => $orderId])->one()->currency,
-            default => \Yii::$app->user->getIdentity()->settings->currency,
-        };
-        $userCurrency = User::getIdentity()->settings->currency;
-        $rates = self::getRate();
-        if (!isset($rates[$instanceCurrency]) || !isset($rates[$userCurrency])) {
-            throw new \Exception("Не удалось найти курс для валюты");
+        if ($value == 0) {
+            return 0;
         }
-        $amountInBaseCurrency = $amount * $rates[$instanceCurrency];
-        $amountInUserCurrency = $amountInBaseCurrency / $rates[$userCurrency];
 
-        return round($amountInUserCurrency, self::$SYMBOLS_AFTER_DECIMAL_POINT);
-    }
-
-    // Convert amount to user's currency
-    public static function putInUserCurrency(float $amount, int $orderId = 0): float
-    {
-        $userCurrency = User::getIdentity()->settings->currency;
-        if ($userCurrency === self::CURRENCY_RUB) {
-            return round($amount, self::$SYMBOLS_AFTER_DECIMAL_POINT);
-        } else {
-            $rates = self::getRate();
-            return round($amount * $rates[$userCurrency], self::$SYMBOLS_AFTER_DECIMAL_POINT);
+        $rate = self::getRate();
+        if ($fromCurrency === $toCurrency) {
+            return $value;
         }
-    }
-
-    // Convert amount from a specific currency to the initial currency
-    public static function convertToInitialCurrency(string $fromCurrency, float $amount, int $orderId = 0)
-    {
-        // Adjusted logic to treat RUB as the base currency
-        if ($fromCurrency === self::CURRENCY_RUB) {
-            return $amount; // No conversion needed if from RUB
+        if ($fromCurrency !== self::CURRENCY_RUB) {
+            $value = $value * $rate[$fromCurrency];
         }
-        return self::convertSimpleRate($fromCurrency, self::CURRENCY_RUB, $amount, $orderId);
-    }
-
-    // Convert amount from CNY to RUB
-    public static function convertCNYtoRUB(float $amount, int $orderId = 0): float
-    {
-        return self::convertSimpleRate(
-            self::CURRENCY_CNY,
-            self::CURRENCY_RUB,
-            $amount,
-            $orderId
-        );
-    }
-
-    // Convert amount from RUB to CNY
-    public static function convertRUBtoCNY(float $amount, int $orderId = 0): float
-    {
-        return self::convertSimpleRate(
-            self::CURRENCY_RUB,
-            self::CURRENCY_CNY,
-            $amount,
-            $orderId
-        );
-    }
-
-    // Convert amount from USD to CNY
-    public static function convertUSDtoCNY(float $amount, int $orderId = 0): float
-    {
-        return self::convertSimpleRate(
-            self::CURRENCY_USD,
-            self::CURRENCY_CNY,
-            self::convertToInitialCurrency(self::CURRENCY_USD, $amount, $orderId),
-            $orderId
-        );
-    }
-
-    // Convert amount from CNY to USD
-    public static function convertCNYtoUSD(float $amount, int $orderId = 0): float
-    {
-        return self::convertSimpleRate(
-            self::CURRENCY_CNY,
-            self::CURRENCY_USD,
-            self::convertToInitialCurrency(self::CURRENCY_CNY, $amount, $orderId),
-            $orderId
-        );
-    }
-
-    // Convert amount from USD to RUB
-    public static function convertUSDtoRUB(float $amount, int $orderId = 0): float
-    {
-        return self::convertToInitialCurrency(self::CURRENCY_USD, $amount, $orderId);
-    }
-
-    // Convert amount from RUB to USD
-    public static function convertRUBtoUSD(float $amount, int $orderId = 0): float
-    {
-        return self::convertSimpleRate(
-            self::CURRENCY_RUB,
-            self::CURRENCY_USD,
-            $amount,
-            $orderId
-        );
-    }
-
-    // Convert amount using a simple rate conversion
-    private static function convertSimpleRate(string $fromCurrency, string $toCurrency, float $amount, int $orderId = 0): float
-    {
-        $currentRate = $orderId ? self::getOrderRate($orderId) : self::getRate();
-        // Adjusted logic to ensure RUB is treated as the base currency
-        if ($fromCurrency === self::CURRENCY_RUB) {
-            return round($amount * 1, self::$SYMBOLS_AFTER_DECIMAL_POINT); // RUB to RUB
+        if ($toCurrency !== self::CURRENCY_RUB) {
+            $value = $value / $rate[$toCurrency];
         }
-        return round(
-            $amount * ($currentRate[$fromCurrency] / $currentRate[$toCurrency]),
-            self::$SYMBOLS_AFTER_DECIMAL_POINT
-        );
+        return round($value, self::$SYMBOLS_AFTER_DECIMAL_POINT);
     }
 
-    // Convert amount using a cross rate conversion
-    private static function convertCrossRate(string $fromCurrency, string $toCurrency, float $amount, int $orderId = 0): float
+    // Метод для конвертации массива цен
+    public static function convertPrices(array $prices, string $fromCurrency, string $toCurrency): array
     {
-        $amountInBaseCurrency = self::convertSimpleRate($fromCurrency, self::CURRENCY_CNY, $amount, $orderId);
-        return self::convertSimpleRate(self::CURRENCY_CNY, $toCurrency, $amountInBaseCurrency, $orderId);
+        foreach ($prices as &$price) {
+            if (is_numeric($price)) {
+                $price = self::convertValue($price, $fromCurrency, $toCurrency);
+            }
+        }
+        return $prices;
+    }
+
+    // Метод для конвертации цен в массиве данных
+    public static function convertDataPrices(array $data, array $priceKeys, string $fromCurrency, string $toCurrency): array
+    {
+        foreach ($priceKeys as $key) {
+            if (isset($data[$key])) {
+                if (is_array($data[$key])) {
+                    $data[$key] = self::convertPrices($data[$key], $fromCurrency, $toCurrency);
+                } elseif (is_numeric($data[$key])) {
+                    $data[$key] = self::convertValue($data[$key], $fromCurrency, $toCurrency);
+                }
+            }
+        }
+        return $data;
     }
 }
