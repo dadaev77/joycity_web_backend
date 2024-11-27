@@ -85,15 +85,18 @@ class OrderOutputService extends OutputService
             $info['buyerOffer'] = $info['buyerOffers'] ? $info['buyerOffers'][0] : null;
             $info['productInspectionReport'] = $info['productInspectionReports'] ? $info['productInspectionReports'][0] : null;
             $info['orderTracking'] = $info['orderTrackings'];
+
             foreach ($info['orderTracking'] as &$tracking) {
                 unset($tracking['order_id']);
             }
             unset($tracking);
+
             foreach ($info as $key => $value) {
                 if ($value && (str_starts_with($key, 'price_') || $key === 'expected_price_per_item')) {
-                    $info[$key] = RateService::outputInUserCurrency($value, $info['id'], 'order');
+                    $info[$key] = RateService::convertValue($value, $info['currency'], $userCurrency);
                 }
             }
+
             foreach ($info['chats'] as &$chat) {
                 unset($chat['order_id'], $chat['user_verification_request_id']);
             }

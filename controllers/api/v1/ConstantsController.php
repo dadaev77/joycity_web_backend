@@ -586,4 +586,13 @@ class ConstantsController extends V1Controller
     {
         return ApiResponse::collection(BuyerDeliveryOffer::getStatusMap());
     }
+
+    public function actionConvert($value, $from, $to)
+    {
+        $value = (float)$value;
+        $from = strtoupper($from);
+        $to = strtoupper($to);
+
+        return RateService::convertValue($value, $from, $to);
+    }
 }
