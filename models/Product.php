@@ -45,18 +45,6 @@ class Product extends Base
 {
     public function beforeSave($insert)
     {
-        // $currency = \Yii::$app->user->getIdentity()->settings->currency;
-
-        // $attributesList = [
-        //     'range_1_price',
-        //     'range_2_price',
-        //     'range_3_price',
-        //     'range_4_price',
-        // ];
-
-        // foreach ($attributesList as $attribute) {
-        //     $this->$attribute = $this->$attribute ? RateService::convertToInitial($this->$attribute, $currency) : 0;
-        // }
         return parent::beforeSave($insert);
     }
 

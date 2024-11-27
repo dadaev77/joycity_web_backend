@@ -93,23 +93,6 @@ class OrderStructure extends Base
 
     public function beforeSave($insert)
     {
-        // get currency in user settings
-        // $currency = \Yii::$app->user->getIdentity()->settings->currency;
-
-        // convert price attributes to initial currency
-        // $priceAttributes = [
-        //     'expected_price_per_item',
-        //     'price_product',
-        //     'price_inspection',
-        //     'price_packaging',
-        //     'price_fulfilment',
-        //     'price_delivery',
-        // ];
-
-        // foreach ($priceAttributes as $attribute) {
-        //     $this->$attribute = $this->$attribute ? RateService::convertToInitial($this->$attribute, $currency) : 0;
-        // }
-
         return parent::beforeSave($insert);
     }
     /**
