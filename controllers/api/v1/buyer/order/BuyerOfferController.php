@@ -234,15 +234,7 @@ class BuyerOfferController extends BuyerController
                 return ApiResponse::code($apiCodes->NO_ACCESS);
             }
 
-            $priceConverted = array_map(
-                static fn($amount) => RateService::putInUserCurrency(
-                    $amount,
-                    $buyerOffer->order_id,
-                ),
-                $params,
-            );
-
-            $buyerOffer->load($priceConverted, '');
+            $buyerOffer->price_product = $params['price_product'];
 
             if (!$buyerOffer->save()) {
                 return ApiResponse::codeErrors(

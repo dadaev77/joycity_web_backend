@@ -36,4 +36,13 @@ class BuyerOffer extends BuyerOfferStructure
     {
         return BuyerOfferCodes::getStatic();
     }
+
+    public function rules()
+    {
+        return [
+            // ... existing rules ...
+            [['price_product', 'price_inspection'], 'number'],
+            // ... existing rules ...
+        ];  
+    }
 }
