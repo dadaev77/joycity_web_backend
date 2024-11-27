@@ -157,13 +157,13 @@ class OrderPrice extends OrderPriceService
         $out['product']['overall'] = round($params['productPrice'] * $params['productQuantity'], self::SYMBOLS_AFTER_DECIMAL_POINT);
         // convert to user currency
         if ($orderId) {
-            $out['delivery']['packaging'] = RateService::outputInUserCurrency($out['delivery']['packaging'], $orderId, 'order');
-            $out['delivery']['delivery'] = RateService::outputInUserCurrency($out['delivery']['delivery'], $orderId, 'order');
-            $out['delivery']['overall'] = RateService::outputInUserCurrency($out['delivery']['overall'], $orderId, 'order');
-            $out['product_inspection'] = RateService::outputInUserCurrency($out['product_inspection'], $orderId, 'order');
-            $out['fulfillment'] = RateService::outputInUserCurrency($out['fulfillment'], $orderId, 'order');
-            $out['product']['price_per_item'] = RateService::outputInUserCurrency($out['product']['price_per_item'], $orderId, 'order');
-            $out['product']['overall'] = RateService::outputInUserCurrency($out['product']['overall'], $orderId, 'order');
+            // $out['delivery']['packaging'] = RateService::outputInUserCurrency($out['delivery']['packaging'], $orderId, 'order');
+            // $out['delivery']['delivery'] = RateService::outputInUserCurrency($out['delivery']['delivery'], $orderId, 'order');
+            // $out['delivery']['overall'] = RateService::outputInUserCurrency($out['delivery']['overall'], $orderId, 'order');
+            // $out['product_inspection'] = RateService::outputInUserCurrency($out['product_inspection'], $orderId, 'order');
+            // $out['fulfillment'] = RateService::outputInUserCurrency($out['fulfillment'], $orderId, 'order');
+            // $out['product']['price_per_item'] = RateService::outputInUserCurrency($out['product']['price_per_item'], $orderId, 'order');
+            // $out['product']['overall'] = RateService::outputInUserCurrency($out['product']['overall'], $orderId, 'order');
         }
 
         $out['overall'] = round(
