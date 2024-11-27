@@ -113,12 +113,8 @@ class BuyerOfferController extends BuyerController
                 'order_id' => $order->id,
                 'buyer_id' => $user->id,
                 'status' => BuyerOffer::STATUS_WAITING,
-                'price_product' => RateService::putInUserCurrency(
-                    $postData['price_product'],
-                ),
-                'price_inspection' => RateService::putInUserCurrency(
-                    $postData['price_inspection'],
-                ),
+                'price_product' => $postData['price_product'],
+                'price_inspection' => $postData['price_inspection'],
                 'total_quantity' => $postData['total_quantity'],
                 'product_height' => $postData['product_height'],
                 'product_width' => $postData['product_width'],

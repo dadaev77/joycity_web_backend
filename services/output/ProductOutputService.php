@@ -84,11 +84,11 @@ class ProductOutputService extends OutputService
             $priceKeys = array_filter(array_keys($info), fn($key) => str_ends_with($key, '_price'));
 
             foreach ($priceKeys as $key) {
-                $info[$key] = RateService::outputInUserCurrency($info[$key], $model->id, 'product');
+                $info[$key] = $info[$key];
             }
 
-            $info['price']['min'] = RateService::outputInUserCurrency($info['price']['min'], $model->id, 'product');
-            $info['price']['max'] = RateService::outputInUserCurrency($info['price']['max'], $model->id, 'product');
+            $info['price']['min'] = $info['price']['min'];
+            $info['price']['max'] = $info['price']['max'];
 
             unset(
                 $info['productLinkAttachments'],
