@@ -160,11 +160,6 @@ class OrderOutputService extends OutputService
             $info['type'] = in_array($info['status'], Order::STATUS_GROUP_ORDER, true) ? 'order' : 'request';
             $info['price'] = OrderPrice::calculateOrderPrices($info['id']);
 
-            $info['total_price'] = $info['price']['total'];
-            $info['total_price_without_discount'] = $info['price']['total_without_discount'];
-            $info['total_price_with_discount'] = $info['price']['total_with_discount'];
-            $info['delivery_price'] = $info['price']['delivery'];
-
             unset(
                 // $info['created_at'],
                 // $info['status'],
