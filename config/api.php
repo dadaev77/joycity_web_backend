@@ -147,6 +147,7 @@ $config = [
                         'api/v1/order-request',
                         'api/v1/profile',
                         'api/v1/translate',
+                        'api/v1/manager/waybill',
                     ],
                     'pluralize' => false,
                 ],

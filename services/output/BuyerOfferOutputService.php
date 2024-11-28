@@ -18,7 +18,7 @@ class BuyerOfferOutputService extends OutputService
     {
         $query = BuyerOffer::find()->where(['id' => $ids]);
 
-        $userCurrency = Yii::$app->user->identity->getSettings()->currency;
+        $userCurrency = Yii::$app->user->getIdentity()->getSettings()->currency;
 
         return array_map(static function ($model) use ($userCurrency) {
             $info = ModelTypeHelper::toArray($model);
