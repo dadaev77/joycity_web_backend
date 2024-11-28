@@ -47,7 +47,7 @@ class RateService
             return 0;
         }
 
-        $rate = self::getRate();
+        $rate = self::getRate();        
         if ($fromCurrency === $toCurrency) {
             return $value;
         }
