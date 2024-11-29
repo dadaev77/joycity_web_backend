@@ -5,7 +5,7 @@ namespace app\services\output;
 use app\helpers\ModelTypeHelper;
 use app\models\BuyerDeliveryOffer;
 use app\services\RateService;
-use yii\base\Yii;
+use Yii;
 
 class BuyerDeliveryOfferOutputService extends OutputService
 {
