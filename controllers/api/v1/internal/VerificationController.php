@@ -11,46 +11,6 @@ use Throwable;
 use Yii;
 use yii\base\Exception;
 
-/**
- * @OA\Get(
- *     path="/api/v1/internal/verification",
- *     summary="Получить список запросов на верификацию",
- *     security={{"Bearer":{}}},
- *     tags={"Verification"},
- *     @OA\Parameter(
- *         name="role",
- *         in="query",
- *         required=false,
- *         description="Роль пользователя, создавшего запрос",
- *         @OA\Schema(type="string")
- *     ),
- *     @OA\Parameter(
- *         name="from",
- *         in="query",
- *         required=false,
- *         description="Дата начала создания запроса",
- *         @OA\Schema(type="string", format="date")
- *     ),
- *     @OA\Parameter(
- *         name="to",
- *         in="query",
- *         required=false,
- *         description="Дата окончания создания запроса",
- *         @OA\Schema(type="string", format="date")
- *     ),
- *     @OA\Parameter(
- *         name="status",
- *         in="query",
- *         required=false,
- *         description="Статус запроса",
- *         @OA\Schema(type="string")
- *     ),
- *     @OA\Response(
- *         response=200,
- *         description="Список запросов на верификацию успешно получен"
- *     )
- * )
- */
 class VerificationController extends InternalController
 {
     public function behaviors()
@@ -67,8 +27,8 @@ class VerificationController extends InternalController
      * @OA\Get(
      *     path="/api/v1/internal/verification",
      *     summary="Получить список запросов на верификацию",
-     *     security={{"Bearer":{}}},
      *     tags={"Verification"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="role",
      *         in="query",
@@ -99,7 +59,17 @@ class VerificationController extends InternalController
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Список запросов на верификацию успешно получен"
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(
+     *                 @OA\Property(property="id", type="integer"),
+     *                 @OA\Property(property="status", type="string"),
+     *                 @OA\Property(property="created_at", type="string", format="date-time"),
+     *                 @OA\Property(property="created_by_id", type="integer"),
+     *                 @OA\Property(property="approved_by_id", type="integer", nullable=true)
+     *             )
+     *         )
      *     )
      * )
      */

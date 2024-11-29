@@ -11,14 +11,6 @@ use app\services\SaveModelService;
 use Throwable;
 use Yii;
 
-/**
- * @OA\Get(
- *     path="/api/v1/internal/constants/type-delivery/",
- *     tags={"Type Delivery"},
- *     summary="Получить список типов доставки",
- *     @OA\Response(response="200", description="Успешный ответ")
- * )
- */
 class TypeDeliveryController extends InternalController
 {
     public function behaviors()
@@ -33,10 +25,24 @@ class TypeDeliveryController extends InternalController
 
     /**
      * @OA\Get(
-     *     path="/api/v1/internal/constants/type-delivery/",
-     *     tags={"Type Delivery"},
-     *     summary="Получить список типов доставки",
-     *     @OA\Response(response="200", description="Успешный ответ")
+     *     path="/api/v1/internal/constants/type-delivery",
+     *     summary="Получение списка типов доставки",
+     *     tags={"Constants"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(
+     *                 @OA\Property(property="id", type="integer"),
+     *                 @OA\Property(property="zh_name", type="string"),
+     *                 @OA\Property(property="ru_name", type="string"),
+     *                 @OA\Property(property="en_name", type="string"),
+     *                 @OA\Property(property="available_for_all", type="boolean")
+     *             )
+     *         )
+     *     )
      * )
      */
     public function actionIndex()

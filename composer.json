@@ -8,11 +8,12 @@
     "project template"
   ],
   "autoload": {
-    "files": [
-      "./swagger.php"
-    ],
     "psr-4": {
-      "app\\": "./"
+      "app\\": "./",
+      "app\\controllers\\": "./controllers",
+      "app\\models\\": "./models",
+      "app\\components\\": "./components",
+      "app\\services\\": "./services"
     }
   },
   "homepage": "http://www.yiiframework.com/",
@@ -47,7 +48,8 @@
     "ext-imagick": "*",
     "intervention/image": "^3.8",
     "mpdf/mpdf": "^8.2",
-    "zircote/swagger-php": "*"
+    "zircote/swagger-php": "*",
+    "doctrine/annotations": "^2.0"
   },
   "require-dev": {
     

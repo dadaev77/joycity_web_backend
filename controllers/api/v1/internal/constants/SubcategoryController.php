@@ -10,14 +10,6 @@ use app\services\SaveModelService;
 use Throwable;
 use Yii;
 
-/**
- * @OA\SecurityScheme(
- *     securityScheme="Bearer",
- *     type="http",
- *     scheme="bearer",
- *     bearerFormat="JWT"
- * )
- */
 class SubcategoryController extends InternalController
 {
     public function behaviors()
@@ -33,11 +25,24 @@ class SubcategoryController extends InternalController
 
     /**
      * @OA\Get(
-     *     path="/api/v1/internal/constants/subcategory/",
-     *     tags={"Subcategory"},
+     *     path="/api/v1/internal/constants/subcategory",
+     *     tags={"Constants"},
      *     summary="Получить список подкатегорий",
-     *     security={{"Bearer":{}}},
-     *     @OA\Response(response="200", description="Успешный ответ")
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(
+     *                 @OA\Property(property="id", type="integer"),
+     *                 @OA\Property(property="zh_name", type="string"),
+     *                 @OA\Property(property="ru_name", type="string"),
+     *                 @OA\Property(property="en_name", type="string"),
+     *                 @OA\Property(property="category_id", type="integer")
+     *             )
+     *         )
+     *     )
      * )
      */
     public function actionIndex()
@@ -54,7 +59,6 @@ class SubcategoryController extends InternalController
      *     path="/api/v1/internal/constants/subcategory/create",
      *     tags={"Subcategory"},
      *     summary="Создать новую подкатегорию",
-     *     security={{"Bearer":{}}},
      *     @OA\Response(response="200", description="Подкатегория успешно создана"),
      *     @OA\Response(response="400", description="Ошибка валидации"),
      *     @OA\Response(response="500", description="Внутренняя ошибка сервера")
@@ -105,7 +109,6 @@ class SubcategoryController extends InternalController
      *     path="/api/v1/internal/constants/subcategory/update/{id}",
      *     tags={"Subcategory"},
      *     summary="Обновить существующую подкатегорию",
-     *     security={{"Bearer":{}}},
      *     @OA\Parameter(name="id", in="path", required=true, description="ID подкатегории", @OA\Schema(type="integer")),
      *     @OA\Response(response="200", description="Подкатегория успешно обновлена"),
      *     @OA\Response(response="404", description="Подкатегория не найдена"),
@@ -165,7 +168,6 @@ class SubcategoryController extends InternalController
      *     path="/api/v1/internal/constants/subcategory/delete/{id}",
      *     tags={"Subcategory"},
      *     summary="Удалить подкатегорию",
-     *     security={{"Bearer":{}}},
      *     @OA\Parameter(name="id", in="path", required=true, description="ID подкатегории", @OA\Schema(type="integer")),
      *     @OA\Response(response="200", description="Подкатегория успешно удалена"),
      *     @OA\Response(response="404", description="Подкатегория не найдена"),

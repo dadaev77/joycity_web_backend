@@ -15,6 +15,19 @@ use OpenApi\Annotations as OA;
  *     version="1.0.0",
  *     description="Документация API для приложения JoyCity"
  * )
+ * @OA\PathItem(
+ *   path="/api"
+ * )
+ * @OA\Server(
+ *   url="https://joycityrussia.friflex.com/"
+ * )
+ * @OA\SecurityScheme(
+ *   securityScheme="bearerAuth",
+ *   type="http",
+ *   scheme="bearer",
+ *   bearerFormat="JWT",
+ *   description="JWT Authorization header using the Bearer scheme"
+ * )
  */
 
 class ApiController extends ActiveController
