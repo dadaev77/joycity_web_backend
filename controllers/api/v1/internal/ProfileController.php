@@ -22,6 +22,7 @@ class ProfileController extends InternalController
      *     path="/api/v1/internal/profile/self",
      *     summary="Получить информацию о текущем пользователе",
      *     tags={"Profile"},
+     *     security={{"Bearer":{}}},
      *     @OA\Response(
      *         response=200,
      *         description="Информация о пользователе успешно получена"

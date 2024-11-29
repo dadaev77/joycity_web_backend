@@ -26,6 +26,7 @@ class OptionsController extends InternalController
      *     path="/api/v1/internal/options/update/{id}",
      *     summary="Обновить опцию",
      *     tags={"Options"},
+     *     security={{"Bearer":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -85,6 +86,7 @@ class OptionsController extends InternalController
      *     path="/api/v1/internal/options/view/{id}",
      *     summary="Просмотр опции",
      *     tags={"Options"},
+     *     security={{"Bearer":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -119,6 +121,7 @@ class OptionsController extends InternalController
      *     path="/api/v1/internal/options/index",
      *     summary="Получить список опций",
      *     tags={"Options"},
+     *     security={{"Bearer":{}}},
      *     @OA\Response(
      *         response=200,
      *         description="Список опций успешно получен"

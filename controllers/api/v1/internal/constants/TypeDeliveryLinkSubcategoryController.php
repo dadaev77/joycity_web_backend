@@ -25,9 +25,9 @@ class TypeDeliveryLinkSubcategoryController extends InternalController
     /**
      * @OA\Get(
      *     path="/api/v1/internal/constants/type-delivery-link-subcategory",
-     *     tags={"TypeDeliveryLinkSubcategory"},
-     *     summary="Get list of type delivery link subcategories",
-     *     @OA\Response(response="200", description="Successful response")
+     *     tags={"Type Delivery Link Subcategory"},
+     *     summary="Получить список связей типов доставки с подкатегориями",
+     *     @OA\Response(response="200", description="Успешный ответ")
      * )
      */
     public function actionIndex(
@@ -67,11 +67,11 @@ class TypeDeliveryLinkSubcategoryController extends InternalController
     /**
      * @OA\Post(
      *     path="/api/v1/internal/constants/type-delivery-link-subcategory/create",
-     *     tags={"TypeDeliveryLinkSubcategory"},
-     *     summary="Create a new type delivery link subcategory",
-     *     @OA\Response(response="200", description="Type delivery link subcategory created successfully"),
-     *     @OA\Response(response="400", description="Validation error"),
-     *     @OA\Response(response="500", description="Internal server error")
+     *     tags={"Type Delivery Link Subcategory"},
+     *     summary="Создать новую связь типа доставки с подкатегорией",
+     *     @OA\Response(response="200", description="Связь успешно создана"),
+     *     @OA\Response(response="400", description="Ошибка валидации"),
+     *     @OA\Response(response="500", description="Внутренняя ошибка сервера")
      * )
      */
     public function actionCreate()
@@ -120,12 +120,12 @@ class TypeDeliveryLinkSubcategoryController extends InternalController
     /**
      * @OA\Delete(
      *     path="/api/v1/internal/constants/type-delivery-link-subcategory/delete/{id}",
-     *     tags={"TypeDeliveryLinkSubcategory"},
-     *     summary="Delete a type delivery link subcategory",
-     *     @OA\Parameter(name="id", in="path", required=true, description="Type Delivery Link Subcategory ID", @OA\Schema(type="integer")),
-     *     @OA\Response(response="200", description="Type delivery link subcategory deleted successfully"),
-     *     @OA\Response(response="404", description="Type delivery link subcategory not found"),
-     *     @OA\Response(response="500", description="Internal server error")
+     *     tags={"Type Delivery Link Subcategory"},
+     *     summary="Удалить связь типа доставки с подкатегорией",
+     *     @OA\Parameter(name="id", in="path", required=true, description="ID связи типа доставки с подкатегорией", @OA\Schema(type="integer")),
+     *     @OA\Response(response="200", description="Связь успешно удалена"),
+     *     @OA\Response(response="404", description="Связь не найдена"),
+     *     @OA\Response(response="500", description="Внутренняя ошибка сервера")
      * )
      */
     public function actionDelete(int $id)

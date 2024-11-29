@@ -23,6 +23,7 @@ class OrderController extends InternalController
      * @OA\Get(
      *     path="/api/v1/internal/order/index",
      *     summary="Получить список заказов",
+     *     security={{"Bearer":{}}},
      *     tags={"Order"},
      *     @OA\Parameter(
      *         name="type",
@@ -141,6 +142,7 @@ class OrderController extends InternalController
      * @OA\Get(
      *     path="/api/v1/internal/order/view/{id}",
      *     summary="Просмотр заказа",
+     *     security={{"Bearer":{}}},
      *     tags={"Order"},
      *     @OA\Parameter(
      *         name="id",

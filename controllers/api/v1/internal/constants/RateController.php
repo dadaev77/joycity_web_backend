@@ -7,6 +7,7 @@ use app\controllers\api\v1\InternalController;
 use app\models\Rate;
 use app\services\output\RateOutputService;
 use app\services\SaveModelService;
+use Throwable;
 
 class RateController extends InternalController
 {
@@ -24,8 +25,8 @@ class RateController extends InternalController
      * @OA\Get(
      *     path="/api/v1/internal/constants/rate/",
      *     tags={"Rate"},
-     *     summary="Get list of rates",
-     *     @OA\Response(response="200", description="Successful response")
+     *     summary="Получить список курсов валют",
+     *     @OA\Response(response="200", description="Успешный ответ")
      * )
      */
     public function actionIndex()
@@ -41,10 +42,10 @@ class RateController extends InternalController
      * @OA\Post(
      *     path="/api/v1/internal/constants/rate/create",
      *     tags={"Rate"},
-     *     summary="Create a new rate",
-     *     @OA\Response(response="200", description="Rate created successfully"),
-     *     @OA\Response(response="400", description="Validation error"),
-     *     @OA\Response(response="500", description="Internal server error")
+     *     summary="Создать новый курс валюты",
+     *     @OA\Response(response="200", description="Курс валюты успешно создан"),
+     *     @OA\Response(response="400", description="Ошибка валидации"),
+     *     @OA\Response(response="500", description="Внутренняя ошибка сервера")
      * )
      */
     public function actionCreate()
@@ -69,12 +70,12 @@ class RateController extends InternalController
      * @OA\Put(
      *     path="/api/v1/internal/constants/rate/update/{id}",
      *     tags={"Rate"},
-     *     summary="Update an existing rate",
-     *     @OA\Parameter(name="id", in="path", required=true, description="Rate ID", @OA\Schema(type="integer")),
-     *     @OA\Response(response="200", description="Rate updated successfully"),
-     *     @OA\Response(response="404", description="Rate not found"),
-     *     @OA\Response(response="400", description="Validation error"),
-     *     @OA\Response(response="500", description="Internal server error")
+     *     summary="Обновить существующий курс валюты",
+     *     @OA\Parameter(name="id", in="path", required=true, description="ID курса валюты", @OA\Schema(type="integer")),
+     *     @OA\Response(response="200", description="Курс валюты успешно обновлен"),
+     *     @OA\Response(response="404", description="Курс валюты не найден"),
+     *     @OA\Response(response="400", description="Ошибка валидации"),
+     *     @OA\Response(response="500", description="Внутренняя ошибка сервера")
      * )
      */
     public function actionUpdate(int $id)
@@ -105,11 +106,11 @@ class RateController extends InternalController
      * @OA\Delete(
      *     path="/api/v1/internal/constants/rate/delete/{id}",
      *     tags={"Rate"},
-     *     summary="Delete a rate",
-     *     @OA\Parameter(name="id", in="path", required=true, description="Rate ID", @OA\Schema(type="integer")),
-     *     @OA\Response(response="200", description="Rate deleted successfully"),
-     *     @OA\Response(response="404", description="Rate not found"),
-     *     @OA\Response(response="500", description="Internal server error")
+     *     summary="Удалить курс валюты",
+     *     @OA\Parameter(name="id", in="path", required=true, description="ID курса валюты", @OA\Schema(type="integer")),
+     *     @OA\Response(response="200", description="Курс валюты успешно удален"),
+     *     @OA\Response(response="404", description="Курс валюты не найден"),
+     *     @OA\Response(response="500", description="Внутренняя ошибка сервера")
      * )
      */
     public function actionDelete(int $id)

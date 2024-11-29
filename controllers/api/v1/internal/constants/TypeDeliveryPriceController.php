@@ -23,9 +23,11 @@ class TypeDeliveryPriceController extends InternalController
     /**
      * @OA\Get(
      *     path="/api/v1/internal/constants/type-delivery-price",
-     *     summary="Get collection of Type Delivery Prices",
-     *     @OA\Response(response="200", description="Successful response"),
-     *     @OA\Response(response="500", description="Internal server error")
+     *     summary="Получить список цен типов доставки",
+     *     tags={"Type Delivery Price"},
+     *     security={{"Bearer":{}}},
+     *     @OA\Response(response="200", description="Успешный ответ"),
+     *     @OA\Response(response="500", description="Внутренняя ошибка сервера")
      * )
      */
     public function actionIndex(int $type_delivery_id)
@@ -46,11 +48,13 @@ class TypeDeliveryPriceController extends InternalController
     /**
      * @OA\Put(
      *     path="/api/v1/internal/constants/type-delivery-price/update/{id}",
-     *     summary="Update a Type Delivery Price",
-     *     @OA\Parameter(name="id", in="path", required=true, description="ID of the Type Delivery Price to update", @OA\Schema(type="integer")),
-     *     @OA\Response(response="200", description="Successful update"),
-     *     @OA\Response(response="404", description="Not found"),
-     *     @OA\Response(response="500", description="Internal server error")
+     *     summary="Обновить цену типа доставки",
+     *     tags={"Type Delivery Price"},
+     *     security={{"Bearer":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, description="ID цены типа доставки для обновления", @OA\Schema(type="integer")),
+     *     @OA\Response(response="200", description="Успешное обновление"),
+     *     @OA\Response(response="404", description="Не найдено"),
+     *     @OA\Response(response="500", description="Внутренняя ошибка сервера")
      * )
      */
     public function actionUpdate(int $id)

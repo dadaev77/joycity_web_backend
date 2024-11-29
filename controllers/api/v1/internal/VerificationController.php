@@ -11,6 +11,46 @@ use Throwable;
 use Yii;
 use yii\base\Exception;
 
+/**
+ * @OA\Get(
+ *     path="/api/v1/internal/verification",
+ *     summary="Получить список запросов на верификацию",
+ *     security={{"Bearer":{}}},
+ *     tags={"Verification"},
+ *     @OA\Parameter(
+ *         name="role",
+ *         in="query",
+ *         required=false,
+ *         description="Роль пользователя, создавшего запрос",
+ *         @OA\Schema(type="string")
+ *     ),
+ *     @OA\Parameter(
+ *         name="from",
+ *         in="query",
+ *         required=false,
+ *         description="Дата начала создания запроса",
+ *         @OA\Schema(type="string", format="date")
+ *     ),
+ *     @OA\Parameter(
+ *         name="to",
+ *         in="query",
+ *         required=false,
+ *         description="Дата окончания создания запроса",
+ *         @OA\Schema(type="string", format="date")
+ *     ),
+ *     @OA\Parameter(
+ *         name="status",
+ *         in="query",
+ *         required=false,
+ *         description="Статус запроса",
+ *         @OA\Schema(type="string")
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Список запросов на верификацию успешно получен"
+ *     )
+ * )
+ */
 class VerificationController extends InternalController
 {
     public function behaviors()
@@ -27,6 +67,7 @@ class VerificationController extends InternalController
      * @OA\Get(
      *     path="/api/v1/internal/verification",
      *     summary="Получить список запросов на верификацию",
+     *     security={{"Bearer":{}}},
      *     tags={"Verification"},
      *     @OA\Parameter(
      *         name="role",
@@ -113,6 +154,7 @@ class VerificationController extends InternalController
      * @OA\Put(
      *     path="/api/v1/internal/verification/approve/{id}",
      *     summary="Одобрить запрос на верификацию",
+     *     security={{"Bearer":{}}},
      *     tags={"Verification"},
      *     @OA\Parameter(
      *         name="id",
@@ -193,6 +235,7 @@ class VerificationController extends InternalController
      * @OA\Get(
      *     path="/api/v1/internal/verification/view/{id}",
      *     summary="Просмотр запроса на верификацию",
+     *     security={{"Bearer":{}}},
      *     tags={"Verification"},
      *     @OA\Parameter(
      *         name="id",

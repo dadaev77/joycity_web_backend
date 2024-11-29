@@ -5,11 +5,10 @@ namespace app\controllers\api\v1\internal\constants;
 use app\components\ApiResponse;
 use app\controllers\api\v1\InternalController;
 use app\models\Category;
-use app\services\AttachmentService;
 use app\services\output\CategoryOutputService;
+use app\services\SaveModelService;
 use Throwable;
 use Yii;
-use yii\web\UploadedFile;
 
 class CategoryController extends InternalController
 {
@@ -28,8 +27,8 @@ class CategoryController extends InternalController
      * @OA\Get(
      *     path="/api/v1/internal/constants/category",
      *     tags={"Category"},
-     *     summary="Get list of categories",
-     *     @OA\Response(response="200", description="Successful response")
+     *     summary="Получить список категорий",
+     *     @OA\Response(response="200", description="Успешный ответ")
      * )
      */
     public function actionIndex()
@@ -45,10 +44,10 @@ class CategoryController extends InternalController
      * @OA\Post(
      *     path="/api/v1/internal/constants/category",
      *     tags={"Category"},
-     *     summary="Create a new category",
-     *     @OA\Response(response="200", description="Category created successfully"),
-     *     @OA\Response(response="400", description="Validation error"),
-     *     @OA\Response(response="500", description="Internal server error")
+     *     summary="Создать новую категорию",
+     *     @OA\Response(response="200", description="Категория успешно создана"),
+     *     @OA\Response(response="400", description="Ошибка валидации"),
+     *     @OA\Response(response="500", description="Внутренняя ошибка сервера")
      * )
      */
     public function actionCreate()
@@ -114,12 +113,12 @@ class CategoryController extends InternalController
      * @OA\Put(
      *     path="/api/v1/internal/constants/category/{id}",
      *     tags={"Category"},
-     *     summary="Update an existing category",
-     *     @OA\Parameter(name="id", in="path", required=true, description="Category ID", @OA\Schema(type="integer")),
-     *     @OA\Response(response="200", description="Category updated successfully"),
-     *     @OA\Response(response="404", description="Category not found"),
-     *     @OA\Response(response="400", description="Validation error"),
-     *     @OA\Response(response="500", description="Internal server error")
+     *     summary="Обновить существующую категорию",
+     *     @OA\Parameter(name="id", in="path", required=true, description="ID категории", @OA\Schema(type="integer")),
+     *     @OA\Response(response="200", description="Категория успешно обновлена"),
+     *     @OA\Response(response="404", description="Категория не найдена"),
+     *     @OA\Response(response="400", description="Ошибка валидации"),
+     *     @OA\Response(response="500", description="Внутренняя ошибка сервера")
      * )
      */
     public function actionUpdate(int $id)
@@ -190,11 +189,11 @@ class CategoryController extends InternalController
      * @OA\Delete(
      *     path="/api/v1/internal/constants/category/{id}",
      *     tags={"Category"},
-     *     summary="Delete a category",
-     *     @OA\Parameter(name="id", in="path", required=true, description="Category ID", @OA\Schema(type="integer")),
-     *     @OA\Response(response="200", description="Category deleted successfully"),
-     *     @OA\Response(response="404", description="Category not found"),
-     *     @OA\Response(response="500", description="Internal server error")
+     *     summary="Удалить категорию",
+     *     @OA\Parameter(name="id", in="path", required=true, description="ID категории", @OA\Schema(type="integer")),
+     *     @OA\Response(response="200", description="Категория успешно удалена"),
+     *     @OA\Response(response="404", description="Категория не найдена"),
+     *     @OA\Response(response="500", description="Внутренняя ошибка сервера")
      * )
      */
     public function actionDelete(int $id)

@@ -6,9 +6,18 @@ use app\components\ApiResponse;
 use app\controllers\api\v1\InternalController;
 use app\models\Subcategory;
 use app\services\output\SubcategoryOutputService;
+use app\services\SaveModelService;
 use Throwable;
 use Yii;
 
+/**
+ * @OA\SecurityScheme(
+ *     securityScheme="Bearer",
+ *     type="http",
+ *     scheme="bearer",
+ *     bearerFormat="JWT"
+ * )
+ */
 class SubcategoryController extends InternalController
 {
     public function behaviors()
@@ -26,8 +35,9 @@ class SubcategoryController extends InternalController
      * @OA\Get(
      *     path="/api/v1/internal/constants/subcategory/",
      *     tags={"Subcategory"},
-     *     summary="Get list of subcategories",
-     *     @OA\Response(response="200", description="Successful response")
+     *     summary="Получить список подкатегорий",
+     *     security={{"Bearer":{}}},
+     *     @OA\Response(response="200", description="Успешный ответ")
      * )
      */
     public function actionIndex()
@@ -43,10 +53,11 @@ class SubcategoryController extends InternalController
      * @OA\Post(
      *     path="/api/v1/internal/constants/subcategory/create",
      *     tags={"Subcategory"},
-     *     summary="Create a new subcategory",
-     *     @OA\Response(response="200", description="Subcategory created successfully"),
-     *     @OA\Response(response="400", description="Validation error"),
-     *     @OA\Response(response="500", description="Internal server error")
+     *     summary="Создать новую подкатегорию",
+     *     security={{"Bearer":{}}},
+     *     @OA\Response(response="200", description="Подкатегория успешно создана"),
+     *     @OA\Response(response="400", description="Ошибка валидации"),
+     *     @OA\Response(response="500", description="Внутренняя ошибка сервера")
      * )
      */
     public function actionCreate()
@@ -93,12 +104,13 @@ class SubcategoryController extends InternalController
      * @OA\Put(
      *     path="/api/v1/internal/constants/subcategory/update/{id}",
      *     tags={"Subcategory"},
-     *     summary="Update an existing subcategory",
-     *     @OA\Parameter(name="id", in="path", required=true, description="Subcategory ID", @OA\Schema(type="integer")),
-     *     @OA\Response(response="200", description="Subcategory updated successfully"),
-     *     @OA\Response(response="404", description="Subcategory not found"),
-     *     @OA\Response(response="400", description="Validation error"),
-     *     @OA\Response(response="500", description="Internal server error")
+     *     summary="Обновить существующую подкатегорию",
+     *     security={{"Bearer":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, description="ID подкатегории", @OA\Schema(type="integer")),
+     *     @OA\Response(response="200", description="Подкатегория успешно обновлена"),
+     *     @OA\Response(response="404", description="Подкатегория не найдена"),
+     *     @OA\Response(response="400", description="Ошибка валидации"),
+     *     @OA\Response(response="500", description="Внутренняя ошибка сервера")
      * )
      */
     public function actionUpdate(int $id)
@@ -152,11 +164,12 @@ class SubcategoryController extends InternalController
      * @OA\Delete(
      *     path="/api/v1/internal/constants/subcategory/delete/{id}",
      *     tags={"Subcategory"},
-     *     summary="Delete a subcategory",
-     *     @OA\Parameter(name="id", in="path", required=true, description="Subcategory ID", @OA\Schema(type="integer")),
-     *     @OA\Response(response="200", description="Subcategory deleted successfully"),
-     *     @OA\Response(response="404", description="Subcategory not found"),
-     *     @OA\Response(response="500", description="Internal server error")
+     *     summary="Удалить подкатегорию",
+     *     security={{"Bearer":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, description="ID подкатегории", @OA\Schema(type="integer")),
+     *     @OA\Response(response="200", description="Подкатегория успешно удалена"),
+     *     @OA\Response(response="404", description="Подкатегория не найдена"),
+     *     @OA\Response(response="500", description="Внутренняя ошибка сервера")
      * )
      */
     public function actionDelete(int $id)

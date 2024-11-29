@@ -4,10 +4,10 @@ namespace app\controllers\api\v1\internal\constants;
 
 use app\components\ApiResponse;
 use app\controllers\api\v1\InternalController;
-use app\models\TypeDeliveryPoint;
-use app\services\output\TypeDeliveryPointOutputService;
+use app\models\DeliveryPoint;
+use app\services\output\DeliveryPointOutputService;
+use app\services\SaveModelService;
 use Throwable;
-use Yii;
 
 class DeliveryPointController extends InternalController
 {
@@ -25,9 +25,9 @@ class DeliveryPointController extends InternalController
     /**
      * @OA\Get(
      *     path="/api/v1/internal/constants/delivery-point",
-     *     tags={"DeliveryPoint"},
-     *     summary="Get list of delivery points",
-     *     @OA\Response(response="200", description="Successful response")
+     *     tags={"Delivery Point"},
+     *     summary="Получить список пунктов доставки",
+     *     @OA\Response(response="200", description="Успешный ответ")
      * )
      */
     public function actionIndex()
@@ -44,11 +44,11 @@ class DeliveryPointController extends InternalController
     /**
      * @OA\Post(
      *     path="/api/v1/internal/constants/delivery-point/create",
-     *     tags={"DeliveryPoint"},
-     *     summary="Create a new delivery point",
-     *     @OA\Response(response="200", description="Delivery point created successfully"),
-     *     @OA\Response(response="400", description="Validation error"),
-     *     @OA\Response(response="500", description="Internal server error")
+     *     tags={"Delivery Point"},
+     *     summary="Создать новый пункт доставки",
+     *     @OA\Response(response="200", description="Пункт доставки успешно создан"),
+     *     @OA\Response(response="400", description="Ошибка валидации"),
+     *     @OA\Response(response="500", description="Внутренняя ошибка сервера")
      * )
      */
     public function actionCreate()
@@ -95,13 +95,13 @@ class DeliveryPointController extends InternalController
     /**
      * @OA\Put(
      *     path="/api/v1/internal/constants/delivery-point/update/{id}",
-     *     tags={"DeliveryPoint"},
-     *     summary="Update an existing delivery point",
-     *     @OA\Parameter(name="id", in="path", required=true, description="Delivery Point ID", @OA\Schema(type="integer")),
-     *     @OA\Response(response="200", description="Delivery point updated successfully"),
-     *     @OA\Response(response="404", description="Delivery point not found"),
-     *     @OA\Response(response="400", description="Validation error"),
-     *     @OA\Response(response="500", description="Internal server error")
+     *     tags={"Delivery Point"},
+     *     summary="Обновить существующий пункт доставки",
+     *     @OA\Parameter(name="id", in="path", required=true, description="ID пункта доставки", @OA\Schema(type="integer")),
+     *     @OA\Response(response="200", description="Пункт доставки успешно обновлен"),
+     *     @OA\Response(response="404", description="Пункт доставки не найден"),
+     *     @OA\Response(response="400", description="Ошибка валидации"),
+     *     @OA\Response(response="500", description="Внутренняя ошибка сервера")
      * )
      */
     public function actionUpdate(int $id)
@@ -156,12 +156,12 @@ class DeliveryPointController extends InternalController
     /**
      * @OA\Delete(
      *     path="/api/v1/internal/constants/delivery-point/delete/{id}",
-     *     tags={"DeliveryPoint"},
-     *     summary="Delete a delivery point",
-     *     @OA\Parameter(name="id", in="path", required=true, description="Delivery Point ID", @OA\Schema(type="integer")),
-     *     @OA\Response(response="200", description="Delivery point deleted successfully"),
-     *     @OA\Response(response="404", description="Delivery point not found"),
-     *     @OA\Response(response="500", description="Internal server error")
+     *     tags={"Delivery Point"},
+     *     summary="Удалить пункт доставки",
+     *     @OA\Parameter(name="id", in="path", required=true, description="ID пункта доставки", @OA\Schema(type="integer")),
+     *     @OA\Response(response="200", description="Пункт доставки успешно удален"),
+     *     @OA\Response(response="404", description="Пункт доставки не найден"),
+     *     @OA\Response(response="500", description="Внутренняя ошибка сервера")
      * )
      */
     public function actionDelete(int $id)

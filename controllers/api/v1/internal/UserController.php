@@ -13,6 +13,14 @@ use app\services\output\ProfileOutputService;
 use Throwable;
 use Yii;
 
+/**
+ * @OA\SecurityScheme(
+ *     securityScheme="Bearer",
+ *     type="http",
+ *     scheme="bearer",
+ *     bearerFormat="JWT"
+ * )
+ */
 class UserController extends InternalController
 {
     public function behaviors()
@@ -31,6 +39,7 @@ class UserController extends InternalController
      *     path="/api/v1/internal/user/register",
      *     summary="Регистрация нового пользователя",
      *     tags={"User"},
+     *     security={{"Bearer":{}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
@@ -181,6 +190,7 @@ class UserController extends InternalController
      *     path="/api/v1/internal/user/update/{id}",
      *     summary="Обновить информацию о пользователе",
      *     tags={"User"},
+     *     security={{"Bearer":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -373,6 +383,7 @@ class UserController extends InternalController
      * @OA\Get(
      *     path="/api/v1/internal/user/view/{id}",
      *     summary="Просмотр информации о пользователе",
+     *     security={{"Bearer":{}}},
      *     tags={"User"},
      *     @OA\Parameter(
      *         name="id",

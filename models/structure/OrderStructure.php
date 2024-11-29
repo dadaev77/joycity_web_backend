@@ -26,6 +26,7 @@ use app\models\TypeDelivery;
 use app\models\TypeDeliveryPoint;
 use app\models\TypePackaging;
 use app\models\User;
+use app\models\Waybill;
 use app\services\modificators\RateService;
 use yii\db\ActiveQuery;
 
@@ -59,6 +60,7 @@ use yii\db\ActiveQuery;
  * @property int $is_need_deep_inspection
  * @property int $is_deleted
  * @property string|null $link_tz
+ * @property Waybill[] $waybills Накладные заказа
  *
  * @property User $buyer
  * @property BuyerDeliveryOffer $buyerDeliveryOffer
@@ -603,6 +605,16 @@ class OrderStructure extends Base
     {
         return $this->hasOne(TypePackaging::class, [
             'id' => 'type_packaging_id',
+        ]);
+    }
+
+    /**
+     * Получить накладные заказа
+     */
+    public function getWaybill()
+    {
+        return $this->hasOne(Waybill::class, [
+            'order_id' => 'id'
         ]);
     }
 }

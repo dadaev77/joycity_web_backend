@@ -9,7 +9,6 @@ use app\services\output\TypePackagingOutputService;
 use app\services\SaveModelService;
 use Throwable;
 
-
 class TypePackagingController extends InternalController
 {
     public function behaviors()
@@ -25,9 +24,10 @@ class TypePackagingController extends InternalController
     /**
      * @OA\Get(
      *     path="/api/v1/internal/constants/type-packaging",
-     *     summary="Get collection of Type Packaging",
-     *     @OA\Response(response="200", description="Successful response"),
-     *     @OA\Response(response="500", description="Internal server error")
+     *     summary="Получить список типов упаковки",
+     *     tags={"Type Packaging"},
+     *     @OA\Response(response="200", description="Успешный ответ"),
+     *     @OA\Response(response="500", description="Внутренняя ошибка сервера")
      * )
      */
     public function actionIndex()
@@ -46,9 +46,10 @@ class TypePackagingController extends InternalController
     /**
      * @OA\Post(
      *     path="/api/v1/internal/constants/type-packaging/create",
-     *     summary="Create a new Type Packaging",
-     *     @OA\Response(response="200", description="Successful creation"),
-     *     @OA\Response(response="500", description="Internal server error")
+     *     summary="Создать новый тип упаковки",
+     *     tags={"Type Packaging"},
+     *     @OA\Response(response="200", description="Успешное создание"),
+     *     @OA\Response(response="500", description="Внутренняя ошибка сервера")
      * )
      */
     public function actionCreate()
@@ -75,11 +76,12 @@ class TypePackagingController extends InternalController
     /**
      * @OA\Put(
      *     path="/api/v1/internal/constants/type-packaging/update/{id}",
-     *     summary="Update a Type Packaging",
-     *     @OA\Parameter(name="id", in="path", required=true, description="ID of the Type Packaging to update", @OA\Schema(type="integer")),
-     *     @OA\Response(response="200", description="Successful update"),
-     *     @OA\Response(response="404", description="Not found"),
-     *     @OA\Response(response="500", description="Internal server error")
+     *     summary="Обновить тип упаковки",
+     *     tags={"Type Packaging"},
+     *     @OA\Parameter(name="id", in="path", required=true, description="ID типа упаковки для обновления", @OA\Schema(type="integer")),
+     *     @OA\Response(response="200", description="Успешное обновление"),
+     *     @OA\Response(response="404", description="Не найдено"),
+     *     @OA\Response(response="500", description="Внутренняя ошибка сервера")
      * )
      */
     public function actionUpdate(int $id)
