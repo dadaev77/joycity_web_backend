@@ -7,6 +7,7 @@ use app\components\auth\HttpBearerAuthCustom;
 use app\models\Base;
 use yii\rest\ActiveController;
 use yii\web\Response;
+use OpenApi\Annotations as OA;
 
 /**
  * @OA\Info(
@@ -14,15 +15,18 @@ use yii\web\Response;
  *     version="1.0.0",
  *     description="Документация API для приложения JoyCity"
  * )
- * @OA\PathItem(path="/api")
+ * @OA\PathItem(
+ *   path="/api"
+ * )
  * @OA\SecurityScheme(
- *     securityScheme="Bearer",
- *     type="http",
- *     scheme="bearer",
- *     bearerFormat="JWT",
- *     description="Введите ваш Bearer токен в формате JWT"
+ *   securityScheme="bearerAuth",
+ *   type="http",
+ *   scheme="bearer",
+ *   bearerFormat="JWT",
+ *   description="JWT Authorization header using the Bearer scheme"
  * )
  */
+
 class ApiController extends ActiveController
 {
     public $modelClass = Base::class;

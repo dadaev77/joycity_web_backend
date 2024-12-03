@@ -147,14 +147,6 @@ class OrderPriceService extends PriceOutputService
         return $out;
     }
 
-    public static function outputOrderPricesInUserCurrency(array $prices): array
-    {
-        return ArrayHelperExtended::mapDeep(
-            static fn($amount) => RateService::outputInUserCurrency($amount),
-            $prices,
-        );
-    }
-
     public static function getPricesConfig(): array
     {
         return [

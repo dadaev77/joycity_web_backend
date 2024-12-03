@@ -116,9 +116,8 @@ class BuyerDeliveryOfferController extends ManagerController
             $buyerDeliveryOffer->manager_id = $user->id;
             $buyerDeliveryOffer->buyer_id = $order->buyer_id;
             $buyerDeliveryOffer->status = BuyerDeliveryOffer::STATUS_CREATED;
-            $buyerDeliveryOffer->price_product = RateService::putInUserCurrency(
-                $params['price_product'],
-            );
+            $buyerDeliveryOffer->price_product = $params['price_product'];
+            $buyerDeliveryOffer->currency = $user->settings->currency;
 
             if (!$buyerDeliveryOffer->save()) {
                 return ApiResponse::codeErrors(

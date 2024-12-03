@@ -55,6 +55,7 @@ class BuyerDeliveryOfferStructure extends Base
                     'price_product',
                     'total_quantity',
                     'total_packaging_quantity',
+                    'currency',
                 ],
                 'required',
             ],

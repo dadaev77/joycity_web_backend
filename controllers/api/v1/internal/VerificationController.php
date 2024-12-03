@@ -28,6 +28,7 @@ class VerificationController extends InternalController
      *     path="/api/v1/internal/verification",
      *     summary="Получить список запросов на верификацию",
      *     tags={"Verification"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="role",
      *         in="query",
@@ -58,7 +59,17 @@ class VerificationController extends InternalController
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Список запросов на верификацию успешно получен"
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(
+     *                 @OA\Property(property="id", type="integer"),
+     *                 @OA\Property(property="status", type="string"),
+     *                 @OA\Property(property="created_at", type="string", format="date-time"),
+     *                 @OA\Property(property="created_by_id", type="integer"),
+     *                 @OA\Property(property="approved_by_id", type="integer", nullable=true)
+     *             )
+     *         )
      *     )
      * )
      */
@@ -113,6 +124,7 @@ class VerificationController extends InternalController
      * @OA\Put(
      *     path="/api/v1/internal/verification/approve/{id}",
      *     summary="Одобрить запрос на верификацию",
+     *     security={{"Bearer":{}}},
      *     tags={"Verification"},
      *     @OA\Parameter(
      *         name="id",
@@ -193,6 +205,7 @@ class VerificationController extends InternalController
      * @OA\Get(
      *     path="/api/v1/internal/verification/view/{id}",
      *     summary="Просмотр запроса на верификацию",
+     *     security={{"Bearer":{}}},
      *     tags={"Verification"},
      *     @OA\Parameter(
      *         name="id",

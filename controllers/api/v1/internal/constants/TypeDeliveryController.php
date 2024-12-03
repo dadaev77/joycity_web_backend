@@ -25,10 +25,24 @@ class TypeDeliveryController extends InternalController
 
     /**
      * @OA\Get(
-     *     path="/api/v1/internal/constants/type-delivery/",
-     *     tags={"TypeDelivery"},
-     *     summary="Get list of type deliveries",
-     *     @OA\Response(response="200", description="Successful response")
+     *     path="/api/v1/internal/constants/type-delivery",
+     *     summary="Получение списка типов доставки",
+     *     tags={"Constants"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(
+     *                 @OA\Property(property="id", type="integer"),
+     *                 @OA\Property(property="zh_name", type="string"),
+     *                 @OA\Property(property="ru_name", type="string"),
+     *                 @OA\Property(property="en_name", type="string"),
+     *                 @OA\Property(property="available_for_all", type="boolean")
+     *             )
+     *         )
+     *     )
      * )
      */
     public function actionIndex()
@@ -47,11 +61,11 @@ class TypeDeliveryController extends InternalController
     /**
      * @OA\Post(
      *     path="/api/v1/internal/constants/type-delivery/create",
-     *     tags={"TypeDelivery"},
-     *     summary="Create a new type delivery",
-     *     @OA\Response(response="200", description="Type delivery created successfully"),
-     *     @OA\Response(response="400", description="Validation error"),
-     *     @OA\Response(response="500", description="Internal server error")
+     *     tags={"Type Delivery"},
+     *     summary="Создать новый тип доставки",
+     *     @OA\Response(response="200", description="Тип доставки успешно создан"),
+     *     @OA\Response(response="400", description="Ошибка валидации"),
+     *     @OA\Response(response="500", description="Внутренняя ошибка сервера")
      * )
      */
     public function actionCreate()
@@ -99,13 +113,13 @@ class TypeDeliveryController extends InternalController
     /**
      * @OA\Put(
      *     path="/api/v1/internal/constants/type-delivery/update/{id}",
-     *     tags={"TypeDelivery"},
-     *     summary="Update an existing type delivery",
-     *     @OA\Parameter(name="id", in="path", required=true, description="Type Delivery ID", @OA\Schema(type="integer")),
-     *     @OA\Response(response="200", description="Type delivery updated successfully"),
-     *     @OA\Response(response="404", description="Type delivery not found"),
-     *     @OA\Response(response="400", description="Validation error"),
-     *     @OA\Response(response="500", description="Internal server error")
+     *     tags={"Type Delivery"},
+     *     summary="Обновить существующий тип доставки",
+     *     @OA\Parameter(name="id", in="path", required=true, description="ID типа доставки", @OA\Schema(type="integer")),
+     *     @OA\Response(response="200", description="Тип доставки успешно обновлен"),
+     *     @OA\Response(response="404", description="Тип доставки не найден"),
+     *     @OA\Response(response="400", description="Ошибка валидации"),
+     *     @OA\Response(response="500", description="Внутренняя ошибка сервера")
      * )
      */
     public function actionUpdate(int $id)

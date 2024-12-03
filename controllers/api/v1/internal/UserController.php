@@ -13,6 +13,7 @@ use app\services\output\ProfileOutputService;
 use Throwable;
 use Yii;
 
+
 class UserController extends InternalController
 {
     public function behaviors()
@@ -31,9 +32,11 @@ class UserController extends InternalController
      *     path="/api/v1/internal/user/register",
      *     summary="Регистрация нового пользователя",
      *     tags={"User"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
+     *             required={"email", "password", "confirm_password", "phone_number", "surname", "name", "role"},
      *             @OA\Property(property="email", type="string", example="user@example.com"),
      *             @OA\Property(property="password", type="string", example="password123"),
      *             @OA\Property(property="confirm_password", type="string", example="password123"),
@@ -45,16 +48,19 @@ class UserController extends InternalController
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Пользователь успешно зарегистрирован"
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="id", type="integer"),
+     *             @OA\Property(property="email", type="string"),
+     *             @OA\Property(property="phone_number", type="string"),
+     *             @OA\Property(property="surname", type="string"),
+     *             @OA\Property(property="name", type="string"),
+     *             @OA\Property(property="role", type="string"),
+     *             @OA\Property(property="is_verified", type="boolean")
+     *         )
      *     ),
-     *     @OA\Response(
-     *         response=400,
-     *         description="Ошибка валидации параметров"
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Внутренняя ошибка сервера"
-     *     )
+     *     @OA\Response(response=400, description="Validation error"),
+     *     @OA\Response(response=500, description="Internal server error")
      * )
      */
     public function actionRegister()

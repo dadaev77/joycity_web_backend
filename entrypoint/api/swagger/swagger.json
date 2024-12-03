@@ -5735,7 +5735,12 @@
                     "500": {
                         "description": "Внутренняя ошибка сервера"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
             }
         },
         "/api/v1/internal/options/view/{id}": {
@@ -5763,7 +5768,12 @@
                     "404": {
                         "description": "Опция не найдена"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
             }
         },
         "/api/v1/internal/options/index": {
@@ -5777,7 +5787,12 @@
                     "200": {
                         "description": "Список опций успешно получен"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
             }
         },
         "/api/v1/internal/order/index": {
@@ -5858,7 +5873,12 @@
                     "200": {
                         "description": "Список заказов успешно получен"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
             }
         },
         "/api/v1/internal/order/view/{id}": {
@@ -5886,7 +5906,12 @@
                     "404": {
                         "description": "Заказ не найден"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
             }
         },
         "/api/v1/internal/profile/self": {
@@ -5903,7 +5928,12 @@
                     "404": {
                         "description": "Пользователь не найден"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
             }
         },
         "/api/v1/internal/user/register": {
@@ -5918,6 +5948,15 @@
                     "content": {
                         "application/json": {
                             "schema": {
+                                "required": [
+                                    "email",
+                                    "password",
+                                    "confirm_password",
+                                    "phone_number",
+                                    "surname",
+                                    "name",
+                                    "role"
+                                ],
                                 "properties": {
                                     "email": {
                                         "type": "string",
@@ -5955,15 +5994,50 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Пользователь успешно зарегистрирован"
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer"
+                                        },
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "phone_number": {
+                                            "type": "string"
+                                        },
+                                        "surname": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "role": {
+                                            "type": "string"
+                                        },
+                                        "is_verified": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "400": {
-                        "description": "Ошибка валидации параметров"
+                        "description": "Validation error"
                     },
                     "500": {
-                        "description": "Внутренняя ошибка сервера"
+                        "description": "Internal server error"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/v1/internal/user/update/{id}": {
@@ -6157,9 +6231,43 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Список запросов на верификацию успешно получен"
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer"
+                                            },
+                                            "status": {
+                                                "type": "string"
+                                            },
+                                            "created_at": {
+                                                "type": "string",
+                                                "format": "date-time"
+                                            },
+                                            "created_by_id": {
+                                                "type": "integer"
+                                            },
+                                            "approved_by_id": {
+                                                "type": "integer",
+                                                "nullable": true
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/v1/internal/verification/approve/{id}": {
@@ -6190,7 +6298,12 @@
                     "400": {
                         "description": "Ошибка валидации параметров"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
             }
         },
         "/api/v1/internal/verification/view/{id}": {
@@ -6218,7 +6331,12 @@
                     "404": {
                         "description": "Запрос на верификацию не найден"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
             }
         },
         "/api/v1/internal/constants/category": {
@@ -6226,11 +6344,11 @@
                 "tags": [
                     "Category"
                 ],
-                "summary": "Get list of categories",
+                "summary": "Получить список категорий",
                 "operationId": "2f495fbd26836f03d94e56d8ce7dcb58",
                 "responses": {
                     "200": {
-                        "description": "Successful response"
+                        "description": "Успешный ответ"
                     }
                 }
             },
@@ -6238,17 +6356,17 @@
                 "tags": [
                     "Category"
                 ],
-                "summary": "Create a new category",
+                "summary": "Создать новую категорию",
                 "operationId": "f888e488443c69919cfc92335ce75d22",
                 "responses": {
                     "200": {
-                        "description": "Category created successfully"
+                        "description": "Категория успешно создана"
                     },
                     "400": {
-                        "description": "Validation error"
+                        "description": "Ошибка валидации"
                     },
                     "500": {
-                        "description": "Internal server error"
+                        "description": "Внутренняя ошибка сервера"
                     }
                 }
             }
@@ -6258,13 +6376,13 @@
                 "tags": [
                     "Category"
                 ],
-                "summary": "Update an existing category",
+                "summary": "Обновить существующую категорию",
                 "operationId": "ac04ee6711e506e25d66497c088fe2d9",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "Category ID",
+                        "description": "ID категории",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -6273,16 +6391,16 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Category updated successfully"
+                        "description": "Категория успешно обновлена"
                     },
                     "404": {
-                        "description": "Category not found"
+                        "description": "Категория не найдена"
                     },
                     "400": {
-                        "description": "Validation error"
+                        "description": "Ошибка валидации"
                     },
                     "500": {
-                        "description": "Internal server error"
+                        "description": "Внутренняя ошибка сервера"
                     }
                 }
             },
@@ -6290,13 +6408,13 @@
                 "tags": [
                     "Category"
                 ],
-                "summary": "Delete a category",
+                "summary": "Удалить категорию",
                 "operationId": "3cdb296a4c2043c22f12eb735bfd65d6",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "Category ID",
+                        "description": "ID категории",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -6305,13 +6423,13 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Category deleted successfully"
+                        "description": "Категория успешно удалена"
                     },
                     "404": {
-                        "description": "Category not found"
+                        "description": "Категория не найдена"
                     },
                     "500": {
-                        "description": "Internal server error"
+                        "description": "Внутренняя ошибка сервера"
                     }
                 }
             }
@@ -6319,31 +6437,31 @@
         "/api/v1/internal/constants/delivery-point-address": {
             "get": {
                 "tags": [
-                    "DeliveryPointAddress"
+                    "Delivery Point Address"
                 ],
-                "summary": "Get list of delivery point addresses",
+                "summary": "Получить список адресов пунктов доставки",
                 "operationId": "a77678bd0161029979ec1074f566ee7e",
                 "responses": {
                     "200": {
-                        "description": "Successful response"
+                        "description": "Успешный ответ"
                     }
                 }
             },
             "post": {
                 "tags": [
-                    "DeliveryPointAddress"
+                    "Delivery Point Address"
                 ],
-                "summary": "Create a new delivery point address",
+                "summary": "Создать новый адрес пункта доставки",
                 "operationId": "555850097809fef3ce16c52a167d9282",
                 "responses": {
                     "200": {
-                        "description": "Delivery point address created successfully"
+                        "description": "Адрес пункта доставки успешно создан"
                     },
                     "400": {
-                        "description": "Validation error"
+                        "description": "Ошибка валидации"
                     },
                     "500": {
-                        "description": "Internal server error"
+                        "description": "Внутренняя ошибка сервера"
                     }
                 }
             }
@@ -6351,15 +6469,15 @@
         "/api/v1/internal/constants/delivery-point-address/{id}": {
             "put": {
                 "tags": [
-                    "DeliveryPointAddress"
+                    "Delivery Point Address"
                 ],
-                "summary": "Update an existing delivery point address",
+                "summary": "Обновить существующий адрес пункта доставки",
                 "operationId": "002955b678e1ad3104e445aa881b07f8",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "Delivery Point Address ID",
+                        "description": "ID адреса пункта доставки",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -6368,30 +6486,30 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Delivery point address updated successfully"
+                        "description": "Адрес пункта доставки успешно обновлен"
                     },
                     "404": {
-                        "description": "Delivery point address not found"
+                        "description": "Адрес пункта доставки не найден"
                     },
                     "400": {
-                        "description": "Validation error"
+                        "description": "Ошибка валидации"
                     },
                     "500": {
-                        "description": "Internal server error"
+                        "description": "Внутренняя ошибка сервера"
                     }
                 }
             },
             "delete": {
                 "tags": [
-                    "DeliveryPointAddress"
+                    "Delivery Point Address"
                 ],
-                "summary": "Delete a delivery point address",
+                "summary": "Удалить адрес пункта доставки",
                 "operationId": "1e43176b413bad8ceb5ca0a26b413914",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "Delivery Point Address ID",
+                        "description": "ID адреса пункта доставки",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -6400,13 +6518,13 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Delivery point address deleted successfully"
+                        "description": "Адрес пункта доставки успешно удален"
                     },
                     "404": {
-                        "description": "Delivery point address not found"
+                        "description": "Адрес пункта доставки не найден"
                     },
                     "500": {
-                        "description": "Internal server error"
+                        "description": "Внутренняя ошибка сервера"
                     }
                 }
             }
@@ -6414,13 +6532,13 @@
         "/api/v1/internal/constants/delivery-point": {
             "get": {
                 "tags": [
-                    "DeliveryPoint"
+                    "Delivery Point"
                 ],
-                "summary": "Get list of delivery points",
+                "summary": "Получить список пунктов доставки",
                 "operationId": "c9084f2086e21266084f7acb4b2e1c55",
                 "responses": {
                     "200": {
-                        "description": "Successful response"
+                        "description": "Успешный ответ"
                     }
                 }
             }
@@ -6428,19 +6546,19 @@
         "/api/v1/internal/constants/delivery-point/create": {
             "post": {
                 "tags": [
-                    "DeliveryPoint"
+                    "Delivery Point"
                 ],
-                "summary": "Create a new delivery point",
+                "summary": "Создать новый пункт доставки",
                 "operationId": "b85beea119044cc7385295f5704c3038",
                 "responses": {
                     "200": {
-                        "description": "Delivery point created successfully"
+                        "description": "Пункт доставки успешно создан"
                     },
                     "400": {
-                        "description": "Validation error"
+                        "description": "Ошибка валидации"
                     },
                     "500": {
-                        "description": "Internal server error"
+                        "description": "Внутренняя ошибка сервера"
                     }
                 }
             }
@@ -6448,15 +6566,15 @@
         "/api/v1/internal/constants/delivery-point/update/{id}": {
             "put": {
                 "tags": [
-                    "DeliveryPoint"
+                    "Delivery Point"
                 ],
-                "summary": "Update an existing delivery point",
+                "summary": "Обновить существующий пункт доставки",
                 "operationId": "3953a6ff6be363cf3e0d1daa4cfe0c43",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "Delivery Point ID",
+                        "description": "ID пункта доставки",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -6465,16 +6583,16 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Delivery point updated successfully"
+                        "description": "Пункт доставки успешно обновлен"
                     },
                     "404": {
-                        "description": "Delivery point not found"
+                        "description": "Пункт доставки не найден"
                     },
                     "400": {
-                        "description": "Validation error"
+                        "description": "Ошибка валидации"
                     },
                     "500": {
-                        "description": "Internal server error"
+                        "description": "Внутренняя ошибка сервера"
                     }
                 }
             }
@@ -6482,15 +6600,15 @@
         "/api/v1/internal/constants/delivery-point/delete/{id}": {
             "delete": {
                 "tags": [
-                    "DeliveryPoint"
+                    "Delivery Point"
                 ],
-                "summary": "Delete a delivery point",
+                "summary": "Удалить пункт доставки",
                 "operationId": "604f6808f0acd7a17c8076b25a940d3a",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "Delivery Point ID",
+                        "description": "ID пункта доставки",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -6499,13 +6617,13 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Delivery point deleted successfully"
+                        "description": "Пункт доставки успешно удален"
                     },
                     "404": {
-                        "description": "Delivery point not found"
+                        "description": "Пункт доставки не найден"
                     },
                     "500": {
-                        "description": "Internal server error"
+                        "description": "Внутренняя ошибка сервера"
                     }
                 }
             }
@@ -6515,11 +6633,11 @@
                 "tags": [
                     "Rate"
                 ],
-                "summary": "Get list of rates",
+                "summary": "Получить список курсов валют",
                 "operationId": "b36005222868f40de39fcd073cb5914d",
                 "responses": {
                     "200": {
-                        "description": "Successful response"
+                        "description": "Успешный ответ"
                     }
                 }
             }
@@ -6529,17 +6647,17 @@
                 "tags": [
                     "Rate"
                 ],
-                "summary": "Create a new rate",
+                "summary": "Создать новый курс валюты",
                 "operationId": "9c5baa23d7d56410b9ff74ea2f2bf463",
                 "responses": {
                     "200": {
-                        "description": "Rate created successfully"
+                        "description": "Курс валюты успешно создан"
                     },
                     "400": {
-                        "description": "Validation error"
+                        "description": "Ошибка валидации"
                     },
                     "500": {
-                        "description": "Internal server error"
+                        "description": "Внутренняя ошибка сервера"
                     }
                 }
             }
@@ -6549,13 +6667,13 @@
                 "tags": [
                     "Rate"
                 ],
-                "summary": "Update an existing rate",
+                "summary": "Обновить существующий курс валюты",
                 "operationId": "7adf35fa537d13595e3f7f1f3de48cb3",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "Rate ID",
+                        "description": "ID курса валюты",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -6564,16 +6682,16 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Rate updated successfully"
+                        "description": "Курс валюты успешно обновлен"
                     },
                     "404": {
-                        "description": "Rate not found"
+                        "description": "Курс валюты не найден"
                     },
                     "400": {
-                        "description": "Validation error"
+                        "description": "Ошибка валидации"
                     },
                     "500": {
-                        "description": "Internal server error"
+                        "description": "Внутренняя ошибка сервера"
                     }
                 }
             }
@@ -6583,13 +6701,13 @@
                 "tags": [
                     "Rate"
                 ],
-                "summary": "Delete a rate",
+                "summary": "Удалить курс валюты",
                 "operationId": "0750b6491af7bebdae002714b8c46e76",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "Rate ID",
+                        "description": "ID курса валюты",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -6598,29 +6716,61 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Rate deleted successfully"
+                        "description": "Курс валюты успешно удален"
                     },
                     "404": {
-                        "description": "Rate not found"
+                        "description": "Курс валюты не найден"
                     },
                     "500": {
-                        "description": "Internal server error"
+                        "description": "Внутренняя ошибка сервера"
                     }
                 }
             }
         },
-        "/api/v1/internal/constants/subcategory/": {
+        "/api/v1/internal/constants/subcategory": {
             "get": {
                 "tags": [
-                    "Subcategory"
+                    "Constants"
                 ],
-                "summary": "Get list of subcategories",
-                "operationId": "eecc100f8d987b631e51d73065790b2f",
+                "summary": "Получить список подкатегорий",
+                "operationId": "c3d9a6d6fe840465d2f7d4e8668e7a5d",
                 "responses": {
                     "200": {
-                        "description": "Successful response"
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer"
+                                            },
+                                            "zh_name": {
+                                                "type": "string"
+                                            },
+                                            "ru_name": {
+                                                "type": "string"
+                                            },
+                                            "en_name": {
+                                                "type": "string"
+                                            },
+                                            "category_id": {
+                                                "type": "integer"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/v1/internal/constants/subcategory/create": {
@@ -6628,17 +6778,17 @@
                 "tags": [
                     "Subcategory"
                 ],
-                "summary": "Create a new subcategory",
+                "summary": "Создать новую подкатегорию",
                 "operationId": "834a5f1e1d5074f5da1f15ed749f3c4f",
                 "responses": {
                     "200": {
-                        "description": "Subcategory created successfully"
+                        "description": "Подкатегория успешно создана"
                     },
                     "400": {
-                        "description": "Validation error"
+                        "description": "Ошибка валидации"
                     },
                     "500": {
-                        "description": "Internal server error"
+                        "description": "Внутренняя ошибка сервера"
                     }
                 }
             }
@@ -6648,13 +6798,13 @@
                 "tags": [
                     "Subcategory"
                 ],
-                "summary": "Update an existing subcategory",
+                "summary": "Обновить существующую подкатегорию",
                 "operationId": "3a77fa30afc3a408f2c6878ac8ee1f87",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "Subcategory ID",
+                        "description": "ID подкатегории",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -6663,16 +6813,16 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Subcategory updated successfully"
+                        "description": "Подкатегория успешно обновлена"
                     },
                     "404": {
-                        "description": "Subcategory not found"
+                        "description": "Подкатегория не найдена"
                     },
                     "400": {
-                        "description": "Validation error"
+                        "description": "Ошибка валидации"
                     },
                     "500": {
-                        "description": "Internal server error"
+                        "description": "Внутренняя ошибка сервера"
                     }
                 }
             }
@@ -6682,13 +6832,13 @@
                 "tags": [
                     "Subcategory"
                 ],
-                "summary": "Delete a subcategory",
+                "summary": "Удалить подкатегорию",
                 "operationId": "fcf059422c0d1cf4cf0679cc19723dd3",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "Subcategory ID",
+                        "description": "ID подкатегории",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -6697,47 +6847,79 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Subcategory deleted successfully"
+                        "description": "Подкатегория успешно удалена"
                     },
                     "404": {
-                        "description": "Subcategory not found"
+                        "description": "Подкатегория не найдена"
                     },
                     "500": {
-                        "description": "Internal server error"
+                        "description": "Внутренняя ошибка сервера"
                     }
                 }
             }
         },
-        "/api/v1/internal/constants/type-delivery/": {
+        "/api/v1/internal/constants/type-delivery": {
             "get": {
                 "tags": [
-                    "TypeDelivery"
+                    "Constants"
                 ],
-                "summary": "Get list of type deliveries",
-                "operationId": "0cf9e8baed0b352283254f606fc550c0",
+                "summary": "Получение списка типов доставки",
+                "operationId": "79477696d22e7197f07653f5fb10c2b6",
                 "responses": {
                     "200": {
-                        "description": "Successful response"
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer"
+                                            },
+                                            "zh_name": {
+                                                "type": "string"
+                                            },
+                                            "ru_name": {
+                                                "type": "string"
+                                            },
+                                            "en_name": {
+                                                "type": "string"
+                                            },
+                                            "available_for_all": {
+                                                "type": "boolean"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/v1/internal/constants/type-delivery/create": {
             "post": {
                 "tags": [
-                    "TypeDelivery"
+                    "Type Delivery"
                 ],
-                "summary": "Create a new type delivery",
+                "summary": "Создать новый тип доставки",
                 "operationId": "658b36b294a03e933921d9cd265a6db8",
                 "responses": {
                     "200": {
-                        "description": "Type delivery created successfully"
+                        "description": "Тип доставки успешно создан"
                     },
                     "400": {
-                        "description": "Validation error"
+                        "description": "Ошибка валидации"
                     },
                     "500": {
-                        "description": "Internal server error"
+                        "description": "Внутренняя ошибка сервера"
                     }
                 }
             }
@@ -6745,15 +6927,15 @@
         "/api/v1/internal/constants/type-delivery/update/{id}": {
             "put": {
                 "tags": [
-                    "TypeDelivery"
+                    "Type Delivery"
                 ],
-                "summary": "Update an existing type delivery",
+                "summary": "Обновить существующий тип доставки",
                 "operationId": "a9ce2d279587dc8b5abd8fb09e9d0237",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "Type Delivery ID",
+                        "description": "ID типа доставки",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -6762,16 +6944,16 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Type delivery updated successfully"
+                        "description": "Тип доставки успешно обновлен"
                     },
                     "404": {
-                        "description": "Type delivery not found"
+                        "description": "Тип доставки не найден"
                     },
                     "400": {
-                        "description": "Validation error"
+                        "description": "Ошибка валидации"
                     },
                     "500": {
-                        "description": "Internal server error"
+                        "description": "Внутренняя ошибка сервера"
                     }
                 }
             }
@@ -6779,13 +6961,13 @@
         "/api/v1/internal/constants/type-delivery-link-category": {
             "get": {
                 "tags": [
-                    "TypeDeliveryLinkCategory"
+                    "Type Delivery Link Category"
                 ],
-                "summary": "Get list of type delivery link categories",
+                "summary": "Получить список связей типов доставки с категориями",
                 "operationId": "45fbd6d8a510e07fdd28a31726323ea6",
                 "responses": {
                     "200": {
-                        "description": "Successful response"
+                        "description": "Успешный ответ"
                     }
                 }
             }
@@ -6793,19 +6975,19 @@
         "/api/v1/internal/constants/type-delivery-link-category/create": {
             "post": {
                 "tags": [
-                    "TypeDeliveryLinkCategory"
+                    "Type Delivery Link Category"
                 ],
-                "summary": "Create a new type delivery link category",
+                "summary": "Создать новую связь типа доставки с категорией",
                 "operationId": "46973e1f8492cba9176ab416afbce0fe",
                 "responses": {
                     "200": {
-                        "description": "Type delivery link category created successfully"
+                        "description": "Связь успешно создана"
                     },
                     "400": {
-                        "description": "Validation error"
+                        "description": "Ошибка валидации"
                     },
                     "500": {
-                        "description": "Internal server error"
+                        "description": "Внутренняя ошибка сервера"
                     }
                 }
             }
@@ -6813,15 +6995,15 @@
         "/api/v1/internal/constants/type-delivery-link-category/delete/{id}": {
             "delete": {
                 "tags": [
-                    "TypeDeliveryLinkCategory"
+                    "Type Delivery Link Category"
                 ],
-                "summary": "Delete a type delivery link category",
+                "summary": "Удалить связь типа доставки с категорией",
                 "operationId": "8ab394430aa8e84df6cd945f41f613fe",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "Type Delivery Link Category ID",
+                        "description": "ID связи типа доставки с категорией",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -6830,13 +7012,13 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Type delivery link category deleted successfully"
+                        "description": "Связь успешно удалена"
                     },
                     "404": {
-                        "description": "Type delivery link category not found"
+                        "description": "Связь не найдена"
                     },
                     "500": {
-                        "description": "Internal server error"
+                        "description": "Внутренняя ошибка сервера"
                     }
                 }
             }
@@ -6844,13 +7026,13 @@
         "/api/v1/internal/constants/type-delivery-link-subcategory": {
             "get": {
                 "tags": [
-                    "TypeDeliveryLinkSubcategory"
+                    "Type Delivery Link Subcategory"
                 ],
-                "summary": "Get list of type delivery link subcategories",
+                "summary": "Получить список связей типов доставки с подкатегориями",
                 "operationId": "58e1a367bccbe75ec637ff32a9d5e251",
                 "responses": {
                     "200": {
-                        "description": "Successful response"
+                        "description": "Успешный ответ"
                     }
                 }
             }
@@ -6858,19 +7040,19 @@
         "/api/v1/internal/constants/type-delivery-link-subcategory/create": {
             "post": {
                 "tags": [
-                    "TypeDeliveryLinkSubcategory"
+                    "Type Delivery Link Subcategory"
                 ],
-                "summary": "Create a new type delivery link subcategory",
+                "summary": "Создать новую связь типа доставки с подкатегорией",
                 "operationId": "a9f1b91c375206cd31958e9d54ccfc6f",
                 "responses": {
                     "200": {
-                        "description": "Type delivery link subcategory created successfully"
+                        "description": "Связь успешно создана"
                     },
                     "400": {
-                        "description": "Validation error"
+                        "description": "Ошибка валидации"
                     },
                     "500": {
-                        "description": "Internal server error"
+                        "description": "Внутренняя ошибка сервера"
                     }
                 }
             }
@@ -6878,15 +7060,15 @@
         "/api/v1/internal/constants/type-delivery-link-subcategory/delete/{id}": {
             "delete": {
                 "tags": [
-                    "TypeDeliveryLinkSubcategory"
+                    "Type Delivery Link Subcategory"
                 ],
-                "summary": "Delete a type delivery link subcategory",
+                "summary": "Удалить связь типа доставки с подкатегорией",
                 "operationId": "176e2e671f03a788a597d8fc3b47a515",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "Type Delivery Link Subcategory ID",
+                        "description": "ID связи типа доставки с подкатегорией",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -6895,40 +7077,51 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Type delivery link subcategory deleted successfully"
+                        "description": "Связь успешно удалена"
                     },
                     "404": {
-                        "description": "Type delivery link subcategory not found"
+                        "description": "Связь не найдена"
                     },
                     "500": {
-                        "description": "Internal server error"
+                        "description": "Внутренняя ошибка сервера"
                     }
                 }
             }
         },
         "/api/v1/internal/constants/type-delivery-price": {
             "get": {
-                "summary": "Get collection of Type Delivery Prices",
+                "tags": [
+                    "Type Delivery Price"
+                ],
+                "summary": "Получить список цен типов доставки",
                 "operationId": "b3a4e46ee184d52757c3f00251b8db26",
                 "responses": {
                     "200": {
-                        "description": "Successful response"
+                        "description": "Успешный ответ"
                     },
                     "500": {
-                        "description": "Internal server error"
+                        "description": "Внутренняя ошибка сервера"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
             }
         },
         "/api/v1/internal/constants/type-delivery-price/update/{id}": {
             "put": {
-                "summary": "Update a Type Delivery Price",
+                "tags": [
+                    "Type Delivery Price"
+                ],
+                "summary": "Обновить цену типа доставки",
                 "operationId": "25c4fe5b20155b0fdcde337da93e869d",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "ID of the Type Delivery Price to update",
+                        "description": "ID цены типа доставки для обновления",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -6937,54 +7130,68 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Successful update"
+                        "description": "Успешное обновление"
                     },
                     "404": {
-                        "description": "Not found"
+                        "description": "Не найдено"
                     },
                     "500": {
-                        "description": "Internal server error"
+                        "description": "Внутренняя ошибка сервера"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
             }
         },
         "/api/v1/internal/constants/type-packaging": {
             "get": {
-                "summary": "Get collection of Type Packaging",
+                "tags": [
+                    "Type Packaging"
+                ],
+                "summary": "Получить список типов упаковки",
                 "operationId": "d0f6a77f8cdfbddad46e4e759e78b0e5",
                 "responses": {
                     "200": {
-                        "description": "Successful response"
+                        "description": "Успешный ответ"
                     },
                     "500": {
-                        "description": "Internal server error"
+                        "description": "Внутренняя ошибка сервера"
                     }
                 }
             }
         },
         "/api/v1/internal/constants/type-packaging/create": {
             "post": {
-                "summary": "Create a new Type Packaging",
+                "tags": [
+                    "Type Packaging"
+                ],
+                "summary": "Создать новый тип упаковки",
                 "operationId": "6218696d0404d7a2446e1f287714c41f",
                 "responses": {
                     "200": {
-                        "description": "Successful creation"
+                        "description": "Успешное создание"
                     },
                     "500": {
-                        "description": "Internal server error"
+                        "description": "Внутренняя ошибка сервера"
                     }
                 }
             }
         },
         "/api/v1/internal/constants/type-packaging/update/{id}": {
             "put": {
-                "summary": "Update a Type Packaging",
+                "tags": [
+                    "Type Packaging"
+                ],
+                "summary": "Обновить тип упаковки",
                 "operationId": "1119eaf1e1928001f9e5ebd5bf5b7b0a",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "ID of the Type Packaging to update",
+                        "description": "ID типа упаковки для обновления",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -6993,13 +7200,13 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Successful update"
+                        "description": "Успешное обновление"
                     },
                     "404": {
-                        "description": "Not found"
+                        "description": "Не найдено"
                     },
                     "500": {
-                        "description": "Internal server error"
+                        "description": "Внутренняя ошибка сервера"
                     }
                 }
             }
@@ -7521,6 +7728,354 @@
                 }
             }
         },
+        "/api/v1/manager/waybill/generate": {
+            "post": {
+                "summary": "Генерация новой накладной",
+                "description": "Генерация новой накладной",
+                "operationId": "2dbaa3bc96670b1e6ece750a7f835955",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "sender",
+                                    "receiver",
+                                    "items"
+                                ],
+                                "properties": {
+                                    "sender": {
+                                        "properties": {
+                                            "name": {
+                                                "type": "string",
+                                                "example": "ООО Компания"
+                                            },
+                                            "phone": {
+                                                "type": "string",
+                                                "example": "+7 999 999 99 99"
+                                            },
+                                            "address": {
+                                                "type": "string",
+                                                "example": "г. Москва, ул. Примерная, д. 1"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "receiver": {
+                                        "properties": {
+                                            "name": {
+                                                "type": "string",
+                                                "example": "ИП Иванов"
+                                            },
+                                            "phone": {
+                                                "type": "string",
+                                                "example": "+7 888 888 88 88"
+                                            },
+                                            "address": {
+                                                "type": "string",
+                                                "example": "г. Санкт-Петербург, ул. Тестовая, д. 2"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "items": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "Товар 1"
+                                                },
+                                                "quantity": {
+                                                    "type": "integer",
+                                                    "example": 2
+                                                },
+                                                "price": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 1000.5
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Накладная успешно создана",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "file_url": {
+                                                    "type": "string",
+                                                    "example": "https://example.com/uploads/waybills/waybill_123.pdf"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Ошибка валидации",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Неверный формат данных"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/manager/waybill/get-file/{id}": {
+            "get": {
+                "summary": "Получение ссылки на файл накладной",
+                "description": "Получение ссылки на файл накладной",
+                "operationId": "f5f12fbb11035e37aa38ccc8e2e61391",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID накладной",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешное получение ссылки",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "file_url": {
+                                                    "type": "string",
+                                                    "example": "https://example.com/uploads/waybills/waybill_123.pdf"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Накладная не найдена",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Файл накладной не найден"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/manager/waybill/regenerate/{id}": {
+            "put": {
+                "summary": "Регенерация накладной с новыми данными",
+                "description": "Повторная генерация накладной с учетом изменений",
+                "operationId": "fdc82f861fc074ed3ff56263a7897988",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID накладной",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "sender",
+                                    "receiver",
+                                    "items"
+                                ],
+                                "properties": {
+                                    "sender": {
+                                        "properties": {
+                                            "name": {
+                                                "type": "string",
+                                                "example": "ООО Компания"
+                                            },
+                                            "phone": {
+                                                "type": "string",
+                                                "example": "+7 999 999 99 99"
+                                            },
+                                            "address": {
+                                                "type": "string",
+                                                "example": "г. Москва, ул. Примерная, д. 1"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "receiver": {
+                                        "properties": {
+                                            "name": {
+                                                "type": "string",
+                                                "example": "ИП Иванов"
+                                            },
+                                            "phone": {
+                                                "type": "string",
+                                                "example": "+7 888 888 88 88"
+                                            },
+                                            "address": {
+                                                "type": "string",
+                                                "example": "г. Санкт-Петербург, ул. Тестовая, д. 2"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "items": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "Товар 1"
+                                                },
+                                                "quantity": {
+                                                    "type": "integer",
+                                                    "example": 2
+                                                },
+                                                "price": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 1000.5
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Накладная успешно обновлена",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "file_url": {
+                                                    "type": "string",
+                                                    "example": "https://example.com/uploads/waybills/waybill_123.pdf"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Накладная не найдена",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Файл накладной не найден"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Ошибка валидации",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Неверный формат данных"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/manager/order/buyer-delivery-offer/create": {
             "post": {
                 "tags": [
@@ -7801,9 +8356,9 @@
     },
     "components": {
         "securitySchemes": {
-            "Bearer": {
+            "bearerAuth": {
                 "type": "http",
-                "description": "Введите ваш Bearer токен в формате JWT",
+                "description": "JWT Authorization header using the Bearer scheme",
                 "bearerFormat": "JWT",
                 "scheme": "bearer"
             }
@@ -7835,32 +8390,44 @@
             "description": "Category"
         },
         {
-            "name": "DeliveryPointAddress",
-            "description": "DeliveryPointAddress"
+            "name": "Delivery Point Address",
+            "description": "Delivery Point Address"
         },
         {
-            "name": "DeliveryPoint",
-            "description": "DeliveryPoint"
+            "name": "Delivery Point",
+            "description": "Delivery Point"
         },
         {
             "name": "Rate",
             "description": "Rate"
         },
         {
+            "name": "Constants",
+            "description": "Constants"
+        },
+        {
             "name": "Subcategory",
             "description": "Subcategory"
         },
         {
-            "name": "TypeDelivery",
-            "description": "TypeDelivery"
+            "name": "Type Delivery",
+            "description": "Type Delivery"
         },
         {
-            "name": "TypeDeliveryLinkCategory",
-            "description": "TypeDeliveryLinkCategory"
+            "name": "Type Delivery Link Category",
+            "description": "Type Delivery Link Category"
         },
         {
-            "name": "TypeDeliveryLinkSubcategory",
-            "description": "TypeDeliveryLinkSubcategory"
+            "name": "Type Delivery Link Subcategory",
+            "description": "Type Delivery Link Subcategory"
+        },
+        {
+            "name": "Type Delivery Price",
+            "description": "Type Delivery Price"
+        },
+        {
+            "name": "Type Packaging",
+            "description": "Type Packaging"
         },
         {
             "name": "Chat",

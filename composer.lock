@@ -5,12 +5,17 @@
         "This file is @generated automatically"
     ],
     "content-hash": "070bd513d084cd39ca771be6104ffae4",
+    "content-hash": "070bd513d084cd39ca771be6104ffae4",
     "packages": [
         {
             "name": "cebe/markdown",
             "version": "1.2.1",
+            "name": "cebe/markdown",
+            "version": "1.2.1",
             "source": {
                 "type": "git",
+                "url": "https://github.com/cebe/markdown.git",
+                "reference": "9bac5e971dd391e2802dca5400bbeacbaea9eb86"
                 "url": "https://github.com/cebe/markdown.git",
                 "reference": "9bac5e971dd391e2802dca5400bbeacbaea9eb86"
             },
@@ -18,9 +23,13 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/cebe/markdown/zipball/9bac5e971dd391e2802dca5400bbeacbaea9eb86",
                 "reference": "9bac5e971dd391e2802dca5400bbeacbaea9eb86",
+                "url": "https://api.github.com/repos/cebe/markdown/zipball/9bac5e971dd391e2802dca5400bbeacbaea9eb86",
+                "reference": "9bac5e971dd391e2802dca5400bbeacbaea9eb86",
                 "shasum": ""
             },
             "require": {
+                "lib-pcre": "*",
+                "php": ">=5.4.0"
                 "lib-pcre": "*",
                 "php": ">=5.4.0"
             },
@@ -33,18 +42,29 @@
                 "bin/markdown"
             ],
             "type": "library",
+                "cebe/indent": "*",
+                "facebook/xhprof": "*@dev",
+                "phpunit/phpunit": "4.1.*"
+            },
+            "bin": [
+                "bin/markdown"
+            ],
+            "type": "library",
             "extra": {
                 "branch-alias": {
+                    "dev-master": "1.2.x-dev"
                     "dev-master": "1.2.x-dev"
                 }
             },
             "autoload": {
                 "psr-4": {
                     "cebe\\markdown\\": ""
+                    "cebe\\markdown\\": ""
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
+                "MIT"
                 "MIT"
             ],
             "authors": [
@@ -53,11 +73,22 @@
                     "email": "mail@cebe.cc",
                     "homepage": "http://cebe.cc/",
                     "role": "Creator"
+                    "name": "Carsten Brandt",
+                    "email": "mail@cebe.cc",
+                    "homepage": "http://cebe.cc/",
+                    "role": "Creator"
                 }
             ],
             "description": "A super fast, highly extensible markdown parser for PHP",
             "homepage": "https://github.com/cebe/markdown#readme",
+            "description": "A super fast, highly extensible markdown parser for PHP",
+            "homepage": "https://github.com/cebe/markdown#readme",
             "keywords": [
+                "extensible",
+                "fast",
+                "gfm",
+                "markdown",
+                "markdown-extra"
                 "extensible",
                 "fast",
                 "gfm",
@@ -67,14 +98,21 @@
             "support": {
                 "issues": "https://github.com/cebe/markdown/issues",
                 "source": "https://github.com/cebe/markdown"
+                "issues": "https://github.com/cebe/markdown/issues",
+                "source": "https://github.com/cebe/markdown"
             },
+            "time": "2018-03-26T11:24:36+00:00"
             "time": "2018-03-26T11:24:36+00:00"
         },
         {
             "name": "doctrine/annotations",
             "version": "2.0.2",
+            "name": "doctrine/annotations",
+            "version": "2.0.2",
             "source": {
                 "type": "git",
+                "url": "https://github.com/doctrine/annotations.git",
+                "reference": "901c2ee5d26eb64ff43c47976e114bf00843acf7"
                 "url": "https://github.com/doctrine/annotations.git",
                 "reference": "901c2ee5d26eb64ff43c47976e114bf00843acf7"
             },
@@ -82,9 +120,15 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/doctrine/annotations/zipball/901c2ee5d26eb64ff43c47976e114bf00843acf7",
                 "reference": "901c2ee5d26eb64ff43c47976e114bf00843acf7",
+                "url": "https://api.github.com/repos/doctrine/annotations/zipball/901c2ee5d26eb64ff43c47976e114bf00843acf7",
+                "reference": "901c2ee5d26eb64ff43c47976e114bf00843acf7",
                 "shasum": ""
             },
             "require": {
+                "doctrine/lexer": "^2 || ^3",
+                "ext-tokenizer": "*",
+                "php": "^7.2 || ^8.0",
+                "psr/cache": "^1 || ^2 || ^3"
                 "doctrine/lexer": "^2 || ^3",
                 "ext-tokenizer": "*",
                 "php": "^7.2 || ^8.0",
@@ -97,18 +141,28 @@
                 "phpunit/phpunit": "^7.5 || ^8.5 || ^9.5",
                 "symfony/cache": "^5.4 || ^6.4 || ^7",
                 "vimeo/psalm": "^4.30 || ^5.14"
+                "doctrine/cache": "^2.0",
+                "doctrine/coding-standard": "^10",
+                "phpstan/phpstan": "^1.10.28",
+                "phpunit/phpunit": "^7.5 || ^8.5 || ^9.5",
+                "symfony/cache": "^5.4 || ^6.4 || ^7",
+                "vimeo/psalm": "^4.30 || ^5.14"
             },
             "suggest": {
+                "php": "PHP 8.0 or higher comes with attributes, a native replacement for annotations"
                 "php": "PHP 8.0 or higher comes with attributes, a native replacement for annotations"
             },
             "type": "library",
             "autoload": {
                 "psr-4": {
                     "Doctrine\\Common\\Annotations\\": "lib/Doctrine/Common/Annotations"
+                "psr-4": {
+                    "Doctrine\\Common\\Annotations\\": "lib/Doctrine/Common/Annotations"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
+                "MIT"
                 "MIT"
             ],
             "authors": [
@@ -128,14 +182,36 @@
                     "name": "Jonathan Wage",
                     "email": "jonwage@gmail.com"
                 },
+                    "name": "Guilherme Blanco",
+                    "email": "guilhermeblanco@gmail.com"
+                },
                 {
+                    "name": "Roman Borschel",
+                    "email": "roman@code-factory.org"
+                },
+                {
+                    "name": "Benjamin Eberlei",
+                    "email": "kontakt@beberlei.de"
+                },
+                {
+                    "name": "Jonathan Wage",
+                    "email": "jonwage@gmail.com"
+                },
+                {
+                    "name": "Johannes Schmitt",
+                    "email": "schmittjoh@gmail.com"
                     "name": "Johannes Schmitt",
                     "email": "schmittjoh@gmail.com"
                 }
             ],
             "description": "Docblock Annotations Parser",
             "homepage": "https://www.doctrine-project.org/projects/annotations.html",
+            "description": "Docblock Annotations Parser",
+            "homepage": "https://www.doctrine-project.org/projects/annotations.html",
             "keywords": [
+                "annotations",
+                "docblock",
+                "parser"
                 "annotations",
                 "docblock",
                 "parser"
@@ -143,7 +219,10 @@
             "support": {
                 "issues": "https://github.com/doctrine/annotations/issues",
                 "source": "https://github.com/doctrine/annotations/tree/2.0.2"
+                "issues": "https://github.com/doctrine/annotations/issues",
+                "source": "https://github.com/doctrine/annotations/tree/2.0.2"
             },
+            "time": "2024-09-05T10:17:24+00:00"
             "time": "2024-09-05T10:17:24+00:00"
         },
         {
@@ -449,13 +528,17 @@
         {
             "name": "firebase/php-jwt",
             "version": "v6.10.2",
+            "version": "v6.10.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/firebase/php-jwt.git",
                 "reference": "30c19ed0f3264cb660ea496895cfb6ef7ee3653b"
+                "reference": "30c19ed0f3264cb660ea496895cfb6ef7ee3653b"
             },
             "dist": {
                 "type": "zip",
+                "url": "https://api.github.com/repos/firebase/php-jwt/zipball/30c19ed0f3264cb660ea496895cfb6ef7ee3653b",
+                "reference": "30c19ed0f3264cb660ea496895cfb6ef7ee3653b",
                 "url": "https://api.github.com/repos/firebase/php-jwt/zipball/30c19ed0f3264cb660ea496895cfb6ef7ee3653b",
                 "reference": "30c19ed0f3264cb660ea496895cfb6ef7ee3653b",
                 "shasum": ""
@@ -506,7 +589,9 @@
             "support": {
                 "issues": "https://github.com/firebase/php-jwt/issues",
                 "source": "https://github.com/firebase/php-jwt/tree/v6.10.2"
+                "source": "https://github.com/firebase/php-jwt/tree/v6.10.2"
             },
+            "time": "2024-11-24T11:22:49+00:00"
             "time": "2024-11-24T11:22:49+00:00"
         },
         {
@@ -3560,19 +3645,104 @@
                 "source": "https://github.com/zircote/swagger-php/tree/4.11.1"
             },
             "time": "2024-10-15T19:20:02+00:00"
+        },
+        {
+            "name": "zircote/swagger-php",
+            "version": "4.11.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/zircote/swagger-php.git",
+                "reference": "7df10e8ec47db07c031db317a25bef962b4e5de1"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/zircote/swagger-php/zipball/7df10e8ec47db07c031db317a25bef962b4e5de1",
+                "reference": "7df10e8ec47db07c031db317a25bef962b4e5de1",
+                "shasum": ""
+            },
+            "require": {
+                "ext-json": "*",
+                "php": ">=7.2",
+                "psr/log": "^1.1 || ^2.0 || ^3.0",
+                "symfony/deprecation-contracts": "^2 || ^3",
+                "symfony/finder": ">=2.2",
+                "symfony/yaml": ">=3.3"
+            },
+            "require-dev": {
+                "composer/package-versions-deprecated": "^1.11",
+                "doctrine/annotations": "^1.7 || ^2.0",
+                "friendsofphp/php-cs-fixer": "^2.17 || 3.62.0",
+                "phpstan/phpstan": "^1.6",
+                "phpunit/phpunit": ">=8",
+                "vimeo/psalm": "^4.23"
+            },
+            "suggest": {
+                "doctrine/annotations": "^1.7 || ^2.0"
+            },
+            "bin": [
+                "bin/openapi"
+            ],
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "4.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "OpenApi\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "Robert Allen",
+                    "email": "zircote@gmail.com"
+                },
+                {
+                    "name": "Bob Fanger",
+                    "email": "bfanger@gmail.com",
+                    "homepage": "https://bfanger.nl"
+                },
+                {
+                    "name": "Martin Rademacher",
+                    "email": "mano@radebatz.net",
+                    "homepage": "https://radebatz.net"
+                }
+            ],
+            "description": "swagger-php - Generate interactive documentation for your RESTful API using phpdoc annotations",
+            "homepage": "https://github.com/zircote/swagger-php/",
+            "keywords": [
+                "api",
+                "json",
+                "rest",
+                "service discovery"
+            ],
+            "support": {
+                "issues": "https://github.com/zircote/swagger-php/issues",
+                "source": "https://github.com/zircote/swagger-php/tree/4.11.1"
+            },
+            "time": "2024-10-15T19:20:02+00:00"
         }
     ],
     "packages-dev": [
         {
             "name": "fakerphp/faker",
             "version": "v1.24.1",
+            "version": "v1.24.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/FakerPHP/Faker.git",
                 "reference": "e0ee18eb1e6dc3cda3ce9fd97e5a0689a88a64b5"
+                "reference": "e0ee18eb1e6dc3cda3ce9fd97e5a0689a88a64b5"
             },
             "dist": {
                 "type": "zip",
+                "url": "https://api.github.com/repos/FakerPHP/Faker/zipball/e0ee18eb1e6dc3cda3ce9fd97e5a0689a88a64b5",
+                "reference": "e0ee18eb1e6dc3cda3ce9fd97e5a0689a88a64b5",
                 "url": "https://api.github.com/repos/FakerPHP/Faker/zipball/e0ee18eb1e6dc3cda3ce9fd97e5a0689a88a64b5",
                 "reference": "e0ee18eb1e6dc3cda3ce9fd97e5a0689a88a64b5",
                 "shasum": ""
@@ -3623,7 +3793,9 @@
             "support": {
                 "issues": "https://github.com/FakerPHP/Faker/issues",
                 "source": "https://github.com/FakerPHP/Faker/tree/v1.24.1"
+                "source": "https://github.com/FakerPHP/Faker/tree/v1.24.1"
             },
+            "time": "2024-11-21T13:46:39+00:00"
             "time": "2024-11-21T13:46:39+00:00"
         },
         {

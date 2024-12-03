@@ -2,8 +2,8 @@
 
 namespace app\controllers\api\v1\manager;
 
-use app\components\ApiResponse;
 use app\controllers\api\v1\ManagerController;
+use app\components\ApiResponse;
 use app\models\Order;
 use app\models\TypeDeliveryPoint;
 use app\models\User;

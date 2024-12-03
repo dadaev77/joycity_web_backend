@@ -546,14 +546,13 @@ class ConstantsController extends V1Controller
         if (!$latestRate) {
             return ApiResponse::code($apiCodes->NOT_FOUND);
         }
-        // set sadp to 2 (SADP - SYMBOLS AFTER DECIMAL POINT)
-        RateService::setSADP(2);
-        $rubToCny = RateService::convertRUBtoCNY(1);
+
+        $rubToCny = RateService::convertValue(1, RateService::CURRENCY_RUB, RateService::CURRENCY_CNY);
         $cnyToRub = round($latestRate['CNY'], 2); //RateService::convertCNYtoRUB(1);
-        $rubToUsd = RateService::convertRUBtoUSD(1);
+        $rubToUsd = RateService::convertValue(1, RateService::CURRENCY_RUB, RateService::CURRENCY_USD);
         $usdToRub =  round($latestRate['USD'], 2); //RateService::convertUSDtoRUB(1);
-        $cnyToUsd = RateService::convertCNYtoUSD(1);
-        $usdToCny = RateService::convertUSDtoCNY(1);
+        $cnyToUsd = RateService::convertValue(1, RateService::CURRENCY_CNY, RateService::CURRENCY_USD);
+        $usdToCny = RateService::convertValue(1, RateService::CURRENCY_USD, RateService::CURRENCY_CNY);
 
         $result = [
             'date' => $latestRate->created_at,
@@ -585,5 +584,14 @@ class ConstantsController extends V1Controller
     public function actionBuyerDeliveryOfferStatuses()
     {
         return ApiResponse::collection(BuyerDeliveryOffer::getStatusMap());
+    }
+
+    public function actionConvert($value, $from, $to)
+    {
+        $value = (float)$value;
+        $from = strtoupper($from);
+        $to = strtoupper($to);
+
+        return RateService::convertValue($value, $from, $to);
     }
 }

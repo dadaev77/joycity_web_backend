@@ -27,7 +27,9 @@ class ProductOutputService extends OutputService
             ->orderBy(self::getOrderByIdExpression($ids))
             ->where(['id' => $ids]);
 
-        return array_map(static function ($model) use ($imageSize) {
+        $userCurrency = Yii::$app->user->identity->getSettings()->currency;
+
+        return array_map(static function ($model) use ($imageSize, $userCurrency) {
             $info = ModelTypeHelper::toArray($model);
 
             $language = Yii::$app->user->identity->getSettings()->application_language;
@@ -84,11 +86,11 @@ class ProductOutputService extends OutputService
             $priceKeys = array_filter(array_keys($info), fn($key) => str_ends_with($key, '_price'));
 
             foreach ($priceKeys as $key) {
-                $info[$key] = RateService::outputInUserCurrency($info[$key], $model->id, 'product');
+                $info[$key] = $info[$key];
             }
 
-            $info['price']['min'] = RateService::outputInUserCurrency($info['price']['min'], $model->id, 'product');
-            $info['price']['max'] = RateService::outputInUserCurrency($info['price']['max'], $model->id, 'product');
+            $info['price']['min'] = $info['price']['min'];
+            $info['price']['max'] = $info['price']['max'];
 
             unset(
                 $info['productLinkAttachments'],
@@ -102,6 +104,9 @@ class ProductOutputService extends OutputService
                 // $info['buyer'],
                 // $info['attachments'],
             );
+
+            // Конвертация цен в валюту пользователя
+            $info = RateService::convertDataPrices($info, ['price', 'range_1_price', 'range_2_price', 'range_3_price', 'range_4_price'], $info['currency'], $userCurrency);
 
             return $info;
         }, $query->all());

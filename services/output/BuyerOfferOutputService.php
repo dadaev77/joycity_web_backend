@@ -4,6 +4,8 @@ namespace app\services\output;
 
 use app\helpers\ModelTypeHelper;
 use app\models\BuyerOffer;
+use app\services\RateService;
+use Yii;
 
 class BuyerOfferOutputService extends OutputService
 {
@@ -16,8 +18,12 @@ class BuyerOfferOutputService extends OutputService
     {
         $query = BuyerOffer::find()->where(['id' => $ids]);
 
-        return array_map(static function ($model) {
+        $userCurrency = Yii::$app->user->getIdentity()->getSettings()->currency;
+
+        return array_map(static function ($model) use ($userCurrency) {
             $info = ModelTypeHelper::toArray($model);
+
+            $info = RateService::convertDataPrices($info, ['price_product', 'price_inspection'], $info['currency'], $userCurrency);
 
             return $info;
         }, $query->all());

@@ -77,32 +77,9 @@ class BuyerOfferController extends BuyerController
         $apiCodes = BuyerOffer::apiCodes();
 
         try {
+            $postData = Yii::$app->request->post();
             $user = User::getIdentity();
-            $params = POSTHelper::getPostWithKeys(
-                [
-                    'order_id',
-                    'price_product',
-                    'price_inspection',
-                    'total_quantity',
-                    'product_height',
-                    'product_width',
-                    'product_depth',
-                    'product_weight',
-                ],
-                true,
-            );
-            $notValidParams = POSTHelper::getEmptyParams($params, true);
-
-            if ($notValidParams) {
-                $errors = array_map(
-                    static fn($idx) => "Param `$notValidParams[$idx]` is empty",
-                    array_flip($notValidParams),
-                );
-
-                return ApiResponse::codeErrors($apiCodes->BAD_REQUEST, $errors);
-            }
-
-            $order = Order::findOne(['id' => $params['order_id']]);
+            $order = Order::findOne(['id' => $postData['order_id']]) ?? null;
 
             if (!$order) {
                 return ApiResponse::code($apiCodes->NOT_FOUND);
@@ -136,17 +113,13 @@ class BuyerOfferController extends BuyerController
                 'order_id' => $order->id,
                 'buyer_id' => $user->id,
                 'status' => BuyerOffer::STATUS_WAITING,
-                'price_product' => RateService::putInUserCurrency(
-                    $params['price_product'],
-                ),
-                'price_inspection' => RateService::putInUserCurrency(
-                    $params['price_inspection'],
-                ),
-                'total_quantity' => $params['total_quantity'],
-                'product_height' => $params['product_height'],
-                'product_width' => $params['product_width'],
-                'product_depth' => $params['product_depth'],
-                'product_weight' => $params['product_weight'],
+                'price_product' => $postData['price_product'],
+                'price_inspection' => $postData['price_inspection'],
+                'total_quantity' => $postData['total_quantity'],
+                'product_height' => $postData['product_height'],
+                'product_width' => $postData['product_width'],
+                'product_depth' => $postData['product_depth'],
+                'product_weight' => $postData['product_weight'],
                 'currency' => $user->settings->currency,
             ]);
 
@@ -257,15 +230,7 @@ class BuyerOfferController extends BuyerController
                 return ApiResponse::code($apiCodes->NO_ACCESS);
             }
 
-            $priceConverted = array_map(
-                static fn($amount) => RateService::putInUserCurrency(
-                    $amount,
-                    $buyerOffer->order_id,
-                ),
-                $params,
-            );
-
-            $buyerOffer->load($priceConverted, '');
+            $buyerOffer->price_product = $params['price_product'];
 
             if (!$buyerOffer->save()) {
                 return ApiResponse::codeErrors(

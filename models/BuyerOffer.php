@@ -15,11 +15,6 @@ class BuyerOffer extends BuyerOfferStructure
 
     public function beforeSave($insert)
     {
-        // $currency = \Yii::$app->user->getIdentity()->settings->currency;
-
-        // $this->price_product = RateService::convertToInitial($this->price_product, $currency);
-        // $this->price_inspection = RateService::convertToInitial($this->price_inspection, $currency);
-
         return parent::beforeSave($insert);
     }
 
@@ -35,5 +30,14 @@ class BuyerOffer extends BuyerOfferStructure
     public static function apiCodes(): BuyerOfferCodes
     {
         return BuyerOfferCodes::getStatic();
+    }
+
+    public function rules()
+    {
+        return [
+            // ... existing rules ...
+            [['price_product', 'price_inspection'], 'number'],
+            // ... existing rules ...
+        ];
     }
 }
