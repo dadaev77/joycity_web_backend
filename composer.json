@@ -31,15 +31,10 @@
     "yiisoft/yii2-swiftmailer": "*",
     "yiisoft/yii2-httpclient": "^2.0",
     "electrolinux/phpquery": "^0.9.6",
-    "moonlandsoft/yii2-tinymce": "*",
     "yiisoft/yii2-imagine": "*",
     "php-http/guzzle6-adapter": "^1.1",
-    "2amigos/qrcode-library": "~1.1",
-    "phpoffice/phpword": "^0.18.1",
-    "pkpass/pkpass": "^2.0.0",
     "google/auth": "^1.18",
     "guzzlehttp/guzzle": "*",
-    "google/apiclient": "^2.12",
     "yidas/yii2-bower-asset": "2.0.13.1",
     "swiftmailer/swiftmailer": "^6.3",
     "ext-fileinfo": "*",
@@ -48,7 +43,9 @@
     "linslin/yii2-curl": "^1.5",
     "ext-imagick": "*",
     "intervention/image": "^3.8",
-    "mpdf/mpdf": "^8.2"
+    "mpdf/mpdf": "^8.2",
+    "zircote/swagger-php": "*",
+    "doctrine/annotations": "^2.0"
   },
   "require-dev": {
     
