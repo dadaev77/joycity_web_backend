@@ -5,11 +5,6 @@
         "description": "Документация API для приложения JoyCity",
         "version": "1.0.0"
     },
-    "servers": [
-        {
-            "url": "https://joycityrussia.friflex.com/"
-        }
-    ],
     "paths": {
         "/api": {},
         "/api/v1": {},

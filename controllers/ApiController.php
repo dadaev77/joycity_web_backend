@@ -18,9 +18,6 @@ use OpenApi\Annotations as OA;
  * @OA\PathItem(
  *   path="/api"
  * )
- * @OA\Server(
- *   url="https://joycityrussia.friflex.com/"
- * )
  * @OA\SecurityScheme(
  *   securityScheme="bearerAuth",
  *   type="http",
