@@ -8,6 +8,7 @@ use Mpdf\Mpdf;
 use Yii;
 use yii\web\NotFoundHttpException;
 use yii\web\BadRequestHttpException;
+use app\models\Order;
 
 /**
  * Контроллер для работы с накладными
@@ -76,6 +77,7 @@ class WaybillController extends ManagerController
     public function actionGenerate()
     {
         try {
+            $apiCodes = Order::apiCodes();
             $request = Yii::$app->request;
             $data = $request->post();
 
@@ -106,13 +108,15 @@ class WaybillController extends ManagerController
 
             $mpdf->WriteHTML($content);
             $mpdf->Output($filePath, 'F');
-
-            return ApiResponse::success([
-                'file_url' => Yii::$app->urlManager->createAbsoluteUrl(['/uploads/waybills/' . $fileName]),
+            
+            return ApiResponse::byResponseCode($apiCodes->SUCCESS,[
+                'invoce' => $_ENV['APP_URL'] . '/uploads/waybills/' . $fileName
             ]);
 
         } catch (\Exception $e) {
-            return ApiResponse::error($e->getMessage());
+            return ApiResponse::byResponseCode($apiCodes->ERROR_SAVE, [
+                'message' => $e->getMessage()
+            ]);
         }
     }
 

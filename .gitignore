@@ -58,3 +58,4 @@ config/db.php
 vendor
 config/smtp.php
 /entrypoint/api/attachments/
+/entrypoint/api/uploads/
