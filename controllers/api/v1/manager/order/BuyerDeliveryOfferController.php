@@ -16,38 +16,6 @@ use Throwable;
 use Yii;
 use app\services\UserActionLogService as Log;
 
-/**
- * @OA\Post(
- *     path="/api/v1/manager/order/buyer-delivery-offer/create",
- *     summary="Создать предложение по доставке",
- *     tags={"BuyerDeliveryOffer"},
- *     @OA\RequestBody(
- *         required=true,
- *         @OA\JsonContent(
- *             @OA\Property(property="order_id", type="integer", example=1),
- *             @OA\Property(property="price_product", type="number", example=100.0),
- *             @OA\Property(property="total_quantity", type="integer", example=10),
- *             @OA\Property(property="total_packaging_quantity", type="integer", example=5),
- *             @OA\Property(property="product_height", type="number", example=10.0),
- *             @OA\Property(property="product_width", type="number", example=5.0),
- *             @OA\Property(property="product_depth", type="number", example=2.0),
- *             @OA\Property(property="product_weight", type="number", example=1.0)
- *         )
- *     ),
- *     @OA\Response(
- *         response=200,
- *         description="Успешно создано предложение по доставке"
- *     ),
- *     @OA\Response(
- *         response=400,
- *         description="Ошибка валидации параметров"
- *     ),
- *     @OA\Response(
- *         response=500,
- *         description="Внутренняя ошибка сервера"
- *     )
- * )
- */
 class BuyerDeliveryOfferController extends ManagerController
 {
     public function behaviors()
@@ -118,6 +86,17 @@ class BuyerDeliveryOfferController extends ManagerController
             $buyerDeliveryOffer->status = BuyerDeliveryOffer::STATUS_CREATED;
             $buyerDeliveryOffer->price_product = $params['price_product'];
             $buyerDeliveryOffer->currency = $user->settings->currency;
+
+            /**
+             *  Manager [ get_invoce [true/false] ]
+             *  Добавить поле статуса накладной для заявки шоб отслеживать этот статус
+             *  waybill_isset
+             */
+
+            /**
+             * Генериирую накладную тут 
+             */
+
 
             if (!$buyerDeliveryOffer->save()) {
                 return ApiResponse::codeErrors(
