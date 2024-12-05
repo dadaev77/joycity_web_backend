@@ -43,7 +43,6 @@ class BuyerDeliveryOfferController extends ManagerController
                     'order_id',
                     'price_product',
                     'total_quantity',
-                    'total_packaging_quantity',
                     'product_height',
                     'product_width',
                     'product_depth',
