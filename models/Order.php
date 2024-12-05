@@ -20,7 +20,7 @@ class Order extends OrderStructure
     public const STATUS_BUYER_INSPECTION_COMPLETE = 'buyer_inspection_complete';
     public const STATUS_TRANSFERRING_TO_WAREHOUSE = 'transferring_to_warehouse';
     public const STATUS_ARRIVED_TO_WAREHOUSE = 'arrived_to_warehouse';
-    
+
     //fulfillment
     public const STATUS_TRANSFERRING_TO_FULFILLMENT = 'transferring_to_fulfillment';
     public const STATUS_ARRIVED_TO_FULFILLMENT = 'arrived_to_fulfillment';
@@ -208,5 +208,14 @@ class Order extends OrderStructure
     public static function apiCodes(): OrderCodes
     {
         return OrderCodes::getStatic();
+    }
+
+    /**
+     * Получить накладную
+     * @return \yii\db\ActiveQuery
+     */
+    public function getWaybill()
+    {
+        return $this->hasOne(Waybill::class, ['order_id' => 'id']);
     }
 }

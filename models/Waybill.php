@@ -14,6 +14,7 @@ use yii\behaviors\TimestampBehavior;
  * @property string $file_path Путь к файлу накладной
  * @property string $created_at Дата создания
  * @property string|null $regenerated_at Дата регенерации
+ * @property bool $editable Доступно для редактирования
  *
  * @property Order $order Связь с заказом
  */
@@ -26,7 +27,7 @@ class Waybill extends ActiveRecord
     {
         return '{{%waybill}}';
     }
-    
+
     /**
      * {@inheritdoc}
      */
@@ -35,6 +36,8 @@ class Waybill extends ActiveRecord
         return [
             [
                 'class' => TimestampBehavior::class,
+                'createdAtAttribute' => 'created_at',
+                'updatedAtAttribute' => 'regenerated_at',
                 'value' => date('Y-m-d H:i:s'),
             ],
         ];
@@ -48,9 +51,10 @@ class Waybill extends ActiveRecord
         return [
             [['order_id', 'file_path'], 'required'],
             [['order_id'], 'integer'],
-            [['created_at', 'regenerated_at'], 'safe'],
+            [['created_at'], 'safe'],
             [['file_path'], 'string', 'max' => 255],
             [['order_id'], 'exist', 'skipOnError' => true, 'targetClass' => Order::class, 'targetAttribute' => ['order_id' => 'id']],
+            [['editable'], 'boolean'],
         ];
     }
 
@@ -65,11 +69,13 @@ class Waybill extends ActiveRecord
             'file_path' => 'Путь к файлу',
             'created_at' => 'Дата создания',
             'regenerated_at' => 'Дата регенерации',
+            'editable' => 'Доступно для редактирования',
         ];
     }
 
     /**
      * Получить связанный заказ
+     * @return \yii\db\ActiveQuery
      */
     public function getOrder()
     {
@@ -77,7 +83,7 @@ class Waybill extends ActiveRecord
     }
 
     /**
-     * Получить URL для доступа к файлу накладной
+     * Получить URL для доступа �� файлу накладной
      */
     public function getFileUrl()
     {
