@@ -85,6 +85,7 @@ class BuyerDeliveryOfferController extends ManagerController
             $buyerDeliveryOffer->buyer_id = $order->buyer_id;
             $buyerDeliveryOffer->status = BuyerDeliveryOffer::STATUS_CREATED;
             $buyerDeliveryOffer->price_product = $params['price_product'];
+
             $buyerDeliveryOffer->currency = $user->settings->currency;
 
             /**
@@ -102,6 +103,15 @@ class BuyerDeliveryOfferController extends ManagerController
                 return ApiResponse::codeErrors(
                     $apiCodes->ERROR_SAVE,
                     $buyerDeliveryOffer->getFirstErrors(),
+                );
+            }
+
+            // Устанавливаем флаг наличия накладной для заказа
+            $order->waybill_isset = true;
+            if (!$order->save()) {
+                return ApiResponse::codeErrors(
+                    $apiCodes->ERROR_SAVE,
+                    $order->getFirstErrors(),
                 );
             }
 
