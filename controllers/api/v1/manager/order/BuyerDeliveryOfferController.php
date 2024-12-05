@@ -47,7 +47,10 @@ class BuyerDeliveryOfferController extends ManagerController
                     'product_height',
                     'product_width',
                     'product_depth',
-                    'product_weight',
+                    'product_weight',  
+                    "package_expenses",
+                    "amount_of_space"
+
                 ],
                 true,
             );
