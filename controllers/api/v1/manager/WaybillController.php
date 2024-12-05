@@ -21,61 +21,14 @@ class WaybillController extends ManagerController
         $behaviors = parent::behaviors();
         $behaviors['verbFilter']['actions'] = [
             'generate' => ['post'],
-            'get-file' => ['get'],
+            'view' => ['get'],
             'regenerate' => ['put'],
-            'find-by-number' => ['get'],
         ];
 
         return $behaviors;
     }
 
-    /**
-     * Генерация новой накладной
-     * 
-     * @OA\Post(
-     *     path="/api/v1/manager/waybill/generate",
-     *     summary="Генерация новой накладной",
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"sender", "receiver", "items"},
-     *             @OA\Property(property="sender", type="object",
-     *                 @OA\Property(property="name", type="string", example="ООО Компания"),
-     *                 @OA\Property(property="phone", type="string", example="+7 999 999 99 99"),
-     *                 @OA\Property(property="address", type="string", example="г. Москва, ул. Примерная, д. 1")
-     *             ),
-     *             @OA\Property(property="receiver", type="object",
-     *                 @OA\Property(property="name", type="string", example="ИП Иванов"),
-     *                 @OA\Property(property="phone", type="string", example="+7 888 888 88 88"),
-     *                 @OA\Property(property="address", type="string", example="г. Санкт-Петербург, ул. Тестовая, д. 2")
-     *             ),
-     *             @OA\Property(property="items", type="array", @OA\Items(type="object",
-     *                 @OA\Property(property="name", type="string", example="Товар 1"),
-     *                 @OA\Property(property="quantity", type="integer", example=2),
-     *                 @OA\Property(property="price", type="number", format="float", example=1000.50)
-     *             ))
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Накладная успешно создана",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", type="object",
-     *                 @OA\Property(property="file_url", type="string", example="https://example.com/uploads/waybills/waybill_123.pdf")
-     *             )
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=400,
-     *         description="Ошибка валидации",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="error", type="string", example="Неверный формат данных")
-     *         )
-     *     )
-     * )
-     */
+
     public function actionGenerate()
     {
         try {
@@ -83,25 +36,25 @@ class WaybillController extends ManagerController
             $request = Yii::$app->request;
             $data = $request->post();
 
-            // Проверяем наличие order_id в запросе
-            if (!isset($data['order_id'])) {
-                throw new BadRequestHttpException('Не указан ID заказа');
-            }
-
-            // Проверем существование заказа
+            // Проверяем существование заказа
             $order = Order::findOne($data['order_id']);
-            if (!$order) {
-                throw new NotFoundHttpException('Заказ не найден');
-            }
+            if (!$order) throw new NotFoundHttpException('Заказ не найден');
 
             // Генерируем уникальное имя файла
             $fileName = 'waybill_' . uniqid() . '.pdf';
-            $filePath = Yii::getAlias('@webroot/uploads/waybills/' . $fileName);
+            $uploadDir = Yii::getAlias('@webroot/uploads/waybills');
+            $filePath = $uploadDir . '/' . $fileName;
 
-            // Создаем директорию если её нет
-            $dir = dirname($filePath);
-            if (!is_dir($dir)) {
-                mkdir($dir, 0777, true);
+            // Создаем директорию с нужными правами если её нет
+            if (!is_dir($uploadDir)) {
+                if (!mkdir($uploadDir, 0777, true)) {
+                    throw new \Exception('Не удалось создать директорию для сохранения файлов');
+                }
+                chmod($uploadDir, 0777);
+            }
+
+            if (!is_writable($uploadDir)) {
+                throw new \Exception('Нет прав на запись в директорию: ' . $uploadDir);
             }
 
             // Генерируем PDF
@@ -120,29 +73,54 @@ class WaybillController extends ManagerController
             ]);
 
             $mpdf->WriteHTML($content);
-            $mpdf->Output($filePath, 'F');
 
-            // Проверяем сущест��ование накладной для заказа
+            try {
+                $mpdf->Output($filePath, 'F');
+            } catch (\Exception $e) {
+                throw new \Exception('Ошибка при сохранении PDF файла: ' . $e->getMessage());
+            }
+            $dateOfProduction = date('Y-m-d H:i:s', strtotime($data['date_of_production']));
+            // Проверяем существование накладной для заказа
             $waybill = $order->waybill;
 
             if ($waybill) {
-                // Если накладная существует - обновляем её
-                $waybill->file_path = $_ENV['APP_URL'] . '/uploads/waybills/' . $fileName;
-                // regenerated_at обновится автоматически через beforeSave
+
+                if (file_exists($uploadDir . '/' . $waybill->file_path)) {
+                    unlink($uploadDir . '/' . $waybill->file_path);
+                }
+
+                // Обновляем существующую накладную
+                $waybill->price_per_kg = floatval($data['price_per_kg']);
+                $waybill->course = floatval($data['course']);
+                $waybill->total_number_pairs = intval($data['total_number_pairs']);
+                $waybill->total_customs_duty = floatval($data['total_customs_duty']);
+                $waybill->volume_costs = floatval($data['volume_costs']);
+                $waybill->date_of_production = strval($dateOfProduction);
+                $waybill->file_path = $fileName;
             } else {
-                // Если накладной нет - создаем новую
-                $waybill = new Waybill();
-                $waybill->order_id = $data['order_id'];
-                $waybill->file_path = $_ENV['APP_URL'] . '/uploads/waybills/' . $fileName;
-                $waybill->editable = true;
+                // Создаем новую накладную
+                $waybill = new Waybill([
+                    'order_id' => $data['order_id'],
+                    'price_per_kg' => floatval($data['price_per_kg']),
+                    'course' => floatval($data['course']),
+                    'total_number_pairs' => intval($data['total_number_pairs']),
+                    'total_customs_duty' => floatval($data['total_customs_duty']),
+                    'volume_costs' => floatval($data['volume_costs']),
+                    'date_of_production' => strval($dateOfProduction),
+                    'file_path' => $fileName,
+                ]);
             }
 
             if (!$waybill->save()) {
-                throw new \Exception('Ошибка при сохранении накладной');
+                if (file_exists($filePath)) {
+                    unlink($filePath);
+                }
+                throw new \Exception('Ошибка при сохранении накладной в БД: ' . json_encode($waybill->errors));
             }
 
+            $waybill->file_path = $_ENV['APP_URL'] . '/uploads/waybills/' . $waybill->file_path;
+
             return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
-                'invoice' => $_ENV['APP_URL'] . '/uploads/waybills/' . $fileName,
                 'waybill' => $waybill
             ]);
         } catch (\Exception $e) {
@@ -152,64 +130,31 @@ class WaybillController extends ManagerController
         }
     }
 
-    /**
-     * Получение ссыл��и на файл накладной
-     * 
-     * @OA\Get(
-     *     path="/api/v1/manager/waybill/get-file/{id}",
-     *     summary="Получение ссылки на файл накладной",
-     *     @OA\Parameter(
-     *         name="id",
-     *         in="path",
-     *         required=true,
-     *         description="ID накладной",
-     *         @OA\Schema(type="string")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Успешное получение ссылки",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", type="object",
-     *                 @OA\Property(property="file_url", type="string", example="https://example.com/uploads/waybills/waybill_123.pdf")
-     *             )
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="Накладная не найдена",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="error", type="string", example="Файл накладной не найден")
-     *         )
-     *     )
-     * )
-     */
-    public function actionGetFile($id)
+    public function actionView($id)
     {
-        try {
-            // Здесь нужно получить информацию о накладной из БД
-            $filePath = Yii::getAlias('@webroot/uploads/waybills/waybill_' . $id . '.pdf');
+        $apiCodes = Order::apiCodes();
+        $order = Order::findOne($id);
 
-            if (!file_exists($filePath)) {
-                throw new NotFoundHttpException('Файл накладной не найден');
-            }
-
-            return ApiResponse::success([
-                'file_url' => Yii::$app->urlManager->createAbsoluteUrl(['/uploads/waybills/waybill_' . $id . '.pdf']),
+        if (!$order) {
+            return ApiResponse::byResponseCode($apiCodes->NOT_FOUND, [
+                'message' => 'Заявка не найдена'
             ]);
-        } catch (NotFoundHttpException $e) {
-            return ApiResponse::error($e->getMessage(), 404);
         }
+
+        $waybill = $order->waybill;
+
+        if (!$waybill) {
+            return ApiResponse::byResponseCode($apiCodes->NOT_FOUND, [
+                'message' => 'Накладная не найдена'
+            ]);
+        }
+        $waybill->file_path = $_ENV['APP_URL'] . '/uploads/waybills/' . $waybill->file_path;
+        return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
+            'waybill' => $waybill
+        ]);
     }
 
 
-    /**
-     * Запрет редактирования накладной
-     * 
-     * @throws NotFoundHttpException
-     * @return ApiResponse
-     */
     public function actionEditBan()
     {
         try {
@@ -229,11 +174,14 @@ class WaybillController extends ManagerController
             if (!$waybill) {
                 throw new NotFoundHttpException('У заказа нет доступной накладной');
             }
-            // Установка флага и сохранение
+            // Установк флага и сохранение
             $waybill->editable = false;
             if (!$waybill->save()) {
                 throw new \Exception('Ошибка при сохранении накладной');
             }
+
+            $waybill->file_path = $_ENV['APP_URL'] . '/uploads/waybills/' . $waybill->file_path;
+
             return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
                 'waybill' => $waybill
             ]);
