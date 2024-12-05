@@ -116,14 +116,12 @@ class OrderStructure extends Base
                     'created_at',
                     'status',
                     'created_by',
-
                     'product_name_ru',
                     'product_description_ru',
                     'product_name_en',
                     'product_description_en',
                     'product_name_zh',
                     'product_description_zh',
-
                     'expected_quantity',
                     'expected_price_per_item',
                     'subcategory_id',
@@ -168,6 +166,7 @@ class OrderStructure extends Base
                 ],
                 'number',
             ],
+            [['waybill_isset'], 'boolean'],
             [['link_tz'], 'string'],
             [
                 ['status', 'product_name_ru', 'product_description_ru', 'product_name_en', 'product_description_en', 'product_name_zh', 'product_description_zh'],
