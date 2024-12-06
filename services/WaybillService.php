@@ -151,14 +151,59 @@ class WaybillService
      */
     public static function update(Waybill $waybill, array $data): Waybill
     {
+        $bdo = BuyerDeliveryOffer::findOne(['order_id' => $data['order_id']]);
+        $buyer = User::findOne($data['buyer_id']);
+        $client = User::findOne($data['client_id']);
+        $manager = User::findOne($data['manager_id']);
+
+        // Расчет объема
+        $volume = isset($bdo->product_height, $bdo->product_width, $bdo->product_depth, $bdo->amount_of_space)
+            ? ($bdo->product_height / 100) * ($bdo->product_width / 100) * ($bdo->product_depth / 100) * $bdo->amount_of_space
+            : 0;
+
+        // Расчет веса и связанных расходов
+        $weight = $bdo->product_weight ?? 0;
+        $pricePerKg = $waybill->price_per_kg; // USD
+        $weightCosts = $weight * $pricePerKg;
+
+        // Курс и страховка
+        $course = $waybill->course;
+        $insuranceRate = 0.01;
+        $insuranceSum = $bdo->price_product; // в юанях
+        $insuranceCosts = $insuranceSum / ($insuranceRate * $course);
+
         $waybillData = [
+            // Общие данные
             'order_id' => $data['order_id'],
-            'price_per_kg' => floatval($data['price_per_kg']),
-            'course' => floatval($data['course']),
-            'total_number_pairs' => intval($data['total_number_pairs']),
-            'total_customs_duty' => floatval($data['total_customs_duty']),
-            'volume_costs' => floatval($data['volume_costs']),
-            'date_of_production' => $data['date_of_production'],
+            'waybill_number' => $waybill->waybill_number,
+            'sender_name' => $buyer ? $buyer->name : '',
+            'sender_phone' => $buyer ? $buyer->phone_number : '',
+            'recipient_name' => $client ? $client->name : '',
+            'recipient_phone' => $client ? $client->phone_number : '',
+            // Доставка
+            'departure_city' => 'Иу',
+            'destination_city' => 'Москва',
+            'date_of_production' => date('Y:m:d H:i:s'), // TODO: заменить на дату подтверждения
+            'delivery_type' => self::getDeliveryType($data),
+            'course' => $waybill->course,
+            'assortment' => $data['parent_category'] ?? '',
+            'price_per_kg' => $waybill->price_per_kg,
+            'insurance_sum_yuan' => $insuranceSum,
+            'china_advance_usd' => floatval($data['china_advance'] ?? 0),
+            'china_payment_usd' => floatval($data['china_payment'] ?? 0),
+            'volume' => $volume,
+            'weight' => $weight,
+            'insurance_rate' => $insuranceRate,
+            'package_expenses' => floatval($data['package_expenses'] ?? 0),
+            'weight_costs' => $weightCosts,
+            'insurance_costs' => $insuranceCosts,
+            'total_pairs' => isset($data['total_pairs']) ? intval($data['total_pairs']) : 0, // TODO: добавить
+            'total_customs_duty' => isset($data['total_customs_duty']) ? floatval($data['total_customs_duty']) : 0, // TODO: добавить
+            'volume_costs' => isset($data['volume_costs']) ? floatval($data['volume_costs']) : 0, // TODO: добавить
+            'total_quantity' => intval($data['amount_of_space'] ?? 0),
+            'approved_by' => $manager ? $manager->name : '',
+            'executor' => 'JoyCity Company',
+            'total_payment' => floatval($data['package_expenses'] ?? 0) + $weightCosts + $insuranceCosts,
         ];
 
         // Удаляем старый файл
