@@ -47,7 +47,7 @@ class WaybillService
         // Формирование номера накладной
         $waybillNumber = sprintf(
             "JoyCity313-%s-%s-%s",
-            $client ? $client->unique_number : 'UNKNOWN',
+            $client ? $client->uuid : 'UNKNOWN',
             $data['cargo_number'] ?? 'UNKNOWN',
             $data['amount_of_space'] ?? '0'
         );
