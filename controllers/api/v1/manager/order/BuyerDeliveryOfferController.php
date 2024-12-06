@@ -10,44 +10,15 @@ use app\models\Order;
 use app\models\OrderRate;
 use app\models\Rate;
 use app\models\User;
+use app\models\Waybill;
 use app\services\output\BuyerDeliveryOfferOutputService;
 use app\services\RateService;
+use app\services\WaybillService;
+use Mpdf\Mpdf;
 use Throwable;
 use Yii;
 use app\services\UserActionLogService as Log;
 
-/**
- * @OA\Post(
- *     path="/api/v1/manager/order/buyer-delivery-offer/create",
- *     summary="Создать предложение по доставке",
- *     tags={"BuyerDeliveryOffer"},
- *     @OA\RequestBody(
- *         required=true,
- *         @OA\JsonContent(
- *             @OA\Property(property="order_id", type="integer", example=1),
- *             @OA\Property(property="price_product", type="number", example=100.0),
- *             @OA\Property(property="total_quantity", type="integer", example=10),
- *             @OA\Property(property="total_packaging_quantity", type="integer", example=5),
- *             @OA\Property(property="product_height", type="number", example=10.0),
- *             @OA\Property(property="product_width", type="number", example=5.0),
- *             @OA\Property(property="product_depth", type="number", example=2.0),
- *             @OA\Property(property="product_weight", type="number", example=1.0)
- *         )
- *     ),
- *     @OA\Response(
- *         response=200,
- *         description="Успешно создано предложение по доставке"
- *     ),
- *     @OA\Response(
- *         response=400,
- *         description="Ошибка валидации параметров"
- *     ),
- *     @OA\Response(
- *         response=500,
- *         description="Внутренняя ошибка сервера"
- *     )
- * )
- */
 class BuyerDeliveryOfferController extends ManagerController
 {
     public function behaviors()
@@ -61,25 +32,21 @@ class BuyerDeliveryOfferController extends ManagerController
 
     public function actionCreate()
     {
-        /**
-         * Формируем:
-         * JoyCity313+Уникальный номер клиента в БД+номер груза+сколько мест занимает груз
-         * Например: JoyCity313-HMR 579-1378-7
-         */
         $apiCodes = Order::apiCodes();
 
         try {
             $user = User::getIdentity();
             $params = POSTHelper::getPostWithKeys(
                 [
-                    'order_id',
-                    'price_product',
-                    'total_quantity',
-                    'total_packaging_quantity',
-                    'product_height',
-                    'product_width',
-                    'product_depth',
-                    'product_weight',
+                    "total_quantity",
+                    "package_expenses",
+                    "product_depth",
+                    "product_width",
+                    "product_height",
+                    "product_weight",
+                    "amount_of_space",
+                    "price_product",
+                    "order_id",
                 ],
                 true,
             );
@@ -126,6 +93,39 @@ class BuyerDeliveryOfferController extends ManagerController
                 );
             }
 
+            // Устанавливаем флаг наличия накладной для заказа
+            $order->waybill_isset = true;
+            if (!$order->save()) {
+                return ApiResponse::codeErrors(
+                    $apiCodes->ERROR_SAVE,
+                    $order->getFirstErrors(),
+                );
+            }
+
+            // Подготавливаем данные для накладной
+            $waybillData = array_merge($params, [
+                'buyer_id' => $order->buyer_id,
+                'client_id' => $order->created_by,
+                'manager_id' => $user->id,
+                'parent_category' => $order->category ?
+                    ($order->category->parent ? $order->category->parent->name : $order->category->name)
+                    : '',
+            ]);
+
+            // Получаем актуальный курс
+            $rate = Rate::find()->orderBy(['id' => SORT_DESC])->one();
+            $waybillData['course'] = $rate ? $rate->USD : 1;
+
+            // Создаем накладную через сервис
+            try {
+                $waybill = WaybillService::create($waybillData);
+            } catch (\Exception $e) {
+                return ApiResponse::codeErrors(
+                    $apiCodes->ERROR_SAVE,
+                    ['waybill' => $e->getMessage()]
+                );
+            }
+
             return ApiResponse::info(
                 BuyerDeliveryOfferOutputService::getEntity(
                     $buyerDeliveryOffer->id,
@@ -154,7 +154,7 @@ class BuyerDeliveryOfferController extends ManagerController
      *     ),
      *     @OA\Response(
      *         response=404,
-     *         description="Предложение по доставке не найдено"
+     *         description="П��едложение по доставке не найдено"
      *     ),
      *     @OA\Response(
      *         response=403,
@@ -164,7 +164,6 @@ class BuyerDeliveryOfferController extends ManagerController
      *         response=500,
      *         description="Внутренняя ошибка сервера"
      *     )
-     * )
      */
     public function actionPaid(int $id)
     {

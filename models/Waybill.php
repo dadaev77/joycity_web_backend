@@ -14,6 +14,7 @@ use yii\behaviors\TimestampBehavior;
  * @property string $file_path Путь к файлу накладной
  * @property string $created_at Дата создания
  * @property string|null $regenerated_at Дата регенерации
+ * @property bool $editable Доступно для редактирования
  *
  * @property Order $order Связь с заказом
  */
@@ -26,7 +27,7 @@ class Waybill extends ActiveRecord
     {
         return '{{%waybill}}';
     }
-    
+
     /**
      * {@inheritdoc}
      */
@@ -35,6 +36,8 @@ class Waybill extends ActiveRecord
         return [
             [
                 'class' => TimestampBehavior::class,
+                'createdAtAttribute' => 'created_at',
+                'updatedAtAttribute' => 'regenerated_at',
                 'value' => date('Y-m-d H:i:s'),
             ],
         ];
@@ -46,11 +49,46 @@ class Waybill extends ActiveRecord
     public function rules()
     {
         return [
+            // Обязательные поля
             [['order_id', 'file_path'], 'required'],
-            [['order_id'], 'integer'],
-            [['created_at', 'regenerated_at'], 'safe'],
+
+            // Целочисленные значения
+            [['order_id', 'total_number_pairs'], 'integer'],
+
+            // Денежные значения (decimal)
+            [
+                ['price_per_kg', 'course', 'total_customs_duty', 'volume_costs'],
+                'number',
+                'numberPattern' => '/^\s*[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?\s*$/',
+                'min' => 0,
+                'max' => 9999999.99
+            ],
+
+            // Дата
+            ['date_of_production', 'string'],
+
+            // Строковые значения
             [['file_path'], 'string', 'max' => 255],
-            [['order_id'], 'exist', 'skipOnError' => true, 'targetClass' => Order::class, 'targetAttribute' => ['order_id' => 'id']],
+
+            // Булево значение
+            [['editable'], 'boolean'],
+
+            // Безопасные атрибуты
+            [['created_at', 'regenerated_at'], 'safe'],
+
+            // Внешний ключ
+            [
+                ['order_id'],
+                'exist',
+                'skipOnError' => true,
+                'targetClass' => Order::class,
+                'targetAttribute' => ['order_id' => 'id']
+            ],
+
+            // Значения по умолчанию
+            [['editable'], 'default', 'value' => true],
+            [['price_per_kg', 'course', 'total_customs_duty', 'volume_costs'], 'default', 'value' => 0.00],
+            [['total_number_pairs'], 'default', 'value' => 0],
         ];
     }
 
@@ -65,11 +103,19 @@ class Waybill extends ActiveRecord
             'file_path' => 'Путь к файлу',
             'created_at' => 'Дата создания',
             'regenerated_at' => 'Дата регенерации',
+            'editable' => 'Доступно для редактирования',
+            'price_per_kg' => 'Цена за кг',
+            'course' => 'Курс',
+            'total_number_pairs' => 'Общее количество пар',
+            'total_customs_duty' => 'Общая сумма таможенного сбора',
+            'volume_costs' => 'Стоимость объема',
+            'date_of_production' => 'Дата производства',
         ];
     }
 
     /**
      * Получить связанный заказ
+     * @return \yii\db\ActiveQuery
      */
     public function getOrder()
     {
@@ -77,11 +123,11 @@ class Waybill extends ActiveRecord
     }
 
     /**
-     * Получить URL для доступа к файлу накладной
+     * Получить URL для доступа  файлу накладной
      */
     public function getFileUrl()
     {
-        return Yii::$app->urlManager->createAbsoluteUrl(['/uploads/waybills/' . $this->file_path]);
+        return $_ENV['APP_URL'] . '/uploads/waybills/' . $this->file_path;
     }
 
     /**

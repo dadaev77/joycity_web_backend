@@ -181,6 +181,7 @@ class OrderController extends ClientController
                 $request->post()['product_description'],
             );
             $translations = $translation->result;
+            
             foreach ($translations as $key => $value) {
                 $order->{'product_name_' . $key} = $value['name'];
                 $order->{'product_description_' . $key} = $value['description'];

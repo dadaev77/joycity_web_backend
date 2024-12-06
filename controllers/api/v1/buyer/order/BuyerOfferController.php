@@ -113,13 +113,13 @@ class BuyerOfferController extends BuyerController
                 'order_id' => $order->id,
                 'buyer_id' => $user->id,
                 'status' => BuyerOffer::STATUS_WAITING,
-                'price_product' => $postData['price_product'],
-                'price_inspection' => $postData['price_inspection'],
-                'total_quantity' => $postData['total_quantity'],
-                'product_height' => $postData['product_height'],
-                'product_width' => $postData['product_width'],
-                'product_depth' => $postData['product_depth'],
-                'product_weight' => $postData['product_weight'],
+                'price_product' => $postData['price_product'] ?? 0,
+                'price_inspection' => $postData['price_inspection'] ?? 0,
+                'total_quantity' => $postData['total_quantity'] ?? 0,
+                'product_height' => $postData['product_height'] ?? 0,
+                'product_width' => $postData['product_width'] ?? 0,
+                'product_depth' => $postData['product_depth'] ?? 0,
+                'product_weight' => $postData['product_weight'] ?? 0,
                 'currency' => $user->settings->currency,
             ]);
 
@@ -152,7 +152,6 @@ class BuyerOfferController extends BuyerController
             );
         } catch (Throwable $e) {
             isset($transaction) && $transaction->rollBack();
-
             return ApiResponse::internalError($e);
         }
     }

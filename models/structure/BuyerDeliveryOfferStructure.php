@@ -24,6 +24,8 @@ use yii\db\ActiveQuery;
  * @property float $product_width
  * @property float $product_depth
  * @property float $product_weight
+ * @property float $package_expenses
+ * @property int $amount_of_space
  *
  * @property User $buyer
  * @property User $manager
@@ -54,14 +56,15 @@ class BuyerDeliveryOfferStructure extends Base
                     'status',
                     'price_product',
                     'total_quantity',
-                    'total_packaging_quantity',
+                    'package_expenses',
+                    'amount_of_space',
                     'currency',
                 ],
                 'required',
             ],
             [['created_at'], 'safe'],
             [
-                ['order_id', 'buyer_id', 'manager_id', 'total_quantity'],
+                ['order_id', 'buyer_id', 'manager_id', 'total_quantity', 'amount_of_space'],
                 'integer',
             ],
             [
@@ -71,6 +74,7 @@ class BuyerDeliveryOfferStructure extends Base
                     'product_width',
                     'product_depth',
                     'product_weight',
+                    'package_expenses'
                 ],
                 'number',
             ],
@@ -121,6 +125,8 @@ class BuyerDeliveryOfferStructure extends Base
             'product_width' => 'Product Width',
             'product_depth' => 'Product Depth',
             'product_weight' => 'Product Weight',
+            'package_expenses' => 'Package Expenses',
+            'amount_of_space' => 'Amount Of Space',
         ];
     }
 

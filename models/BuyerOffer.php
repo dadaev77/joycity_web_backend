@@ -35,9 +35,7 @@ class BuyerOffer extends BuyerOfferStructure
     public function rules()
     {
         return [
-            // ... existing rules ...
             [['price_product', 'price_inspection'], 'number'],
-            // ... existing rules ...
         ];
     }
 }
