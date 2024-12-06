@@ -87,9 +87,23 @@ class WaybillService
         // Генерируем PDF и получаем путь к файлу
         $fileName = self::generatePdf($waybillData);
 
+        $waybillInstance = [
+            'waybill_number' => $waybillNumber,
+            'order_id' => $data['order_id'],
+            'file_path' => $fileName,
+            'created_at' => date('Y:m:d H:i:s'),
+            'regenerated_at' => null,
+            'editable' => true,
+            'price_per_kg' => $pricePerKg,
+            'course' => $course,
+            'total_number_pairs' => $data['total_pairs'],
+            'total_customs_duty' => $data['total_customs_duty'],
+            'volume_costs' => $data['volume_costs'],
+            'date_of_production' => date('Y:m:d H:i:s'),
+        ];
+
         // Создаем новую накладную в БД
-        $waybill = new Waybill($waybillData);
-        $waybill->file_path = $fileName;
+        $waybill = new Waybill($waybillInstance);
 
         if (!$waybill->save()) {
             // Если не удалось сохранить в БД - удаляем файл
