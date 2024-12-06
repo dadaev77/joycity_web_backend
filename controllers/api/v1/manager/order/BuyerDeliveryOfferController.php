@@ -38,18 +38,15 @@ class BuyerDeliveryOfferController extends ManagerController
             $user = User::getIdentity();
             $params = POSTHelper::getPostWithKeys(
                 [
-                    'order_id',
-                    'price_product',
                     'total_quantity',
-                    'product_height',
-                    'product_width',
-                    'product_depth',
-                    'product_weight',
                     'package_expenses',
+                    'product_depth',
+                    'product_width',
+                    'product_height',
+                    'product_weight',
                     'amount_of_space',
-                    'type_delivery_id',
-                    'type_delivery_point_id',
-                    'cargo_number'
+                    'price_product',
+                    'order_id',
                 ],
                 true,
             );
