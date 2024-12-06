@@ -105,7 +105,7 @@ class BuyerDeliveryOfferController extends ManagerController
             // Подготавливаем данные для накладной
             $waybillData = array_merge($params, [
                 'buyer_id' => $order->buyer_id,
-                'client_id' => $order->client_id,
+                'client_id' => $order->created_by,
                 'manager_id' => $user->id,
                 'parent_category' => $order->category ?
                     ($order->category->parent ? $order->category->parent->name : $order->category->name)
