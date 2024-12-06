@@ -11,6 +11,7 @@ use yii\web\NotFoundHttpException;
 use app\models\User;
 use app\models\TypeDelivery;
 use app\models\BuyerDeliveryOffer;
+use app\services\UserActionLogService as Log;
 
 class WaybillService
 {
@@ -152,6 +153,7 @@ class WaybillService
      */
     public static function update(Waybill $waybill, array $data): Waybill
     {
+        Log::info('Обновление накладной: ' . json_encode($data));
         $bdo = BuyerDeliveryOffer::findOne(['order_id' => $data['order_id']]);
         $buyer = User::findOne($data['buyer_id']);
         $client = User::findOne($data['client_id']);
