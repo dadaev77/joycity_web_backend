@@ -61,7 +61,7 @@ class WaybillService
             'recipient_phone' => $client ? $client->phone_number : '',
             'departure_city' => 'Иу',
             'destination_city' => 'Москва',
-            'production_date' => self::calculateProductionDate($order),
+            'date_of_production' => date('Y:m:d H:i:s'), // TODO: заменить на дату подтверждения
             'delivery_type' => self::getDeliveryType($data),
             'course' => $course,
             'assortment' => $data['parent_category'] ?? '',
@@ -116,13 +116,15 @@ class WaybillService
      */
     private static function getDeliveryType(array $data): string
     {
-        $typeDeliveryId = $data['type_delivery_id'] ?? $data['type_delivery_point_id'] ?? null;
+        $typeDeliveryId = $data['type_delivery_id'] ?? null;
         if (!$typeDeliveryId) {
             return '';
         }
-
         $typeDelivery = TypeDelivery::findOne($typeDeliveryId);
-        return $typeDelivery ? $typeDelivery->days : '';
+        if (!$typeDelivery) {
+            return 'Неизвестный тип доставки';
+        }
+        return $typeDelivery->name;
     }
 
     /**
