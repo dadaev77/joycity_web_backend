@@ -13,14 +13,12 @@
             margin: 0;
             padding: 0;
             overflow-x: hidden;
-            /* Предотвращает горизонтальную прокрутку */
         }
 
         .table {
             width: 100%;
             border-collapse: collapse;
             table-layout: fixed;
-            /* Автоматическая ширина для ячеек */
         }
 
         .table th,
@@ -92,7 +90,7 @@
             </tr>
             <tr>
                 <td>Дата изготовления</td>
-                <td><?= htmlspecialchars($data['production_date']) ?></td>
+                <td><?= htmlspecialchars($data['date_of_production']) ?></td>
                 <td>Вид перевозки</td>
                 <td><?= htmlspecialchars($data['delivery_type']) ?></td>
                 <td>Номер</td>
