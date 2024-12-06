@@ -8,9 +8,7 @@ use Mpdf\Mpdf;
 use Yii;
 use yii\base\Exception;
 use yii\web\NotFoundHttpException;
-use app\models\Buyer;
-use app\models\Client;
-use app\models\Manager;
+use app\models\User;
 use app\models\TypeDelivery;
 
 class WaybillService
@@ -25,9 +23,9 @@ class WaybillService
     public static function create(array $data): Waybill
     {
         // Получаем связанные сущности
-        $buyer = Buyer::findOne($data['buyer_id'] ?? null);
-        $client = Client::findOne($data['client_id'] ?? null);
-        $manager = Manager::findOne($data['manager_id'] ?? null);
+        $buyer = User::findOne($data['buyer_id'] ?? null);
+        $client = User::findOne($data['client_id'] ?? null);
+        $manager = User::findOne($data['manager_id'] ?? null);
         $order = Order::findOne($data['order_id'] ?? null);
 
         // Расчет объема
