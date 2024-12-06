@@ -10,6 +10,7 @@ use yii\base\Exception;
 use yii\web\NotFoundHttpException;
 use app\models\User;
 use app\models\TypeDelivery;
+use app\models\BuyerDeliveryOffer;
 
 class WaybillService
 {
