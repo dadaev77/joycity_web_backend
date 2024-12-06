@@ -10,6 +10,7 @@ use yii\web\NotFoundHttpException;
 use yii\web\BadRequestHttpException;
 use Yii;
 use app\models\Rate;
+use app\services\UserActionLogService as Log;
 
 /**
  * Контроллер для работы с накладными
@@ -56,6 +57,7 @@ class WaybillController extends ManagerController
                     $order->category->name;
             }
 
+            Log::danger('Генерация накладной: ' . json_encode($data));
             $waybill = WaybillService::update($order->waybill, $data);
 
             return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
