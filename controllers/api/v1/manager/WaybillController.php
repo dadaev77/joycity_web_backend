@@ -75,8 +75,8 @@ class WaybillController extends ManagerController
 
             // Получаем накладную через сервис
             $waybill = WaybillService::getByOrderId($id);
-            // $waybill->date_of_production = date('Y-m-d', strtotime($waybill->date_of_production));
-            // $waybill->file_path = WaybillService::formatFilePath($waybill);
+            $waybill->date_of_production = date('Y-m-d', strtotime($waybill->date_of_production));
+            $waybill->file_path = $_ENV['APP_URL'] . '/uploads/waybills/' . $waybill->file_path;
 
             return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
                 'waybill' => $waybill,
