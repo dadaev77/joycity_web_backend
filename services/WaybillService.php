@@ -76,8 +76,8 @@ class WaybillService
             'weight_costs' => $weightCosts,
             'insurance_costs' => $insuranceCosts,
             'total_pairs' => 0,
-            'total_customs_duty' => floatval($data['total_customs_duty'] ?? 0),
-            'volume_costs' => floatval($data['volume_costs'] ?? 0),
+            'total_customs_duty' => 0,
+            'volume_costs' => 0,
             'total_quantity' => intval($data['amount_of_space'] ?? 0),
             'approved_by' => $manager ? $manager->name : '',
             'executor' => 'JoyCity Company',
@@ -97,8 +97,8 @@ class WaybillService
             'price_per_kg' => $pricePerKg,
             'course' => $course,
             'total_number_pairs' => 0,
-            'total_customs_duty' => $data['total_customs_duty'],
-            'volume_costs' => $data['volume_costs'],
+            'total_customs_duty' => 0,
+            'volume_costs' => 0,
             'date_of_production' => date('Y:m:d H:i:s'),
         ];
 
