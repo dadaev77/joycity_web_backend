@@ -11,6 +11,7 @@ use yii\web\NotFoundHttpException;
 use app\models\User;
 use app\models\TypeDelivery;
 use app\models\BuyerDeliveryOffer;
+use app\services\UserActionLogService as Log;
 
 class WaybillService
 {
@@ -152,6 +153,7 @@ class WaybillService
      */
     public static function update(Waybill $waybill, array $data): Waybill
     {
+        Log::danger('Обновление накладной: ' . json_encode($data));
         $bdo = BuyerDeliveryOffer::findOne(['order_id' => $data['order_id']]);
         $buyer = User::findOne($data['buyer_id']);
         $client = User::findOne($data['client_id']);
@@ -198,9 +200,9 @@ class WaybillService
             'package_expenses' => floatval($data['package_expenses'] ?? 0),
             'weight_costs' => $weightCosts,
             'insurance_costs' => $insuranceCosts,
-            'total_pairs' => isset($data['total_pairs']) ? intval($data['total_pairs']) : 0, // TODO: добавить
-            'total_customs_duty' => isset($data['total_customs_duty']) ? floatval($data['total_customs_duty']) : 0, // TODO: добавить
-            'volume_costs' => isset($data['volume_costs']) ? floatval($data['volume_costs']) : 0, // TODO: добавить
+            'total_pairs' => isset($data['total_pairs']) ? intval($data['total_pairs']) : 0,
+            'total_customs_duty' => isset($data['total_customs_duty']) ? floatval($data['total_customs_duty']) : 0,
+            'volume_costs' => isset($data['volume_costs']) ? floatval($data['volume_costs']) : 0,
             'total_quantity' => intval($data['amount_of_space'] ?? 0),
             'approved_by' => $manager ? $manager->name : '',
             'executor' => 'JoyCity Company',
@@ -216,14 +218,20 @@ class WaybillService
         $fileName = self::generatePdf($waybillData);
 
         // Обновляем данные накладной
-        $waybill->setAttributes($waybillData);
-        $waybill->file_path = $fileName;
+        $waybill->setAttributes([
+            'file_path' => $fileName,
+            'regenerated_at' => date('Y-m-d H:i:s'),
+            'price_per_kg' => $waybill->price_per_kg,
+            'course' => $waybill->course,
+            'total_number_pairs' => isset($data['total_pairs']) ? intval($data['total_pairs']) : 0,
+            'total_customs_duty' => isset($data['total_customs_duty']) ? floatval($data['total_customs_duty']) : 0,
+            'volume_costs' => isset($data['volume_costs']) ? floatval($data['volume_costs']) : 0,
+        ]);
 
         if (!$waybill->save()) {
             self::deleteWaybillFile($fileName);
-            throw new Exception('Ошибка при обн��влении накладной в БД: ' . json_encode($waybill->errors));
+            throw new Exception('Ошибка при обновлении накладной в БД: ' . json_encode($waybill->errors));
         }
-
         return $waybill;
     }
 
