@@ -200,9 +200,9 @@ class WaybillService
             'package_expenses' => floatval($data['package_expenses'] ?? 0),
             'weight_costs' => $weightCosts,
             'insurance_costs' => $insuranceCosts,
-            'total_pairs' => isset($data['total_pairs']) ? intval($data['total_pairs']) : 0, // TODO: добавить
-            'total_customs_duty' => isset($data['total_customs_duty']) ? floatval($data['total_customs_duty']) : 0, // TODO: добавить
-            'volume_costs' => isset($data['volume_costs']) ? floatval($data['volume_costs']) : 0, // TODO: добавить
+            'total_pairs' => isset($data['total_number_pairs']) ? intval($data['total_number_pairs']) : 0,
+            'total_customs_duty' => isset($data['total_customs_duty']) ? floatval($data['total_customs_duty']) : 0,
+            'volume_costs' => isset($data['volume_costs']) ? floatval($data['volume_costs']) : 0,
             'total_quantity' => intval($data['amount_of_space'] ?? 0),
             'approved_by' => $manager ? $manager->name : '',
             'executor' => 'JoyCity Company',
