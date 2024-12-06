@@ -10,8 +10,11 @@ use app\models\Order;
 use app\models\OrderRate;
 use app\models\Rate;
 use app\models\User;
+use app\models\Waybill;
 use app\services\output\BuyerDeliveryOfferOutputService;
 use app\services\RateService;
+use app\services\WaybillService;
+use Mpdf\Mpdf;
 use Throwable;
 use Yii;
 use app\services\UserActionLogService as Log;
@@ -29,11 +32,6 @@ class BuyerDeliveryOfferController extends ManagerController
 
     public function actionCreate()
     {
-        /**
-         * Формируем:
-         * JoyCity313+Уникальный номер клиента в БД+номер груза+сколько мест занимает груз
-         * Например: JoyCity313-HMR 579-1378-7
-         */
         $apiCodes = Order::apiCodes();
 
         try {
@@ -46,9 +44,12 @@ class BuyerDeliveryOfferController extends ManagerController
                     'product_height',
                     'product_width',
                     'product_depth',
-                    'product_weight',  
-                    "package_expenses",
-                    "amount_of_space"
+                    'product_weight',
+                    'package_expenses',
+                    'amount_of_space',
+                    'type_delivery_id',
+                    'type_delivery_point_id',
+                    'cargo_number'
                 ],
                 true,
             );
@@ -86,19 +87,7 @@ class BuyerDeliveryOfferController extends ManagerController
             $buyerDeliveryOffer->buyer_id = $order->buyer_id;
             $buyerDeliveryOffer->status = BuyerDeliveryOffer::STATUS_CREATED;
             $buyerDeliveryOffer->price_product = $params['price_product'];
-
             $buyerDeliveryOffer->currency = $user->settings->currency;
-
-            /**
-             *  Manager [ get_invoce [true/false] ]
-             *  Добавить поле статуса накладной для заявки шоб отслеживать этот статус
-             *  waybill_isset
-             */
-
-            /**
-             * Генериирую накладную тут 
-             */
-
 
             if (!$buyerDeliveryOffer->save()) {
                 return ApiResponse::codeErrors(
@@ -113,6 +102,30 @@ class BuyerDeliveryOfferController extends ManagerController
                 return ApiResponse::codeErrors(
                     $apiCodes->ERROR_SAVE,
                     $order->getFirstErrors(),
+                );
+            }
+
+            // Подготавливаем данные для накладной
+            $waybillData = array_merge($params, [
+                'buyer_id' => $order->buyer_id,
+                'client_id' => $order->client_id,
+                'manager_id' => $user->id,
+                'parent_category' => $order->category ?
+                    ($order->category->parent ? $order->category->parent->name : $order->category->name)
+                    : '',
+            ]);
+
+            // Получаем актуальный курс
+            $rate = Rate::find()->orderBy(['id' => SORT_DESC])->one();
+            $waybillData['course'] = $rate ? $rate->USD : 1;
+
+            // Создаем накладную через сервис
+            try {
+                $waybill = WaybillService::create($waybillData);
+            } catch (\Exception $e) {
+                return ApiResponse::codeErrors(
+                    $apiCodes->ERROR_SAVE,
+                    ['waybill' => $e->getMessage()]
                 );
             }
 
@@ -144,7 +157,7 @@ class BuyerDeliveryOfferController extends ManagerController
      *     ),
      *     @OA\Response(
      *         response=404,
-     *         description="Предложение по доставке не найдено"
+     *         description="П��едложение по доставке не найдено"
      *     ),
      *     @OA\Response(
      *         response=403,
@@ -154,7 +167,6 @@ class BuyerDeliveryOfferController extends ManagerController
      *         response=500,
      *         description="Внутренняя ошибка сервера"
      *     )
-     * )
      */
     public function actionPaid(int $id)
     {
