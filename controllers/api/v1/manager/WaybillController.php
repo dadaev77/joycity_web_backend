@@ -56,7 +56,7 @@ class WaybillController extends ManagerController
                     $order->category->name;
             }
 
-            $waybill = WaybillService::update($wb, $data);
+            $waybill = WaybillService::update($order->waybill, $data);
 
             return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
                 'waybill' => WaybillService::formatFilePath($waybill)
