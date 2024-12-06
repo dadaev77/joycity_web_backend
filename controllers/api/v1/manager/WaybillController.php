@@ -76,9 +76,10 @@ class WaybillController extends ManagerController
             // Получаем накладную через сервис
             $waybill = WaybillService::getByOrderId($id);
             $waybill->date_of_production = date('Y-m-d', strtotime($waybill->date_of_production));
+            $waybill->file_path = WaybillService::formatFilePath($waybill);
 
             return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
-                'waybill' => WaybillService::formatFilePath($waybill)
+                'waybill' => $waybill,
             ]);
         } catch (NotFoundHttpException $e) {
             return ApiResponse::byResponseCode($apiCodes->NOT_FOUND, [
