@@ -153,7 +153,7 @@ class WaybillService
      */
     public static function update(Waybill $waybill, array $data): Waybill
     {
-        Log::danger('Обновление накладной: ' . json_encode($data));
+        Log::info('Обновление накладной: ' . json_encode($data));
         $bdo = BuyerDeliveryOffer::findOne(['order_id' => $data['order_id']]);
         $buyer = User::findOne($data['buyer_id']);
         $client = User::findOne($data['client_id']);

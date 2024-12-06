@@ -57,7 +57,7 @@ class WaybillController extends ManagerController
                     $order->category->name;
             }
 
-            Log::danger('Генерация накладной: ' . json_encode($data));
+            Log::info('Генерация накладной: ' . json_encode($data));
             $waybill = WaybillService::update($order->waybill, $data);
 
             return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
