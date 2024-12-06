@@ -35,6 +35,7 @@ class WaybillController extends ManagerController
             $apiCodes = Order::apiCodes();
             $data = Yii::$app->request->post();
 
+            Log::info('Генерация накладной: ' . json_encode($data));
             // Проверяем существование заказа
             $order = Order::findOne($data['order_id']);
             if (!$order) {
@@ -47,8 +48,8 @@ class WaybillController extends ManagerController
             $data['manager_id'] = $order->manager_id;
 
             // Получаем актуальный курс
-            $rate = Rate::find()->orderBy(['id' => SORT_DESC])->one();
-            $data['course'] = $rate ? $rate->USD : 1;
+            // $rate = Rate::find()->orderBy(['id' => SORT_DESC])->one();
+            // $data['course'] = $rate ? $rate->USD : 1;
 
             // Получаем родительскую категорию
             if ($order->category) {

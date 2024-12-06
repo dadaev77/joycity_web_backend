@@ -200,7 +200,7 @@ class WaybillService
             'package_expenses' => floatval($data['package_expenses'] ?? 0),
             'weight_costs' => $weightCosts,
             'insurance_costs' => $insuranceCosts,
-            'total_pairs' => isset($data['total_pairs']) ? intval($data['total_pairs']) : 0,
+            'total_pairs' => isset($data['total_number_pairs']) ? intval($data['total_number_pairs']) : 0,
             'total_customs_duty' => isset($data['total_customs_duty']) ? floatval($data['total_customs_duty']) : 0,
             'volume_costs' => isset($data['volume_costs']) ? floatval($data['volume_costs']) : 0,
             'total_quantity' => intval($data['amount_of_space'] ?? 0),
@@ -221,11 +221,12 @@ class WaybillService
         $waybill->setAttributes([
             'file_path' => $fileName,
             'regenerated_at' => date('Y-m-d H:i:s'),
-            'price_per_kg' => $waybill->price_per_kg,
-            'course' => $waybill->course,
-            'total_number_pairs' => isset($data['total_pairs']) ? intval($data['total_pairs']) : 0,
-            'total_customs_duty' => isset($data['total_customs_duty']) ? floatval($data['total_customs_duty']) : 0,
-            'volume_costs' => isset($data['volume_costs']) ? floatval($data['volume_costs']) : 0,
+            'price_per_kg' => isset($data['price_per_kg']) ? floatval($data['price_per_kg']) : $waybill->price_per_kg,
+            'course' => isset($data['course']) ? floatval($data['course']) : $waybill->course,
+            'total_number_pairs' => isset($data['total_number_pairs']) ? intval($data['total_number_pairs']) : $waybill->total_number_pairs,
+            'total_customs_duty' => isset($data['total_customs_duty']) ? floatval($data['total_customs_duty']) : $waybill->total_customs_duty,
+            'volume_costs' => isset($data['volume_costs']) ? floatval($data['volume_costs']) : $waybill->volume_costs,
+            'date_of_production' => isset($data['date_of_production']) ? date('Y-m-d H:i:s', strtotime($data['date_of_production'])) : $waybill->date_of_production,
         ]);
 
         if (!$waybill->save()) {
