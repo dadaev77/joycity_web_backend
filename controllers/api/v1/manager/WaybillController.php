@@ -42,7 +42,7 @@ class WaybillController extends ManagerController
 
             // Добавляем необходимые данные для накладной
             $data['buyer_id'] = $order->buyer_id;
-            $data['client_id'] = $order->client_id;
+            $data['client_id'] = $order->created_by;
             $data['manager_id'] = $order->manager_id;
 
             // Получаем актуальный курс
@@ -56,7 +56,6 @@ class WaybillController extends ManagerController
                     $order->category->name;
             }
 
-            // Создаем накладную через сервис
             $waybill = WaybillService::create($data);
 
             return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
@@ -76,6 +75,7 @@ class WaybillController extends ManagerController
 
             // Получаем накладную через сервис
             $waybill = WaybillService::getByOrderId($id);
+            $waybill->date_of_production = date('Y-m-d', strtotime($waybill->date_of_production));
 
             return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
                 'waybill' => WaybillService::formatFilePath($waybill)

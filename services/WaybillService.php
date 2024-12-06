@@ -91,7 +91,7 @@ class WaybillService
             'waybill_number' => $waybillNumber,
             'order_id' => $data['order_id'],
             'file_path' => $fileName,
-            'created_at' => date('Y:m:d H:i:s'),
+            'created_at' => date('Y-m-d H:i:s'),
             'regenerated_at' => null,
             'editable' => true,
             'price_per_kg' => $pricePerKg,
@@ -99,7 +99,7 @@ class WaybillService
             'total_number_pairs' => 0,
             'total_customs_duty' => 0,
             'volume_costs' => 0,
-            'date_of_production' => date('Y:m:d H:i:s'),
+            'date_of_production' => date('Y-m-d H:i:s'),
         ];
 
         // Создаем новую накладную в БД
