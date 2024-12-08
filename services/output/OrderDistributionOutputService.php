@@ -25,6 +25,8 @@ class OrderDistributionOutputService extends OutputService
         return array_map(static function ($model) {
             $info = ModelTypeHelper::toArray($model);
 
+            Log::info('OrderDistributionOutputService: ' . json_encode($info));
+
             unset(
                 $info['order_id'],
                 $info['buyer_ids_list'],
