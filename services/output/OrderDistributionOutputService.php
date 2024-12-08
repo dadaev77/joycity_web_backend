@@ -26,8 +26,15 @@ class OrderDistributionOutputService extends OutputService
 
             $subcategory = $model->order->subcategory;
             $category = $subcategory->category;
+            $appLang = Yii::$app->user->getIdentity()->settings->application_language;
 
-            $info['order']['product_name'] = $category ? $category->ru_name . ' / ' . $subcategory->ru_name : $subcategory->ru_name;
+            $lang = match (strtolower($appLang)) {
+                'ru' => 'ru_name',
+                'en' => 'en_name',
+                'zh' => 'zh_name',
+            };
+
+            $info['order']['product_name'] = $category ? $category->{$lang} . ' / ' . $subcategory->{$lang} : $subcategory->{$lang};
 
             unset(
                 $info['order_id'],
