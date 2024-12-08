@@ -176,24 +176,24 @@ class WaybillService
         // Курс и страховка
         $course = $waybill->course;
         $insuranceRate = 0.01;
-        $insuranceSum = $bdo->price_product; // в юанях
+        $insuranceSum = $bdo->price_product;
         $insuranceCosts = $insuranceSum / ($insuranceRate * $course);
 
         $waybillData = [
             // Общие данные
             'order_id' => $data['order_id'],
             'waybill_number' => $waybill->waybill_number,
-            'sender_name' => $buyer ? $buyer->name : '',
-            'sender_phone' => $buyer ? $buyer->phone_number : '',
-            'recipient_name' => $client ? $client->name : '',
-            'recipient_phone' => $client ? $client->phone_number : '',
+            'sender_name' => $buyer ? $buyer->name : 'не указано',
+            'sender_phone' => $buyer ? $buyer->phone_number : 'не указано',
+            'recipient_name' => $client ? $client->name : 'не указано',
+            'recipient_phone' => $client ? $client->phone_number : 'не указано',
             // Доставка
             'departure_city' => 'Иу',
             'destination_city' => 'Москва',
-            'date_of_production' => date('Y:m:d H:i:s'), // TODO: заменить на дату подтверждения
+            'date_of_production' => date('Y-m-d'), // TODO: заменить на дату подтверждения
             'delivery_type' => self::getDeliveryType($data),
             'course' => $waybill->course,
-            'assortment' => $data['parent_category'] ?? '',
+            'assortment' => Order::findOne($bdo->order_id)->subcategory->ru_name ?? 'Отсутствует',
             'price_per_kg' => $waybill->price_per_kg,
             'insurance_sum_yuan' => $insuranceSum,
             'china_advance_usd' => floatval($data['china_advance'] ?? 0),
