@@ -84,8 +84,8 @@ class OrderPrice extends OrderPriceService
         $userCurrency = \Yii::$app->user->getIdentity()->getSettings()->currency;
         $orderCurrency = $order->currency;
 
-        Log::warning('LastOffer: ' . json_encode($lastOffer));
-        Log::warning('Order: ' . json_encode($order));
+        Log::warning('LastOffer: ' . json_encode($lastOffer?->price_product));
+        Log::warning('Order: ' . json_encode($order->expected_price_per_item));
         // Конвертируем все цены в валюту пользователя
         $productPrice = $lastOffer?->price_product ?? $order->expected_price_per_item;
         $productPrice = RateService::convertValue($productPrice, $orderCurrency, $userCurrency);
