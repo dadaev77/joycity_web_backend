@@ -63,7 +63,7 @@ class WaybillService
             'recipient_phone' => $client ? $client->phone_number : '',
             'departure_city' => 'Иу',
             'destination_city' => 'Москва',
-            'date_of_production' => date('Y:m:d H:i:s'), // TODO: заменить на дату подтверждения
+            'date_of_production' => date('Y:m:d H:i:s', strtotime('+2 days')),
             'delivery_type' => self::getDeliveryType($data),
             'course' => $course,
             'assortment' => $data['parent_category'] ?? '',
