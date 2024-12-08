@@ -150,7 +150,7 @@ class OrderOutputService extends OutputService
                 );
             }
 
-            Log::info('OrderOutputService::getCollection', json_encode($info['buyerOffer']));
+
             // if ($info['buyerOffer']) {
             //     $info['buyerOffer'] = RateService::convertDataPrices(
             //         $info['buyerOffer'],
@@ -159,7 +159,7 @@ class OrderOutputService extends OutputService
             //         $userCurrency
             //     );
             // }
-
+            Log::info('OrderOutputService::buyerOffer', json_encode($info['buyerOffer']));
             // $info['buyerOffer']['price_product'] = RateService::convertValue($info['buyerOffer']['price_product'], $info['currency'], $userCurrency);
             // $info['buyerOffer']['price_inspection'] = RateService::convertValue($info['buyerOffer']['price_inspection'], $info['currency'], $userCurrency);
             // $info['buyerOffer']['expected_price_per_item'] = RateService::convertValue($info['buyerOffer']['expected_price_per_item'], $info['currency'], $userCurrency);
@@ -238,7 +238,7 @@ class OrderOutputService extends OutputService
                 $info['manager']['avatar_id'],
                 $info['createdBy']['avatar_id'],
                 $info['buyer_id'],
-                $info['buyerOffers'],
+                // $info['buyerOffers'],
                 $info['productStockReport']['productStockReportLinkAttachments'],
                 $info['fulfillmentPackagingLabeling']['packagingReportLinkAttachments'],
                 $info['fulfillmentStockReport']['fulfillmentStockReportLinkAttachments'],
