@@ -27,7 +27,7 @@ class OrderDistributionOutputService extends OutputService
             $subcategory = $model->order->subcategory;
             $category = $subcategory->category;
 
-            $info['order']['product_name'] = $category ? $category->ru_name . '/' . $subcategory->ru_name : $subcategory->ru_name;
+            $info['order']['product_name'] = $category ? $category->ru_name . ' / ' . $subcategory->ru_name : $subcategory->ru_name;
 
             unset(
                 $info['order_id'],
