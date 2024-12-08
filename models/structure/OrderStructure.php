@@ -568,6 +568,7 @@ class OrderStructure extends Base
     {
         return $this->hasOne(\app\models\Category::class, ['id' => 'parent_id']);
     }
+
     public function getSubcategory()
     {
         return $this->hasOne(\app\models\Category::class, ['id' => 'subcategory_id']);
