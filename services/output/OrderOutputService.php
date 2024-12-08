@@ -82,7 +82,7 @@ class OrderOutputService extends OutputService
             $fulfilmentMarketplaceDeliveryInfo = MarketplaceTransactionService::getDeliveredCountInfo($info['id']);
             $info['fulfilmentMarketplaceDeliveryInfo'] = $fulfilmentMarketplaceDeliveryInfo ?: null;
             $info['productStockReport'] = $info['productStockReports'] ? $info['productStockReports'][0] : null;
-            $info['buyerOffer'] = $info['buyerOffers'] ? $info['buyerOffers'][0] : null;
+            $info['buyerOffer'] = $info['buyerOffers'][0];
             $info['productInspectionReport'] = $info['productInspectionReports'] ? $info['productInspectionReports'][0] : null;
             $info['orderTracking'] = $info['orderTrackings'];
 
