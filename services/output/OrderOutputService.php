@@ -158,9 +158,15 @@ class OrderOutputService extends OutputService
             //     );
             // }
 
-            $info['buyerOffer']['price_product'] = RateService::convertValue($info['buyerOffer']['price_product'], $info['buyerOffer']['currency'], $userCurrency);
-            $info['buyerOffer']['price_inspection'] = RateService::convertValue($info['buyerOffer']['price_inspection'], $info['buyerOffer']['currency'], $userCurrency);
-            $info['expected_price_per_item'] = RateService::convertValue($info['expected_price_per_item'], $info['currency'], $userCurrency);
+            $info['buyerOffer']['price_product'] = $info['buyerOffer']['price_product'] ?
+                RateService::convertValue($info['buyerOffer']['price_product'], $info['buyerOffer']['currency'], $userCurrency) :
+                null;
+            $info['buyerOffer']['price_inspection'] = $info['buyerOffer']['price_inspection'] ?
+                RateService::convertValue($info['buyerOffer']['price_inspection'], $info['buyerOffer']['currency'], $userCurrency) :
+                null;
+            $info['expected_price_per_item'] = $info['expected_price_per_item'] ?
+                RateService::convertValue($info['expected_price_per_item'], $info['currency'], $userCurrency) :
+                null;
 
             $info['type'] = in_array($info['status'], Order::STATUS_GROUP_ORDER, true) ? 'order' : 'request';
 
