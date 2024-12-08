@@ -17,7 +17,6 @@ class BuyerDeliveryOfferOutputService extends OutputService
     public static function getCollection(array $ids): array
     {
         $query = BuyerDeliveryOffer::find()->where(['id' => $ids]);
-
         $userCurrency = Yii::$app->getUser()->getIdentity()->getSettings()->currency;
 
         return array_map(static function ($model) use ($userCurrency) {

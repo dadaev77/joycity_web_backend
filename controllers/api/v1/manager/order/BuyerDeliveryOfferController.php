@@ -79,7 +79,7 @@ class BuyerDeliveryOfferController extends ManagerController
 
             $buyerDeliveryOffer = new BuyerDeliveryOffer();
             $buyerDeliveryOffer->load($params, '');
-            $buyerDeliveryOffer->created_at = date('Y-m-d H:i:s');
+            $buyerDeliveryOffer->created_at = date('Y-m-d H:i:s', strtotime('+2 days'));
             $buyerDeliveryOffer->manager_id = $user->id;
             $buyerDeliveryOffer->buyer_id = $order->buyer_id;
             $buyerDeliveryOffer->status = BuyerDeliveryOffer::STATUS_CREATED;
