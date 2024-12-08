@@ -78,6 +78,11 @@ class OrderOutputService extends OutputService
         $userCurrency = Yii::$app->user->identity->getSettings()->currency;
 
         return array_map(static function ($model) use ($imageSize, $userCurrency) {
+
+            Log::info('OrderOutputService::getCollection', json_encode($model));
+            Log::info('Isset buyerOffers', json_encode(isset($model->buyerOffers)));
+            Log::info('BuyerOffers', json_encode($model->buyerOffers));
+
             $info = ModelTypeHelper::toArray($model);
             $fulfilmentMarketplaceDeliveryInfo = MarketplaceTransactionService::getDeliveredCountInfo($info['id']);
             $info['fulfilmentMarketplaceDeliveryInfo'] = $fulfilmentMarketplaceDeliveryInfo ?: null;
@@ -150,19 +155,6 @@ class OrderOutputService extends OutputService
                 );
             }
 
-
-            // if ($info['buyerOffer']) {
-            //     $info['buyerOffer'] = RateService::convertDataPrices(
-            //         $info['buyerOffer'],
-            //         ['price_product', 'price_inspection', 'expected_price_per_item'],
-            //         $info['currency'],
-            //         $userCurrency
-            //     );
-            // }
-            Log::info('OrderOutputService::buyerOffer', json_encode($info['buyerOffer']));
-            // $info['buyerOffer']['price_product'] = RateService::convertValue($info['buyerOffer']['price_product'], $info['currency'], $userCurrency);
-            // $info['buyerOffer']['price_inspection'] = RateService::convertValue($info['buyerOffer']['price_inspection'], $info['currency'], $userCurrency);
-            // $info['buyerOffer']['expected_price_per_item'] = RateService::convertValue($info['buyerOffer']['expected_price_per_item'], $info['currency'], $userCurrency);
 
             $info['type'] = in_array($info['status'], Order::STATUS_GROUP_ORDER, true) ? 'order' : 'request';
 
@@ -238,7 +230,7 @@ class OrderOutputService extends OutputService
                 $info['manager']['avatar_id'],
                 $info['createdBy']['avatar_id'],
                 $info['buyer_id'],
-                // $info['buyerOffers'],
+                $info['buyerOffers'],
                 $info['productStockReport']['productStockReportLinkAttachments'],
                 $info['fulfillmentPackagingLabeling']['packagingReportLinkAttachments'],
                 $info['fulfillmentStockReport']['fulfillmentStockReportLinkAttachments'],
