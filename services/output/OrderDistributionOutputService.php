@@ -17,17 +17,18 @@ class OrderDistributionOutputService extends OutputService
     {
         $query = OrderDistribution::find()
             ->with([
-                'order' => fn($q) => $q->with([
-                    'subcategory',
-                ]),
+                'order',
             ])
             ->where(['id' => $ids]);
 
         return array_map(static function ($model) {
             $info = ModelTypeHelper::toArray($model);
 
-            Log::info('OrderDistributionOutputService: ' . json_encode($info));
-            $info['order']['product_name'] = 'Категория';
+            $subcategory = $model->order->subcategory;
+            $category = $subcategory->category;
+
+            $info['order']['product_name'] = $category ? $category->name . '/' . $subcategory->name : $subcategory->name;
+
             unset(
                 $info['order_id'],
                 $info['buyer_ids_list'],
