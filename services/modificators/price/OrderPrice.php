@@ -88,7 +88,7 @@ class OrderPrice extends OrderPriceService
         Log::warning('Order: ' . json_encode($order->expected_price_per_item));
         // Конвертируем все цены в валюту пользователя
         $productPrice = $lastOffer?->price_product ?? $order->expected_price_per_item;
-        $productPrice = RateService::convertValue($productPrice, $orderCurrency, $userCurrency);
+        $productPrice = RateService::convertValue($productPrice, $lastOffer?->currency ?? $orderCurrency, $userCurrency);
         Log::warning('ProductPrice: ' . json_encode($productPrice));
 
         $productInspectionPrice = $lastOffer?->price_inspection ?: 0;
