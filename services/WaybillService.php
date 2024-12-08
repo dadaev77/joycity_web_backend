@@ -57,7 +57,7 @@ class WaybillService
         $waybillData = [
             'order_id' => $data['order_id'],
             'waybill_number' => $waybillNumber,
-            'sender_name' => $buyer ? $buyer->name : '',
+            'sender_name' => $buyer ? $buyer->name : 'не ууказано',
             'sender_phone' => $buyer ? $buyer->phone_number : '',
             'recipient_name' => $client ? $client->name : '',
             'recipient_phone' => $client ? $client->phone_number : '',
@@ -134,13 +134,15 @@ class WaybillService
     {
         $typeDeliveryId = $data['type_delivery_id'] ?? null;
         if (!$typeDeliveryId) {
-            return '';
+            return 'Не указано';
         }
+
         $typeDelivery = TypeDelivery::findOne($typeDeliveryId);
         if (!$typeDelivery) {
             return 'Неизвестный тип доставки';
         }
-        return $typeDelivery->name;
+
+        return $typeDelivery->ru_name;
     }
 
     /**
