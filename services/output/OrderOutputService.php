@@ -160,8 +160,8 @@ class OrderOutputService extends OutputService
             //     );
             // }
             Log::info('OrderOutputService::getCollection', json_encode($info));
-            $info['buyerOffer']['price_product'] = RateService::convertValue($info['buyerOffer']['price_product'], $info['currency'], $userCurrency);
-            $info['buyerOffer']['price_inspection'] = RateService::convertValue($info['buyerOffer']['price_inspection'], $info['currency'], $userCurrency);
+            // $info['buyerOffer']['price_product'] = RateService::convertValue($info['buyerOffer']['price_product'], $info['currency'], $userCurrency);
+            // $info['buyerOffer']['price_inspection'] = RateService::convertValue($info['buyerOffer']['price_inspection'], $info['currency'], $userCurrency);
             // $info['buyerOffer']['expected_price_per_item'] = RateService::convertValue($info['buyerOffer']['expected_price_per_item'], $info['currency'], $userCurrency);
 
             $info['type'] = in_array($info['status'], Order::STATUS_GROUP_ORDER, true) ? 'order' : 'request';
