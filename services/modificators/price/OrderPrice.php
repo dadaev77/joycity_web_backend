@@ -71,6 +71,7 @@ class OrderPrice extends OrderPriceService
             }
 
             $params = self::prepareOrderParams($order, $lastOffer, $product, $fulfillmentOffer, $buyerDeliveryOffer);
+            Log::info('OrderPrice::calculateOrderPrices params: ' . json_encode($params));
             return self::calcOrderPrices($params);
         } catch (Throwable $th) {
             Log::danger(self::logError('OrderPrice::calculateOrderPrices', $th));
@@ -93,7 +94,7 @@ class OrderPrice extends OrderPriceService
         $fulfillmentPrice = $fulfillmentOffer?->overall_price ?: 0;
         $fulfillmentPrice = RateService::convertValue($fulfillmentPrice, $orderCurrency, $userCurrency);
 
-        return [
+        $response = [
             'orderId' => $order->id,
             'productPrice' => $productPrice,
             'productQuantity' => $lastOffer?->total_quantity ?? $order->expected_quantity,
@@ -110,6 +111,8 @@ class OrderPrice extends OrderPriceService
             'fulfillmentPrice' => $fulfillmentPrice,
             'calculationType' => $buyerDeliveryOffer ? self::TYPE_CALCULATION_PACKAGING : self::TYPE_CALCULATION_PRODUCT,
         ];
+        Log::info('OrderPrice::prepareOrderParams response: ' . json_encode($response));
+        return $response;
     }
 
     private static function prepareOrderParamsForFacade(
@@ -158,7 +161,6 @@ class OrderPrice extends OrderPriceService
     {
         $currency = \Yii::$app->user->getIdentity()->getSettings()->currency;
         $orderId = $params['orderId'] ?? null;
-        Log::info('OrderPrice::calcOrderPrices params: ' . json_encode($params) . ' currency: ' . $currency);
         $out = self::defaultOutput();
 
         $isTypePackaging = $params['calculationType'] === self::TYPE_CALCULATION_PACKAGING;
