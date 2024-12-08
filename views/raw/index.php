@@ -64,7 +64,7 @@
                                 <td><?= $order->type_delivery_point_id ?></td>
                                 <td><?= $order->delivery_point_address_id ?></td>
                                 <td><?= $order->price_product ?></td>
-                                <td><?= $order->price_inspection ?></td>
+                                <td><?= \app\services\RateService::convertValue($order->price_inspection, $order->currency, Yii::$app->user->identity->settings->currency) ?></td>
                                 <td><?= $order->price_packaging ?></td>
                                 <td><?= $order->price_fulfilment ?></td>
                                 <td><?= $order->price_delivery ?></td>

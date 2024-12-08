@@ -184,7 +184,7 @@ class OrderPrice extends OrderPriceService
 
             $volumeCm3 = $dimensions['width'] * $dimensions['height'] * $dimensions['depth']; // Объем в см³
             $volumeM3 = $volumeCm3 / 1000000; // Объем в м³
-            $weightPerItemKg = $dimensions['weight'] / 1000; // Вес в кг
+            $weightPerItemKg = $dimensions['weight']; // Вес в кг
             $density = $weightPerItemKg / $volumeM3; // Плотность в кг/м³
 
             // init variables

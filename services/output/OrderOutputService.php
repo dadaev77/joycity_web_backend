@@ -159,6 +159,7 @@ class OrderOutputService extends OutputService
                     $userCurrency
                 );
             }
+
             $info['type'] = in_array($info['status'], Order::STATUS_GROUP_ORDER, true) ? 'order' : 'request';
             $info['price'] = OrderPrice::calculateOrderPrices($info['id']);
 
