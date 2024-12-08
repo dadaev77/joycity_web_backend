@@ -24,7 +24,8 @@ class BuyerOfferOutputService extends OutputService
         return array_map(static function ($model) use ($userCurrency) {
             $info = ModelTypeHelper::toArray($model);
             Log::info(' BuyerOfferOutputService::getCollection', json_encode($info));
-            $info = RateService::convertDataPrices($info, ['price_product', 'price_inspection'], $info['currency'], $userCurrency);
+            $info['price_product'] = RateService::convertValue($info['price_product'], $info['currency'], $userCurrency);
+            $info['price_inspection'] = RateService::convertValue($info['price_inspection'], $info['currency'], $userCurrency);
             return $info;
         }, $query->all());
     }
