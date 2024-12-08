@@ -27,7 +27,7 @@ class OrderDistributionOutputService extends OutputService
             $info = ModelTypeHelper::toArray($model);
 
             Log::info('OrderDistributionOutputService: ' . json_encode($info));
-
+            $info['order']['product_name'] = 'Категория';
             unset(
                 $info['order_id'],
                 $info['buyer_ids_list'],
