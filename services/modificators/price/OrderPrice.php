@@ -65,14 +65,13 @@ class OrderPrice extends OrderPriceService
             $product = $order->product;
             $fulfillmentOffer = $order->fulfillmentOffer;
             $buyerDeliveryOffer = $order->buyerDeliveryOffer;
-            
+
             if (empty($lastOffer)) {
                 return self::defaultOutput();
             }
 
             $params = self::prepareOrderParams($order, $lastOffer, $product, $fulfillmentOffer, $buyerDeliveryOffer);
             return self::calcOrderPrices($params);
-
         } catch (Throwable $th) {
             Log::danger(self::logError('OrderPrice::calculateOrderPrices', $th));
             return self::defaultOutput();
@@ -197,10 +196,10 @@ class OrderPrice extends OrderPriceService
             $userCurrency = \Yii::$app->user->getIdentity()->getSettings()->currency;
             $typePackaging = TypePackaging::findOne(['id' => $typePackagingId]);
             $price = $typePackaging?->price ?? 0;
-            
+
             // Конвертируем цену упаковки в валюту пользователя
             $price = RateService::convertValue($price, 'USD', $userCurrency);
-            
+
             return round($price * $packagingQuantity, self::SYMBOLS_AFTER_DECIMAL_POINT);
         } catch (Throwable $th) {
             Log::danger('error in OrderPrice::calcPackagingPrice: ' . $th->getMessage());
@@ -239,14 +238,11 @@ class OrderPrice extends OrderPriceService
             $userCurrency = \Yii::$app->user->getIdentity()->getSettings()->currency;
             $price = TypeDeliveryPrice::find()
                 ->where(['type_delivery_id' => $typeDeliveryId])
-                ->andWhere(['>=', 'density', $density])
-                ->orderBy(['density' => SORT_ASC])
                 ->one();
 
             if (!$price) {
                 $price = TypeDeliveryPrice::find()
                     ->where(['type_delivery_id' => $typeDeliveryId])
-                    ->orderBy(['density' => SORT_DESC])
                     ->one();
             }
 
@@ -264,7 +260,6 @@ class OrderPrice extends OrderPriceService
             $userCurrency = \Yii::$app->user->getIdentity()->getSettings()->currency;
             $price = TypeDeliveryPrice::find()
                 ->where(['type_delivery_id' => $typeDeliveryId])
-                ->orderBy(['density' => SORT_ASC])
                 ->one();
 
             // Конвертируем цену доставки в валюту пользователя

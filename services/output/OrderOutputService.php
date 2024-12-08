@@ -164,32 +164,6 @@ class OrderOutputService extends OutputService
 
             $info['price'] = OrderPrice::calculateOrderPrices($info['id'], $userCurrency);
 
-            // Конвертация цен в валюту пользователя
-            // $info['price'] = RateService::convertDataPrices(
-            //     $info['price'],
-            //     [
-            //         'product.price_per_item',
-            //         'product.overall',
-            //         'product_inspection',
-            //         'delivery.packaging',
-            //         'delivery.delivery',
-            //         'delivery.overall',
-            //         'fulfillment',
-            //         'overall',
-            //     ],
-            //     $info['currency'],
-            //     $userCurrency
-            // );
-
-            // if ($info['buyerOffer']) {
-            //     $info['buyerOffer'] = RateService::convertDataPrices(
-            //         $info['buyerOffer'],
-            //         ['price_product', 'price_inspection', 'expected_price_per_item'],
-            //         $info['currency'],
-            //         $userCurrency
-            //     );
-            // }
-
             unset(
                 // $info['created_at'],
                 // $info['status'],
