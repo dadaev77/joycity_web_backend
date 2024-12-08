@@ -47,10 +47,12 @@ class WaybillService
         $insuranceCosts = $insuranceSum / ($insuranceRate * $course);
 
         // Формирование номера накладной
+        // $data['cargo_number'] ?? 'UNKNOWN';
+
         $waybillNumber = sprintf(
             "JoyCity313-%s-%s-%s",
             $client ? $client->uuid : 'UNKNOWN',
-            $data['cargo_number'] ?? 'UNKNOWN',
+
             $data['amount_of_space'] ?? '0'
         );
 

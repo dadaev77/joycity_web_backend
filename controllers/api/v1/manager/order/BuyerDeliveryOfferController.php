@@ -107,9 +107,7 @@ class BuyerDeliveryOfferController extends ManagerController
                 'buyer_id' => $order->buyer_id,
                 'client_id' => $order->created_by,
                 'manager_id' => $user->id,
-                'parent_category' => $order->category ?
-                    ($order->category->parent ? $order->category->parent->name : $order->category->name)
-                    : '',
+                'parent_category' => $order->subcategory->ru_name
             ]);
 
             // Получаем актуальный курс
