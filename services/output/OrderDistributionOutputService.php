@@ -4,6 +4,7 @@ namespace app\services\output;
 
 use app\helpers\ModelTypeHelper;
 use app\models\OrderDistribution;
+use app\services\UserActionLogService as Log;
 
 class OrderDistributionOutputService extends OutputService
 {
