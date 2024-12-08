@@ -106,8 +106,7 @@ class BuyerDeliveryOfferController extends ManagerController
             $waybillData = array_merge($params, [
                 'buyer_id' => $order->buyer_id,
                 'client_id' => $order->created_by,
-                'manager_id' => $user->id,
-                'parent_category' => $order->subcategory->ru_name
+                'manager_id' => $user->id
             ]);
 
             // Получаем актуальный курс

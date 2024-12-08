@@ -12,6 +12,7 @@ use app\models\User;
 use app\models\TypeDelivery;
 use app\models\BuyerDeliveryOffer;
 use app\services\UserActionLogService as Log;
+use app\services\RateService;
 
 class WaybillService
 {
@@ -43,7 +44,7 @@ class WaybillService
         // Курс и страховка
         $course = floatval($data['course'] ?? 1);
         $insuranceRate = 0.01;
-        $insuranceSum = floatval($data['price_product'] ?? 0); // в юанях
+        $insuranceSum = RateService::convertValue(floatval($data['price_product'] ?? 0), 'CNY', 'USD');
         $insuranceCosts = $insuranceSum / ($insuranceRate * $course);
 
         // Формирование номера накладной
@@ -52,7 +53,6 @@ class WaybillService
         $waybillNumber = sprintf(
             "JoyCity313-%s-%s-%s",
             $client ? $client->uuid : 'UNKNOWN',
-
             $data['amount_of_space'] ?? '0'
         );
 
@@ -65,10 +65,10 @@ class WaybillService
             'recipient_phone' => $client ? $client->phone_number : '',
             'departure_city' => 'Иу',
             'destination_city' => 'Москва',
-            'date_of_production' => date('Y:m:d H:i:s', strtotime('+2 days')),
+            'date_of_production' => date('Y-m-d', strtotime('+2 days')),
             'delivery_type' => self::getDeliveryType($data),
             'course' => $course,
-            'assortment' => $data['parent_category'] ?? '',
+            'assortment' => $order->subcategory->ru_name ?? 'Отсутствует',
             'price_per_kg' => $pricePerKg,
             'insurance_sum_yuan' => $insuranceSum,
             'china_advance_usd' => floatval($data['china_advance'] ?? 0),
