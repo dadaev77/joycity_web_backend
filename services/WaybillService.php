@@ -98,12 +98,12 @@ class WaybillService
             'created_at' => date('Y-m-d H:i:s'),
             'regenerated_at' => null,
             'editable' => true,
-            'price_per_kg' => $pricePerKg,
+            'price_per_kg' => RateService::convertValue($pricePerKg, $manager->settings->currency, 'USD'),
             'course' => $course,
             'total_number_pairs' => 0,
             'total_customs_duty' => 0,
             'volume_costs' => 0,
-            'date_of_production' => date('Y-m-d H:i:s'),
+            'date_of_production' => date('Y-m-d', strtotime('+2 days')),
         ];
 
         // Создаем новую накладную в БД
