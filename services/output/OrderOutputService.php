@@ -181,16 +181,14 @@ class OrderOutputService extends OutputService
             //     $userCurrency
             // );
 
-
-
-            if ($info['buyerOffer']) {
-                $info['buyerOffer'] = RateService::convertDataPrices(
-                    $info['buyerOffer'],
-                    ['price_product', 'price_inspection', 'expected_price_per_item'],
-                    $info['currency'],
-                    $userCurrency
-                );
-            }
+            // if ($info['buyerOffer']) {
+            //     $info['buyerOffer'] = RateService::convertDataPrices(
+            //         $info['buyerOffer'],
+            //         ['price_product', 'price_inspection', 'expected_price_per_item'],
+            //         $info['currency'],
+            //         $userCurrency
+            //     );
+            // }
 
             unset(
                 // $info['created_at'],
