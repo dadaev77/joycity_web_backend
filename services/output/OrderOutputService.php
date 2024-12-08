@@ -39,6 +39,7 @@ class OrderOutputService extends OutputService
     public static function getCollection(array $ids, $showDeleted = false, $imageSize = 'large'): array
     {
         $relations = [
+
             'fulfillmentMarketplaceTransactions' => fn($q) => $q->orderBy(['id' => SORT_DESC]),
             'createdBy' => fn($q) => $q->select(SqlQueryService::getUserSelect())->with(['avatar']),
             'buyer' => fn($q) => $q->select(SqlQueryService::getBuyerSelect())->with(['avatar']),
@@ -52,11 +53,8 @@ class OrderOutputService extends OutputService
             'typeDeliveryPoint',
             'typePackaging',
             'chats',
-
             'subcategory',
-
             'product' => fn($q) => $q->select(['id', 'name_ru', 'description_ru', 'product_height', 'product_width', 'product_depth', 'product_weight'])->with(['attachments']),
-
             'productInspectionReports',
             'fulfillmentInspectionReport',
             'fulfillmentStockReport' => fn($q) => $q->with(['attachments']),
@@ -82,7 +80,7 @@ class OrderOutputService extends OutputService
             $fulfilmentMarketplaceDeliveryInfo = MarketplaceTransactionService::getDeliveredCountInfo($info['id']);
             $info['fulfilmentMarketplaceDeliveryInfo'] = $fulfilmentMarketplaceDeliveryInfo ?: null;
             $info['productStockReport'] = $info['productStockReports'] ? $info['productStockReports'][0] : null;
-            $info['buyerOffer'] = $info['buyerOffers'][0];
+            $info['buyerOffer'] = $info['buyerOffers'] ? $info['buyerOffers'][0] : null;
             $info['productInspectionReport'] = $info['productInspectionReports'] ? $info['productInspectionReports'][0] : null;
             $info['orderTracking'] = $info['orderTrackings'];
 
@@ -91,11 +89,11 @@ class OrderOutputService extends OutputService
             }
             unset($tracking);
 
-            foreach ($info as $key => $value) {
-                if ($value && (str_starts_with($key, 'price_') || $key === 'expected_price_per_item')) {
-                    $info[$key] = RateService::convertValue($value, $info['currency'], $userCurrency);
-                }
-            }
+            // foreach ($info as $key => $value) {
+            //     if ($value && (str_starts_with($key, 'price_') || $key === 'expected_price_per_item')) {
+            //         $info[$key] = RateService::convertValue($value, $info['currency'], $userCurrency);
+            //     }
+            // }
 
             foreach ($info['chats'] as &$chat) {
                 unset($chat['order_id'], $chat['user_verification_request_id']);
@@ -163,7 +161,7 @@ class OrderOutputService extends OutputService
 
             $info['buyerOffer']['price_product'] = RateService::convertValue($info['buyerOffer']['price_product'], $info['currency'], $userCurrency);
             $info['buyerOffer']['price_inspection'] = RateService::convertValue($info['buyerOffer']['price_inspection'], $info['currency'], $userCurrency);
-            // $info['buyerOffer']['expected_price_per_item'] = RateService::convertValue($info['buyerOffer']['expected_price_per_item'], $info['currency'], $userCurrency);
+            $info['buyerOffer']['expected_price_per_item'] = RateService::convertValue($info['buyerOffer']['expected_price_per_item'], $info['currency'], $userCurrency);
 
             $info['type'] = in_array($info['status'], Order::STATUS_GROUP_ORDER, true) ? 'order' : 'request';
 
