@@ -161,7 +161,8 @@ class OrderOutputService extends OutputService
             }
 
             $info['type'] = in_array($info['status'], Order::STATUS_GROUP_ORDER, true) ? 'order' : 'request';
-            $info['price'] = OrderPrice::calculateOrderPrices($info['id']);
+
+
 
             // Конвертация цен в валюту пользователя
             $info['price'] = RateService::convertDataPrices(
@@ -179,6 +180,8 @@ class OrderOutputService extends OutputService
                 $info['currency'],
                 $userCurrency
             );
+
+            $info['price'] = OrderPrice::calculateOrderPrices($info['id']);
 
             if ($info['buyerOffer']) {
                 $info['buyerOffer'] = RateService::convertDataPrices(
