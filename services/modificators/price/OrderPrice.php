@@ -16,8 +16,8 @@ class OrderPrice extends OrderPriceService
      * OrderPriceService Class
      * Methods:
      * 
-     * - calculateOrderPrices(int $orderId, string $currency = 'usd'): array
-     *   Calculates the prices for a given order based on the order ID and currency.
+     * - calculateOrderPrices(int $orderId): array
+     *   Calculates the prices for a given order based on the order ID.
      *
      * - calculateAbstractOrderPrices(
      *     string $currency,
@@ -44,22 +44,34 @@ class OrderPrice extends OrderPriceService
      *   Returns the default prices configuration.
      */
 
-    public static function calculateOrderPrices(int $orderId, string $currency): array
+    /**
+     * Calculates the prices for a given order
+     * 
+     * @param int $orderId Order ID
+     * @return array Calculated prices
+     */
+    public static function calculateOrderPrices(int $orderId): array
     {
         $output = self::defaultOutput();
         try {
             $order = Order::findOne($orderId);
-            $buyerOffers = $order->buyerOffers;
+            if (!$order) {
+                Log::danger('Order not found');
+                return self::defaultOutput();
+            }
 
+            $buyerOffers = $order->buyerOffers;
             $lastOffer = array_pop($buyerOffers);
             $product = $order->product;
             $fulfillmentOffer = $order->fulfillmentOffer;
             $buyerDeliveryOffer = $order->buyerDeliveryOffer;
-            $params = self::prepareOrderParams($order, $lastOffer, $product, $fulfillmentOffer, $buyerDeliveryOffer);
-            if (empty($lastOffer)) return self::defaultOutput();
+            
+            if (empty($lastOffer)) {
+                return self::defaultOutput();
+            }
 
+            $params = self::prepareOrderParams($order, $lastOffer, $product, $fulfillmentOffer, $buyerDeliveryOffer);
             return self::calcOrderPrices($params);
-            // TODO: add logic for order statuses
 
         } catch (Throwable $th) {
             Log::danger(self::logError('OrderPrice::calculateOrderPrices', $th));
