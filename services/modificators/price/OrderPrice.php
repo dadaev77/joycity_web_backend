@@ -92,10 +92,10 @@ class OrderPrice extends OrderPriceService
         Log::warning('ProductPrice: ' . json_encode($productPrice));
 
         $productInspectionPrice = $lastOffer?->price_inspection ?: 0;
-        $productInspectionPrice = RateService::convertValue($productInspectionPrice, $orderCurrency, $userCurrency);
+        $productInspectionPrice = RateService::convertValue($productInspectionPrice, $lastOffer?->currency ?? $orderCurrency, $userCurrency);
 
         $fulfillmentPrice = $fulfillmentOffer?->overall_price ?: 0;
-        $fulfillmentPrice = RateService::convertValue($fulfillmentPrice, $orderCurrency, $userCurrency);
+        $fulfillmentPrice = RateService::convertValue($fulfillmentPrice, $lastOffer?->currency ?? $orderCurrency, $userCurrency);
 
         $response = [
             'orderId' => $order->id,
