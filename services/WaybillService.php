@@ -233,13 +233,14 @@ class WaybillService
             'date_of_production' => isset($data['date_of_production']) ? date('Y-m-d H:i:s', strtotime($data['date_of_production'])) : $waybill->date_of_production,
         ]);
 
-        $waybill->save();
         if (!$waybill->save()) {
             self::deleteWaybillFile($fileName);
             throw new Exception('Ошибка при обн��влении накладной в БД: ' . json_encode($waybill->errors));
         }
 
-        return $waybill;
+
+
+        return self::getByOrderId($orderId);
     }
 
     /**
