@@ -45,7 +45,7 @@ class WaybillService
         $course = floatval($data['course'] ?? 1);
         $insuranceRate = 0.01;
         $insuranceSum = RateService::convertValue(floatval($data['price_product'] ?? 0), 'CNY', 'USD');
-        $insuranceCosts = $insuranceSum / ($insuranceRate * $course);
+        $insuranceCosts = $insuranceSum / $insuranceRate * $course;
 
         // Формирование номера накладной
         // $data['cargo_number'] ?? 'UNKNOWN';
@@ -177,7 +177,7 @@ class WaybillService
         $course = $waybill->course;
         $insuranceRate = 0.01;
         $insuranceSum = $bdo->price_product;
-        $insuranceCosts = $insuranceSum / ($insuranceRate * $course);
+        $insuranceCosts = $insuranceSum / $insuranceRate * $course;
 
         $waybillData = [
             // Общие данные
