@@ -218,8 +218,7 @@ class WaybillService
             self::deleteWaybillFile($waybill->file_path);
         }
 
-        // Генерируем новый PDF
-        $fileName = self::generatePdf($waybillData);
+        
 
         // Обновляем данные накладной
         $waybill->setAttributes([
@@ -237,6 +236,9 @@ class WaybillService
             self::deleteWaybillFile($fileName);
             throw new Exception('Ошибка при обн��влении накладной в БД: ' . json_encode($waybill->errors));
         }
+        
+        // Генерируем новый PDF
+        $fileName = self::generatePdf($waybillData);
 
         return $waybill;
     }
