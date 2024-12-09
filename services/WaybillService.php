@@ -240,7 +240,7 @@ class WaybillService
 
 
 
-        return self::getByOrderId($orderId);
+        return self::getByOrderId($waybill->order_id);
     }
 
     /**
