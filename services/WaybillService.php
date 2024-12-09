@@ -218,7 +218,8 @@ class WaybillService
             self::deleteWaybillFile($waybill->file_path);
         }
 
-        
+        // Генерируем новый PDF
+        $fileName = self::generatePdf($waybillData);
 
         // Обновляем данные накладной
         $waybill->setAttributes([
@@ -232,13 +233,11 @@ class WaybillService
             'date_of_production' => isset($data['date_of_production']) ? date('Y-m-d H:i:s', strtotime($data['date_of_production'])) : $waybill->date_of_production,
         ]);
 
+        $waybill->save();
         if (!$waybill->save()) {
             self::deleteWaybillFile($fileName);
             throw new Exception('Ошибка при обн��влении накладной в БД: ' . json_encode($waybill->errors));
         }
-        
-        // Генерируем новый PDF
-        $fileName = self::generatePdf($waybillData);
 
         return $waybill;
     }
