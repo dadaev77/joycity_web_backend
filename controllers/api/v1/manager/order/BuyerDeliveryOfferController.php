@@ -109,9 +109,16 @@ class BuyerDeliveryOfferController extends ManagerController
                 'manager_id' => $user->id
             ]);
 
-            // Получаем актуальный курс
-            $rate = Rate::find()->orderBy(['id' => SORT_DESC])->one();
-            $waybillData['course'] = $rate ? $rate->USD : 1;
+            $firstAttachment = $order->getFirstAttachment();
+            $uploadDir = Yii::getAlias('@webroot/uploads/');
+            if ($firstAttachment && file_exists($uploadDir.$firstAttachment->path)) {
+                $fileContents = file_get_contents($uploadDir.$firstAttachment->path);
+                $base64Image = 'data:' . $firstAttachment->mime_type . ';base64,' . base64_encode($fileContents);
+                $waybillData['first_attachment'] = $base64Image;
+            } else {
+                $waybillData['first_attachment'] = null; // Если файла нет или он недоступен
+            }
+
 
             // Создаем накладную через сервис
             try {
