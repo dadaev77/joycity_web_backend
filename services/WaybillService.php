@@ -4,6 +4,7 @@ namespace app\services;
 
 use app\models\Order;
 use app\models\Waybill;
+use app\services\RateService;
 use Mpdf\Mpdf;
 use Yii;
 use yii\base\Exception;
@@ -12,7 +13,6 @@ use app\models\User;
 use app\models\TypeDelivery;
 use app\models\BuyerDeliveryOffer;
 use app\services\UserActionLogService as Log;
-use app\services\RateService;
 
 class WaybillService
 {
@@ -176,8 +176,8 @@ class WaybillService
         // Курс и страховка
         $course = $waybill->course;
         $insuranceRate = 0.01;
-        $insuranceSum = $bdo->price_product;
-        $insuranceCosts = $insuranceSum / $course *$insuranceRate ;
+        $insuranceSumCNY = RateService::convertValue(floatval($bdo->price_product ?? 0), $bdo->currency, 'CNY');
+        $insuranceCosts = $insuranceSumCNY / $course *$insuranceRate;
 
         $waybillData = [
             // Общие данные
@@ -190,27 +190,28 @@ class WaybillService
             // Доставка
             'departure_city' => 'Иу',
             'destination_city' => 'Москва',
-            'date_of_production' => date('Y-m-d'), // TODO: заменить на дату подтверждения
+            'date_of_production' => $data['date_of_production'],
             'delivery_type' => self::getDeliveryType($data),
-            'course' => $waybill->course,
+            'course' => $data['course'],
             'assortment' => Order::findOne($bdo->order_id)->subcategory->ru_name ?? 'Отсутствует',
-            'price_per_kg' => $waybill->price_per_kg,
-            'insurance_sum_yuan' => $insuranceSum,
+            'price_per_kg' => $data['price_per_kg'],
+            'insurance_sum_yuan' => $insuranceSumCNY,
             'china_advance_usd' => floatval($data['china_advance'] ?? 0),
             'china_payment_usd' => floatval($data['china_payment'] ?? 0),
             'volume' => $volume,
             'weight' => $weight,
             'insurance_rate' => $insuranceRate,
-            'package_expenses' => floatval($data['package_expenses'] ?? 0),
+            'package_expenses' => floatval($bdo['package_expenses'] ?? 0),
             'weight_costs' => $weightCosts,
             'insurance_costs' => $insuranceCosts,
             'total_pairs' => isset($data['total_number_pairs']) ? intval($data['total_number_pairs']) : 0,
             'total_customs_duty' => isset($data['total_customs_duty']) ? floatval($data['total_customs_duty']) : 0,
             'volume_costs' => isset($data['volume_costs']) ? floatval($data['volume_costs']) : 0,
-            'total_quantity' => intval($data['amount_of_space'] ?? 0),
+            'total_quantity' => intval($bdo->amount_of_space ?? 0),
             'approved_by' => $manager ? $manager->name : '',
             'executor' => 'JoyCity Company',
-            'total_payment' => floatval($data['package_expenses'] ?? 0) + $weightCosts + $insuranceCosts,
+            'total_payment' => floatval($bdo->package_expenses ?? 0) + $weightCosts + $insuranceCosts,
+            'first_attachment' => $data['first_attachment'],
         ];
 
         // Удаляем старый файл
@@ -235,7 +236,7 @@ class WaybillService
 
         if (!$waybill->save()) {
             self::deleteWaybillFile($fileName);
-            throw new Exception('Ошибка при обн��влении накладной в БД: ' . json_encode($waybill->errors));
+            throw new Exception('Ошибка при обновлении накладной в БД: ' . json_encode($waybill->errors));
         }
 
 
