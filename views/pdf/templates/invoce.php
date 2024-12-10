@@ -119,7 +119,7 @@
                 <td>Сумма страхования(¥)</td>
                 <td><?= number_format($data['insurance_sum_yuan'], 2) ?></td>
                 <td>Страховая ставка</td>
-                <td><?= number_format($data['insurance_rate'], 2) ?></td>
+                <td><?= number_format($data['insurance_rate'] * 100, 2) ?>%</td>
                 <td>Расходы на страхование($)</td>
                 <td colspan="3"><?= number_format($data['insurance_costs'], 2) ?></td>
             </tr>

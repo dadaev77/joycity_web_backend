@@ -18,7 +18,7 @@ class WaybillService
 {
     /**
      * Создает накладную для заказа
-     * 
+     *
      * @param array $data Данные для накладной
      * @return Waybill
      * @throws Exception
@@ -59,7 +59,7 @@ class WaybillService
         $waybillData = [
             'order_id' => $data['order_id'],
             'waybill_number' => $waybillNumber,
-            'sender_name' => $buyer ? $buyer->name : 'не ууказано',
+            'sender_name' => $buyer ? $buyer->name : 'не указано',
             'sender_phone' => $buyer ? $buyer->phone_number : '',
             'recipient_name' => $client ? $client->name : '',
             'recipient_phone' => $client ? $client->phone_number : '',
@@ -149,7 +149,7 @@ class WaybillService
 
     /**
      * Обновляет существующую накладную
-     * 
+     *
      * @param Waybill $waybill Существующая накладная
      * @param array $data Новые данные
      * @return Waybill
@@ -245,7 +245,7 @@ class WaybillService
 
     /**
      * Получает накладную по ID заказа
-     * 
+     *
      * @param int $orderId ID заказа
      * @return Waybill
      * @throws NotFoundHttpException
@@ -266,7 +266,7 @@ class WaybillService
 
     /**
      * Блокирует возможность редактирования накладной
-     * 
+     *
      * @param int $orderId ID заказа
      * @return Waybill
      * @throws Exception
@@ -285,7 +285,7 @@ class WaybillService
 
     /**
      * Форматирует путь к файлу накладной для отдачи клиенту
-     * 
+     *
      * @param Waybill $waybill Накладная
      * @return Waybill
      */
@@ -297,7 +297,7 @@ class WaybillService
 
     /**
      * Генерирует PDF файл накладной
-     * 
+     *
      * @param array $data Данные для накладной
      * @return string Имя сгенерированного файла
      * @throws Exception
@@ -338,7 +338,7 @@ class WaybillService
 
     /**
      * Проверяет и создает директорию для накладных если её нет
-     * 
+     *
      * @param string $uploadDir Путь к директории
      * @throws Exception
      */
@@ -358,7 +358,7 @@ class WaybillService
 
     /**
      * Удаляет файл накладной
-     * 
+     *
      * @param string $fileName Имя файла
      */
     private static function deleteWaybillFile(string $fileName): void
