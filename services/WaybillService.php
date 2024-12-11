@@ -268,6 +268,7 @@ class WaybillService
         if (!$waybill) {
             throw new NotFoundHttpException('Накладная не найдена');
         }
+
         return $waybill;
     }
 
