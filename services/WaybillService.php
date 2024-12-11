@@ -194,6 +194,8 @@ class WaybillService
         $client = User::findOne($data['client_id']);
         $manager = User::findOne($data['manager_id']);
 
+        $order = Order::findOne($data['order_id']);
+        $product = \app\models\Product::findOne($order->product_id);
         $waybillAttachment = '';
         try {
             if ($product) {
@@ -217,6 +219,7 @@ class WaybillService
             Log::danger('Error: ' . $e->getMessage());
             $waybillAttachment = '';
         }
+
         $waybillAttachment = base64_encode(file_get_contents(Yii::getAlias('@webroot') . $waybillAttachment));
 
         // Расчет объема
