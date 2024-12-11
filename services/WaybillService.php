@@ -180,7 +180,7 @@ class WaybillService
             $waybillAttachment = $order->getAttachments()->one()->path;
         }
 
-        $waybillAttachment = base64_encode(file_get_contents('/attachments/' . $waybillAttachment));
+        $waybillAttachment = base64_encode(file_get_contents($waybillAttachment));
 
         // Расчет объема
         $volume = isset($bdo->product_height, $bdo->product_width, $bdo->product_depth, $bdo->amount_of_space)
