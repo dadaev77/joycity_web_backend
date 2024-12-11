@@ -34,14 +34,20 @@ class WaybillService
         $waybillAttachment = '';
         $order = Order::findOne($data['order_id']);
         $product = \app\models\Product::findOne($order->product_id);
-        if ($product->getAttachments()->exists()) {
-            $waybillAttachment = $product->getAttachments()->one()->path;
-        }
 
-        if ($order->getAttachments()->exists()) {
-            $waybillAttachment = $order->getAttachments()->one()->path;
+        try {
+            if ($product->getAttachments()->exists()) {
+                $waybillAttachment = $product->getAttachments()->one()->path;
+            }
+
+            if ($order->getAttachments()->exists()) {
+                $waybillAttachment = $order->getAttachments()->one()->path;
+            }
+            $waybillAttachment = base64_encode(file_get_contents(Yii::getAlias('@webroot') . $waybillAttachment));
+        } catch (Exception $e) {
+            Log::danger('Error: ' . $e->getMessage());
+            $waybillAttachment = '';
         }
-        $waybillAttachment = base64_encode(file_get_contents(Yii::getAlias('@webroot') . $waybillAttachment));
 
         // Расчет объема
         $volume = isset($data['product_height'], $data['product_width'], $data['product_depth'], $data['amount_of_space'])
