@@ -58,17 +58,6 @@ class WaybillController extends ManagerController
                     $order->category->name;
             }
 
-            $firstAttachment = $order->getFirstAttachment();
-
-            $uploadDir = Yii::getAlias('@webroot/uploads/');
-            if ($firstAttachment && file_exists($uploadDir.$firstAttachment->path)) {
-                $fileContents = file_get_contents($uploadDir.$firstAttachment->path);
-                $base64Image = 'data:' . $firstAttachment->mime_type . ';base64,' . base64_encode($fileContents);
-                $data['first_attachment'] = $base64Image;
-            } else {
-                $data['first_attachment'] = null; // Если файла нет или он недоступен
-            }
-
             $waybill = WaybillService::update($order->waybill, $data);
 
             return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
