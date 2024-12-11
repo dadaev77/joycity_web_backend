@@ -171,7 +171,7 @@ class WaybillService
         if (!$order) {
             throw new NotFoundHttpException('Заказ не найден');
         }
-
+        Log::info(json_encode($order->firstAttachment));
         // Расчет объема
         $volume = isset($bdo->product_height, $bdo->product_width, $bdo->product_depth, $bdo->amount_of_space)
             ? ($bdo->product_height / 100) * ($bdo->product_width / 100) * ($bdo->product_depth / 100) * $bdo->amount_of_space
