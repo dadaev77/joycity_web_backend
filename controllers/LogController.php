@@ -53,9 +53,9 @@ class LogController extends Controller
     public function actionIndex()
     {
         // Читаем и форматируем логи
-        $logs = $this->formatLogs(self::LOG_FILE);
+        $logs = $this->formatSystemLogs(self::LOG_FILE);
         $frontLogs = $this->formatFrontendLogs(self::FRONT_LOG_FILE);
-        $actionLogs = $this->formatSystemLogs(self::ACTION_LOG_FILE);
+        $actionLogs = $this->formatActionLogs(self::ACTION_LOG_FILE);
 
         // Получаем данные моделей
         $orders = Order::find()
@@ -91,61 +91,6 @@ class LogController extends Controller
 
         $attachments = array_diff(scandir(Yii::getAlias('@webroot/attachments')), ['.', '..', '.DS_Store', '.gitignore']);
 
-        // Список таблиц для очистки
-        $allowedTables = [
-            'app_option',
-            'attachment',
-            'buyer_delivery_offer',
-            'buyer_offer',
-            'category',
-            'chat',
-            'chat_translate',
-            'chat_user',
-            'delivery_point_address',
-            'feedback_buyer',
-            'feedback_buyer_link_attachment',
-            'feedback_product',
-            'feedback_product_link_attachment',
-            'feedback_user',
-            'feedback_user_link_attachment',
-            'fulfillment_inspection_report',
-            'fulfillment_marketplace_transaction',
-            'fulfillment_offer',
-            'fulfillment_packaging_labeling',
-            'fulfillment_stock_report',
-            'fulfillment_stock_report_link_attachment',
-            'migration',
-            'notification',
-            'order',
-            'order_distribution',
-            'order_link_attachment',
-            'order_rate',
-            'order_tracking',
-            'packaging_report_link_attachment',
-            'privacy_policy',
-            'product',
-            'product_inspection_report',
-            'product_link_attachment',
-            'product_stock_report',
-            'product_stock_report_link_attachment',
-            'rate',
-            'type_delivery',
-            'type_delivery_link_category',
-            'type_delivery_point',
-            'type_delivery_price',
-            'type_packaging',
-            'user',
-            'user_link_category',
-            'user_link_type_delivery',
-            'user_link_type_packaging',
-            'user_settings',
-            'user_verification_request',
-            'waybill',
-        ];
-
-        $response = Yii::$app->response;
-        $response->format = Response::FORMAT_HTML;
-
         return $this->renderPartial('@app/views/raw/log', [
             'logs' => $logs,
             'frontLogs' => $frontLogs,
@@ -158,7 +103,7 @@ class LogController extends Controller
             'buyerDeliveryOffers' => $buyerDeliveryOffers,
             'attachments' => $attachments,
             'tables' => $this->getAvailableTables(),
-            'allowedTables' => $allowedTables, // Добавляем список таблиц
+            'allowedTables' => $this->getAllowedTables(),
         ]);
     }
 
@@ -294,66 +239,67 @@ class LogController extends Controller
     /**
      * Форматирование системных логов
      */
-    private function formatSystemLogs($content)
+    private function formatSystemLogs($filePath)
     {
-        $lines = explode("\n", $content);
-        $formattedLines = [];
-
-        foreach ($lines as $line) {
-            if (empty(trim($line))) continue;
-
-            // Подсвечиваем уровни логов и временные метки
-            $line = preg_replace(
-                [
-                    '/\[([\d\-\s:]+)\]/',
-                    '/(ERROR|CRITICAL|ALERT|EMERGENCY)([^<\n]*)/i',
-                    '/(WARNING|WARN)([^<\n]*)/i',
-                    '/(INFO|NOTICE|DEBUG)([^<\n]*)/i',
-                    '/(\[[\w-]+\])/'
-                ],
-                [
-                    '<span class="text-muted">[$1]</span>',
-                    '<span class="text-danger">$1$2</span>',
-                    '<span class="text-warning">$1$2</span>',
-                    '<span class="text-info">$1$2</span>',
-                    '<span class="text-secondary">$1</span>'
-                ],
-                htmlspecialchars($line)
-            );
-
-            $formattedLines[] = '<div class="log-line">' . $line . '</div>';
+        if (!file_exists($filePath)) {
+            return 'Файл лога не найден';
         }
 
-        return implode("\n", $formattedLines);
+        $content = file_get_contents($filePath);
+        if ($content === false) {
+            return 'Ошибка чтения файла';
+        }
+
+        // Подсвечиваем ошибки и предупреждения
+        $content = preg_replace(
+            [
+                '/(ERROR[^<\n]*)/i',
+                '/(WARNING[^<\n]*)/i',
+                '/(INFO[^<\n]*)/i',
+                '/(\[[\d\-\s:]+\])/'
+            ],
+            [
+                '<span class="text-danger">$1</span>',
+                '<span class="text-warning">$1</span>',
+                '<span class="text-info">$1</span>',
+                '<span class="text-secondary">$1</span>'
+            ],
+            htmlspecialchars($content)
+        );
+
+        return nl2br($content);
     }
 
     /**
      * Форматирование фронтенд логов
      */
-    private function formatFrontendLogs($content)
+    private function formatFrontendLogs($filePath)
     {
-        if (!file_exists($content)) {
+        if (!file_exists($filePath)) {
             return 'Файл лога не найден';
         }
 
-        $lines = file($content, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-        if ($lines === false) {
-            return 'Ошибка чтения файла лога';
+        $content = file_get_contents($filePath);
+        if ($content === false) {
+            return 'Ошибка чтения файла';
         }
 
+        $lines = explode("\n", $content);
         $formattedLogs = [];
+
         foreach ($lines as $line) {
+            if (empty(trim($line))) continue;
+
+            // Извлекаем временную метку и JSON
             if (preg_match('/^\[[-\s]+\]\s*\[[-\s]+\]\s*\[([\d\-\s:]+)\]\s*\[[-\s]+\]\s*\[[-\s]+\]\s*<pre class="format">(.*?)<\/pre>$/s', $line, $matches)) {
                 $timestamp = $matches[1];
                 $jsonStr = $matches[2];
 
                 // Декодируем JSON
                 $data = json_decode($jsonStr, true);
-                if ($data === null) {
-                    continue;
-                }
+                if ($data === null) continue;
 
-                // Определяем тип лога (error/info)
+                // Определяем тип лога
                 $logType = isset($data['error']) ? 'error' : 'info';
                 $logClass = $logType === 'error' ? 'bg-danger bg-opacity-10 border-danger' : 'bg-info bg-opacity-10 border-info';
 
@@ -369,7 +315,9 @@ class LogController extends Controller
                     if (json_last_error() === JSON_ERROR_NONE) {
                         $request = '<div class="mt-2">
                             <strong>Request:</strong>
-                            <pre class="mb-0 mt-1">' . json_encode($requestData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) . '</pre>
+                            <pre class="mb-0 mt-1"><code class="language-json">' .
+                            json_encode($requestData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) .
+                            '</code></pre>
                         </div>';
                     }
                 }
@@ -379,7 +327,9 @@ class LogController extends Controller
                 if (isset($data['response'])) {
                     $response = '<div class="mt-2">
                         <strong>Response:</strong>
-                        <pre class="mb-0 mt-1">' . json_encode($data['response'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) . '</pre>
+                        <pre class="mb-0 mt-1"><code class="language-json">' .
+                        json_encode($data['response'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) .
+                        '</code></pre>
                     </div>';
                 }
 
@@ -417,61 +367,41 @@ class LogController extends Controller
             }
         }
 
-        return implode("\n", $formattedLogs);
+        return empty($formattedLogs) ? 'Нет логов' : implode("\n", $formattedLogs);
     }
 
     /**
      * Форматирование логов действий
      */
-    private function formatActionLogs($content)
+    private function formatActionLogs($filePath)
     {
-        $lines = explode("\n", $content);
-        $formattedLines = [];
-
-        foreach ($lines as $line) {
-            if (empty(trim($line))) continue;
-
-            // Извлекаем email, дату и сообщение
-            if (preg_match('/\[-\]\s*\[-\]\s*([^\s]+)\s+\[-\]\s*\[-\]\s*([\d\-\s:]+)\s+\[-\]\s*\[-\]\s*(.+)$/s', $line, $matches)) {
-                $email = $matches[1];
-                $timestamp = $matches[2];
-                $message = $matches[3];
-
-                // Проверяем, содержит ли сообщение JSON
-                if (preg_match('/(.*?)\s+(?:params|response):\s+(\{.+\})$/s', $message, $jsonMatches)) {
-                    $action = $jsonMatches[1];
-                    $jsonData = json_decode($jsonMatches[2], true);
-                    if ($jsonData !== null) {
-                        $jsonFormatted = json_encode($jsonData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-                        $message = $action . "\n" . $jsonFormatted;
-                    }
-                }
-
-                // Определяем класс для разных типов сообщений
-                $messageClass = 'text-primary';
-                if (stripos($message, 'error') !== false) {
-                    $messageClass = 'text-danger';
-                } elseif (stripos($message, 'warning') !== false) {
-                    $messageClass = 'text-warning';
-                }
-
-                $formattedLines[] = sprintf(
-                    '<div class="log-line">
-                        <span class="text-muted">[%s]</span>
-                        <span class="text-info">%s</span>
-                        <span class="%s">%s</span>
-                    </div>',
-                    htmlspecialchars($timestamp),
-                    htmlspecialchars($email),
-                    $messageClass,
-                    nl2br(htmlspecialchars($message))
-                );
-                continue;
-            }
-            $formattedLines[] = '<div class="log-line">' . htmlspecialchars($line) . '</div>';
+        if (!file_exists($filePath)) {
+            return 'Файл лога не найден';
         }
 
-        return implode("\n", $formattedLines);
+        $content = file_get_contents($filePath);
+        if ($content === false) {
+            return 'Ошибка чтения файла';
+        }
+
+        // Подсвечиваем временные метки и действия
+        $content = preg_replace(
+            [
+                '/(\[[\d\-\s:]+\])/',
+                '/(INFO|DEBUG):/i',
+                '/(ERROR|CRITICAL|ALERT|EMERGENCY):/i',
+                '/(WARNING|WARN):/i'
+            ],
+            [
+                '<span class="text-secondary">$1</span>',
+                '<span class="text-info">$1:</span>',
+                '<span class="text-danger">$1:</span>',
+                '<span class="text-warning">$1:</span>'
+            ],
+            htmlspecialchars($content)
+        );
+
+        return nl2br($content);
     }
 
     /**
