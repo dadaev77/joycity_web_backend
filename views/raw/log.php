@@ -32,17 +32,22 @@ use app\models\Order;
             overflow-y: auto;
         }
 
-        /* Стили для системных логов */
+        /* Стили для строк лога */
         .log-line {
-            padding: 4px 8px;
+            padding: 8px;
             border-radius: 4px;
-            margin-bottom: 2px;
+            margin-bottom: 4px;
             white-space: pre-wrap;
             word-wrap: break-word;
+            background: rgba(255, 255, 255, 0.02);
         }
 
         .log-line:hover {
             background: rgba(255, 255, 255, 0.05);
+        }
+
+        .log-line span {
+            margin-right: 10px;
         }
 
         /* Стили для фронтенд логов */
@@ -76,30 +81,6 @@ use app\models\Order;
         .log-entry pre code {
             background: transparent !important;
             padding: 0 !important;
-        }
-
-        /* Стили для логов действий */
-        .action-log {
-            margin-bottom: 8px;
-            padding: 8px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 4px;
-        }
-
-        .action-log:hover {
-            background: rgba(255, 255, 255, 0.08);
-        }
-
-        .action-description {
-            margin-top: 4px;
-            padding-left: 20px;
-        }
-
-        .action-description pre {
-            margin: 8px 0 0 0;
-            padding: 8px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 4px;
         }
 
         /* Цветовые стили */
@@ -921,7 +902,7 @@ use app\models\Order;
                         return;
                     }
 
-                    // Показываем прогресс
+                    // Показыва��м прогресс
                     cleanupProgress.classList.remove('d-none');
                     cleanupResults.innerHTML = '';
                     cleanupForm.querySelector('button[type="submit"]').disabled = true;

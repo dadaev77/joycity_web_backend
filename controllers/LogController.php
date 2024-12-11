@@ -381,31 +381,40 @@ class LogController extends Controller
         foreach ($lines as $line) {
             if (empty(trim($line))) continue;
 
-            // Ищем структуру лога действий: [timestamp] action: description
-            if (preg_match('/^\[([\d\-\s:]+)\]\s*([^:]+):\s*(.+)$/s', $line, $matches)) {
-                $timestamp = $matches[1];
-                $action = $matches[2];
-                $description = $matches[3];
+            // Извлекаем email, дату и сообщение
+            if (preg_match('/\[-\]\s*\[-\]\s*([^\s]+)\s+\[-\]\s*\[-\]\s*([\d\-\s:]+)\s+\[-\]\s*\[-\]\s*(.+)$/s', $line, $matches)) {
+                $email = $matches[1];
+                $timestamp = $matches[2];
+                $message = $matches[3];
 
-                // Пытаемся определить, является ли описание JSON-ом
-                $jsonData = json_decode($description);
-                if ($jsonData !== null) {
-                    $description = '<pre><code class="language-json">' .
-                        htmlspecialchars(json_encode($jsonData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)) .
-                        '</code></pre>';
-                } else {
-                    $description = htmlspecialchars($description);
+                // Проверяем, содержит ли сообщение JSON
+                if (preg_match('/(.*?)\s+(?:params|response):\s+(\{.+\})$/s', $message, $jsonMatches)) {
+                    $action = $jsonMatches[1];
+                    $jsonData = json_decode($jsonMatches[2], true);
+                    if ($jsonData !== null) {
+                        $jsonFormatted = json_encode($jsonData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                        $message = $action . "\n" . $jsonFormatted;
+                    }
+                }
+
+                // Определяем класс для разных типов сообщений
+                $messageClass = 'text-primary';
+                if (stripos($message, 'error') !== false) {
+                    $messageClass = 'text-danger';
+                } elseif (stripos($message, 'warning') !== false) {
+                    $messageClass = 'text-warning';
                 }
 
                 $formattedLines[] = sprintf(
-                    '<div class="action-log">
+                    '<div class="log-line">
                         <span class="text-muted">[%s]</span>
-                        <span class="text-primary">%s:</span>
-                        <div class="action-description">%s</div>
+                        <span class="text-info">%s</span>
+                        <span class="%s">%s</span>
                     </div>',
-                    $timestamp,
-                    htmlspecialchars($action),
-                    $description
+                    htmlspecialchars($timestamp),
+                    htmlspecialchars($email),
+                    $messageClass,
+                    nl2br(htmlspecialchars($message))
                 );
                 continue;
             }
