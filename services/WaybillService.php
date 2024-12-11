@@ -171,8 +171,6 @@ class WaybillService
         if (!$order) {
             throw new NotFoundHttpException('Заказ не найден');
         }
-        $firstAttachment = $order->getFirstAttachment();
-        $firstAttachment = base64_encode(file_get_contents($firstAttachment->file_path));
 
         // Расчет объема
         $volume = isset($bdo->product_height, $bdo->product_width, $bdo->product_depth, $bdo->amount_of_space)
@@ -224,7 +222,7 @@ class WaybillService
             'approved_by' => $manager ? $manager->name : '',
             'executor' => 'JoyCity Company',
             'total_payment' => floatval($bdo->package_expenses ?? 0) + $weightCosts + $insuranceCosts,
-            'first_attachment' => $firstAttachment,
+            'first_attachment' => 'asdsadasd',
         ];
 
         // Удаляем старый файл
