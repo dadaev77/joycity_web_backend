@@ -17,130 +17,45 @@ use app\models\Order;
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/json.min.js"></script>
     <style>
-        /* Общие стили для контейнера логов */
+        /* Общие стили */
         .log-container {
-            background: #1e1e1e;
-            color: #d4d4d4;
-            border-radius: 8px;
-            padding: 15px;
             font-family: 'Consolas', monospace;
             font-size: 14px;
             line-height: 1.5;
-            overflow-x: auto;
-            margin-bottom: 20px;
-            max-height: 600px;
+        }
+
+        /* Стили для карточек логов */
+        .log-entry {
+            box-shadow: 0 2px 4px rgba(0, 0, 0, .05);
+        }
+
+        .log-entry pre {
+            background: #f8f9fa;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 0;
+            font-size: 13px;
+            max-height: 300px;
             overflow-y: auto;
         }
 
-        /* Стили для строк лога */
-        .log-line {
-            padding: 8px;
-            border-radius: 4px;
-            margin-bottom: 4px;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            background: rgba(255, 255, 255, 0.02);
+        .log-entry .card-header {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
         }
 
-        .log-line:hover {
-            background: rgba(255, 255, 255, 0.05);
+        .log-entry .timestamp {
+            color: #6c757d;
+        }
+
+        .log-header {
+            color: #495057;
         }
 
         /* Стили для JSON */
-        .json-content {
-            padding: 12px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 4px;
-            font-family: 'Consolas', monospace;
-        }
-
-        .json-root {
-            padding-left: 0;
-        }
-
-        .json-block {
-            margin: 2px 0;
-            padding-left: 20px;
-        }
-
-        .json-block.json-error {
-            color: #ff6b6b;
-        }
-
-        .json-nested {
-            margin-left: 20px;
-            border-left: 1px solid rgba(255, 255, 255, 0.1);
-            padding-left: 10px;
-        }
-
-        .json-key {
-            color: #9cdcfe;
-            font-weight: 500;
-        }
-
-        .json-string {
-            color: #ce9178;
-            word-break: break-all;
-        }
-
-        .json-number {
-            color: #b5cea8;
-        }
-
-        .json-boolean {
-            color: #569cd6;
-        }
-
-        .json-null {
-            color: #569cd6;
-        }
-
-        /* Стили для фронтенд логов */
-        .log-entry {
-            margin-bottom: 10px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        .log-entry.error-log {
-            border-left: 4px solid #ff6b6b;
-        }
-
-        .log-entry.info-log {
-            border-left: 4px solid #4dabf7;
-        }
-
-        .log-timestamp {
-            padding: 4px 8px;
-            background: rgba(0, 0, 0, 0.2);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            color: #888;
-        }
-
-        /* Цветовые стили */
-        .text-danger {
-            color: #ff6b6b !important;
-        }
-
-        .text-warning {
-            color: #ffd93d !important;
-        }
-
-        .text-info {
-            color: #4dabf7 !important;
-        }
-
-        .text-primary {
-            color: #748ffc !important;
-        }
-
-        .text-muted {
-            color: #868e96 !important;
-        }
-
-        .text-secondary {
-            color: #868e96 !important;
+        .json-formatted {
+            white-space: pre-wrap;
+            word-wrap: break-word;
         }
 
         /* Стили для вкладок */
@@ -159,11 +74,29 @@ use app\models\Order;
             background: none;
         }
 
-        .log-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
+        /* Утилиты */
+        .bg-opacity-10 {
+            --bs-bg-opacity: 0.1;
+        }
+
+        /* Скроллбар */
+        pre::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        pre::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        pre::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        pre::-webkit-scrollbar-thumb:hover {
+            background: #555;
         }
     </style>
 </head>
@@ -254,7 +187,7 @@ use app\models\Order;
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" id="buyer-offers-tab" data-bs-toggle="tab" href="#buyer-offers-content" role="tab">
-                                    <i class="fa fa-handshake-o"></i> Предложения бай��ра
+                                    <i class="fa fa-handshake-o"></i> Предложения байра
                                 </a>
                             </li>
                             <li class="nav-item">
@@ -721,7 +654,7 @@ use app\models\Order;
             <div class="tab-pane fade" id="database-cleanup" role="tabpanel">
                 <div class="card">
                     <div class="card-body">
-                        <h5 class="card-title">Очистка базы данных</h5>
+                        <h5 class="card-title">��чистка базы данных</h5>
                         <div class="alert alert-warning">
                             <i class="fa fa-exclamation-triangle"></i>
                             Внимание! Эта операция необратима. Выберите таблицы, которые нужно очистить.
@@ -929,7 +862,7 @@ use app\models\Order;
                     const selectedTables = formData.getAll('tables[]');
 
                     if (selectedTables.length === 0) {
-                        alert('Выберите хотя бы одну таблицу ��ля очистки');
+                        alert('Выберите хотя бы одну таблицу для очистки');
                         return;
                     }
 
