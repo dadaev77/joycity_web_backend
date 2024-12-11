@@ -77,144 +77,54 @@ class RawController extends Controller
      */
     public function actionLog()
     {
-        // Получаем параметры пагинации
-        $page = Yii::$app->request->get('page', 1);
-        $pageSize = Yii::$app->request->get('per_page', 100);
+        // Читаем и форматируем логи
+        $logs = $this->formatLogs(self::LOG_FILE);
+        $frontLogs = $this->formatLogs(self::FRONT_LOG_FILE);
+        $actionLogs = $this->formatLogs(self::ACTION_LOG_FILE);
         
-        // Читаем и обрабатываем логи
-        $logs = $this->processLogFile(self::LOG_FILE, $page, $pageSize);
-        $frontLogs = $this->processLogFile(self::FRONT_LOG_FILE, $page, $pageSize);
-        $actionLogs = $this->processLogFile(self::ACTION_LOG_FILE, $page, $pageSize);
+        // Получаем модели
+        $clients = User::find()->where(['role' => 'client'])->orderBy(['id' => SORT_DESC])->all();
+        $managers = User::find()->where(['role' => 'manager'])->orderBy(['id' => SORT_DESC])->all();
+        $fulfillment = User::find()->where(['role' => 'fulfillment'])->orderBy(['id' => SORT_DESC])->all();
+        $buyers = User::find()->where(['role' => 'buyer'])->orderBy(['id' => SORT_DESC])->all();
+        $products = Product::find()->orderBy(['id' => SORT_DESC])->all();
+        $orders = OrderModel::find()->orderBy(['id' => SORT_DESC])->all();
         
-        // Получаем модели с пагинацией
-        $dataProviders = [
-            'clients' => new \yii\data\ActiveDataProvider([
-                'query' => User::find()->where(['role' => 'client'])->orderBy(['id' => SORT_DESC]),
-                'pagination' => ['pageSize' => 10],
-            ]),
-            'managers' => new \yii\data\ActiveDataProvider([
-                'query' => User::find()->where(['role' => 'manager'])->orderBy(['id' => SORT_DESC]),
-                'pagination' => ['pageSize' => 10],
-            ]),
-            'fulfillment' => new \yii\data\ActiveDataProvider([
-                'query' => User::find()->where(['role' => 'fulfillment'])->orderBy(['id' => SORT_DESC]),
-                'pagination' => ['pageSize' => 10],
-            ]),
-            'buyers' => new \yii\data\ActiveDataProvider([
-                'query' => User::find()->where(['role' => 'buyer'])->orderBy(['id' => SORT_DESC]),
-                'pagination' => ['pageSize' => 10],
-            ]),
-            'products' => new \yii\data\ActiveDataProvider([
-                'query' => Product::find()->orderBy(['id' => SORT_DESC]),
-                'pagination' => ['pageSize' => 10],
-            ]),
-            'orders' => new \yii\data\ActiveDataProvider([
-                'query' => OrderModel::find()->orderBy(['id' => SORT_DESC]),
-                'pagination' => ['pageSize' => 10],
-            ]),
-        ];
-
         $attachments = array_diff(scandir(Yii::getAlias('@webroot/attachments')), ['.', '..', '.DS_Store', '.gitignore']);
 
         $response = Yii::$app->response;
         $response->format = Response::FORMAT_HTML;
 
         return $this->renderPartial('log', [
-            'logs' => $logs['content'],
-            'logsPages' => $logs['pages'],
-            'frontLogs' => $frontLogs['content'],
-            'frontLogsPages' => $frontLogs['pages'],
-            'actionLogs' => $actionLogs['content'],
-            'actionLogsPages' => $actionLogs['pages'],
-            'dataProviders' => $dataProviders,
+            'logs' => $logs,
+            'frontLogs' => $frontLogs,
+            'actionLogs' => $actionLogs,
+            'clients' => $clients,
+            'managers' => $managers,
+            'fulfillment' => $fulfillment,
+            'buyers' => $buyers,
+            'products' => $products,
+            'orders' => $orders,
             'attachments' => $attachments,
             'tables' => $this->getAvailableTables(),
-            'currentPage' => $page,
-            'pageSize' => $pageSize
         ], false);
-    }
-
-    /**
-     * Обработка файла логов с пагинацией
-     */
-    private function processLogFile($filePath, $page, $pageSize)
-    {
-        if (!file_exists($filePath)) {
-            return [
-                'content' => 'Файл лога не найден',
-                'pages' => 0
-            ];
-        }
-
-        // Читаем файл и разбиваем на строки
-        $lines = file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-        
-        // Удаляем конфиденциальные данные
-        $lines = $this->removeConfidentialData($lines);
-        
-        // Считаем общее количество страниц
-        $totalPages = ceil(count($lines) / $pageSize);
-        
-        // Получаем нужную страницу
-        $offset = ($page - 1) * $pageSize;
-        $pageLines = array_slice($lines, $offset, $pageSize);
-        
-        // Форматируем логи
-        $formattedLogs = $this->formatLogs($pageLines);
-        
-        return [
-            'content' => $formattedLogs,
-            'pages' => $totalPages
-        ];
-    }
-
-    /**
-     * Удаление конфиденциальных данных из логов
-     */
-    private function removeConfidentialData($lines)
-    {
-        $keysToRemove = array_keys(array_intersect_key($_SERVER, array_flip(self::KEYS)));
-        foreach ($lines as &$line) {
-            foreach ($keysToRemove as $key) {
-                $line = preg_replace('/.*' . preg_quote($key, '/') . '.*/', '[REMOVED]', $line);
-            }
-        }
-        return $lines;
     }
 
     /**
      * Форматирование логов
      */
-    private function formatLogs($lines)
+    private function formatLogs($filePath)
     {
-        $formatted = '';
-        foreach ($lines as $line) {
-            // Экранируем специальные символы
-            $line = htmlspecialchars($line, ENT_QUOTES, 'UTF-8');
-            
-            // Добавляем подсветку для разных типов логов
-            if (strpos($line, 'ERROR') !== false) {
-                $line = '<span class="text-danger">' . $line . '</span>';
-            } elseif (strpos($line, 'WARNING') !== false) {
-                $line = '<span class="text-warning">' . $line . '</span>';
-            } elseif (strpos($line, 'INFO') !== false) {
-                $line = '<span class="text-info">' . $line . '</span>';
-            }
-            
-            // Форматируем JSON если он есть в строке
-            $line = $this->formatJsonInLine($line);
-            
-            $formatted .= $line . "<br>\n";
+        if (!file_exists($filePath)) {
+            return 'Файл лога не найден';
         }
-        return $formatted;
-    }
 
-    /**
-     * Форматирование JSON в строке лога
-     */
-    private function formatJsonInLine($line)
-    {
-        return preg_replace_callback('/({.+?})/', function($matches) {
+        // Читаем файл и удаляем конфиденциальные данные
+        $content = file_get_contents($filePath);
+        $content = $this->removeConfidentialData($content);
+        
+        // Форматируем JSON
+        $content = preg_replace_callback('/({.+?})/', function($matches) {
             $json = json_decode($matches[1], true);
             if ($json === null) {
                 return $matches[1];
@@ -222,7 +132,38 @@ class RawController extends Controller
             return '<pre class="d-inline"><code class="json">' . 
                    json_encode($json, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) . 
                    '</code></pre>';
-        }, $line);
+        }, $content);
+
+        // Подсвечиваем ошибки и предупреждения
+        $content = preg_replace(
+            [
+                '/(ERROR[^<\n]*)/i',
+                '/(WARNING[^<\n]*)/i',
+                '/(INFO[^<\n]*)/i',
+                '/(\[[\d\-\s:]+\])/'
+            ],
+            [
+                '<span class="text-danger">$1</span>',
+                '<span class="text-warning">$1</span>',
+                '<span class="text-info">$1</span>',
+                '<span class="text-secondary">$1</span>'
+            ],
+            $content
+        );
+
+        return nl2br($content);
+    }
+
+    /**
+     * Удаление конфиденциальных данных
+     */
+    private function removeConfidentialData($content)
+    {
+        $keysToRemove = array_keys(array_intersect_key($_SERVER, array_flip(self::KEYS)));
+        foreach ($keysToRemove as $key) {
+            $content = preg_replace('/.*' . preg_quote($key, '/') . '.*\n?/', '[REMOVED]', $content);
+        }
+        return $content;
     }
 
     /**
@@ -578,5 +519,71 @@ class RawController extends Controller
 
         Yii::$app->session->remove('twilio_deletion');
         Yii::$app->end();
+    }
+
+    /**
+     * Очистка логов
+     */
+    public function actionClearLogs()
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+        
+        $type = Yii::$app->request->post('type');
+        $filePath = null;
+        
+        switch ($type) {
+            case 'system':
+                $filePath = self::LOG_FILE;
+                break;
+            case 'front':
+                $filePath = self::FRONT_LOG_FILE;
+                break;
+            case 'action':
+                $filePath = self::ACTION_LOG_FILE;
+                break;
+            default:
+                return ['success' => false, 'message' => 'Неверный тип логов'];
+        }
+        
+        if ($filePath && file_exists($filePath)) {
+            file_put_contents($filePath, '');
+            return ['success' => true];
+        }
+        
+        return ['success' => false, 'message' => 'Файл лога не найден'];
+    }
+    
+    /**
+     * Получение логов через AJAX
+     */
+    public function actionGetLogs()
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+        
+        $type = Yii::$app->request->get('type');
+        $filePath = null;
+        
+        switch ($type) {
+            case 'system-logs':
+                $filePath = self::LOG_FILE;
+                break;
+            case 'front-logs':
+                $filePath = self::FRONT_LOG_FILE;
+                break;
+            case 'action-logs':
+                $filePath = self::ACTION_LOG_FILE;
+                break;
+            default:
+                return ['success' => false, 'message' => 'Неверный тип логов'];
+        }
+        
+        if ($filePath && file_exists($filePath)) {
+            return [
+                'success' => true,
+                'logs' => $this->formatLogs($filePath)
+            ];
+        }
+        
+        return ['success' => false, 'message' => 'Файл лога не найден'];
     }
 }

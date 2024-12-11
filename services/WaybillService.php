@@ -195,14 +195,27 @@ class WaybillService
         $manager = User::findOne($data['manager_id']);
 
         $waybillAttachment = '';
-        $order = Order::findOne($data['order_id']);
-        $product = \app\models\Product::findOne($order->product_id);
-        if ($product->getAttachments()->exists()) {
-            $waybillAttachment = $product->getAttachments()->one()->path;
-        }
-
-        if ($order->getAttachments()->exists()) {
-            $waybillAttachment = $order->getAttachments()->one()->path;
+        try {
+            if ($product) {
+                if ($product->getAttachments()->exists()) {
+                    $attachments = $product->getAttachments()->all();
+                    if (!empty($attachments)) {
+                        $waybillAttachment = $attachments[0]->path; // Берем первое изображение
+                    }
+                }
+            }
+            if ($order) {
+                if ($order->getAttachments()->exists()) {
+                    $attachments = $order->getAttachments()->all();
+                    if (!empty($attachments)) {
+                        $waybillAttachment = $attachments[0]->path; // Берем первое изображение
+                    }
+                }
+            }
+            $waybillAttachment = base64_encode(file_get_contents(Yii::getAlias('@webroot') . $waybillAttachment));
+        } catch (Exception $e) {
+            Log::danger('Error: ' . $e->getMessage());
+            $waybillAttachment = '';
         }
         $waybillAttachment = base64_encode(file_get_contents(Yii::getAlias('@webroot') . $waybillAttachment));
 

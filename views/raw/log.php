@@ -1,17 +1,29 @@
+<?php
+use yii\helpers\Html;
+use yii\helpers\Url;
+?>
+
 <!DOCTYPE html>
 <html lang="ru">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Logs</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/styles/default.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/highlight.min.js"></script>
-    <script>
-        hljs.highlightAll();
-    </script>
+    <title>Логи системы</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Highlight.js CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/styles/default.min.css" rel="stylesheet">
+    
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Highlight.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/highlight.min.js"></script>
+    <!-- Custom JS -->
+    <script src="/js/logs.js"></script>
     <style>
         p {
             font-size: 12px !important;
@@ -20,437 +32,316 @@
 </head>
 
 <body>
-    <div class="container-fluid py-4">
+    <div class="container-fluid mt-3">
         <div class="row">
-            <div class="col-12">
-                <div class="row">
-                    <div class="col-12">
-                        <ul class="nav nav-tabs" id="myTab" role="tablist">
-                            <!--
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link active" id="backend-tab" data-bs-toggle="tab" data-bs-target="#backend" type="button" role="tab" aria-controls="backend" aria-selected="true">Backend Logs</button>
-                            </li>
-                            -->
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link active" id="frontend-tab" data-bs-toggle="tab" data-bs-target="#frontend" type="button" role="tab" aria-controls="frontend" aria-selected="false">Frontend Logs</button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="invoices-tab" data-bs-toggle="tab" data-bs-target="#invoices" type="button" role="tab" aria-controls="invoices" aria-selected="false">Action Logs</button>
-                            </li>
-                            <!-- Add tabs for buyers list, clients list, manager list, fulfillment list, and products -->
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="users-tab" data-bs-toggle="tab" data-bs-target="#users" type="button" role="tab" aria-controls="users" aria-selected="false">Users</button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="products-tab" data-bs-toggle="tab" data-bs-target="#products" type="button" role="tab" aria-controls="products" aria-selected="false">Products</button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="orders-tab" data-bs-toggle="tab" data-bs-target="#orders" type="button" role="tab" aria-controls="orders" aria-selected="false">Orders</button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="dropdb-tab" data-bs-toggle="tab" data-bs-target="#dropdb" type="button" role="tab" aria-controls="dropdb" aria-selected="false">Drop DB</button>
-                            </li>
-                        </ul>
-                        <div class="tab-content py-4" id="myTabContent">
-                            <!--
-                            <div class="tab-pane fade show active" id="backend" role="tabpanel" aria-labelledby="backend-tab">
-                                <div style="white-space: wrap; word-break: break-all; font-size: 12px;">
-                                     < ? =  $logs   ? >
-                                </div>
+            <!-- Боковая панель -->
+            <div class="col-md-3">
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Навигация</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="nav flex-column nav-pills">
+                            <a class="nav-link active" href="#system-logs" data-toggle="pill">Системные логи</a>
+                            <a class="nav-link" href="#front-logs" data-toggle="pill">Фронтенд логи</a>
+                            <a class="nav-link" href="#action-logs" data-toggle="pill">Логи действий</a>
+                            <a class="nav-link" href="#models" data-toggle="pill">Модели</a>
+                            <a class="nav-link" href="#attachments" data-toggle="pill">Вложения</a>
+                            <a class="nav-link" href="#tables" data-toggle="pill">Таблицы</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Основной контент -->
+            <div class="col-md-9">
+                <div class="tab-content">
+                    <!-- Системные логи -->
+                    <div class="tab-pane fade show active" id="system-logs">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0">Системные логи</h5>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="clearLogs('system')">Очистить</button>
                             </div>
-                            -->
-                            <div class="tab-pane fade show active" id="frontend" role="tabpanel" aria-labelledby="frontend-tab">
-                                <div style="white-space: wrap; word-break: break-all; font-size: 12px;" id="frontend-logs">
-                                    <div class="mb-4">
-                                        <a href="/raw/clear-frontend-logs" class="btn btn-primary btn-sm">clear frontend logs</a>
-                                        
-                                        <!-- Пагинация для фронтенд логов -->
-                                        <div class="mt-3">
-                                            <?php if ($frontLogsPages > 1): ?>
-                                            <nav aria-label="Frontend logs pagination">
-                                                <ul class="pagination pagination-sm">
-                                                    <?php for ($i = 1; $i <= $frontLogsPages; $i++): ?>
-                                                    <li class="page-item <?= $i == $currentPage ? 'active' : '' ?>">
-                                                        <a class="page-link" href="?page=<?= $i ?>&per_page=<?= $pageSize ?>"><?= $i ?></a>
-                                                    </li>
-                                                    <?php endfor; ?>
-                                                </ul>
-                                            </nav>
-                                            <?php endif; ?>
-                                        </div>
-                                    </div>
-                                    <?= $frontLogs ?>
-                                </div>
+                            <div class="card-body">
+                                <div class="log-content"><?= $logs ?></div>
                             </div>
-                            
-                            <!-- Вкладка с пользователями -->
-                            <div class="tab-pane fade" id="users" role="tabpanel" aria-labelledby="users-tab">
-                                <div class="row">
-                                    <!-- Клиенты -->
-                                    <div class="col-md-6 mb-4">
-                                        <div class="card">
-                                            <div class="card-header">
-                                                <h5 class="card-title mb-0">Клиенты</h5>
-                                            </div>
-                                            <div class="card-body">
-                                                <?= \yii\grid\GridView::widget([
-                                                    'dataProvider' => $dataProviders['clients'],
-                                                    'columns' => [
-                                                        'id',
-                                                        'username',
-                                                        'email',
-                                                        'created_at:datetime',
-                                                        [
-                                                            'class' => 'yii\grid\ActionColumn',
-                                                            'template' => '{view}',
-                                                            'buttons' => [
-                                                                'view' => function ($url, $model) {
-                                                                    return \yii\helpers\Html::a(
-                                                                        '<i class="fas fa-eye"></i>',
-                                                                        ['/user/view', 'id' => $model->id],
-                                                                        ['class' => 'btn btn-sm btn-info']
-                                                                    );
-                                                                },
-                                                            ],
-                                                        ],
-                                                    ],
-                                                ]); ?>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Менеджеры -->
-                                    <div class="col-md-6 mb-4">
-                                        <div class="card">
-                                            <div class="card-header">
-                                                <h5 class="card-title mb-0">Менеджеры</h5>
-                                            </div>
-                                            <div class="card-body">
-                                                <?= \yii\grid\GridView::widget([
-                                                    'dataProvider' => $dataProviders['managers'],
-                                                    'columns' => [
-                                                        'id',
-                                                        'username',
-                                                        'email',
-                                                        'created_at:datetime',
-                                                        [
-                                                            'class' => 'yii\grid\ActionColumn',
-                                                            'template' => '{view}',
-                                                        ],
-                                                    ],
-                                                ]); ?>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                        </div>
+                    </div>
+
+                    <!-- Фронтенд логи -->
+                    <div class="tab-pane fade" id="front-logs">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0">Фронтенд логи</h5>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="clearLogs('front')">Очистить</button>
                             </div>
-                            
-                            <!-- Вкладка с товарами -->
-                            <div class="tab-pane fade" id="products" role="tabpanel" aria-labelledby="products-tab">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h5 class="card-title mb-0">Товары</h5>
-                                    </div>
+                            <div class="card-body">
+                                <div class="log-content"><?= $frontLogs ?></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Логи действий -->
+                    <div class="tab-pane fade" id="action-logs">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0">Логи действий</h5>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="clearLogs('action')">Очистить</button>
+                            </div>
+                            <div class="card-body">
+                                <div class="log-content"><?= $actionLogs ?></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Модели -->
+                    <div class="tab-pane fade" id="models">
+                        <div class="accordion" id="modelsAccordion">
+                            <!-- Клиенты -->
+                            <div class="card">
+                                <div class="card-header" id="clientsHeading">
+                                    <h2 class="mb-0">
+                                        <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#clientsCollapse">
+                                            Клиенты (<?= count($clients) ?>)
+                                        </button>
+                                    </h2>
+                                </div>
+                                <div id="clientsCollapse" class="collapse" data-parent="#modelsAccordion">
                                     <div class="card-body">
-                                        <?= \yii\grid\GridView::widget([
-                                            'dataProvider' => $dataProviders['products'],
-                                            'columns' => [
-                                                'id',
-                                                'name',
-                                                'price:currency',
-                                                'created_at:datetime',
-                                                [
-                                                    'attribute' => 'status',
-                                                    'format' => 'raw',
-                                                    'value' => function($model) {
-                                                        $statusClasses = [
-                                                            'active' => 'success',
-                                                            'inactive' => 'danger',
-                                                            'pending' => 'warning'
-                                                        ];
-                                                        $class = $statusClasses[$model->status] ?? 'secondary';
-                                                        return '<span class="badge bg-' . $class . '">' . $model->status . '</span>';
-                                                    }
-                                                ],
-                                                [
-                                                    'class' => 'yii\grid\ActionColumn',
-                                                    'template' => '{view} {update}',
-                                                ],
-                                            ],
-                                        ]); ?>
+                                        <div class="table-responsive">
+                                            <table class="table table-sm">
+                                                <thead>
+                                                    <tr>
+                                                        <th>ID</th>
+                                                        <th>Email</th>
+                                                        <th>Создан</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <?php foreach ($clients as $client): ?>
+                                                    <tr>
+                                                        <td><?= $client->id ?></td>
+                                                        <td><?= Html::encode($client->email) ?></td>
+                                                        <td><?= Yii::$app->formatter->asDatetime($client->created_at) ?></td>
+                                                    </tr>
+                                                    <?php endforeach; ?>
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                            
-                            <!-- Вкладка с заказами -->
-                            <div class="tab-pane fade" id="orders" role="tabpanel" aria-labelledby="orders-tab">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h5 class="card-title mb-0">Заказы</h5>
-                                    </div>
+
+                            <!-- Менеджеры -->
+                            <div class="card">
+                                <div class="card-header" id="managersHeading">
+                                    <h2 class="mb-0">
+                                        <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#managersCollapse">
+                                            Менеджеры (<?= count($managers) ?>)
+                                        </button>
+                                    </h2>
+                                </div>
+                                <div id="managersCollapse" class="collapse" data-parent="#modelsAccordion">
                                     <div class="card-body">
-                                        <?= \yii\grid\GridView::widget([
-                                            'dataProvider' => $dataProviders['orders'],
-                                            'columns' => [
-                                                'id',
-                                                [
-                                                    'attribute' => 'user_id',
-                                                    'value' => 'user.username',
-                                                ],
-                                                'total_amount:currency',
-                                                'created_at:datetime',
-                                                [
-                                                    'attribute' => 'status',
-                                                    'format' => 'raw',
-                                                    'value' => function($model) {
-                                                        $statusClasses = [
-                                                            'new' => 'info',
-                                                            'processing' => 'warning',
-                                                            'completed' => 'success',
-                                                            'cancelled' => 'danger'
-                                                        ];
-                                                        $class = $statusClasses[$model->status] ?? 'secondary';
-                                                        return '<span class="badge bg-' . $class . '">' . $model->status . '</span>';
-                                                    }
-                                                ],
-                                                [
-                                                    'class' => 'yii\grid\ActionColumn',
-                                                    'template' => '{view} {update}',
-                                                ],
-                                            ],
-                                        ]); ?>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="tab-pane fade" id="invoices" role="tabpanel" aria-labelledby="invoices-tab">
-                                <div class="row">
-                                    <style>
-                                        p {
-                                            margin-bottom: 0 !important;
-                                        }
-                                    </style>
-                                    <div class="col">
-                                        <?= $actionLogs ?>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="tab-pane fade" id="dropdb" role="tabpanel" aria-labelledby="dropdb-tab">
-                                <div class="container">
-                                    <div class="row">
-                                        <div class="col-12 mb-4">
-                                            <div class="card">
-                                                <div class="card-body">
-                                                    <h5 class="card-title">Delete Twilio Chats</h5>
-                                                    <button id="deleteTwilioChatsBtn" class="btn btn-danger">Delete All Twilio Chats</button>
-                                                    <div id="twilioProgressContainer" class="mt-3 d-none">
-                                                        <div class="progress mb-2">
-                                                            <div id="twilioProgressBar" class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-                                                        </div>
-                                                        <div id="twilioProgressMessages"></div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-12">
-                                            <form id="truncateForm" class="mt-3">
-                                                <div class="card">
-                                                    <div class="card-header d-flex justify-content-between align-items-center">
-                                                        <h5 class="mb-0">Select Tables to Truncate</h5>
-                                                        <div>
-                                                            <button type="button" class="btn btn-secondary btn-sm me-2" onclick="selectAllTables()">Select All</button>
-                                                            <button type="button" class="btn btn-secondary btn-sm" onclick="deselectAllTables()">Deselect All</button>
-                                                        </div>
-                                                    </div>
-                                                    <div class="card-body">
-                                                        <div class="row g-3">
-                                                            <?php foreach ($tables as $table) : ?>
-                                                                <div class="col-lg-4 col-md-6">
-                                                                    <div class="form-check">
-                                                                        <input class="form-check-input table-checkbox" type="checkbox" name="tables[]" value="<?= $table ?>" id="table-<?= $table ?>">
-                                                                        <label class="form-check-label" for="table-<?= $table ?>">
-                                                                            <?= $table ?>
-                                                                        </label>
-                                                                    </div>
-                                                                </div>
-                                                            <?php endforeach; ?>
-                                                        </div>
-                                                    </div>
-                                                    <div class="card-footer">
-                                                        <button type="submit" class="btn btn-danger" id="truncateBtn">
-                                                            Truncate Selected Tables
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </form>
-
-                                            <!-- Results Area -->
-                                            <div id="truncateResults" class="mt-4" style="display: none;">
-                                                <div class="card">
-                                                    <div class="card-header">
-                                                        <h5 class="mb-0">Operation Results</h5>
-                                                    </div>
-                                                    <div class="card-body">
-                                                        <div id="progressArea">
-                                                            <div class="progress mb-3">
-                                                                <div id="truncateProgress" class="progress-bar" role="progressbar" style="width: 0%"></div>
-                                                            </div>
-                                                        </div>
-                                                        <div id="resultsLog" class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                        <div class="table-responsive">
+                                            <table class="table table-sm">
+                                                <thead>
+                                                    <tr>
+                                                        <th>ID</th>
+                                                        <th>Email</th>
+                                                        <th>Создан</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <?php foreach ($managers as $manager): ?>
+                                                    <tr>
+                                                        <td><?= $manager->id ?></td>
+                                                        <td><?= Html::encode($manager->email) ?></td>
+                                                        <td><?= Yii::$app->formatter->asDatetime($manager->created_at) ?></td>
+                                                    </tr>
+                                                    <?php endforeach; ?>
+                                                </tbody>
+                                            </table>
                                         </div>
                                     </div>
                                 </div>
+                            </div>
 
-                                <script>
-                                    function selectAllTables() {
-                                        document.querySelectorAll('.table-checkbox').forEach(checkbox => {
-                                            checkbox.checked = true;
-                                        });
-                                    }
+                            <!-- Фулфилмент -->
+                            <div class="card">
+                                <div class="card-header" id="fulfillmentHeading">
+                                    <h2 class="mb-0">
+                                        <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#fulfillmentCollapse">
+                                            Фулфилмент (<?= count($fulfillment) ?>)
+                                        </button>
+                                    </h2>
+                                </div>
+                                <div id="fulfillmentCollapse" class="collapse" data-parent="#modelsAccordion">
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-sm">
+                                                <thead>
+                                                    <tr>
+                                                        <th>ID</th>
+                                                        <th>Email</th>
+                                                        <th>Создан</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <?php foreach ($fulfillment as $ff): ?>
+                                                    <tr>
+                                                        <td><?= $ff->id ?></td>
+                                                        <td><?= Html::encode($ff->email) ?></td>
+                                                        <td><?= Yii::$app->formatter->asDatetime($ff->created_at) ?></td>
+                                                    </tr>
+                                                    <?php endforeach; ?>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
-                                    function deselectAllTables() {
-                                        document.querySelectorAll('.table-checkbox').forEach(checkbox => {
-                                            checkbox.checked = false;
-                                        });
-                                    }
+                            <!-- Покупатели -->
+                            <div class="card">
+                                <div class="card-header" id="buyersHeading">
+                                    <h2 class="mb-0">
+                                        <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#buyersCollapse">
+                                            Покупатели (<?= count($buyers) ?>)
+                                        </button>
+                                    </h2>
+                                </div>
+                                <div id="buyersCollapse" class="collapse" data-parent="#modelsAccordion">
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-sm">
+                                                <thead>
+                                                    <tr>
+                                                        <th>ID</th>
+                                                        <th>Email</th>
+                                                        <th>Создан</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <?php foreach ($buyers as $buyer): ?>
+                                                    <tr>
+                                                        <td><?= $buyer->id ?></td>
+                                                        <td><?= Html::encode($buyer->email) ?></td>
+                                                        <td><?= Yii::$app->formatter->asDatetime($buyer->created_at) ?></td>
+                                                    </tr>
+                                                    <?php endforeach; ?>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
-                                    function addLogMessage(message, type = 'info') {
-                                        const resultsLog = document.getElementById('resultsLog');
-                                        const messageDiv = document.createElement('div');
-                                        messageDiv.className = `alert alert-${type} mb-2 py-1`;
-                                        messageDiv.textContent = message;
-                                        resultsLog.appendChild(messageDiv);
-                                        resultsLog.scrollTop = resultsLog.scrollHeight;
-                                    }
+                            <!-- Товары -->
+                            <div class="card">
+                                <div class="card-header" id="productsHeading">
+                                    <h2 class="mb-0">
+                                        <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#productsCollapse">
+                                            Товары (<?= count($products) ?>)
+                                        </button>
+                                    </h2>
+                                </div>
+                                <div id="productsCollapse" class="collapse" data-parent="#modelsAccordion">
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-sm">
+                                                <thead>
+                                                    <tr>
+                                                        <th>ID</th>
+                                                        <th>Название</th>
+                                                        <th>Создан</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <?php foreach ($products as $product): ?>
+                                                    <tr>
+                                                        <td><?= $product->id ?></td>
+                                                        <td><?= Html::encode($product->name) ?></td>
+                                                        <td><?= Yii::$app->formatter->asDatetime($product->created_at) ?></td>
+                                                    </tr>
+                                                    <?php endforeach; ?>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
-                                    document.getElementById('truncateForm').addEventListener('submit', async function(e) {
-                                        e.preventDefault();
+                            <!-- Заказы -->
+                            <div class="card">
+                                <div class="card-header" id="ordersHeading">
+                                    <h2 class="mb-0">
+                                        <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#ordersCollapse">
+                                            Заказы (<?= count($orders) ?>)
+                                        </button>
+                                    </h2>
+                                </div>
+                                <div id="ordersCollapse" class="collapse" data-parent="#modelsAccordion">
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-sm">
+                                                <thead>
+                                                    <tr>
+                                                        <th>ID</th>
+                                                        <th>Статус</th>
+                                                        <th>Создан</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <?php foreach ($orders as $order): ?>
+                                                    <tr>
+                                                        <td><?= $order->id ?></td>
+                                                        <td><?= Html::encode($order->status) ?></td>
+                                                        <td><?= Yii::$app->formatter->asDatetime($order->created_at) ?></td>
+                                                    </tr>
+                                                    <?php endforeach; ?>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-                                        const selectedTables = Array.from(document.querySelectorAll('.table-checkbox:checked')).map(cb => cb.value);
-                                        if (selectedTables.length === 0) {
-                                            alert('Please select at least one table');
-                                            return;
-                                        }
+                    <!-- Вложения -->
+                    <div class="tab-pane fade" id="attachments">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Вложения</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="list-group">
+                                    <?php foreach ($attachments as $attachment): ?>
+                                    <a href="<?= Url::to(['raw/download', 'file' => $attachment]) ?>" class="list-group-item list-group-item-action">
+                                        <?= Html::encode($attachment) ?>
+                                    </a>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-                                        if (!confirm('Are you sure you want to truncate selected tables? This action cannot be undone.')) {
-                                            return;
-                                        }
-
-                                        const truncateBtn = document.getElementById('truncateBtn');
-                                        const resultsArea = document.getElementById('truncateResults');
-                                        const progressBar = document.getElementById('truncateProgress');
-
-                                        truncateBtn.disabled = true;
-                                        resultsArea.style.display = 'block';
-                                        document.getElementById('resultsLog').innerHTML = '';
-
-                                        try {
-                                            for (let i = 0; i < selectedTables.length; i++) {
-                                                const table = selectedTables[i];
-                                                const progress = Math.round(((i + 1) / selectedTables.length) * 100);
-
-                                                try {
-                                                    const response = await fetch('/raw/truncate-table', {
-                                                        method: 'POST',
-                                                        headers: {
-                                                            'Content-Type': 'application/json',
-                                                        },
-                                                        body: JSON.stringify({
-                                                            table: table
-                                                        })
-                                                    });
-
-                                                    const result = await response.json();
-
-                                                    if (result.success) {
-                                                        addLogMessage(`✓ Table ${table} truncated successfully`, 'success');
-                                                    } else {
-                                                        addLogMessage(`✗ Error truncating ${table}: ${result.error}`, 'danger');
-                                                    }
-                                                } catch (error) {
-                                                    addLogMessage(`✗ Failed to truncate ${table}: ${error.message}`, 'danger');
-                                                }
-
-                                                progressBar.style.width = `${progress}%`;
-                                                progressBar.textContent = `${progress}%`;
-                                            }
-                                        } finally {
-                                            truncateBtn.disabled = false;
-                                            addLogMessage('Operation completed', 'info');
-                                        }
-                                    });
-                                </script>
-                                <script>
-                                    document.getElementById('deleteTwilioChatsBtn').addEventListener('click', async function() {
-                                        if (!confirm('Are you sure you want to delete all Twilio chats? This action cannot be undone.')) {
-                                            return;
-                                        }
-
-                                        const progressContainer = document.getElementById('twilioProgressContainer');
-                                        const progressBar = document.getElementById('twilioProgressBar');
-                                        const messagesContainer = document.getElementById('twilioProgressMessages');
-                                        this.disabled = true;
-                                        progressContainer.classList.remove('d-none');
-                                        messagesContainer.innerHTML = '';
-
-                                        try {
-                                            // Start the deletion process
-                                            const response = await fetch('/raw/delete-twilio-chats', {
-                                                method: 'POST',
-                                                headers: {
-                                                    'Content-Type': 'application/json',
-                                                }
-                                            });
-                                            const data = await response.json();
-                                            
-                                            if (!data.success) {
-                                                throw new Error(data.error || 'Failed to start deletion process');
-                                            }
-
-                                            // Connect to SSE for progress updates
-                                            const eventSource = new EventSource('/raw/twilio-deletion-progress');
-                                            
-                                            eventSource.onmessage = function(event) {
-                                                const data = JSON.parse(event.data);
-                                                
-                                                if (data.progress !== undefined) {
-                                                    progressBar.style.width = data.progress + '%';
-                                                    progressBar.setAttribute('aria-valuenow', data.progress);
-                                                }
-                                                
-                                                if (data.message) {
-                                                    const messageDiv = document.createElement('div');
-                                                    messageDiv.className = 'alert alert-' + (data.type || 'info') + ' mt-2';
-                                                    messageDiv.textContent = data.message;
-                                                    messagesContainer.prepend(messageDiv);
-                                                }
-                                                
-                                                if (data.completed) {
-                                                    eventSource.close();
-                                                    document.getElementById('deleteTwilioChatsBtn').disabled = false;
-                                                }
-                                            };
-                                            
-                                            eventSource.onerror = function() {
-                                                eventSource.close();
-                                                document.getElementById('deleteTwilioChatsBtn').disabled = false;
-                                                const messageDiv = document.createElement('div');
-                                                messageDiv.className = 'alert alert-danger mt-2';
-                                                messageDiv.textContent = 'Connection lost. Please try again.';
-                                                messagesContainer.prepend(messageDiv);
-                                            };
-                                        } catch (error) {
-                                            const messageDiv = document.createElement('div');
-                                            messageDiv.className = 'alert alert-danger mt-2';
-                                            messageDiv.textContent = error.message;
-                                            messagesContainer.prepend(messageDiv);
-                                            this.disabled = false;
-                                        }
-                                    });
-                                </script>
+                    <!-- Таблицы -->
+                    <div class="tab-pane fade" id="tables">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Таблицы базы данных</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="list-group">
+                                    <?php foreach ($tables as $table => $label): ?>
+                                    <a href="<?= Url::to(['raw/table', 'name' => $table]) ?>" class="list-group-item list-group-item-action">
+                                        <?= Html::encode($label) ?>
+                                    </a>
+                                    <?php endforeach; ?>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -458,6 +349,48 @@
             </div>
         </div>
     </div>
+
+    <style>
+        .log-content {
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .nav-pills .nav-link.active {
+            background-color: #007bff;
+        }
+        .card-header .btn-link {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .card-header .btn-link:hover {
+            color: #0056b3;
+            text-decoration: none;
+        }
+    </style>
+
+    <script>
+        function clearLogs(type) {
+            if (confirm('Вы уверены, что хотите очистить логи?')) {
+                $.post('<?= Url::to(['raw/clear-logs']) ?>', {type: type}, function(response) {
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                        alert('Ошибка при очистке логов');
+                    }
+                });
+            }
+        }
+
+        $(document).ready(function() {
+            // Инициализация подсветки кода
+            document.querySelectorAll('pre code').forEach((block) => {
+                hljs.highlightBlock(block);
+            });
+        });
+    </script>
 </body>
 
 </html>
