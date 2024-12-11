@@ -204,9 +204,9 @@ use app\models\Order;
                                                         <td><?= $order->id ?></td>
                                                         <td><span class="badge bg-<?= $order->status === Order::STATUS_COMPLETED ? 'success' : ($order->status === Order::STATUS_CREATED ? 'warning' : 'secondary') ?>"><?= $order->status ?></span></td>
                                                         <td><?= Yii::$app->formatter->asDatetime($order->created_at, 'php:d.m.Y H:i') ?></td>
-                                                        <td><?= \yii\helpers\Html::encode($order->product ? $order->product->name : '') ?></td>
-                                                        <td><?= Yii::$app->formatter->asCurrency($order->price) ?></td>
-                                                        <td><?= $order->quantity ?></td>
+                                                        <td><?= \yii\helpers\Html::encode($order->product_name_ru) ?></td>
+                                                        <td><?= Yii::$app->formatter->asCurrency($order->expected_price_per_item) ?></td>
+                                                        <td><?= $order->expected_quantity ?></td>
                                                         <td>
                                                             <button class="btn btn-sm btn-outline-info" data-bs-toggle="collapse" data-bs-target="#order-details-<?= $order->id ?>">
                                                                 <i class="fa fa-info-circle"></i>
@@ -357,9 +357,9 @@ use app\models\Order;
                                                         <td><?= \yii\helpers\Html::encode($user->email) ?></td>
                                                         <td><span class="badge bg-<?= $user->role === 'admin' ? 'danger' : ($user->role === 'manager' ? 'primary' : 'secondary') ?>"><?= $user->role ?></span></td>
                                                         <td>
-                                                            <?php if ($user->status == User::STATUS_DELETED): ?>
+                                                            <?php if ($user->is_deleted): ?>
                                                                 <span class="badge bg-danger">Удален</span>
-                                                            <?php elseif ($user->status == User::STATUS_ACTIVE): ?>
+                                                            <?php elseif ($user->is_verified): ?>
                                                                 <span class="badge bg-success">Активен</span>
                                                             <?php else: ?>
                                                                 <span class="badge bg-warning">Не верифицирован</span>
@@ -505,7 +505,7 @@ use app\models\Order;
                                                 <?php foreach ($buyerOffers as $offer): ?>
                                                     <tr>
                                                         <td><?= $offer->id ?></td>
-                                                        <td><?= $offer->code ?></td>
+                                                        <td><?= $offer->number ?></td>
                                                         <td><?= Yii::$app->formatter->asDate($offer->created_at) ?></td>
                                                         <td>
                                                             <button class="btn btn-sm btn-outline-info" data-bs-toggle="collapse" data-bs-target="#buyer-offer-details-<?= $offer->id ?>">
@@ -577,7 +577,7 @@ use app\models\Order;
                                                 <?php foreach ($buyerDeliveryOffers as $offer): ?>
                                                     <tr>
                                                         <td><?= $offer->id ?></td>
-                                                        <td><?= $offer->code ?></td>
+                                                        <td><?= $offer->number ?></td>
                                                         <td><?= Yii::$app->formatter->asDate($offer->created_at) ?></td>
                                                         <td>
                                                             <button class="btn btn-sm btn-outline-info" data-bs-toggle="collapse" data-bs-target="#buyer-delivery-offer-details-<?= $offer->id ?>">
