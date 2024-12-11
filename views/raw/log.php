@@ -421,7 +421,7 @@ use app\models\Order;
                                         <thead class="table-light">
                                             <tr>
                                                 <th>ID</th>
-                                                <th>Номер</th>
+
                                                 <th>Дата</th>
                                                 <th>Действия</th>
                                             </tr>
@@ -435,7 +435,6 @@ use app\models\Order;
                                                 <?php foreach ($waybills as $waybill): ?>
                                                     <tr>
                                                         <td><?= $waybill->id ?></td>
-                                                        <td><?= $waybill->number ?></td>
                                                         <td><?= Yii::$app->formatter->asDate($waybill->created_at) ?></td>
                                                         <td>
                                                             <button class="btn btn-sm btn-outline-info" data-bs-toggle="collapse" data-bs-target="#waybill-details-<?= $waybill->id ?>">
