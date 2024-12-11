@@ -17,6 +17,7 @@ use app\models\Order;
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/json.min.js"></script>
     <style>
+        /* Общие стили для контейнера логов */
         .log-container {
             background: #1e1e1e;
             color: #d4d4d4;
@@ -31,15 +32,44 @@ use app\models\Order;
             overflow-y: auto;
         }
 
+        /* Стили для системных логов */
+        .log-line {
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin-bottom: 2px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .log-line:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Стили для фронтенд логов */
         .log-entry {
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             background: rgba(255, 255, 255, 0.05);
             border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .log-entry.error-log {
+            border-left: 4px solid #ff6b6b;
+        }
+
+        .log-entry.info-log {
+            border-left: 4px solid #4dabf7;
+        }
+
+        .log-timestamp {
+            padding: 4px 8px;
+            background: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .log-entry pre {
             margin: 0;
-            padding: 10px;
+            padding: 8px;
             background: transparent;
         }
 
@@ -48,12 +78,31 @@ use app\models\Order;
             padding: 0 !important;
         }
 
-        .log-timestamp {
-            color: #888;
-            padding: 5px 10px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        /* Стили для логов действий */
+        .action-log {
+            margin-bottom: 8px;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
         }
 
+        .action-log:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .action-description {
+            margin-top: 4px;
+            padding-left: 20px;
+        }
+
+        .action-description pre {
+            margin: 8px 0 0 0;
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+
+        /* Цветовые стили */
         .text-danger {
             color: #ff6b6b !important;
         }
@@ -66,10 +115,19 @@ use app\models\Order;
             color: #4dabf7 !important;
         }
 
+        .text-primary {
+            color: #748ffc !important;
+        }
+
+        .text-muted {
+            color: #868e96 !important;
+        }
+
         .text-secondary {
             color: #868e96 !important;
         }
 
+        /* Стили для вкладок */
         .log-tabs .nav-link {
             color: #6c757d;
             border: none;
@@ -133,7 +191,7 @@ use app\models\Order;
             </li>
             <li class="nav-item">
                 <a class="nav-link" id="attachments-tab" data-bs-toggle="tab" href="#attachments" role="tab">
-                    <i class="fa fa-paperclip"></i> ��ложения
+                    <i class="fa fa-paperclip"></i> Вложения
                 </a>
             </li>
         </ul>
@@ -180,7 +238,7 @@ use app\models\Order;
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" id="buyer-offers-tab" data-bs-toggle="tab" href="#buyer-offers-content" role="tab">
-                                    <i class="fa fa-handshake-o"></i> Предложени�� байера
+                                    <i class="fa fa-handshake-o"></i> Предложения байера
                                 </a>
                             </li>
                             <li class="nav-item">
@@ -919,6 +977,37 @@ use app\models\Order;
                     cleanupResults.innerHTML = html;
                 });
             }
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            // Инициализация highlight.js
+            document.querySelectorAll('pre code').forEach((block) => {
+                hljs.highlightBlock(block);
+            });
+
+            // Автоматическое обновление подсветки при обновлении логов
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.addedNodes.length) {
+                        mutation.addedNodes.forEach((node) => {
+                            if (node.querySelectorAll) {
+                                node.querySelectorAll('pre code').forEach((block) => {
+                                    hljs.highlightBlock(block);
+                                });
+                            }
+                        });
+                    }
+                });
+            });
+
+            document.querySelectorAll('.log-container').forEach((container) => {
+                observer.observe(container, {
+                    childList: true,
+                    subtree: true
+                });
+            });
         });
     </script>
 </body>

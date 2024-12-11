@@ -268,7 +268,7 @@ class LogController extends Controller
     }
 
     /**
-     * Форматирование логов
+     * Форматирование логов в зависимости от типа
      */
     private function formatLogs($filePath)
     {
@@ -276,36 +276,86 @@ class LogController extends Controller
             return 'Файл лога не найден';
         }
 
-        // Читаем файл и удаляем конфиденциальные данные
         $content = file_get_contents($filePath);
         if ($content === false) {
             return 'Ошибка чтения файла лога';
         }
 
-        // Удаляем конфиденциальные данные
-        $content = $this->removeConfidentialData($content);
+        // Определяем тип лога по пути файла
+        if (strpos($filePath, 'front.log') !== false) {
+            return $this->formatFrontendLogs($content);
+        } elseif (strpos($filePath, 'action.log') !== false) {
+            return $this->formatActionLogs($content);
+        } else {
+            return $this->formatSystemLogs($content);
+        }
+    }
 
-        // Разбиваем на строки
+    /**
+     * Форматирование системных логов
+     */
+    private function formatSystemLogs($content)
+    {
         $lines = explode("\n", $content);
         $formattedLines = [];
 
         foreach ($lines as $line) {
             if (empty(trim($line))) continue;
 
-            // Проверяем, является ли строка JSON логом
-            if (preg_match('/^\[[-\s]+\]\s*\[[-\s]+\]\s*\[([\d\-\s:]+)\]\s*\[[-\s]+\]\s*\[[-\s]+\]\s*(\{.+\})$/', $line, $matches)) {
+            // Подсвечиваем уровни логов и временные метки
+            $line = preg_replace(
+                [
+                    '/\[([\d\-\s:]+)\]/',
+                    '/(ERROR|CRITICAL|ALERT|EMERGENCY)([^<\n]*)/i',
+                    '/(WARNING|WARN)([^<\n]*)/i',
+                    '/(INFO|NOTICE|DEBUG)([^<\n]*)/i',
+                    '/(\[[\w-]+\])/'
+                ],
+                [
+                    '<span class="text-muted">[$1]</span>',
+                    '<span class="text-danger">$1$2</span>',
+                    '<span class="text-warning">$1$2</span>',
+                    '<span class="text-info">$1$2</span>',
+                    '<span class="text-secondary">$1</span>'
+                ],
+                htmlspecialchars($line)
+            );
+
+            $formattedLines[] = '<div class="log-line">' . $line . '</div>';
+        }
+
+        return implode("\n", $formattedLines);
+    }
+
+    /**
+     * Форматирование фронтенд логов
+     */
+    private function formatFrontendLogs($content)
+    {
+        $lines = explode("\n", $content);
+        $formattedLines = [];
+
+        foreach ($lines as $line) {
+            if (empty(trim($line))) continue;
+
+            // Ищем временную метку и JSON в строке
+            if (preg_match('/^\[([\d\-\s:]+)\]\s*(\{.+\})$/s', $line, $matches)) {
                 $timestamp = $matches[1];
                 $jsonStr = $matches[2];
 
-                // Пытаемся отформатировать JSON
+                // Декодируем и форматируем JSON
                 $json = json_decode($jsonStr);
                 if ($json !== null) {
+                    // Определяем цвет в зависимости от наличия ошибки
+                    $errorClass = isset($json->error) ? 'error-log' : 'info-log';
+
                     $prettyJson = json_encode($json, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
                     $formattedLines[] = sprintf(
-                        '<div class="log-entry">
+                        '<div class="log-entry %s">
                             <div class="log-timestamp">[%s]</div>
                             <pre><code class="language-json">%s</code></pre>
                         </div>',
+                        $errorClass,
                         $timestamp,
                         htmlspecialchars($prettyJson)
                     );
@@ -313,37 +363,58 @@ class LogController extends Controller
                 }
             }
 
-            // Если это не JSON или невалидный JSON, форматируем как обычный лог
-            $line = preg_replace(
-                [
-                    '/(?<!>)(ERROR[^<\n]*)/i',
-                    '/(?<!>)(WARNING[^<\n]*)/i',
-                    '/(?<!>)(INFO[^<\n]*)/i',
-                    '/(?<!>)(\[[\d\-\s:]+\])/'
-                ],
-                [
-                    '<span class="text-danger">$1</span>',
-                    '<span class="text-warning">$1</span>',
-                    '<span class="text-info">$1</span>',
-                    '<span class="text-secondary">$1</span>'
-                ],
-                htmlspecialchars($line)
-            );
-            $formattedLines[] = $line;
+            // Если не JSON, форматируем как обычный лог
+            $formattedLines[] = '<div class="log-line">' . htmlspecialchars($line) . '</div>';
         }
 
-        // Добавляем скрипт для инициализации highlight.js
-        $result = implode("\n", $formattedLines);
-        $result .= "
-        <script>
-            document.addEventListener('DOMContentLoaded', (event) => {
-                document.querySelectorAll('pre code').forEach((block) => {
-                    hljs.highlightBlock(block);
-                });
-            });
-        </script>";
+        return implode("\n", $formattedLines);
+    }
 
-        return $result;
+    /**
+     * Форматирование логов действий
+     */
+    private function formatActionLogs($content)
+    {
+        $lines = explode("\n", $content);
+        $formattedLines = [];
+
+        foreach ($lines as $line) {
+            if (empty(trim($line))) continue;
+
+            // Ищем структуру лога действий: [timestamp] action: description
+            if (preg_match('/^\[([\d\-\s:]+)\]\s*([^:]+):\s*(.+)$/s', $line, $matches)) {
+                $timestamp = $matches[1];
+                $action = $matches[2];
+                $description = $matches[3];
+
+                // Пытаемся определить, является ли описание JSON-ом
+                $jsonData = json_decode($description);
+                if ($jsonData !== null) {
+                    $description = '<pre><code class="language-json">' .
+                        htmlspecialchars(json_encode($jsonData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)) .
+                        '</code></pre>';
+                } else {
+                    $description = htmlspecialchars($description);
+                }
+
+                $formattedLines[] = sprintf(
+                    '<div class="action-log">
+                        <span class="text-muted">[%s]</span>
+                        <span class="text-primary">%s:</span>
+                        <div class="action-description">%s</div>
+                    </div>',
+                    $timestamp,
+                    htmlspecialchars($action),
+                    $description
+                );
+                continue;
+            }
+
+            // Если строка не соответствует формату, выводим как есть
+            $formattedLines[] = '<div class="log-line">' . htmlspecialchars($line) . '</div>';
+        }
+
+        return implode("\n", $formattedLines);
     }
 
     /**
