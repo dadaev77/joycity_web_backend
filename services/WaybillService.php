@@ -172,8 +172,13 @@ class WaybillService
         $order = Order::findOne($data['order_id']);
         $product = \app\models\Product::findOne($order->product_id);
 
-        Log::info('product: ' . json_encode($product->getAttachments()->one()->path));
-        Log::info('order: ' . json_encode($order->getAttachments()->one()->path));
+        if ($product->getAttachments()) {
+            Log::info('product: ' . json_encode($product->getAttachments()->one()->path));
+        }
+
+        if ($order->getAttachments()) {
+            Log::info('order: ' . json_encode($order->getAttachments()->one()->path));
+        }
 
         // Расчет объема
         $volume = isset($bdo->product_height, $bdo->product_width, $bdo->product_depth, $bdo->amount_of_space)
