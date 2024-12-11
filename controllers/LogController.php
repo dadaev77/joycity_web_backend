@@ -103,8 +103,82 @@ class LogController extends Controller
             'buyerDeliveryOffers' => $buyerDeliveryOffers,
             'attachments' => $attachments,
             'tables' => $this->getAvailableTables(),
-            'allowedTables' => $this->getAllowedTables(),
+            'allowedTables' => [],
         ]);
+    }
+
+    /**
+     * Получение списка разрешенных для очистки таблиц
+     */
+    private function getAllowedTables()
+    {
+        return [
+            'app_option',
+            'attachment',
+            'buyer_delivery_offer',
+            'buyer_offer',
+            'category',
+            'chat',
+            'chat_translate',
+            'chat_user',
+            'delivery_point_address',
+            'feedback_buyer',
+            'feedback_buyer_link_attachment',
+            'feedback_product',
+            'feedback_product_link_attachment',
+            'feedback_user',
+            'feedback_user_link_attachment',
+            'fulfillment_inspection_report',
+            'fulfillment_marketplace_transaction',
+            'fulfillment_offer',
+            'fulfillment_packaging_labeling',
+            'fulfillment_stock_report',
+            'fulfillment_stock_report_link_attachment',
+            'migration',
+            'notification',
+            'order',
+            'order_distribution',
+            'order_link_attachment',
+            'order_rate',
+            'order_tracking',
+            'packaging_report_link_attachment',
+            'privacy_policy',
+            'product',
+            'product_inspection_report',
+            'product_link_attachment',
+            'product_stock_report',
+            'product_stock_report_link_attachment',
+            'rate',
+            'type_delivery',
+            'type_delivery_link_category',
+            'type_delivery_point',
+            'type_delivery_price',
+            'type_packaging',
+            'user',
+            'user_link_category',
+            'user_link_type_delivery',
+            'user_link_type_packaging',
+            'user_settings',
+            'user_verification_request',
+            'waybill',
+        ];
+    }
+
+    /**
+     * Получение лог-файла по типу
+     */
+    private function getLogFile($type)
+    {
+        switch ($type) {
+            case 'system':
+                return self::LOG_FILE;
+            case 'front':
+                return self::FRONT_LOG_FILE;
+            case 'action':
+                return self::ACTION_LOG_FILE;
+            default:
+                return null;
+        }
     }
 
     /**
@@ -132,7 +206,13 @@ class LogController extends Controller
         }
 
         try {
-            $logContent = $this->formatLogs($logFile);
+            $logContent = match ($type) {
+                'system' => $this->formatSystemLogs($logFile),
+                'front' => $this->formatFrontendLogs($logFile),
+                'action' => $this->formatActionLogs($logFile),
+                default => throw new \Exception('Неверный тип лога'),
+            };
+
             return [
                 'success' => true,
                 'data' => $logContent
@@ -194,11 +274,13 @@ class LogController extends Controller
         }
 
         try {
-            $logs = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-            $logs = htmlspecialchars_decode($logs);
             $timestamp = date('Y-m-d H:i:s');
+            $logEntry = sprintf(
+                "[-] [-] [%s] [-] [-] <pre class=\"format\">%s</pre>\n",
+                $timestamp,
+                json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+            );
 
-            $logEntry = "[{$timestamp}] " . $logs . PHP_EOL;
             file_put_contents(self::FRONT_LOG_FILE, $logEntry, FILE_APPEND);
 
             return [
@@ -209,30 +291,6 @@ class LogController extends Controller
                 'success' => false,
                 'error' => $e->getMessage()
             ];
-        }
-    }
-
-    /**
-     * Форматирование логов в зависимости от типа
-     */
-    private function formatLogs($filePath)
-    {
-        if (!file_exists($filePath)) {
-            return 'Файл лога не найден';
-        }
-
-        $content = file_get_contents($filePath);
-        if ($content === false) {
-            return 'Ошибка чтения файла лога';
-        }
-
-        // Определяем тип лога по пути файла
-        if (strpos($filePath, 'front.log') !== false) {
-            return $this->formatFrontendLogs($content);
-        } elseif (strpos($filePath, 'action.log') !== false) {
-            return $this->formatActionLogs($content);
-        } else {
-            return $this->formatSystemLogs($content);
         }
     }
 
@@ -433,23 +491,6 @@ class LogController extends Controller
         }
 
         return $content;
-    }
-
-    /**
-     * Получение пути к файлу лога по типу
-     */
-    private function getLogFile($type)
-    {
-        switch ($type) {
-            case 'system':
-                return self::LOG_FILE;
-            case 'front':
-                return self::FRONT_LOG_FILE;
-            case 'action':
-                return self::ACTION_LOG_FILE;
-            default:
-                return null;
-        }
     }
 
     /**
