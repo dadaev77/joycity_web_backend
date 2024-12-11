@@ -1,6 +1,8 @@
 <?php
+
 use yii\helpers\Html;
 use yii\helpers\Url;
+use yii\grid\GridView;
 ?>
 
 <!DOCTYPE html>
@@ -10,12 +12,12 @@ use yii\helpers\Url;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Логи системы</title>
-    
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Highlight.js CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/styles/default.min.css" rel="stylesheet">
-    
+
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <!-- Bootstrap JS -->
@@ -120,11 +122,9 @@ use yii\helpers\Url;
                                                 </thead>
                                                 <tbody>
                                                     <?php foreach ($clients as $client): ?>
-                                                    <tr>
-                                                        <td><?= $client->id ?></td>
-                                                        <td><?= Html::encode($client->email) ?></td>
-                                                        <td><?= Yii::$app->formatter->asDatetime($client->created_at) ?></td>
-                                                    </tr>
+                                                        <tr>
+                                                            <td><?= $client->id ?></td>
+                                                        </tr>
                                                     <?php endforeach; ?>
                                                 </tbody>
                                             </table>
@@ -155,11 +155,9 @@ use yii\helpers\Url;
                                                 </thead>
                                                 <tbody>
                                                     <?php foreach ($managers as $manager): ?>
-                                                    <tr>
-                                                        <td><?= $manager->id ?></td>
-                                                        <td><?= Html::encode($manager->email) ?></td>
-                                                        <td><?= Yii::$app->formatter->asDatetime($manager->created_at) ?></td>
-                                                    </tr>
+                                                        <tr>
+                                                            <td><?= $manager->id ?></td>
+                                                        </tr>
                                                     <?php endforeach; ?>
                                                 </tbody>
                                             </table>
@@ -190,11 +188,9 @@ use yii\helpers\Url;
                                                 </thead>
                                                 <tbody>
                                                     <?php foreach ($fulfillment as $ff): ?>
-                                                    <tr>
-                                                        <td><?= $ff->id ?></td>
-                                                        <td><?= Html::encode($ff->email) ?></td>
-                                                        <td><?= Yii::$app->formatter->asDatetime($ff->created_at) ?></td>
-                                                    </tr>
+                                                        <tr>
+                                                            <td><?= $ff->id ?></td>
+                                                        </tr>
                                                     <?php endforeach; ?>
                                                 </tbody>
                                             </table>
@@ -225,11 +221,10 @@ use yii\helpers\Url;
                                                 </thead>
                                                 <tbody>
                                                     <?php foreach ($buyers as $buyer): ?>
-                                                    <tr>
-                                                        <td><?= $buyer->id ?></td>
-                                                        <td><?= Html::encode($buyer->email) ?></td>
-                                                        <td><?= Yii::$app->formatter->asDatetime($buyer->created_at) ?></td>
-                                                    </tr>
+                                                        <tr>
+                                                            <td><?= $buyer->id ?></td>
+
+                                                        </tr>
                                                     <?php endforeach; ?>
                                                 </tbody>
                                             </table>
@@ -255,16 +250,13 @@ use yii\helpers\Url;
                                                     <tr>
                                                         <th>ID</th>
                                                         <th>Название</th>
-                                                        <th>Создан</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
                                                     <?php foreach ($products as $product): ?>
-                                                    <tr>
-                                                        <td><?= $product->id ?></td>
-                                                        <td><?= Html::encode($product->name) ?></td>
-                                                        <td><?= Yii::$app->formatter->asDatetime($product->created_at) ?></td>
-                                                    </tr>
+                                                        <tr>
+                                                            <td><?= $product->id ?></td>
+                                                        </tr>
                                                     <?php endforeach; ?>
                                                 </tbody>
                                             </table>
@@ -295,11 +287,9 @@ use yii\helpers\Url;
                                                 </thead>
                                                 <tbody>
                                                     <?php foreach ($orders as $order): ?>
-                                                    <tr>
-                                                        <td><?= $order->id ?></td>
-                                                        <td><?= Html::encode($order->status) ?></td>
-                                                        <td><?= Yii::$app->formatter->asDatetime($order->created_at) ?></td>
-                                                    </tr>
+                                                        <tr>
+                                                            <td><?= $order->id ?></td>
+                                                        </tr>
                                                     <?php endforeach; ?>
                                                 </tbody>
                                             </table>
@@ -319,9 +309,9 @@ use yii\helpers\Url;
                             <div class="card-body">
                                 <div class="list-group">
                                     <?php foreach ($attachments as $attachment): ?>
-                                    <a href="<?= Url::to(['raw/download', 'file' => $attachment]) ?>" class="list-group-item list-group-item-action">
-                                        <?= Html::encode($attachment) ?>
-                                    </a>
+                                        <a href="<?= Url::to(['raw/download', 'file' => $attachment]) ?>" class="list-group-item list-group-item-action">
+
+                                        </a>
                                     <?php endforeach; ?>
                                 </div>
                             </div>
@@ -337,9 +327,9 @@ use yii\helpers\Url;
                             <div class="card-body">
                                 <div class="list-group">
                                     <?php foreach ($tables as $table => $label): ?>
-                                    <a href="<?= Url::to(['raw/table', 'name' => $table]) ?>" class="list-group-item list-group-item-action">
-                                        <?= Html::encode($label) ?>
-                                    </a>
+                                        <a href="<?= Url::to(['raw/table', 'name' => $table]) ?>" class="list-group-item list-group-item-action">
+                                            <?= Html::encode($label) ?>
+                                        </a>
                                     <?php endforeach; ?>
                                 </div>
                             </div>
@@ -358,13 +348,16 @@ use yii\helpers\Url;
             max-height: 500px;
             overflow-y: auto;
         }
+
         .nav-pills .nav-link.active {
             background-color: #007bff;
         }
+
         .card-header .btn-link {
             color: #007bff;
             text-decoration: none;
         }
+
         .card-header .btn-link:hover {
             color: #0056b3;
             text-decoration: none;
@@ -374,7 +367,9 @@ use yii\helpers\Url;
     <script>
         function clearLogs(type) {
             if (confirm('Вы уверены, что хотите очистить логи?')) {
-                $.post('<?= Url::to(['raw/clear-logs']) ?>', {type: type}, function(response) {
+                $.post('<?= Url::to(['raw/clear-logs']) ?>', {
+                    type: type
+                }, function(response) {
                     if (response.success) {
                         location.reload();
                     } else {

@@ -81,7 +81,7 @@ class RawController extends Controller
         $logs = $this->formatLogs(self::LOG_FILE);
         $frontLogs = $this->formatLogs(self::FRONT_LOG_FILE);
         $actionLogs = $this->formatLogs(self::ACTION_LOG_FILE);
-        
+
         // Получаем модели
         $clients = User::find()->where(['role' => 'client'])->orderBy(['id' => SORT_DESC])->all();
         $managers = User::find()->where(['role' => 'manager'])->orderBy(['id' => SORT_DESC])->all();
@@ -89,7 +89,7 @@ class RawController extends Controller
         $buyers = User::find()->where(['role' => 'buyer'])->orderBy(['id' => SORT_DESC])->all();
         $products = Product::find()->orderBy(['id' => SORT_DESC])->all();
         $orders = OrderModel::find()->orderBy(['id' => SORT_DESC])->all();
-        
+
         $attachments = array_diff(scandir(Yii::getAlias('@webroot/attachments')), ['.', '..', '.DS_Store', '.gitignore']);
 
         $response = Yii::$app->response;
@@ -122,16 +122,16 @@ class RawController extends Controller
         // Читаем файл и удаляем конфиденциальные данные
         $content = file_get_contents($filePath);
         $content = $this->removeConfidentialData($content);
-        
+
         // Форматируем JSON
-        $content = preg_replace_callback('/({.+?})/', function($matches) {
+        $content = preg_replace_callback('/({.+?})/', function ($matches) {
             $json = json_decode($matches[1], true);
             if ($json === null) {
                 return $matches[1];
             }
-            return '<pre class="d-inline"><code class="json">' . 
-                   json_encode($json, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) . 
-                   '</code></pre>';
+            return '<pre class="d-inline"><code class="json">' .
+                json_encode($json, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) .
+                '</code></pre>';
         }, $content);
 
         // Подсвечиваем ошибки и предупреждения
@@ -164,33 +164,6 @@ class RawController extends Controller
             $content = preg_replace('/.*' . preg_quote($key, '/') . '.*\n?/', '[REMOVED]', $content);
         }
         return $content;
-    }
-
-    /**
-     * Получение списка доступных таблиц
-     */
-    private function getAvailableTables()
-    {
-        return [
-            'app_option' => 'App Options',
-            'attachment' => 'Attachments',
-            'buyer_delivery_offer' => 'Buyer Delivery Offers',
-            'buyer_offer' => 'Buyer Offers',
-            'category' => 'Categories',
-            'chat' => 'Chats',
-            'chat_translate' => 'Chat Translations',
-            'chat_user' => 'Chat Users',
-            'delivery_point_address' => 'Delivery Points',
-            'feedback_buyer' => 'Buyer Feedback',
-            'feedback_product' => 'Product Feedback',
-            'feedback_user' => 'User Feedback',
-            'fulfillment_offer' => 'Fulfillment Offers',
-            'notification' => 'Notifications',
-            'order' => 'Orders',
-            'product' => 'Products',
-            'user' => 'Users',
-            // ... остальные таблицы
-        ];
     }
 
     /**
@@ -420,7 +393,7 @@ class RawController extends Controller
             Yii::$app->db->createCommand("SET foreign_key_checks = 0")->execute();
             Yii::$app->db->createCommand()->truncateTable($table)->execute();
             Yii::$app->db->createCommand("SET foreign_key_checks = 1")->execute();
-            
+
             return ['success' => true];
         } catch (\Exception $e) {
             return ['success' => false, 'error' => $e->getMessage()];
@@ -438,18 +411,20 @@ class RawController extends Controller
         try {
             $twilio = \app\services\twilio\TwilioService::getClient();
             $conversations = $twilio->conversations->v1->conversations->read();
-            
+
             // Store the total count and IDs in session for progress tracking
             $totalChats = count($conversations);
-            $chatIds = array_map(function($conv) { return $conv->sid; }, $conversations);
-            
+            $chatIds = array_map(function ($conv) {
+                return $conv->sid;
+            }, $conversations);
+
             Yii::$app->session->set('twilio_deletion', [
                 'total' => $totalChats,
                 'remaining' => $chatIds,
                 'processed' => 0,
                 'errors' => [],
             ]);
-            
+
             return ['success' => true, 'total' => $totalChats];
         } catch (\Exception $e) {
             return ['success' => false, 'error' => $e->getMessage()];
@@ -480,7 +455,7 @@ class RawController extends Controller
             try {
                 $conversation = $twilio->conversations->v1->conversations($chatId)->delete();
                 $processed++;
-                
+
                 $progress = round(($processed / $total) * 100);
                 echo "data: " . json_encode([
                     'progress' => $progress,
@@ -512,8 +487,8 @@ class RawController extends Controller
         echo "data: " . json_encode([
             'completed' => true,
             'progress' => 100,
-            'message' => "Completed. Processed $processed chats" . 
-                        (count($errors) > 0 ? " with " . count($errors) . " errors" : ""),
+            'message' => "Completed. Processed $processed chats" .
+                (count($errors) > 0 ? " with " . count($errors) . " errors" : ""),
             'type' => count($errors) > 0 ? 'warning' : 'success'
         ]) . "\n\n";
 
@@ -527,10 +502,10 @@ class RawController extends Controller
     public function actionClearLogs()
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
-        
+
         $type = Yii::$app->request->post('type');
         $filePath = null;
-        
+
         switch ($type) {
             case 'system':
                 $filePath = self::LOG_FILE;
@@ -544,25 +519,25 @@ class RawController extends Controller
             default:
                 return ['success' => false, 'message' => 'Неверный тип логов'];
         }
-        
+
         if ($filePath && file_exists($filePath)) {
             file_put_contents($filePath, '');
             return ['success' => true];
         }
-        
+
         return ['success' => false, 'message' => 'Файл лога не найден'];
     }
-    
+
     /**
      * Получение логов через AJAX
      */
     public function actionGetLogs()
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
-        
+
         $type = Yii::$app->request->get('type');
         $filePath = null;
-        
+
         switch ($type) {
             case 'system-logs':
                 $filePath = self::LOG_FILE;
@@ -576,14 +551,41 @@ class RawController extends Controller
             default:
                 return ['success' => false, 'message' => 'Неверный тип логов'];
         }
-        
+
         if ($filePath && file_exists($filePath)) {
             return [
                 'success' => true,
                 'logs' => $this->formatLogs($filePath)
             ];
         }
-        
+
         return ['success' => false, 'message' => 'Файл лога не найден'];
+    }
+
+    /**
+     * Получение списка доступных таблиц
+     */
+    private function getAvailableTables()
+    {
+        return [
+            'app_option' => 'App Options',
+            'attachment' => 'Attachments',
+            'buyer_delivery_offer' => 'Buyer Delivery Offers',
+            'buyer_offer' => 'Buyer Offers',
+            'category' => 'Categories',
+            'chat' => 'Chats',
+            'chat_translate' => 'Chat Translations',
+            'chat_user' => 'Chat Users',
+            'delivery_point_address' => 'Delivery Points',
+            'feedback_buyer' => 'Buyer Feedback',
+            'feedback_product' => 'Product Feedback',
+            'feedback_user' => 'User Feedback',
+            'fulfillment_offer' => 'Fulfillment Offers',
+            'notification' => 'Notifications',
+            'order' => 'Orders',
+            'product' => 'Products',
+            'user' => 'Users',
+            // ... остальные таблицы
+        ];
     }
 }
