@@ -173,12 +173,14 @@ class WaybillService
         $product = \app\models\Product::findOne($order->product_id);
 
         if ($product->getAttachments()->exists()) {
-            Log::info('product: ' . json_encode($product->getAttachments()->one()->path));
+            $waybillAttachment = $product->getAttachments()->one()->path;
         }
 
         if ($order->getAttachments()->exists()) {
-            Log::info('order: ' . json_encode($order->getAttachments()->one()->path));
+            $waybillAttachment = $order->getAttachments()->one()->path;
         }
+
+        $waybillAttachment = base64_encode(file_get_contents('/attachments/' . $waybillAttachment));
 
         // Расчет объема
         $volume = isset($bdo->product_height, $bdo->product_width, $bdo->product_depth, $bdo->amount_of_space)
@@ -230,7 +232,7 @@ class WaybillService
             'approved_by' => $manager ? $manager->name : '',
             'executor' => 'JoyCity Company',
             'total_payment' => floatval($bdo->package_expenses ?? 0) + $weightCosts + $insuranceCosts,
-            'first_attachment' => 'asdsadasd',
+            'first_attachment' => $waybillAttachment,
         ];
 
         // Удаляем старый файл
