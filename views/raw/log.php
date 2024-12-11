@@ -37,6 +37,7 @@ use app\models\Order;
             padding: 8px;
             border-radius: 4px;
             margin-bottom: 4px;
+            white-space: pre-wrap;
             word-wrap: break-word;
             background: rgba(255, 255, 255, 0.02);
         }
@@ -45,8 +46,53 @@ use app\models\Order;
             background: rgba(255, 255, 255, 0.05);
         }
 
-        .log-line span {
-            margin-right: 10px;
+        /* Стили для JSON */
+        .json-content {
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+            font-family: 'Consolas', monospace;
+        }
+
+        .json-root {
+            padding-left: 0;
+        }
+
+        .json-block {
+            margin: 2px 0;
+            padding-left: 20px;
+        }
+
+        .json-block.json-error {
+            color: #ff6b6b;
+        }
+
+        .json-nested {
+            margin-left: 20px;
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            padding-left: 10px;
+        }
+
+        .json-key {
+            color: #9cdcfe;
+            font-weight: 500;
+        }
+
+        .json-string {
+            color: #ce9178;
+            word-break: break-all;
+        }
+
+        .json-number {
+            color: #b5cea8;
+        }
+
+        .json-boolean {
+            color: #569cd6;
+        }
+
+        .json-null {
+            color: #569cd6;
         }
 
         /* Стили для фронтенд логов */
@@ -69,17 +115,7 @@ use app\models\Order;
             padding: 4px 8px;
             background: rgba(0, 0, 0, 0.2);
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .log-entry pre {
-            margin: 0;
-            padding: 8px;
-            background: transparent;
-        }
-
-        .log-entry pre code {
-            background: transparent !important;
-            padding: 0 !important;
+            color: #888;
         }
 
         /* Цветовые стили */
@@ -218,7 +254,7 @@ use app\models\Order;
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" id="buyer-offers-tab" data-bs-toggle="tab" href="#buyer-offers-content" role="tab">
-                                    <i class="fa fa-handshake-o"></i> Предложения байера
+                                    <i class="fa fa-handshake-o"></i> Предложения бай��ра
                                 </a>
                             </li>
                             <li class="nav-item">
@@ -893,7 +929,7 @@ use app\models\Order;
                     const selectedTables = formData.getAll('tables[]');
 
                     if (selectedTables.length === 0) {
-                        alert('Выберите хотя бы одну таблицу для очистки');
+                        alert('Выберите хотя бы одну таблицу ��ля очистки');
                         return;
                     }
 
@@ -901,7 +937,7 @@ use app\models\Order;
                         return;
                     }
 
-                    // Показыва��м прогресс
+                    // Показываем прогресс
                     cleanupProgress.classList.remove('d-none');
                     cleanupResults.innerHTML = '';
                     cleanupForm.querySelector('button[type="submit"]').disabled = true;
@@ -962,11 +998,9 @@ use app\models\Order;
 
     <script>
         document.addEventListener('DOMContentLoaded', (event) => {
-            // Инициализация highlight.js
             document.querySelectorAll('pre code').forEach((block) => {
                 hljs.highlightBlock(block);
             });
-
             // Автоматическое обновление подсветки при обновлении логов
             const observer = new MutationObserver((mutations) => {
                 mutations.forEach((mutation) => {

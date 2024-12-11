@@ -339,35 +339,116 @@ class LogController extends Controller
             if (empty(trim($line))) continue;
 
             // Ищем временную метку и JSON в строке
-            if (preg_match('/^\[([\d\-\s:]+)\]\s*(\{.+\})$/s', $line, $matches)) {
+            if (preg_match('/^\[[-\s]+\]\s*\[[-\s]+\]\s*\[([\d\-\s:]+)\]\s*\[[-\s]+\]\s*\[[-\s]+\]\s*(\{.+\})$/s', $line, $matches)) {
                 $timestamp = $matches[1];
                 $jsonStr = $matches[2];
 
-                // Декодируем и форматируем JSON
-                $json = json_decode($jsonStr);
+                // Декодируем JSON
+                $json = json_decode($jsonStr, true);
                 if ($json !== null) {
-                    // Определяем цвет в зависимости от наличия ошибки
-                    $errorClass = isset($json->error) ? 'error-log' : 'info-log';
+                    // Определяем тип лога
+                    $logClass = isset($json['error']) ? 'error-log' : 'info-log';
 
-                    $prettyJson = json_encode($json, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                    // Форматируем JSON более читаемо
+                    $formattedJson = $this->formatJsonStructure($json);
+
                     $formattedLines[] = sprintf(
                         '<div class="log-entry %s">
                             <div class="log-timestamp">[%s]</div>
-                            <pre><code class="language-json">%s</code></pre>
+                            <div class="json-content">%s</div>
                         </div>',
-                        $errorClass,
-                        $timestamp,
-                        htmlspecialchars($prettyJson)
+                        $logClass,
+                        htmlspecialchars($timestamp),
+                        $formattedJson
                     );
                     continue;
                 }
             }
 
-            // Если не JSON, форматируем как обычный лог
+            // Если не JSON или невалидный JSON, форматируем как обычный лог
             $formattedLines[] = '<div class="log-line">' . htmlspecialchars($line) . '</div>';
         }
 
         return implode("\n", $formattedLines);
+    }
+
+    /**
+     * Форматирование JSON структуры
+     */
+    private function formatJsonStructure($data)
+    {
+        $output = '';
+
+        // Если это массив или объект
+        if (is_array($data)) {
+            // Форматируем основные поля
+            foreach (['application', 'error', 'url', 'request'] as $key) {
+                if (isset($data[$key])) {
+                    $output .= $this->formatKeyValue($key, $data[$key]);
+                    unset($data[$key]);
+                }
+            }
+
+            // Форматируем response отдельно, если есть
+            if (isset($data['response'])) {
+                $output .= '<div class="json-block">';
+                $output .= '<span class="json-key">response:</span>';
+                $output .= '<div class="json-nested">';
+                $output .= $this->formatJsonStructure($data['response']);
+                $output .= '</div></div>';
+                unset($data['response']);
+            }
+
+            // Форматируем оставшиеся поля
+            foreach ($data as $key => $value) {
+                $output .= $this->formatKeyValue($key, $value);
+            }
+        } else {
+            // Если это простое значение
+            $output .= $this->formatValue($data);
+        }
+
+        return $output;
+    }
+
+    /**
+     * Форматирование пары ключ-значение
+     */
+    private function formatKeyValue($key, $value)
+    {
+        $output = '<div class="json-block">';
+        $output .= '<span class="json-key">' . htmlspecialchars($key) . ':</span> ';
+
+        if (is_array($value)) {
+            $output .= '<div class="json-nested">';
+            $output .= $this->formatJsonStructure($value);
+            $output .= '</div>';
+        } else {
+            $output .= $this->formatValue($value);
+        }
+
+        $output .= '</div>';
+        return $output;
+    }
+
+    /**
+     * Форматирование значения
+     */
+    private function formatValue($value)
+    {
+        if (is_string($value)) {
+            return '<span class="json-string">"' . htmlspecialchars($value) . '"</span>';
+        }
+        if (is_numeric($value)) {
+            return '<span class="json-number">' . $value . '</span>';
+        }
+        if (is_bool($value)) {
+            return '<span class="json-boolean">' . ($value ? 'true' : 'false') . '</span>';
+        }
+        if (is_null($value)) {
+            return '<span class="json-null">null</span>';
+        }
+        return htmlspecialchars((string)$value);
     }
 
     /**
@@ -397,7 +478,7 @@ class LogController extends Controller
                     }
                 }
 
-                // Определяем класс для разных типов сообщений
+                // Определяем класс для разных типов сообщени��
                 $messageClass = 'text-primary';
                 if (stripos($message, 'error') !== false) {
                     $messageClass = 'text-danger';
@@ -418,8 +499,6 @@ class LogController extends Controller
                 );
                 continue;
             }
-
-            // Если строка не соответствует формату, выводим как есть
             $formattedLines[] = '<div class="log-line">' . htmlspecialchars($line) . '</div>';
         }
 
