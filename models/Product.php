@@ -227,6 +227,7 @@ class Product extends Base
     {
         return $this->hasMany(Attachment::class, ['id' => 'attachment_id'])->via('productLinkAttachments');
     }
+
     public function getAttachmentsSmallSize()
     {
         return $this->hasMany(Attachment::class, ['id' => 'attachment_id'])->andOnCondition(['img_size' => 'small'])->via('productLinkAttachments');

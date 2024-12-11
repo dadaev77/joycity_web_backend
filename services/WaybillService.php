@@ -167,17 +167,13 @@ class WaybillService
         $client = User::findOne($data['client_id']);
         $manager = User::findOne($data['manager_id']);
 
+        $waybillAttachment = '';
+
         $order = Order::findOne($data['order_id']);
-        if (!$order) {
-            throw new NotFoundHttpException('Заказ не найден');
-        }
+        $product = \app\models\Product::findOne($order->product_id);
 
-        $firstAttachment = $order->getFirstAttachment();
-        if ($firstAttachment) {
-            $attachmentUrl = $firstAttachment->path;
-        }
-
-        Log::info('Приложение: ' . json_encode($order->attachments));
+        Log::info('product: ' . json_encode($product->getAttachments()->first()->path));
+        Log::info('order: ' . json_encode($order->getAttachments()->first()->path));
 
         // Расчет объема
         $volume = isset($bdo->product_height, $bdo->product_width, $bdo->product_depth, $bdo->amount_of_space)
