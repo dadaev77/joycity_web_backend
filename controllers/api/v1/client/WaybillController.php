@@ -19,8 +19,10 @@ class WaybillController extends ClientController
     }
     public function actionView($id)
     {
-        $waybill = WaybillService::getByOrderId($id);
-        $path = Yii::getAlias('@webroot/uploads/waybills') . '/' . $waybill->file_path;;
-        return $path;
+        // $waybill = WaybillService::getByOrderId($id);
+        // $path = Yii::getAlias('@webroot/uploads/waybills') . '/' . $waybill->file_path;;
+        // return $path;
+
+        return $id;
     }
 }
