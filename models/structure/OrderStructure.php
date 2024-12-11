@@ -498,7 +498,7 @@ class OrderStructure extends Base
     {
         return $this->hasOne(Attachment::class, [
             'id' => 'attachment_id',
-        ])->via('orderLinkAttachments')->limit(1);
+        ])->via('orderLinkAttachments');
     }
     public function getAttachmentsSmallSize()
     {
