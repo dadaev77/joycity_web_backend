@@ -31,6 +31,18 @@ class WaybillService
         $manager = User::findOne($data['manager_id'] ?? null);
         $order = Order::findOne($data['order_id'] ?? null);
 
+        $waybillAttachment = '';
+        $order = Order::findOne($data['order_id']);
+        $product = \app\models\Product::findOne($order->product_id);
+        if ($product->getAttachments()->exists()) {
+            $waybillAttachment = $product->getAttachments()->one()->path;
+        }
+
+        if ($order->getAttachments()->exists()) {
+            $waybillAttachment = $order->getAttachments()->one()->path;
+        }
+        $waybillAttachment = base64_encode(file_get_contents(Yii::getAlias('@webroot') . $waybillAttachment));
+
         // Расчет объема
         $volume = isset($data['product_height'], $data['product_width'], $data['product_depth'], $data['amount_of_space'])
             ? ($data['product_height'] / 100) * ($data['product_width'] / 100) * ($data['product_depth'] / 100) * $data['amount_of_space']
@@ -168,10 +180,8 @@ class WaybillService
         $manager = User::findOne($data['manager_id']);
 
         $waybillAttachment = '';
-
         $order = Order::findOne($data['order_id']);
         $product = \app\models\Product::findOne($order->product_id);
-
         if ($product->getAttachments()->exists()) {
             $waybillAttachment = $product->getAttachments()->one()->path;
         }
@@ -179,9 +189,8 @@ class WaybillService
         if ($order->getAttachments()->exists()) {
             $waybillAttachment = $order->getAttachments()->one()->path;
         }
-
         $waybillAttachment = base64_encode(file_get_contents(Yii::getAlias('@webroot') . $waybillAttachment));
-        Log::info('Прикрепленный файл: ' . $waybillAttachment);
+
         // Расчет объема
         $volume = isset($bdo->product_height, $bdo->product_width, $bdo->product_depth, $bdo->amount_of_space)
             ? ($bdo->product_height / 100) * ($bdo->product_width / 100) * ($bdo->product_depth / 100) * $bdo->amount_of_space
