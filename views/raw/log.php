@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <?php
+
 use app\models\Order;
 ?>
 <html lang="ru">
@@ -203,7 +204,7 @@ use app\models\Order;
                                                         <td><?= $order->id ?></td>
                                                         <td><span class="badge bg-<?= $order->status === Order::STATUS_COMPLETED ? 'success' : ($order->status === Order::STATUS_CREATED ? 'warning' : 'secondary') ?>"><?= $order->status ?></span></td>
                                                         <td><?= Yii::$app->formatter->asDatetime($order->created_at, 'php:d.m.Y H:i') ?></td>
-                                                        <td><?= \yii\helpers\Html::encode($order->product_name) ?></td>
+                                                        <td><?= \yii\helpers\Html::encode($order->product_name_ru) ?></td>
                                                         <td><?= Yii::$app->formatter->asCurrency($order->expected_price_per_item) ?></td>
                                                         <td><?= $order->expected_quantity ?></td>
                                                         <td>
@@ -698,7 +699,7 @@ use app\models\Order;
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <?php foreach ($attachments as $attachment): 
+                                        <?php foreach ($attachments as $attachment):
                                             $filePath = Yii::getAlias('@webroot/attachments/' . $attachment);
                                             $fileSize = file_exists($filePath) ? filesize($filePath) : 0;
                                             $modifiedTime = file_exists($filePath) ? filemtime($filePath) : 0;
