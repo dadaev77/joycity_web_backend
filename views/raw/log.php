@@ -211,7 +211,7 @@ use app\models\Order;
                                                 <th>Товар</th>
                                                 <th>Цена за ед.</th>
                                                 <th>Кол-во</th>
-                                                <th>Действия</th>
+                                                <th>Действ��я</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -654,7 +654,7 @@ use app\models\Order;
             <div class="tab-pane fade" id="database-cleanup" role="tabpanel">
                 <div class="card">
                     <div class="card-body">
-                        <h5 class="card-title">��чистка базы данных</h5>
+                        <h5 class="card-title">Очистка базы данных</h5>
                         <div class="alert alert-warning">
                             <i class="fa fa-exclamation-triangle"></i>
                             Внимание! Эта операция необратима. Выберите таблицы, которые нужно очистить.
@@ -870,7 +870,7 @@ use app\models\Order;
                         return;
                     }
 
-                    // Показываем прогресс
+                    // Показыва��м прогресс
                     cleanupProgress.classList.remove('d-none');
                     cleanupResults.innerHTML = '';
                     cleanupForm.querySelector('button[type="submit"]').disabled = true;
@@ -931,29 +931,9 @@ use app\models\Order;
 
     <script>
         document.addEventListener('DOMContentLoaded', (event) => {
+            // Инициализация highlight.js
             document.querySelectorAll('pre code').forEach((block) => {
                 hljs.highlightBlock(block);
-            });
-            // Автоматическое обновление подсветки при обновлении логов
-            const observer = new MutationObserver((mutations) => {
-                mutations.forEach((mutation) => {
-                    if (mutation.addedNodes.length) {
-                        mutation.addedNodes.forEach((node) => {
-                            if (node.querySelectorAll) {
-                                node.querySelectorAll('pre code').forEach((block) => {
-                                    hljs.highlightBlock(block);
-                                });
-                            }
-                        });
-                    }
-                });
-            });
-
-            document.querySelectorAll('.log-container').forEach((container) => {
-                observer.observe(container, {
-                    childList: true,
-                    subtree: true
-                });
             });
         });
     </script>
