@@ -372,7 +372,7 @@ class LogController extends Controller
     {
         $tables = [];
         $schema = Yii::$app->db->schema;
-        $targetTables = ['order', 'product', 'user', 'waybill'];
+        $targetTables = ['order', 'product', 'user', 'waybill', 'buyer_offer', 'buyer_delivery_offer'];
 
         foreach ($targetTables as $tableName) {
             if ($schema->getTableSchema($tableName)) {
@@ -472,7 +472,7 @@ class LogController extends Controller
     public function actionCleanupDatabase()
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
-        
+
         $tables = Yii::$app->request->post('tables', []);
         if (empty($tables)) {
             return ['success' => false, 'message' => 'Не выбраны таблицы для очистки'];
