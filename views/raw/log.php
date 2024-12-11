@@ -627,7 +627,7 @@
                             <span class="font-semibold ${textStyles[logType]}">${user}</span>
                             ${controller ? `<span class="text-gray-500 dark:text-gray-400">[${controller}]</span>` : ''}
                         </div>
-                        ${message ? `<div class="mb-2 word-break ${textStyles[logType]}">${message}</div>` : ''}
+                        ${message ? `<div style="word-break: break-word" class="mb-2 ${textStyles[logType]}">${message}</div>` : ''}
                         ${jsonContent}
                     </div>`;
             }).join('');
