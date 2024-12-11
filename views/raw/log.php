@@ -518,7 +518,7 @@ use app\models\Order;
                                                                 <div class="col-md-6">
                                                                     <h6>Атрибуты</h6>
                                                                     <ul class="list-group list-group-flush">
-                                                                        <?php foreach ($tables['buyerOffer'] as $column => $info): ?>
+                                                                        <?php foreach ($tables['buyer_offer'] as $column => $info): ?>
                                                                             <li class="list-group-item py-1">
                                                                                 <small>
                                                                                     <strong><?= $column ?></strong>
@@ -590,7 +590,7 @@ use app\models\Order;
                                                                 <div class="col-md-6">
                                                                     <h6>Атрибуты</h6>
                                                                     <ul class="list-group list-group-flush">
-                                                                        <?php foreach ($tables['buyerDeliveryOffer'] as $column => $info): ?>
+                                                                        <?php foreach ($tables['buyer_delivery_offer'] as $column => $info): ?>
                                                                             <li class="list-group-item py-1">
                                                                                 <small>
                                                                                     <strong><?= $column ?></strong>
