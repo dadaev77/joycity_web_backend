@@ -40,6 +40,7 @@ class WaybillService
         $weight = floatval($data['product_weight'] ?? 0);
         $pricePerKg = RateService::convertValue(floatval(($data['price_product'] / $weight) ?? 0), $manager->settings->currency, 'USD');
         $weightCosts = $weight * $pricePerKg;
+        $weightCosts = $weightCosts * $data['amount_of_space'];
 
         // Курс и страховка
         $rates = RateService::getRate();
@@ -175,6 +176,7 @@ class WaybillService
         $weight = $bdo->product_weight ?? 0;
         $pricePerKg = $waybill->price_per_kg; // USD
         $weightCosts = $weight * $pricePerKg;
+        $weightCosts = $weightCosts * $bdo->amount_of_space;
 
         // Курс и страховка
         $course = $waybill->course;
