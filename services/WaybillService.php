@@ -38,14 +38,15 @@ class WaybillService
 
         // Расчет веса и связанных расходов
         $weight = floatval($data['product_weight'] ?? 0);
-        $pricePerKg = RateService::convertValue(floatval(($data['price_product']/$weight) ?? 0), $manager->settings->currency, 'USD');
+        $pricePerKg = RateService::convertValue(floatval(($data['price_product'] / $weight) ?? 0), $manager->settings->currency, 'USD');
         $weightCosts = $weight * $pricePerKg;
 
         // Курс и страховка
         $rates = RateService::getRate();
         $course = number_format(floatval($rates['USD'] / $rates['CNY']), 2);
         $insuranceRate = 0.01;
-        $insuranceSum = RateService::convertValue(floatval($data['price_product'] ?? 0), $manager->settings->currency, 'CNY');
+        $insuranceSum = $data['price_product'] * $data['total_quantity'];
+        $insuranceSum = RateService::convertValue(floatval($insuranceSum), $manager->settings->currency, 'CNY');
         $insuranceCosts = $insuranceSum / $course * $insuranceRate;
 
         // Формирование номера накладной
@@ -178,8 +179,9 @@ class WaybillService
         // Курс и страховка
         $course = $waybill->course;
         $insuranceRate = 0.01;
-        $insuranceSumCNY = RateService::convertValue(floatval($bdo->price_product ?? 0), $bdo->currency, 'CNY');
-        $insuranceCosts = $insuranceSumCNY / $course *$insuranceRate;
+        $insuranceSumCNY = $bdo->total_quantity * $bdo->price_product;
+        $insuranceSumCNY = RateService::convertValue(floatval($insuranceSumCNY), $bdo->currency, 'CNY');
+        $insuranceCosts = $insuranceSumCNY / $course * $insuranceRate;
 
         $waybillData = [
             // Общие данные
