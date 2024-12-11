@@ -33,6 +33,61 @@ use app\models\Order;
             white-space: pre-wrap;
         }
 
+        .log-entry {
+            margin-bottom: 10px;
+            padding: 8px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .log-entry:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .json {
+            background: #2d2d2d;
+            padding: 8px;
+            border-radius: 4px;
+            margin: 4px 0;
+            display: block;
+        }
+
+        .json .string {
+            color: #ce9178;
+        }
+
+        .json .number {
+            color: #b5cea8;
+        }
+
+        .json .boolean {
+            color: #569cd6;
+        }
+
+        .json .null {
+            color: #569cd6;
+        }
+
+        .json .key {
+            color: #9cdcfe;
+        }
+
+        .text-danger {
+            color: #ff6b6b !important;
+        }
+
+        .text-warning {
+            color: #ffd93d !important;
+        }
+
+        .text-info {
+            color: #4dabf7 !important;
+        }
+
+        .text-secondary {
+            color: #868e96 !important;
+        }
+
         .log-tabs .nav-link {
             color: #6c757d;
             border: none;
@@ -53,29 +108,6 @@ use app\models\Order;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
-        }
-
-        .json {
-            background: #2d2d2d;
-            padding: 8px;
-            border-radius: 4px;
-            margin: 4px 0;
-        }
-
-        .text-danger {
-            color: #ff6b6b !important;
-        }
-
-        .text-warning {
-            color: #ffd93d !important;
-        }
-
-        .text-info {
-            color: #4dabf7 !important;
-        }
-
-        .text-secondary {
-            color: #868e96 !important;
         }
     </style>
 </head>
@@ -358,7 +390,7 @@ use app\models\Order;
                                                         <td><span class="badge bg-<?= $user->role === 'admin' ? 'danger' : ($user->role === 'manager' ? 'primary' : 'secondary') ?>"><?= $user->role ?></span></td>
                                                         <td>
                                                             <?php if ($user->is_deleted): ?>
-                                                                <span class="badge bg-danger">Удален</span>
+                                                                <span class="badge bg-danger">Уд��лен</span>
                                                             <?php elseif ($user->is_verified): ?>
                                                                 <span class="badge bg-success">Активен</span>
                                                             <?php else: ?>
@@ -422,7 +454,7 @@ use app\models\Order;
                                             <tr>
                                                 <th>ID</th>
                                                 <th>Дата</th>
-                                                <th>Действия</th>
+                                                <th>Дейс��вия</th>
                                             </tr>
                                         </thead>
                                         <tbody>

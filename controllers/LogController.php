@@ -286,14 +286,17 @@ class LogController extends Controller
         $content = $this->removeConfidentialData($content);
 
         // Форматируем JSON с проверкой на валидность
-        $content = preg_replace_callback('/({.+?})/', function ($matches) {
-            $json = json_decode($matches[1], true);
+        $content = preg_replace_callback('/\[[-\s]+\]\s*\[[-\s]+\]\s*\[([\d\-\s:]+)\]\s*\[[-\s]+\]\s*\[[-\s]+\]\s*(\{.+?\})/', function ($matches) {
+            $timestamp = $matches[1];
+            $json = json_decode($matches[2], true);
             if ($json === null && json_last_error() !== JSON_ERROR_NONE) {
-                return htmlspecialchars($matches[1]); // Если невалидный JSON, просто экранируем
+                return $matches[0]; // Если невалидный JSON, возвращаем как есть
             }
-            return '<pre class="d-inline"><code class="json">' .
+            return '<div class="log-entry">' .
+                '<span class="text-secondary">[' . $timestamp . ']</span> ' .
+                '<pre class="d-inline"><code class="json">' .
                 htmlspecialchars(json_encode($json, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)) .
-                '</code></pre>';
+                '</code></pre></div>';
         }, $content);
 
         // Подсвечиваем ошибки и предупреждения с учетом возможных HTML-тегов
