@@ -24,8 +24,7 @@ use yii\grid\GridView;
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Highlight.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/highlight.min.js"></script>
-    <!-- Custom JS -->
-    <script src="/js/logs.js"></script>
+
     <style>
         p {
             font-size: 12px !important;
@@ -43,13 +42,13 @@ use yii\grid\GridView;
                         <h5 class="card-title mb-0">Навигация</h5>
                     </div>
                     <div class="card-body">
-                        <div class="nav flex-column nav-pills">
-                            <a class="nav-link active" href="#system-logs" data-toggle="pill">Системные логи</a>
-                            <a class="nav-link" href="#front-logs" data-toggle="pill">Фронтенд логи</a>
-                            <a class="nav-link" href="#action-logs" data-toggle="pill">Логи действий</a>
-                            <a class="nav-link" href="#models" data-toggle="pill">Модели</a>
-                            <a class="nav-link" href="#attachments" data-toggle="pill">Вложения</a>
-                            <a class="nav-link" href="#tables" data-toggle="pill">Таблицы</a>
+                        <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist">
+                            <a class="nav-link active" id="system-logs-tab" data-bs-toggle="pill" href="#system-logs" role="tab">Системные логи</a>
+                            <a class="nav-link" id="front-logs-tab" data-bs-toggle="pill" href="#front-logs" role="tab">Фронтенд логи</a>
+                            <a class="nav-link" id="action-logs-tab" data-bs-toggle="pill" href="#action-logs" role="tab">Логи действий</a>
+                            <a class="nav-link" id="models-tab" data-bs-toggle="pill" href="#models" role="tab">Модели</a>
+                            <a class="nav-link" id="attachments-tab" data-bs-toggle="pill" href="#attachments" role="tab">Вложения</a>
+                            <a class="nav-link" id="tables-tab" data-bs-toggle="pill" href="#tables" role="tab">Таблицы</a>
                         </div>
                     </div>
                 </div>
@@ -59,7 +58,7 @@ use yii\grid\GridView;
             <div class="col-md-9">
                 <div class="tab-content">
                     <!-- Системные логи -->
-                    <div class="tab-pane fade show active" id="system-logs">
+                    <div class="tab-pane fade show active" id="system-logs" role="tabpanel">
                         <div class="card">
                             <div class="card-header d-flex justify-content-between align-items-center">
                                 <h5 class="card-title mb-0">Системные логи</h5>
@@ -72,7 +71,7 @@ use yii\grid\GridView;
                     </div>
 
                     <!-- Фронтенд логи -->
-                    <div class="tab-pane fade" id="front-logs">
+                    <div class="tab-pane fade" id="front-logs" role="tabpanel">
                         <div class="card">
                             <div class="card-header d-flex justify-content-between align-items-center">
                                 <h5 class="card-title mb-0">Фронтенд логи</h5>
@@ -85,7 +84,7 @@ use yii\grid\GridView;
                     </div>
 
                     <!-- Логи действий -->
-                    <div class="tab-pane fade" id="action-logs">
+                    <div class="tab-pane fade" id="action-logs" role="tabpanel">
                         <div class="card">
                             <div class="card-header d-flex justify-content-between align-items-center">
                                 <h5 class="card-title mb-0">Логи действий</h5>
@@ -98,7 +97,7 @@ use yii\grid\GridView;
                     </div>
 
                     <!-- Модели -->
-                    <div class="tab-pane fade" id="models">
+                    <div class="tab-pane fade" id="models" role="tabpanel">
                         <div class="accordion" id="modelsAccordion">
                             <!-- Клиенты -->
                             <div class="card">
@@ -301,7 +300,7 @@ use yii\grid\GridView;
                     </div>
 
                     <!-- Вложения -->
-                    <div class="tab-pane fade" id="attachments">
+                    <div class="tab-pane fade" id="attachments" role="tabpanel">
                         <div class="card">
                             <div class="card-header">
                                 <h5 class="card-title mb-0">Вложения</h5>
@@ -319,7 +318,7 @@ use yii\grid\GridView;
                     </div>
 
                     <!-- Таблицы -->
-                    <div class="tab-pane fade" id="tables">
+                    <div class="tab-pane fade" id="tables" role="tabpanel">
                         <div class="card">
                             <div class="card-header">
                                 <h5 class="card-title mb-0">Таблицы базы данных</h5>
@@ -365,6 +364,20 @@ use yii\grid\GridView;
     </style>
 
     <script>
+        $(document).ready(function() {
+            // Initialize tab functionality
+            $('.nav-link').on('click', function(e) {
+                e.preventDefault();
+                $(this).tab('show');
+            });
+
+            // Initialize first tab
+            $('.nav-link.active').tab('show');
+
+            // Initialize highlight.js
+            hljs.highlightAll();
+        });
+
         function clearLogs(type) {
             if (confirm('Вы уверены, что хотите очистить логи?')) {
                 $.post('<?= Url::to(['raw/clear-logs']) ?>', {
@@ -378,13 +391,6 @@ use yii\grid\GridView;
                 });
             }
         }
-
-        $(document).ready(function() {
-            // Инициализация подсветки кода
-            document.querySelectorAll('pre code').forEach((block) => {
-                hljs.highlightBlock(block);
-            });
-        });
     </script>
 </body>
 
