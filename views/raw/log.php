@@ -491,7 +491,6 @@ use app\models\Order;
                                         <thead class="table-light">
                                             <tr>
                                                 <th>ID</th>
-                                                <th>Номер</th>
                                                 <th>Дата</th>
                                                 <th>Действия</th>
                                             </tr>
@@ -505,7 +504,7 @@ use app\models\Order;
                                                 <?php foreach ($buyerOffers as $offer): ?>
                                                     <tr>
                                                         <td><?= $offer->id ?></td>
-                                                        <td><?= $offer->number ?></td>
+
                                                         <td><?= Yii::$app->formatter->asDate($offer->created_at) ?></td>
                                                         <td>
                                                             <button class="btn btn-sm btn-outline-info" data-bs-toggle="collapse" data-bs-target="#buyer-offer-details-<?= $offer->id ?>">
