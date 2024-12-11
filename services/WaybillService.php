@@ -36,12 +36,21 @@ class WaybillService
         $product = \app\models\Product::findOne($order->product_id);
 
         try {
-            if ($product->getAttachments()->exists()) {
-                $waybillAttachment = $product->getAttachments()->one()->path;
+            if ($product) {
+                if ($product->getAttachments()->exists()) {
+                    $attachments = $product->getAttachments()->all();
+                    if (!empty($attachments)) {
+                        $waybillAttachment = $attachments[0]->path; // Берем первое изображение
+                    }
+                }
             }
-
-            if ($order->getAttachments()->exists()) {
-                $waybillAttachment = $order->getAttachments()->one()->path;
+            if ($order) {
+                if ($order->getAttachments()->exists()) {
+                    $attachments = $order->getAttachments()->all();
+                    if (!empty($attachments)) {
+                        $waybillAttachment = $attachments[0]->path; // Берем первое изображение
+                    }
+                }
             }
             $waybillAttachment = base64_encode(file_get_contents(Yii::getAlias('@webroot') . $waybillAttachment));
         } catch (Exception $e) {
@@ -221,7 +230,7 @@ class WaybillService
             'waybill_number' => $waybill->waybill_number,
             'sender_name' => $buyer ? $buyer->name : 'не указано',
             'sender_phone' => $buyer ? $buyer->phone_number : 'не указано',
-            'recipient_name' => $client ? $client->name : 'не указано',
+            'recipient_name' => $client ? $client->name : 'не указ��но',
             'recipient_phone' => $client ? $client->phone_number : 'не указано',
             // Доставка
             'departure_city' => 'Иу',

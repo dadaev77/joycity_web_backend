@@ -63,142 +63,163 @@
                                 <div style="white-space: wrap; word-break: break-all; font-size: 12px;" id="frontend-logs">
                                     <div class="mb-4">
                                         <a href="/raw/clear-frontend-logs" class="btn btn-primary btn-sm">clear frontend logs</a>
+                                        
+                                        <!-- Пагинация для фронтенд логов -->
+                                        <div class="mt-3">
+                                            <?php if ($frontLogsPages > 1): ?>
+                                            <nav aria-label="Frontend logs pagination">
+                                                <ul class="pagination pagination-sm">
+                                                    <?php for ($i = 1; $i <= $frontLogsPages; $i++): ?>
+                                                    <li class="page-item <?= $i == $currentPage ? 'active' : '' ?>">
+                                                        <a class="page-link" href="?page=<?= $i ?>&per_page=<?= $pageSize ?>"><?= $i ?></a>
+                                                    </li>
+                                                    <?php endfor; ?>
+                                                </ul>
+                                            </nav>
+                                            <?php endif; ?>
+                                        </div>
                                     </div>
                                     <?= $frontLogs ?>
-
-                                    <script>
-                                        document.addEventListener('DOMContentLoaded', function() {
-                                            var items = document.getElementsByClassName('format');
-                                            for (var i = 0; i < items.length; i++) {
-                                                const formattedData = JSON.parse(items[i].innerText);
-                                                items[i].innerText = JSON.stringify(formattedData, null, 4);
-                                            }
-                                        });
-                                    </script>
                                 </div>
                             </div>
-                            <!-- Add corresponding tab panes for the new tabs -->
+                            
+                            <!-- Вкладка с пользователями -->
                             <div class="tab-pane fade" id="users" role="tabpanel" aria-labelledby="users-tab">
-                                <ul class="nav nav-tabs" id="userRolesTab" role="tablist">
-                                    <li class="nav-item" role="presentation">
-                                        <button class="nav-link active" id="buyers-role-tab" data-bs-toggle="tab" data-bs-target="#buyers-role" type="button" role="tab" aria-controls="buyers-role" aria-selected="true">Buyers</button>
-                                    </li>
-                                    <li class="nav-item" role="presentation">
-                                        <button class="nav-link" id="clients-role-tab" data-bs-toggle="tab" data-bs-target="#clients-role" type="button" role="tab" aria-controls="clients-role" aria-selected="false">Clients</button>
-                                    </li>
-                                    <li class="nav-item" role="presentation">
-                                        <button class="nav-link" id="managers-role-tab" data-bs-toggle="tab" data-bs-target="#managers-role" type="button" role="tab" aria-controls="managers-role" aria-selected="false">Managers</button>
-                                    </li>
-                                    <li class="nav-item" role="presentation">
-                                        <button class="nav-link" id="fulfillment-role-tab" data-bs-toggle="tab" data-bs-target="#fulfillment-role" type="button" role="tab" aria-controls="fulfillment-role" aria-selected="false">Fulfillment</button>
-                                    </li>
-                                </ul>
-                                <div class="tab-content py-4" id="userRolesTabContent">
-                                    <div class="tab-pane fade show active" id="buyers-role" role="tabpanel" aria-labelledby="buyers-role-tab">
-                                        <div class="row row-cols-1 row-cols-md-3">
-                                            <?php foreach ($buyers as $buyer) : ?>
-                                                <div class="col h-100">
-                                                    <ul class="list-unstyled p-0 card p-3 h-100">
-                                                        <li class="d-block">
-                                                            <p class="mb-0">ID: <?= $buyer->id ?></p>
-                                                            <p class="mb-0">Email: <?= $buyer->email ?></p>
-                                                            <p class="mb-0">Name: <?= $buyer->name ?></p>
-                                                            <p class="mb-0">Surname: <?= $buyer->surname ?></p>
-                                                            <p class="mb-0">Organization Name: <?= $buyer->organization_name ?></p>
-                                                            <p class="mb-0">Rating: <?= $buyer->rating ?></p>
-                                                        </li>
-                                                    </ul>
-                                                </div>
-                                            <?php endforeach; ?>
+                                <div class="row">
+                                    <!-- Клиенты -->
+                                    <div class="col-md-6 mb-4">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h5 class="card-title mb-0">Клиенты</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <?= \yii\grid\GridView::widget([
+                                                    'dataProvider' => $dataProviders['clients'],
+                                                    'columns' => [
+                                                        'id',
+                                                        'username',
+                                                        'email',
+                                                        'created_at:datetime',
+                                                        [
+                                                            'class' => 'yii\grid\ActionColumn',
+                                                            'template' => '{view}',
+                                                            'buttons' => [
+                                                                'view' => function ($url, $model) {
+                                                                    return \yii\helpers\Html::a(
+                                                                        '<i class="fas fa-eye"></i>',
+                                                                        ['/user/view', 'id' => $model->id],
+                                                                        ['class' => 'btn btn-sm btn-info']
+                                                                    );
+                                                                },
+                                                            ],
+                                                        ],
+                                                    ],
+                                                ]); ?>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="tab-pane fade" id="clients-role" role="tabpanel" aria-labelledby="clients-role-tab">
-                                        <div class="row row-cols-1 row-cols-md-3">
-                                            <?php foreach ($clients as $client) : ?>
-                                                <div class="col h-100">
-                                                    <ul class="list-unstyled p-0 card p-3 h-100">
-                                                        <li class="d-block">
-                                                            <p class="mb-0">Email: <?= $client->email ?></p>
-                                                            <p class="mb-0">Name: <?= $client->name ?></p>
-                                                            <p class="mb-0">Surname: <?= $client->surname ?></p>
-                                                            <p class="mb-0">Organization Name: <?= $client->organization_name ?></p>
-                                                            <p class="mb-0">Rating: <?= $client->rating ?></p>
-                                                        </li>
-                                                    </ul>
-                                                </div>
-                                            <?php endforeach; ?>
-                                        </div>
-                                    </div>
-                                    <div class="tab-pane fade" id="managers-role" role="tabpanel" aria-labelledby="managers-role-tab">
-                                        <div class="row row-cols-1 row-cols-md-3 g-4">
-                                            <?php foreach ($managers as $manager) : ?>
-                                                <div class="col h-100">
-                                                    <ul class="list-unstyled p-0 card p-3">
-                                                        <li class="d-block">
-                                                            <p class="mb-0">Email: <?= $manager->email ?></p>
-                                                            <p class="mb-0">Name: <?= $manager->name ?></p>
-                                                            <p class="mb-0">Surname: <?= $manager->surname ?></p>
-                                                            <p class="mb-0">Organization Name: <?= $manager->organization_name ?></p>
-                                                            <p class="mb-0">Rating: <?= $manager->rating ?></p>
-                                                        </li>
-                                                    </ul>
-                                                </div>
-                                            <?php endforeach; ?>
-                                        </div>
-                                    </div>
-                                    <div class="tab-pane fade" id="fulfillment-role" role="tabpanel" aria-labelledby="fulfillment-role-tab">
-                                        <div class="row row-cols-1 row-cols-md-3">
-                                            <?php foreach ($fulfillment as $fulfillment) : ?>
-                                                <div class="col h-100">
-                                                    <ul class="list-unstyled p-0 card p-3">
-                                                        <li class="d-block">
-                                                            <p class="mb-0">Email: <?= $fulfillment->email ?></p>
-                                                            <p class="mb-0">Name: <?= $fulfillment->name ?></p>
-                                                            <p class="mb-0">Surname: <?= $fulfillment->surname ?></p>
-                                                            <p class="mb-0">Organization Name: <?= $fulfillment->organization_name ?></p>
-                                                            <p class="mb-0">Rating: <?= $fulfillment->rating ?></p>
-                                                        </li>
-                                                    </ul>
-                                                </div>
-                                            <?php endforeach; ?>
+                                    
+                                    <!-- Менеджеры -->
+                                    <div class="col-md-6 mb-4">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h5 class="card-title mb-0">Менеджеры</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <?= \yii\grid\GridView::widget([
+                                                    'dataProvider' => $dataProviders['managers'],
+                                                    'columns' => [
+                                                        'id',
+                                                        'username',
+                                                        'email',
+                                                        'created_at:datetime',
+                                                        [
+                                                            'class' => 'yii\grid\ActionColumn',
+                                                            'template' => '{view}',
+                                                        ],
+                                                    ],
+                                                ]); ?>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+                            
+                            <!-- Вкладка с товарами -->
                             <div class="tab-pane fade" id="products" role="tabpanel" aria-labelledby="products-tab">
-                                <div class="row row-cols-1 row-cols-md-3">
-                                    <?php foreach ($products as $product) : ?>
-                                        <div class="col h-100">
-                                            <ul class="list-unstyled p-0 card p-3">
-                                                <li class="d-block">
-                                                    <p class="mb-0">Name: <?= $product->name_ru ?></p>
-                                                    <p class="mb-0">Rating: <?= $product->rating ?></p>
-                                                    <p class="mb-0">Buyer ID: <?= $product->buyer_id ?></p>
-                                                    <p class="mb-0">Subcategory ID: <?= $product->subcategory_id ?></p>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    <?php endforeach; ?>
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="card-title mb-0">Товары</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <?= \yii\grid\GridView::widget([
+                                            'dataProvider' => $dataProviders['products'],
+                                            'columns' => [
+                                                'id',
+                                                'name',
+                                                'price:currency',
+                                                'created_at:datetime',
+                                                [
+                                                    'attribute' => 'status',
+                                                    'format' => 'raw',
+                                                    'value' => function($model) {
+                                                        $statusClasses = [
+                                                            'active' => 'success',
+                                                            'inactive' => 'danger',
+                                                            'pending' => 'warning'
+                                                        ];
+                                                        $class = $statusClasses[$model->status] ?? 'secondary';
+                                                        return '<span class="badge bg-' . $class . '">' . $model->status . '</span>';
+                                                    }
+                                                ],
+                                                [
+                                                    'class' => 'yii\grid\ActionColumn',
+                                                    'template' => '{view} {update}',
+                                                ],
+                                            ],
+                                        ]); ?>
+                                    </div>
                                 </div>
                             </div>
+                            
+                            <!-- Вкладка с заказами -->
                             <div class="tab-pane fade" id="orders" role="tabpanel" aria-labelledby="orders-tab">
-                                <div class="row row-cols-1 row-cols-md-3">
-                                    <?php foreach ($orders as $order) : ?>
-                                        <div class="col h-100">
-                                            <ul class="list-unstyled p-0 card p-3">
-                                                <li class="d-block">
-                                                    <p class="mb-0">ID: <?= $order->id ?></p>
-                                                    <p class="mb-0">Created By: <?= $order->created_by ?></p>
-                                                    <p class="mb-0">Buyer ID: <?= $order->buyer_id ?></p>
-                                                    <p class="mb-0">Manager ID: <?= $order->manager_id ?></p>
-                                                    <p class="mb-0">Fulfillment ID: <?= $order->fulfillment_id ?></p>
-                                                    <p class="mb-0">Product Name: <?= $order->product_name_ru ?></p>
-                                                    <p class="mb-0">Subcategory ID: <?= $order->subcategory_id ?></p>
-                                                    <p class="mb-0">Status: <?= $order->created_at ?></p>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    <?php endforeach; ?>
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="card-title mb-0">Заказы</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <?= \yii\grid\GridView::widget([
+                                            'dataProvider' => $dataProviders['orders'],
+                                            'columns' => [
+                                                'id',
+                                                [
+                                                    'attribute' => 'user_id',
+                                                    'value' => 'user.username',
+                                                ],
+                                                'total_amount:currency',
+                                                'created_at:datetime',
+                                                [
+                                                    'attribute' => 'status',
+                                                    'format' => 'raw',
+                                                    'value' => function($model) {
+                                                        $statusClasses = [
+                                                            'new' => 'info',
+                                                            'processing' => 'warning',
+                                                            'completed' => 'success',
+                                                            'cancelled' => 'danger'
+                                                        ];
+                                                        $class = $statusClasses[$model->status] ?? 'secondary';
+                                                        return '<span class="badge bg-' . $class . '">' . $model->status . '</span>';
+                                                    }
+                                                ],
+                                                [
+                                                    'class' => 'yii\grid\ActionColumn',
+                                                    'template' => '{view} {update}',
+                                                ],
+                                            ],
+                                        ]); ?>
+                                    </div>
                                 </div>
                             </div>
                             <div class="tab-pane fade" id="invoices" role="tabpanel" aria-labelledby="invoices-tab">
@@ -216,6 +237,20 @@
                             <div class="tab-pane fade" id="dropdb" role="tabpanel" aria-labelledby="dropdb-tab">
                                 <div class="container">
                                     <div class="row">
+                                        <div class="col-12 mb-4">
+                                            <div class="card">
+                                                <div class="card-body">
+                                                    <h5 class="card-title">Delete Twilio Chats</h5>
+                                                    <button id="deleteTwilioChatsBtn" class="btn btn-danger">Delete All Twilio Chats</button>
+                                                    <div id="twilioProgressContainer" class="mt-3 d-none">
+                                                        <div class="progress mb-2">
+                                                            <div id="twilioProgressBar" class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                                        </div>
+                                                        <div id="twilioProgressMessages"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                         <div class="col-12">
                                             <form id="truncateForm" class="mt-3">
                                                 <div class="card">
@@ -293,7 +328,7 @@
 
                                     document.getElementById('truncateForm').addEventListener('submit', async function(e) {
                                         e.preventDefault();
-                                        
+
                                         const selectedTables = Array.from(document.querySelectorAll('.table-checkbox:checked')).map(cb => cb.value);
                                         if (selectedTables.length === 0) {
                                             alert('Please select at least one table');
@@ -307,27 +342,29 @@
                                         const truncateBtn = document.getElementById('truncateBtn');
                                         const resultsArea = document.getElementById('truncateResults');
                                         const progressBar = document.getElementById('truncateProgress');
-                                        
+
                                         truncateBtn.disabled = true;
                                         resultsArea.style.display = 'block';
                                         document.getElementById('resultsLog').innerHTML = '';
-                                        
+
                                         try {
                                             for (let i = 0; i < selectedTables.length; i++) {
                                                 const table = selectedTables[i];
                                                 const progress = Math.round(((i + 1) / selectedTables.length) * 100);
-                                                
+
                                                 try {
                                                     const response = await fetch('/raw/truncate-table', {
                                                         method: 'POST',
                                                         headers: {
                                                             'Content-Type': 'application/json',
                                                         },
-                                                        body: JSON.stringify({ table: table })
+                                                        body: JSON.stringify({
+                                                            table: table
+                                                        })
                                                     });
-                                                    
+
                                                     const result = await response.json();
-                                                    
+
                                                     if (result.success) {
                                                         addLogMessage(`✓ Table ${table} truncated successfully`, 'success');
                                                     } else {
@@ -336,13 +373,81 @@
                                                 } catch (error) {
                                                     addLogMessage(`✗ Failed to truncate ${table}: ${error.message}`, 'danger');
                                                 }
-                                                
+
                                                 progressBar.style.width = `${progress}%`;
                                                 progressBar.textContent = `${progress}%`;
                                             }
                                         } finally {
                                             truncateBtn.disabled = false;
                                             addLogMessage('Operation completed', 'info');
+                                        }
+                                    });
+                                </script>
+                                <script>
+                                    document.getElementById('deleteTwilioChatsBtn').addEventListener('click', async function() {
+                                        if (!confirm('Are you sure you want to delete all Twilio chats? This action cannot be undone.')) {
+                                            return;
+                                        }
+
+                                        const progressContainer = document.getElementById('twilioProgressContainer');
+                                        const progressBar = document.getElementById('twilioProgressBar');
+                                        const messagesContainer = document.getElementById('twilioProgressMessages');
+                                        this.disabled = true;
+                                        progressContainer.classList.remove('d-none');
+                                        messagesContainer.innerHTML = '';
+
+                                        try {
+                                            // Start the deletion process
+                                            const response = await fetch('/raw/delete-twilio-chats', {
+                                                method: 'POST',
+                                                headers: {
+                                                    'Content-Type': 'application/json',
+                                                }
+                                            });
+                                            const data = await response.json();
+                                            
+                                            if (!data.success) {
+                                                throw new Error(data.error || 'Failed to start deletion process');
+                                            }
+
+                                            // Connect to SSE for progress updates
+                                            const eventSource = new EventSource('/raw/twilio-deletion-progress');
+                                            
+                                            eventSource.onmessage = function(event) {
+                                                const data = JSON.parse(event.data);
+                                                
+                                                if (data.progress !== undefined) {
+                                                    progressBar.style.width = data.progress + '%';
+                                                    progressBar.setAttribute('aria-valuenow', data.progress);
+                                                }
+                                                
+                                                if (data.message) {
+                                                    const messageDiv = document.createElement('div');
+                                                    messageDiv.className = 'alert alert-' + (data.type || 'info') + ' mt-2';
+                                                    messageDiv.textContent = data.message;
+                                                    messagesContainer.prepend(messageDiv);
+                                                }
+                                                
+                                                if (data.completed) {
+                                                    eventSource.close();
+                                                    document.getElementById('deleteTwilioChatsBtn').disabled = false;
+                                                }
+                                            };
+                                            
+                                            eventSource.onerror = function() {
+                                                eventSource.close();
+                                                document.getElementById('deleteTwilioChatsBtn').disabled = false;
+                                                const messageDiv = document.createElement('div');
+                                                messageDiv.className = 'alert alert-danger mt-2';
+                                                messageDiv.textContent = 'Connection lost. Please try again.';
+                                                messagesContainer.prepend(messageDiv);
+                                            };
+                                        } catch (error) {
+                                            const messageDiv = document.createElement('div');
+                                            messageDiv.className = 'alert alert-danger mt-2';
+                                            messageDiv.textContent = error.message;
+                                            messagesContainer.prepend(messageDiv);
+                                            this.disabled = false;
                                         }
                                     });
                                 </script>

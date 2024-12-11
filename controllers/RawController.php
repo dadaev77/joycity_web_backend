@@ -77,101 +77,179 @@ class RawController extends Controller
      */
     public function actionLog()
     {
-        $logs = file_exists(self::LOG_FILE) ? file_get_contents(self::LOG_FILE) : 'Файл лога не найден';
-        $frontLogs = file_exists(self::FRONT_LOG_FILE) ? file_get_contents(self::FRONT_LOG_FILE) : 'Файл фронт-логов не найден';
-        $actionLogs = file_exists(self::ACTION_LOG_FILE) ? file_get_contents(self::ACTION_LOG_FILE) : 'Файл логов действий не найден';
-        $serverAccessLogs = 'Файл логов доступа сервера не найден';
-        $serverErrorLogs = 'Файл логов ошибок сервера не найден';
-        $clients = User::find()->where(['role' => 'client'])->orderBy(['id' => SORT_DESC])->all();
-        $managers = User::find()->where(['role' => 'manager'])->orderBy(['id' => SORT_DESC])->all();
-        $fulfillment = User::find()->where(['role' => 'fulfillment'])->orderBy(['id' => SORT_DESC])->all();
-        $buyers = User::find()->where(['role' => 'buyer'])->orderBy(['id' => SORT_DESC])->all();
-        $products = Product::find()->orderBy(['id' => SORT_DESC])->all();
-        $orders = OrderModel::find()->orderBy(['id' => SORT_DESC])->all();
+        // Получаем параметры пагинации
+        $page = Yii::$app->request->get('page', 1);
+        $pageSize = Yii::$app->request->get('per_page', 100);
+        
+        // Читаем и обрабатываем логи
+        $logs = $this->processLogFile(self::LOG_FILE, $page, $pageSize);
+        $frontLogs = $this->processLogFile(self::FRONT_LOG_FILE, $page, $pageSize);
+        $actionLogs = $this->processLogFile(self::ACTION_LOG_FILE, $page, $pageSize);
+        
+        // Получаем модели с пагинацией
+        $dataProviders = [
+            'clients' => new \yii\data\ActiveDataProvider([
+                'query' => User::find()->where(['role' => 'client'])->orderBy(['id' => SORT_DESC]),
+                'pagination' => ['pageSize' => 10],
+            ]),
+            'managers' => new \yii\data\ActiveDataProvider([
+                'query' => User::find()->where(['role' => 'manager'])->orderBy(['id' => SORT_DESC]),
+                'pagination' => ['pageSize' => 10],
+            ]),
+            'fulfillment' => new \yii\data\ActiveDataProvider([
+                'query' => User::find()->where(['role' => 'fulfillment'])->orderBy(['id' => SORT_DESC]),
+                'pagination' => ['pageSize' => 10],
+            ]),
+            'buyers' => new \yii\data\ActiveDataProvider([
+                'query' => User::find()->where(['role' => 'buyer'])->orderBy(['id' => SORT_DESC]),
+                'pagination' => ['pageSize' => 10],
+            ]),
+            'products' => new \yii\data\ActiveDataProvider([
+                'query' => Product::find()->orderBy(['id' => SORT_DESC]),
+                'pagination' => ['pageSize' => 10],
+            ]),
+            'orders' => new \yii\data\ActiveDataProvider([
+                'query' => OrderModel::find()->orderBy(['id' => SORT_DESC]),
+                'pagination' => ['pageSize' => 10],
+            ]),
+        ];
+
         $attachments = array_diff(scandir(Yii::getAlias('@webroot/attachments')), ['.', '..', '.DS_Store', '.gitignore']);
 
-        $keysToRemove = array_keys(array_intersect_key($_SERVER, array_flip(self::KEYS)));
-        $lines = explode("\n", $logs);
-        foreach ($keysToRemove as $key) {
-            $logs = preg_replace('/.*' . preg_quote($key, '/') . '.*\n?/', '', $logs);
-        }
-
-        // limit to 1000 lines
-        $logs = implode("\n", array_slice(explode("\n", $logs), 0, 2000));
-        // $frontLogs = implode("\n", array_slice(explode("\n", $frontLogs), 0, 2000));
-        $tables = [
-            'app_option',
-            'attachment',
-            'buyer_delivery_offer',
-            'buyer_offer',
-            'category',
-            'chat',
-            'chat_translate',
-            'chat_user',
-            'delivery_point_address',
-            'feedback_buyer',
-            'feedback_buyer_link_attachment',
-            'feedback_product',
-            'feedback_product_link_attachment',
-            'feedback_user',
-            'feedback_user_link_attachment',
-            'fulfillment_inspection_report',
-            'fulfillment_marketplace_transaction',
-            'fulfillment_offer',
-            'fulfillment_packaging_labeling',
-            'fulfillment_stock_report',
-            'fulfillment_stock_report_link_attachment',
-            'migration',
-            'notification',
-            'order',
-            'order_distribution',
-            'order_link_attachment',
-            'order_rate',
-            'order_tracking',
-            'packaging_report_link_attachment',
-            'privacy_policy',
-            'product',
-            'product_inspection_report',
-            'product_link_attachment',
-            'product_stock_report',
-            'product_stock_report_link_attachment',
-            'rate',
-            'type_delivery',
-            'type_delivery_link_category',
-            'type_delivery_point',
-            'type_delivery_price',
-            'type_packaging',
-            'user',
-            'user_link_category',
-            'user_link_type_delivery',
-            'user_link_type_packaging',
-            'user_settings',
-            'user_verification_request',
-            'waybill',
-        ];
-        // format logs content
-        $logs = nl2br($logs);
-        // $frontLogs = nl2br($frontLogs);
-
-        // Render the log view with logs and frontLogs variables
         $response = Yii::$app->response;
         $response->format = Response::FORMAT_HTML;
 
         return $this->renderPartial('log', [
-            'logs' => $logs,
-            'frontLogs' => $frontLogs,
-            'clients' => $clients,
-            'managers' => $managers,
-            'fulfillment' => $fulfillment,
-            'buyers' => $buyers,
-            'products' => $products,
-            'orders' => $orders,
+            'logs' => $logs['content'],
+            'logsPages' => $logs['pages'],
+            'frontLogs' => $frontLogs['content'],
+            'frontLogsPages' => $frontLogs['pages'],
+            'actionLogs' => $actionLogs['content'],
+            'actionLogsPages' => $actionLogs['pages'],
+            'dataProviders' => $dataProviders,
             'attachments' => $attachments,
-            'actionLogs' => $actionLogs,
-            'serverAccessLogs' => $serverAccessLogs,
-            'serverErrorLogs' => $serverErrorLogs,
-            'tables' => $tables
+            'tables' => $this->getAvailableTables(),
+            'currentPage' => $page,
+            'pageSize' => $pageSize
         ], false);
+    }
+
+    /**
+     * Обработка файла логов с пагинацией
+     */
+    private function processLogFile($filePath, $page, $pageSize)
+    {
+        if (!file_exists($filePath)) {
+            return [
+                'content' => 'Файл лога не найден',
+                'pages' => 0
+            ];
+        }
+
+        // Читаем файл и разбиваем на строки
+        $lines = file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        
+        // Удаляем конфиденциальные данные
+        $lines = $this->removeConfidentialData($lines);
+        
+        // Считаем общее количество страниц
+        $totalPages = ceil(count($lines) / $pageSize);
+        
+        // Получаем нужную страницу
+        $offset = ($page - 1) * $pageSize;
+        $pageLines = array_slice($lines, $offset, $pageSize);
+        
+        // Форматируем логи
+        $formattedLogs = $this->formatLogs($pageLines);
+        
+        return [
+            'content' => $formattedLogs,
+            'pages' => $totalPages
+        ];
+    }
+
+    /**
+     * Удаление конфиденциальных данных из логов
+     */
+    private function removeConfidentialData($lines)
+    {
+        $keysToRemove = array_keys(array_intersect_key($_SERVER, array_flip(self::KEYS)));
+        foreach ($lines as &$line) {
+            foreach ($keysToRemove as $key) {
+                $line = preg_replace('/.*' . preg_quote($key, '/') . '.*/', '[REMOVED]', $line);
+            }
+        }
+        return $lines;
+    }
+
+    /**
+     * Форматирование логов
+     */
+    private function formatLogs($lines)
+    {
+        $formatted = '';
+        foreach ($lines as $line) {
+            // Экранируем специальные символы
+            $line = htmlspecialchars($line, ENT_QUOTES, 'UTF-8');
+            
+            // Добавляем подсветку для разных типов логов
+            if (strpos($line, 'ERROR') !== false) {
+                $line = '<span class="text-danger">' . $line . '</span>';
+            } elseif (strpos($line, 'WARNING') !== false) {
+                $line = '<span class="text-warning">' . $line . '</span>';
+            } elseif (strpos($line, 'INFO') !== false) {
+                $line = '<span class="text-info">' . $line . '</span>';
+            }
+            
+            // Форматируем JSON если он есть в строке
+            $line = $this->formatJsonInLine($line);
+            
+            $formatted .= $line . "<br>\n";
+        }
+        return $formatted;
+    }
+
+    /**
+     * Форматирование JSON в строке лога
+     */
+    private function formatJsonInLine($line)
+    {
+        return preg_replace_callback('/({.+?})/', function($matches) {
+            $json = json_decode($matches[1], true);
+            if ($json === null) {
+                return $matches[1];
+            }
+            return '<pre class="d-inline"><code class="json">' . 
+                   json_encode($json, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) . 
+                   '</code></pre>';
+        }, $line);
+    }
+
+    /**
+     * Получение списка доступных таблиц
+     */
+    private function getAvailableTables()
+    {
+        return [
+            'app_option' => 'App Options',
+            'attachment' => 'Attachments',
+            'buyer_delivery_offer' => 'Buyer Delivery Offers',
+            'buyer_offer' => 'Buyer Offers',
+            'category' => 'Categories',
+            'chat' => 'Chats',
+            'chat_translate' => 'Chat Translations',
+            'chat_user' => 'Chat Users',
+            'delivery_point_address' => 'Delivery Points',
+            'feedback_buyer' => 'Buyer Feedback',
+            'feedback_product' => 'Product Feedback',
+            'feedback_user' => 'User Feedback',
+            'fulfillment_offer' => 'Fulfillment Offers',
+            'notification' => 'Notifications',
+            'order' => 'Orders',
+            'product' => 'Products',
+            'user' => 'Users',
+            // ... остальные таблицы
+        ];
     }
 
     /**
