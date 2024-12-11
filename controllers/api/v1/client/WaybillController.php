@@ -25,7 +25,7 @@ class WaybillController extends ClientController
         $path = $_ENV['APP_URL'] . '/uploads/waybills/' . $waybill->file_path;
         return
             ApiResponse::byResponseCode($apiCodes->SUCCESS, [
-                'waybill' => $waybill,
+                'waybill_path' => $path,
             ]);
         // return $id;
     }
