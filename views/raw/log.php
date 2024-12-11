@@ -1,4 +1,7 @@
 <!DOCTYPE html>
+<?php
+use app\models\Order;
+?>
 <html lang="ru">
 
 <head>
