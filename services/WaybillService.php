@@ -176,7 +176,8 @@ class WaybillService
         if ($firstAttachment) {
             $attachmentUrl = $firstAttachment->path;
         }
-        Log::info('Приложение: ' . json_encode($firstAttachment));
+
+        Log::info('Приложение: ' . json_encode($order->attachments));
 
         // Расчет объема
         $volume = isset($bdo->product_height, $bdo->product_width, $bdo->product_depth, $bdo->amount_of_space)
