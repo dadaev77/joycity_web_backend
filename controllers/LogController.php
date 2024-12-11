@@ -103,7 +103,7 @@ class LogController extends Controller
             'buyerDeliveryOffers' => $buyerDeliveryOffers,
             'attachments' => $attachments,
             'tables' => $this->getAvailableTables(),
-            'allowedTables' => [],
+            'allowedTables' => $this->getAvailableTables(),
         ]);
     }
 
