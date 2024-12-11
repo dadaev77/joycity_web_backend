@@ -167,6 +167,13 @@ class WaybillService
         $client = User::findOne($data['client_id']);
         $manager = User::findOne($data['manager_id']);
 
+        $order = Order::findOne($data['order_id']);
+        if (!$order) {
+            throw new NotFoundHttpException('Заказ не найден');
+        }
+        $firstAttachment = $order->getFirstAttachment();
+        $firstAttachment = base64_encode(file_get_contents($firstAttachment->file_path));
+
         // Расчет объема
         $volume = isset($bdo->product_height, $bdo->product_width, $bdo->product_depth, $bdo->amount_of_space)
             ? ($bdo->product_height / 100) * ($bdo->product_width / 100) * ($bdo->product_depth / 100) * $bdo->amount_of_space
@@ -217,7 +224,7 @@ class WaybillService
             'approved_by' => $manager ? $manager->name : '',
             'executor' => 'JoyCity Company',
             'total_payment' => floatval($bdo->package_expenses ?? 0) + $weightCosts + $insuranceCosts,
-            'first_attachment' => $data['first_attachment'],
+            'first_attachment' => $firstAttachment,
         ];
 
         // Удаляем старый файл
