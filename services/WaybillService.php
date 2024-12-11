@@ -114,7 +114,7 @@ class WaybillService
             'created_at' => date('Y-m-d H:i:s'),
             'regenerated_at' => null,
             'editable' => true,
-            'price_per_kg' => RateService::convertValue($pricePerKg, $manager->settings->currency, 'USD'),
+            'price_per_kg' => $pricePerKg, // in USD already
             'course' => $course,
             'total_number_pairs' => 0,
             'total_customs_duty' => 0,
