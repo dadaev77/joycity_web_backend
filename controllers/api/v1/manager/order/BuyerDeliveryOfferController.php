@@ -95,6 +95,7 @@ class BuyerDeliveryOfferController extends ManagerController
 
             // Устанавливаем флаг наличия накладной для заказа
             $order->waybill_isset = true;
+            $order->client_waybill_isset = true;
             if (!$order->save()) {
                 return ApiResponse::codeErrors(
                     $apiCodes->ERROR_SAVE,
@@ -111,8 +112,8 @@ class BuyerDeliveryOfferController extends ManagerController
 
             $firstAttachment = $order->getFirstAttachment();
             $uploadDir = Yii::getAlias('@webroot/uploads/');
-            if ($firstAttachment && file_exists($uploadDir.$firstAttachment->path)) {
-                $fileContents = file_get_contents($uploadDir.$firstAttachment->path);
+            if ($firstAttachment && file_exists($uploadDir . $firstAttachment->path)) {
+                $fileContents = file_get_contents($uploadDir . $firstAttachment->path);
                 $base64Image = 'data:' . $firstAttachment->mime_type . ';base64,' . base64_encode($fileContents);
                 $waybillData['first_attachment'] = $base64Image;
             } else {
