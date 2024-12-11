@@ -285,39 +285,104 @@ class LogController extends Controller
         // Удаляем конфиденциальные данные
         $content = $this->removeConfidentialData($content);
 
-        // Форматируем JSON с проверкой на валидность
-        $content = preg_replace_callback('/\[[-\s]+\]\s*\[[-\s]+\]\s*\[([\d\-\s:]+)\]\s*\[[-\s]+\]\s*\[[-\s]+\]\s*(\{.+?\})/', function ($matches) {
-            $timestamp = $matches[1];
-            $json = json_decode($matches[2], true);
-            if ($json === null && json_last_error() !== JSON_ERROR_NONE) {
-                return $matches[0]; // Если невалидный JSON, возвращаем как есть
+        // Разбиваем на строки
+        $lines = explode("\n", $content);
+        $formattedLines = [];
+
+        foreach ($lines as $line) {
+            // Проверяем, является ли строка JSON логом
+            if (preg_match('/^\[[-\s]+\]\s*\[[-\s]+\]\s*\[([\d\-\s:]+)\]\s*\[[-\s]+\]\s*\[[-\s]+\]\s*(\{.+\})$/', $line, $matches)) {
+                $timestamp = $matches[1];
+                $jsonStr = $matches[2];
+
+                // Пытаемся декодировать JSON
+                $json = json_decode($jsonStr, true);
+                if ($json !== null) {
+                    // Форматируем JSON с подсветкой синтаксиса
+                    $formattedJson = $this->formatJson($json);
+                    $formattedLines[] = sprintf(
+                        '<div class="log-entry">
+                            <span class="text-secondary">[%s]</span>
+                            <div class="json-content">%s</div>
+                        </div>',
+                        $timestamp,
+                        $formattedJson
+                    );
+                    continue;
+                }
             }
-            return '<div class="log-entry">' .
-                '<span class="text-secondary">[' . $timestamp . ']</span> ' .
-                '<pre class="d-inline"><code class="json">' .
-                htmlspecialchars(json_encode($json, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)) .
-                '</code></pre></div>';
-        }, $content);
 
-        // Подсвечиваем ошибки и предупреждения с учетом возможных HTML-тегов
-        $content = preg_replace(
-            [
-                '/(?<!>)(ERROR[^<\n]*)/i',
-                '/(?<!>)(WARNING[^<\n]*)/i',
-                '/(?<!>)(INFO[^<\n]*)/i',
-                '/(?<!>)(\[[\d\-\s:]+\])/'
-            ],
-            [
-                '<span class="text-danger">$1</span>',
-                '<span class="text-warning">$1</span>',
-                '<span class="text-info">$1</span>',
-                '<span class="text-secondary">$1</span>'
-            ],
-            $content
-        );
+            // Если это не JSON или невалидный JSON, форматируем как обычный лог
+            $line = preg_replace(
+                [
+                    '/(?<!>)(ERROR[^<\n]*)/i',
+                    '/(?<!>)(WARNING[^<\n]*)/i',
+                    '/(?<!>)(INFO[^<\n]*)/i',
+                    '/(?<!>)(\[[\d\-\s:]+\])/'
+                ],
+                [
+                    '<span class="text-danger">$1</span>',
+                    '<span class="text-warning">$1</span>',
+                    '<span class="text-info">$1</span>',
+                    '<span class="text-secondary">$1</span>'
+                ],
+                htmlspecialchars($line)
+            );
+            $formattedLines[] = $line;
+        }
 
-        // Безопасное преобразование переносов строк
-        return nl2br(htmlspecialchars_decode($content, ENT_QUOTES));
+        return implode("<br>", $formattedLines);
+    }
+
+    private function formatJson($data, $level = 0)
+    {
+        $output = '';
+        $indent = str_repeat('    ', $level);
+
+        if (is_array($data)) {
+            $isAssoc = array_keys($data) !== range(0, count($data) - 1);
+            $output .= $isAssoc ? '{' : '[';
+            $items = [];
+
+            foreach ($data as $key => $value) {
+                $item = $indent . '    ';
+                if ($isAssoc) {
+                    $item .= '<span class="json-key">"' . htmlspecialchars($key) . '"</span>: ';
+                }
+                if (is_array($value)) {
+                    $item .= $this->formatJson($value, $level + 1);
+                } else {
+                    $item .= $this->formatJsonValue($value);
+                }
+                $items[] = $item;
+            }
+
+            if (!empty($items)) {
+                $output .= "\n" . implode(",\n", $items) . "\n" . $indent;
+            }
+            $output .= $isAssoc ? '}' : ']';
+        } else {
+            $output .= $this->formatJsonValue($data);
+        }
+
+        return $output;
+    }
+
+    private function formatJsonValue($value)
+    {
+        if (is_string($value)) {
+            return '<span class="json-string">"' . htmlspecialchars($value) . '"</span>';
+        }
+        if (is_numeric($value)) {
+            return '<span class="json-number">' . $value . '</span>';
+        }
+        if (is_bool($value)) {
+            return '<span class="json-boolean">' . ($value ? 'true' : 'false') . '</span>';
+        }
+        if (is_null($value)) {
+            return '<span class="json-null">null</span>';
+        }
+        return htmlspecialchars((string)$value);
     }
 
     /**

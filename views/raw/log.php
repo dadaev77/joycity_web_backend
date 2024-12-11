@@ -28,48 +28,43 @@ use app\models\Order;
             overflow-y: auto;
         }
 
-        .log-container pre {
-            margin: 0;
-            white-space: pre-wrap;
-        }
-
         .log-entry {
             margin-bottom: 10px;
             padding: 8px;
             border-radius: 4px;
             background: rgba(255, 255, 255, 0.05);
+            white-space: pre;
         }
 
         .log-entry:hover {
             background: rgba(255, 255, 255, 0.1);
         }
 
-        .json {
-            background: #2d2d2d;
+        .json-content {
+            margin-top: 5px;
             padding: 8px;
+            background: #2d2d2d;
             border-radius: 4px;
-            margin: 4px 0;
-            display: block;
         }
 
-        .json .string {
+        .json-key {
+            color: #9cdcfe;
+        }
+
+        .json-string {
             color: #ce9178;
         }
 
-        .json .number {
+        .json-number {
             color: #b5cea8;
         }
 
-        .json .boolean {
+        .json-boolean {
             color: #569cd6;
         }
 
-        .json .null {
+        .json-null {
             color: #569cd6;
-        }
-
-        .json .key {
-            color: #9cdcfe;
         }
 
         .text-danger {
@@ -390,7 +385,7 @@ use app\models\Order;
                                                         <td><span class="badge bg-<?= $user->role === 'admin' ? 'danger' : ($user->role === 'manager' ? 'primary' : 'secondary') ?>"><?= $user->role ?></span></td>
                                                         <td>
                                                             <?php if ($user->is_deleted): ?>
-                                                                <span class="badge bg-danger">Уд��лен</span>
+                                                                <span class="badge bg-danger">Удален</span>
                                                             <?php elseif ($user->is_verified): ?>
                                                                 <span class="badge bg-success">Активен</span>
                                                             <?php else: ?>
@@ -454,7 +449,7 @@ use app\models\Order;
                                             <tr>
                                                 <th>ID</th>
                                                 <th>Дата</th>
-                                                <th>Дейс��вия</th>
+                                                <th>Действия</th>
                                             </tr>
                                         </thead>
                                         <tbody>
