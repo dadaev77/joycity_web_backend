@@ -198,12 +198,12 @@ class WaybillService
 
         // Расчет веса и связанных расходов
         $weight = $bdo->product_weight ?? 0;
-        $pricePerKg = $waybill->price_per_kg; // USD
+        $pricePerKg = $data['price_per_kg']; // USD
         $weightCosts = $weight * $pricePerKg;
         $weightCosts = $weightCosts * $bdo->amount_of_space;
 
         // Курс и страховка
-        $course = $waybill->course;
+        $course = $data['course'];
         $insuranceRate = 0.01;
         $insuranceSumCNY = $bdo->total_quantity * $bdo->price_product;
         $insuranceSumCNY = RateService::convertValue(floatval($insuranceSumCNY), $bdo->currency, 'CNY');
