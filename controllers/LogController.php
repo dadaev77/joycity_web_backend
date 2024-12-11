@@ -290,23 +290,24 @@ class LogController extends Controller
         $formattedLines = [];
 
         foreach ($lines as $line) {
+            if (empty(trim($line))) continue;
+
             // Проверяем, является ли строка JSON логом
             if (preg_match('/^\[[-\s]+\]\s*\[[-\s]+\]\s*\[([\d\-\s:]+)\]\s*\[[-\s]+\]\s*\[[-\s]+\]\s*(\{.+\})$/', $line, $matches)) {
                 $timestamp = $matches[1];
                 $jsonStr = $matches[2];
 
-                // Пытаемся декодировать JSON
-                $json = json_decode($jsonStr, true);
+                // Пытаемся отформатировать JSON
+                $json = json_decode($jsonStr);
                 if ($json !== null) {
-                    // Форматируем JSON с подсветкой синтаксиса
-                    $formattedJson = $this->formatJson($json);
+                    $prettyJson = json_encode($json, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
                     $formattedLines[] = sprintf(
                         '<div class="log-entry">
-                            <span class="text-secondary">[%s]</span>
-                            <div class="json-content">%s</div>
+                            <div class="log-timestamp">[%s]</div>
+                            <pre><code class="language-json">%s</code></pre>
                         </div>',
                         $timestamp,
-                        $formattedJson
+                        htmlspecialchars($prettyJson)
                     );
                     continue;
                 }
@@ -331,58 +332,18 @@ class LogController extends Controller
             $formattedLines[] = $line;
         }
 
-        return implode("<br>", $formattedLines);
-    }
+        // Добавляем скрипт для инициализации highlight.js
+        $result = implode("\n", $formattedLines);
+        $result .= "
+        <script>
+            document.addEventListener('DOMContentLoaded', (event) => {
+                document.querySelectorAll('pre code').forEach((block) => {
+                    hljs.highlightBlock(block);
+                });
+            });
+        </script>";
 
-    private function formatJson($data, $level = 0)
-    {
-        $output = '';
-        $indent = str_repeat('    ', $level);
-
-        if (is_array($data)) {
-            $isAssoc = array_keys($data) !== range(0, count($data) - 1);
-            $output .= $isAssoc ? '{' : '[';
-            $items = [];
-
-            foreach ($data as $key => $value) {
-                $item = $indent . '    ';
-                if ($isAssoc) {
-                    $item .= '<span class="json-key">"' . htmlspecialchars($key) . '"</span>: ';
-                }
-                if (is_array($value)) {
-                    $item .= $this->formatJson($value, $level + 1);
-                } else {
-                    $item .= $this->formatJsonValue($value);
-                }
-                $items[] = $item;
-            }
-
-            if (!empty($items)) {
-                $output .= "\n" . implode(",\n", $items) . "\n" . $indent;
-            }
-            $output .= $isAssoc ? '}' : ']';
-        } else {
-            $output .= $this->formatJsonValue($data);
-        }
-
-        return $output;
-    }
-
-    private function formatJsonValue($value)
-    {
-        if (is_string($value)) {
-            return '<span class="json-string">"' . htmlspecialchars($value) . '"</span>';
-        }
-        if (is_numeric($value)) {
-            return '<span class="json-number">' . $value . '</span>';
-        }
-        if (is_bool($value)) {
-            return '<span class="json-boolean">' . ($value ? 'true' : 'false') . '</span>';
-        }
-        if (is_null($value)) {
-            return '<span class="json-null">null</span>';
-        }
-        return htmlspecialchars((string)$value);
+        return $result;
     }
 
     /**

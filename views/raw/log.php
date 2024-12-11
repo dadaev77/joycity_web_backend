@@ -13,6 +13,9 @@ use app\models\Order;
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/json.min.js"></script>
     <style>
         .log-container {
             background: #1e1e1e;
@@ -29,42 +32,26 @@ use app\models\Order;
         }
 
         .log-entry {
-            margin-bottom: 10px;
-            padding: 8px;
-            border-radius: 4px;
+            margin-bottom: 15px;
             background: rgba(255, 255, 255, 0.05);
-            white-space: pre;
-        }
-
-        .log-entry:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .json-content {
-            margin-top: 5px;
-            padding: 8px;
-            background: #2d2d2d;
             border-radius: 4px;
         }
 
-        .json-key {
-            color: #9cdcfe;
+        .log-entry pre {
+            margin: 0;
+            padding: 10px;
+            background: transparent;
         }
 
-        .json-string {
-            color: #ce9178;
+        .log-entry pre code {
+            background: transparent !important;
+            padding: 0 !important;
         }
 
-        .json-number {
-            color: #b5cea8;
-        }
-
-        .json-boolean {
-            color: #569cd6;
-        }
-
-        .json-null {
-            color: #569cd6;
+        .log-timestamp {
+            color: #888;
+            padding: 5px 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .text-danger {
@@ -146,7 +133,7 @@ use app\models\Order;
             </li>
             <li class="nav-item">
                 <a class="nav-link" id="attachments-tab" data-bs-toggle="tab" href="#attachments" role="tab">
-                    <i class="fa fa-paperclip"></i> Вложения
+                    <i class="fa fa-paperclip"></i> ��ложения
                 </a>
             </li>
         </ul>
@@ -193,7 +180,7 @@ use app\models\Order;
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" id="buyer-offers-tab" data-bs-toggle="tab" href="#buyer-offers-content" role="tab">
-                                    <i class="fa fa-handshake-o"></i> Предложения байера
+                                    <i class="fa fa-handshake-o"></i> Предложени�� байера
                                 </a>
                             </li>
                             <li class="nav-item">
