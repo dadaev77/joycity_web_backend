@@ -54,8 +54,8 @@ class LogController extends Controller
     {
         // Читаем и форматируем логи
         $logs = $this->formatLogs(self::LOG_FILE);
-        $frontLogs = $this->formatLogs(self::FRONT_LOG_FILE);
-        $actionLogs = $this->formatLogs(self::ACTION_LOG_FILE);
+        $frontLogs = $this->formatFrontendLogs(self::FRONT_LOG_FILE);
+        $actionLogs = $this->formatActionLogs(self::ACTION_LOG_FILE);
 
         // Получаем данные моделей
         $orders = Order::find()
