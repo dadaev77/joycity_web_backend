@@ -78,15 +78,13 @@ class RawController extends Controller
      */
     public function actionLog()
     {
-        $maxLines = 1200; // Максимальное количество строк для каждого типа лога
-        
-        // Чтение логов с ограничением
-        $logs = $this->readLastLines(Yii::getAlias('@runtime/logs/app.log'), $maxLines);
-        $frontLogs = $this->readLastLines(Yii::getAlias('@runtime/logs/front.log'), $maxLines);
-        $actionLogs = $this->readLastLines(Yii::getAlias('@runtime/logs/action.log'), $maxLines);
-        $serverAccessLogs = $this->readLastLines(Yii::getAlias('@runtime/logs/access.log'), $maxLines);
-        $serverErrorLogs = $this->readLastLines(Yii::getAlias('@runtime/logs/error.log'), $maxLines);
-        $profilingLogs = $this->readLastLines(Yii::getAlias('@runtime/logs/profiling.log'), $maxLines);
+        $logs = file_exists(self::LOG_FILE) ? file_get_contents(self::LOG_FILE) : 'Файл лога не найден';
+        $frontLogs = file_exists(self::FRONT_LOG_FILE) ? file_get_contents(self::FRONT_LOG_FILE) : 'Файл фронт-логов не найден';
+        $actionLogs = file_exists(self::ACTION_LOG_FILE) ? file_get_contents(self::ACTION_LOG_FILE) : 'Файл логов действий не найден';
+        $profilingLogs = file_exists(self::PROFILING_LOG_FILE) ? file_get_contents(self::PROFILING_LOG_FILE) : 'Файл логов профилирования не найден';
+
+        $serverAccessLogs = 'Файл логов доступа сервера не найден';
+        $serverErrorLogs = 'Файл логов ошибок сервера не найден';
 
         $clients = User::find()->where(['role' => 'client'])->orderBy(['id' => SORT_DESC])->all();
         $managers = User::find()->where(['role' => 'manager'])->orderBy(['id' => SORT_DESC])->all();
@@ -98,13 +96,19 @@ class RawController extends Controller
 
         $keysToRemove = array_keys(array_intersect_key($_SERVER, array_flip(self::KEYS)));
 
+        $lines = explode("\n", $logs);
+
         foreach ($keysToRemove as $key) {
             $logs = preg_replace('/.*' . preg_quote($key, '/') . '.*\n?/', '', $logs);
         }
 
+        // limit to 1000 lines
+        $logs = implode("\n", array_slice(explode("\n", $logs), 0, 2000));
+        // $frontLogs = implode("\n", array_slice(explode("\n", $frontLogs), 0, 2000));
+
         // format logs content
         $logs = nl2br($logs);
-        $frontLogs = nl2br($frontLogs);
+        // $frontLogs = nl2br($frontLogs);
 
         // Render the log view with logs and frontLogs variables
         $response = Yii::$app->response;
@@ -757,52 +761,5 @@ class RawController extends Controller
         $response->format = Response::FORMAT_HTML;
 
         return $this->renderPartial('@app/views/pdf/templates/invoce');
-    }
-
-    /**
-     * Читает последние N строк из файла
-     * @param string $file Путь к файлу
-     * @param int $lines Количество строк для чтения
-     * @return string
-     */
-    private function readLastLines($file, $lines)
-    {
-        if (!file_exists($file)) {
-            return '';
-        }
-
-        $handle = fopen($file, "r");
-        if (!$handle) {
-            return '';
-        }
-
-        $buffer = array();
-        $lineCount = 0;
-        $pos = -2;
-        $currentLine = '';
-
-        while ($lineCount < $lines && fseek($handle, $pos, SEEK_END) !== -1) {
-            $char = fgetc($handle);
-            
-            if ($char === "\n") {
-                if ($currentLine !== '') {
-                    array_unshift($buffer, $currentLine);
-                    $currentLine = '';
-                    $lineCount++;
-                }
-            } else {
-                $currentLine = $char . $currentLine;
-            }
-            
-            $pos--;
-        }
-
-        // Добавляем последнюю строку, если она есть
-        if ($currentLine !== '') {
-            array_unshift($buffer, $currentLine);
-        }
-
-        fclose($handle);
-        return implode("\n", $buffer);
     }
 }
