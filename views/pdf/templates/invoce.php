@@ -73,7 +73,7 @@
                 </td>
                 <td colspan="6" class="header-cell" rowspan="1">Международная логистическая компания JOYCITY 313</td>
                 <td class="image-cell" rowspan="4">
-                    <img src="data:image/jpeg;base64,<?= $data['first_attachment'] ?>" alt='Attachment' style='width: 100px;'>
+                    <img src="data:image/octet-stream;base64,<?= $data['first_attachment'] ?>" alt='Attachment' style='width: 100px;'>
                 </td>
             </tr>
             <tr>
