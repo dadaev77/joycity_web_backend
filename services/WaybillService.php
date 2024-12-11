@@ -172,11 +172,11 @@ class WaybillService
         $order = Order::findOne($data['order_id']);
         $product = \app\models\Product::findOne($order->product_id);
 
-        if ($product->getAttachments()) {
+        if ($product->getAttachments()->exists()) {
             Log::info('product: ' . json_encode($product->getAttachments()->one()->path));
         }
 
-        if ($order->getAttachments()) {
+        if ($order->getAttachments()->exists()) {
             Log::info('order: ' . json_encode($order->getAttachments()->one()->path));
         }
 
