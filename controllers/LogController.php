@@ -56,7 +56,7 @@ class LogController extends Controller
         $logs = $this->formatSystemLogs(self::LOG_FILE);
         $frontLogs = $this->formatFrontendLogs(self::FRONT_LOG_FILE);
         $actionLogs = $this->formatActionLogs(self::ACTION_LOG_FILE);
-
+        Yii::$app->response->format = Response::FORMAT_HTML;
         // Получаем данные моделей
         $orders = Order::find()
             ->orderBy(['id' => SORT_DESC])
