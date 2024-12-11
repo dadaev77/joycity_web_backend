@@ -183,22 +183,26 @@
                                                 <th>ID</th>
                                                 <th>Статус</th>
                                                 <th>Дата создания</th>
-                                                <th>Сумма</th>
+                                                <th>Товар</th>
+                                                <th>Цена за ед.</th>
+                                                <th>Кол-во</th>
                                                 <th>Действия</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <?php if (empty($orders)): ?>
                                                 <tr>
-                                                    <td colspan="5" class="text-center text-muted py-3">Нет данных</td>
+                                                    <td colspan="7" class="text-center text-muted py-3">Нет данных</td>
                                                 </tr>
                                             <?php else: ?>
                                                 <?php foreach ($orders as $order): ?>
                                                     <tr>
                                                         <td><?= $order->id ?></td>
-                                                        <td><span class="badge bg-<?= $order->status === 'completed' ? 'success' : ($order->status === 'pending' ? 'warning' : 'secondary') ?>"><?= $order->status ?></span></td>
+                                                        <td><span class="badge bg-<?= $order->status === Order::STATUS_COMPLETED ? 'success' : ($order->status === Order::STATUS_CREATED ? 'warning' : 'secondary') ?>"><?= $order->status ?></span></td>
                                                         <td><?= Yii::$app->formatter->asDatetime($order->created_at, 'php:d.m.Y H:i') ?></td>
-                                                        <td><?= Yii::$app->formatter->asCurrency($order->total_amount) ?></td>
+                                                        <td><?= \yii\helpers\Html::encode($order->product_name) ?></td>
+                                                        <td><?= Yii::$app->formatter->asCurrency($order->expected_price_per_item) ?></td>
+                                                        <td><?= $order->expected_quantity ?></td>
                                                         <td>
                                                             <button class="btn btn-sm btn-outline-info" data-bs-toggle="collapse" data-bs-target="#order-details-<?= $order->id ?>">
                                                                 <i class="fa fa-info-circle"></i>
@@ -206,7 +210,7 @@
                                                         </td>
                                                     </tr>
                                                     <tr class="collapse" id="order-details-<?= $order->id ?>">
-                                                        <td colspan="5">
+                                                        <td colspan="7">
                                                             <div class="row">
                                                                 <div class="col-md-6">
                                                                     <h6>Атрибуты</h6>
