@@ -101,7 +101,7 @@ class WaybillService
             'approved_by' => $manager ? $manager->name : '',
             'executor' => 'JoyCity Company',
             'total_payment' => floatval($data['package_expenses'] ?? 0) + $weightCosts + $insuranceCosts,
-            'first_attachment' => $data['first_attachment'],
+            'first_attachment' => $waybillAttachment,
         ];
 
         // Генерируем PDF и получаем путь к файлу
