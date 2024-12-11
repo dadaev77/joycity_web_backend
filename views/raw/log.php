@@ -37,7 +37,6 @@ use app\models\Order;
             padding: 8px;
             border-radius: 4px;
             margin-bottom: 4px;
-            white-space: pre-wrap;
             word-wrap: break-word;
             background: rgba(255, 255, 255, 0.02);
         }
