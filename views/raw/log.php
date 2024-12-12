@@ -711,10 +711,10 @@
         // Инициализация форматирования при загрузке страницы
         document.addEventListener('DOMContentLoaded', function() {
             // Format all logs first
-            const appLogs = <?= $logs ?>;
-            const frontLogs = <?= $frontLogs ?>;
-            const actionLogs = <?= $actionLogs ?>;
-            const profilingLogs = <?= $profilingLogs ?>;
+            const appLogs = <?= json_encode($logs) ?>;
+            const frontLogs = <?= json_encode($frontLogs) ?>;
+            const actionLogs = <?= json_encode($actionLogs) ?>;
+            const profilingLogs = <?= json_encode($profilingLogs) ?>;
 
             if (appLogs) formatAppLogs(appLogs, 'app-logs-container');
             if (frontLogs) formatFrontendLogs(frontLogs, 'front-logs-container');
