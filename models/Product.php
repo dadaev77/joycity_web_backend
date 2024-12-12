@@ -78,8 +78,13 @@ class Product extends Base
                 ],
                 'required',
             ],
-            [['description_ru'], 'string', 'max' => 260],
-            [['description_ru'], 'match', 'pattern' => '/^[a-zA-Zа-яА-ЯёЁ0-9\s\-.,;:!?()\"\'“”‘’]+$/u'],
+            [['description_ru'], 'string', 'max' => 1000],
+            [
+                ['description_ru'],
+                'match',
+                'pattern' => '/^[A-Za-zА-Яа-я0-9\s\-\'\"«»""\'\'!:;*%.,()]{1,1000}$/u',
+                'message' => 'Описание может содержать буквы, цифры, пробелы и специальные символы'
+            ],
             [
                 [
                     'rating',
@@ -115,8 +120,8 @@ class Product extends Base
             [
                 ['name_ru'],
                 'match',
-                'pattern' => '/^[a-zA-Zа-яА-ЯёЁ0-9\s\-.,;:!?()\"\'“”‘’]+$/u',
-                'message' => 'Name can only contain letters, numbers, spaces, and hyphens.',
+                'pattern' => '/^[A-Za-zА-Яа-я0-9\s\-\'\"«»""\'\'!:;*%.,()]{1,255}$/u',
+                'message' => 'Название может содержать буквы, цифры, пробелы и специальные символы.',
             ],
             [
                 ['subcategory_id'],

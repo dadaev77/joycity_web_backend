@@ -169,9 +169,14 @@ class OrderStructure extends Base
             [['waybill_isset'], 'boolean'],
             [['link_tz'], 'string'],
             [
-                ['status', 'product_name_ru', 'product_description_ru', 'product_name_en', 'product_description_en', 'product_name_zh', 'product_description_zh'],
+                ['status', 'product_name_ru', 'product_name_en', 'product_name_zh'],
                 'string',
                 'max' => 255,
+            ],
+            [
+                ['product_description_ru', 'product_description_en', 'product_description_zh'],
+                'string',
+                'max' => 1000,
             ],
             [
                 ['delivery_point_address_id'],
@@ -251,9 +256,9 @@ class OrderStructure extends Base
             [
                 ['product_name_ru', 'product_description_ru'],
                 'match',
-                'pattern' => '/^[A-Za-zА-Яа-я0-9\s]{1,60}$/u',
+                'pattern' => '/^[A-Za-zА-Яа-я0-9\s\-\'\"«»""\'\'!:;*%.,()]{1,1000}$/u',
                 'message' =>
-                'Имя товара должно содержать кириллицу, латиницу, цифры и не превышать 60 символов. Допустимы символы: A-z, А-я, 0-9 и пробел.',
+                'Текст должен содержать кириллицу, латиницу, цифры и специальные символы. Допустимы символы: A-z, А-я, 0-9, пробелы и спецсимволы.',
             ],
         ];
     }

@@ -245,22 +245,51 @@
 
         <!-- Products Tab -->
         <div id="model-products" class="model-tab hidden">
-            <!-- Products Table -->
             <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
                 <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <!-- ... products table content ... -->
-                    <?php /* Existing products table content */ ?>
+                    <thead class="bg-gray-50 dark:bg-gray-800">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Название</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Цена</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Остаток</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-900 dark:divide-gray-700">
+                        <?php foreach ($products as $product): ?>
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?= $product->id ?></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?= htmlspecialchars($product->name_ru) ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
                 </table>
             </div>
         </div>
 
         <!-- Orders Tab -->
         <div id="model-orders" class="model-tab hidden">
-            <!-- Orders Table -->
+            <h2 class="text-xl font-semibold mb-4 dark:text-white">Последние заявки</h2>
             <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
                 <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <!-- ... orders table content ... -->
-                    <?php /* Existing orders table content */ ?>
+                    <thead class="bg-gray-50 dark:bg-gray-800">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Статус</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Клиент</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Создан</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-900 dark:divide-gray-700">
+                        <?php foreach ($orders as $order): ?>
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?= $order->id ?></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?= $order->status ?></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?= $order->created_by ?></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?= $order->created_at ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
                 </table>
             </div>
         </div>

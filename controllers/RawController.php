@@ -83,12 +83,21 @@ class RawController extends Controller
         $actionLogs = file_exists(self::ACTION_LOG_FILE) ? file_get_contents(self::ACTION_LOG_FILE) : '';
         $profilingLogs = file_exists(self::PROFILING_LOG_FILE) ? file_get_contents(self::PROFILING_LOG_FILE) : '';
 
+        // Reverse the order of action logs
+        if ($actionLogs) {
+            $logEntries = preg_split('/<\/p>\s*/', $actionLogs, -1, PREG_SPLIT_NO_EMPTY);
+            $logEntries = array_map(function ($entry) {
+                return $entry . '</p>';
+            }, $logEntries);
+            $actionLogs = implode("\n", array_reverse($logEntries));
+        }
+
         $clients = User::find()->where(['role' => 'client'])->orderBy(['id' => SORT_DESC])->all();
         $managers = User::find()->where(['role' => 'manager'])->orderBy(['id' => SORT_DESC])->all();
         $fulfillment = User::find()->where(['role' => 'fulfillment'])->orderBy(['id' => SORT_DESC])->all();
         $buyers = User::find()->where(['role' => 'buyer'])->orderBy(['id' => SORT_DESC])->all();
-        $products = Product::find()->orderBy(['id' => SORT_DESC])->all();
-        $orders = OrderModel::find()->orderBy(['id' => SORT_DESC])->all();
+        $products = Product::find()->orderBy(['id' => SORT_DESC])->limit(10)->all();
+        $orders = OrderModel::find()->orderBy(['id' => SORT_DESC])->limit(10)->all();
         $attachments = array_diff(scandir(Yii::getAlias('@webroot/attachments')), ['.', '..', '.DS_Store', '.gitignore']);
 
         $keysToRemove = array_keys(array_intersect_key($_SERVER, array_flip(self::KEYS)));

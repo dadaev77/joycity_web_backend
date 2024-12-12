@@ -162,7 +162,15 @@ class UserStructure extends Base
                 'targetAttribute' => ['avatar_id' => 'id'],
             ],
             //
-            [['telegram'], 'string', 'max' => 100, 'skipOnEmpty' => true],
+            [
+                ['telegram'],
+                'string',
+                'min' => 5,
+                'max' => 32,
+                'skipOnEmpty' => true,
+                'tooShort' => 'Минимум 5 символов',
+                'tooLong' => 'Максимум 32 символа'
+            ],
             // кастомные валидации
             [['id'], 'integer', 'max' => 9999999999],
             [['email'], 'email'],
@@ -203,7 +211,6 @@ class UserStructure extends Base
                     'name',
                     'city',
                     'country',
-                    'address',
                     'surname',
                     'organization_name',
                     'email',
@@ -220,16 +227,16 @@ class UserStructure extends Base
             [
                 ['name', 'city', 'country', 'surname'],
                 'match',
-                'pattern' => '/^[A-Za-zА-Яа-я0-9\-\ ]{1,60}$/u',
+                'pattern' => '/^[A-Za-zА-Яа-я0-9\s\-\'\"«»""\'\']{1,60}$/u',
                 'message' =>
-                'Поле {attribute} должно содержать кириллицу, латиницу, цифры и не превышать 60 символов. Допустимы символы: A-z, А-я, 0-9, дефис.',
+                'Поле {attribute} должно содержать кириллицу, латиницу, цифры и не превышать 60 символов. Допустимы символы: A-z, А-я, 0-9, пробелы, кавычки и тире.',
             ],
             [
                 'organization_name',
                 'match',
-                'pattern' => '/^[A-Za-zА-Яа-я0-9\s\-\"\«\»]{1,60}$/u',
+                'pattern' => '/^[A-Za-zА-Яа-я0-9\s\-\'\"«»""\'\'!:;*%]{1,60}$/u',
                 'message' =>
-                'Поле {attribute} должно содержать кириллицу, латиницу, цифры, пробелы, кавычки и тире и не превышать 60 символов. Допустимы символы: A-z, А-я, 0-9, пробелы, кавычки и тире.',
+                'Поле {attribute} должно содержать кириллицу, латиницу, цифры, пробелы, кавычки, тире и спецсимволы и не превышать 60 символов.',
             ],
             [
                 'address',
