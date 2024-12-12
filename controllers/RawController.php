@@ -83,9 +83,6 @@ class RawController extends Controller
         $actionLogs = file_exists(self::ACTION_LOG_FILE) ? file_get_contents(self::ACTION_LOG_FILE) : 'Файл логов действий не найден';
         $profilingLogs = file_exists(self::PROFILING_LOG_FILE) ? file_get_contents(self::PROFILING_LOG_FILE) : 'Файл логов профилирования не найден';
 
-        $serverAccessLogs = 'Файл логов доступа сервера не найден';
-        $serverErrorLogs = 'Файл логов ошибок сервера не найден';
-
         $clients = User::find()->where(['role' => 'client'])->orderBy(['id' => SORT_DESC])->all();
         $managers = User::find()->where(['role' => 'manager'])->orderBy(['id' => SORT_DESC])->all();
         $fulfillment = User::find()->where(['role' => 'fulfillment'])->orderBy(['id' => SORT_DESC])->all();
@@ -104,11 +101,9 @@ class RawController extends Controller
 
         // limit to 1000 lines
         $logs = implode("\n", array_slice(explode("\n", $logs), 0, 2000));
-        // $frontLogs = implode("\n", array_slice(explode("\n", $frontLogs), 0, 2000));
 
         // format logs content
         $logs = nl2br($logs);
-        // $frontLogs = nl2br($frontLogs);
 
         // Render the log view with logs and frontLogs variables
         $response = Yii::$app->response;
@@ -126,8 +121,6 @@ class RawController extends Controller
             'attachments' => $attachments,
             'actionLogs' => $actionLogs,
             'profilingLogs' => $profilingLogs,
-            'serverAccessLogs' => $serverAccessLogs,
-            'serverErrorLogs' => $serverErrorLogs,
         ], false);
     }
 

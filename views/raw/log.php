@@ -140,22 +140,6 @@
                         SQL Profiling
                     </button>
                 </li>
-                <li class="mr-2">
-                    <button onclick="showLogTab('access')" class="tab tab-inactive" role="tab">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                        </svg>
-                        Server Access
-                    </button>
-                </li>
-                <li>
-                    <button onclick="showLogTab('error')" class="tab tab-inactive" role="tab">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        Server Errors
-                    </button>
-                </li>
             </ul>
         </div>
 
@@ -171,14 +155,6 @@
 
             <div id="log-action" class="log-tab bg-gray-50 dark:bg-gray-700 p-4 rounded-lg hidden">
                 <div id="action-logs-container"></div>
-            </div>
-
-            <div id="log-access" class="log-tab bg-gray-50 dark:bg-gray-700 p-4 rounded-lg hidden">
-                <div id="access-logs-container"></div>
-            </div>
-
-            <div id="log-error" class="log-tab bg-gray-50 dark:bg-gray-700 p-4 rounded-lg hidden">
-                <div id="error-logs-container"></div>
             </div>
 
             <div id="log-profiling" class="log-tab bg-gray-50 dark:bg-gray-700 p-4 rounded-lg hidden">
@@ -298,7 +274,7 @@
                 <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:shadow-md transition-shadow duration-200">
                     <div class="flex items-center">
                         <svg class="w-6 h-6 text-gray-400 dark:text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0112.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
                         </svg>
                         <span class="text-sm text-gray-900 dark:text-gray-100"><?= $file ?></span>
                     </div>
@@ -738,15 +714,11 @@
             const appLogs = <?= json_encode($logs) ?>;
             const frontLogs = <?= json_encode($frontLogs) ?>;
             const actionLogs = <?= json_encode($actionLogs) ?>;
-            const serverAccessLogs = <?= json_encode($serverAccessLogs) ?>;
-            const serverErrorLogs = <?= json_encode($serverErrorLogs) ?>;
             const profilingLogs = <?= json_encode($profilingLogs) ?>;
 
             if (appLogs) formatAppLogs(appLogs, 'app-logs-container');
             if (frontLogs) formatFrontendLogs(frontLogs, 'front-logs-container');
             if (actionLogs) formatActionLogs(actionLogs, 'action-logs-container');
-            if (serverAccessLogs) formatAppLogs(serverAccessLogs, 'access-logs-container');
-            if (serverErrorLogs) formatAppLogs(serverErrorLogs, 'error-logs-container');
             if (profilingLogs) formatProfilingLogs(profilingLogs, 'profiling-logs-container');
 
             // Show logs section by default
