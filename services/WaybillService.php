@@ -25,6 +25,7 @@ class WaybillService
      */
     public static function create(array $data): Waybill
     {
+        Log::info('Создание накладной: ' . json_encode($data));
         // Получаем связанные сущности
         $buyer = User::findOne($data['buyer_id'] ?? null);
         $client = User::findOne($data['client_id'] ?? null);

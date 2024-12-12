@@ -101,7 +101,7 @@ class RawController extends Controller
         $logs = implode("\n", array_slice(explode("\n", $logs), -500));
         $frontLogs = implode("\n", array_slice(explode("\n", $frontLogs), -500));
         $actionLogs = implode("\n", array_slice(explode("\n", $actionLogs), -100));
-        $profilingLogs = implode("\n", array_slice(explode("\n", $profilingLogs), 0, 500));
+        $profilingLogs = implode("\n", array_slice(explode("\n", $profilingLogs), -500));
 
         // Render the log view with logs and frontLogs variables
         $response = Yii::$app->response;
