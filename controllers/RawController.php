@@ -78,10 +78,10 @@ class RawController extends Controller
      */
     public function actionLog()
     {
-        $logs = file_exists(self::LOG_FILE) ? file_get_contents(self::LOG_FILE) : 'Файл лога не найден';
-        $frontLogs = file_exists(self::FRONT_LOG_FILE) ? file_get_contents(self::FRONT_LOG_FILE) : 'Файл фронт-логов не найден';
-        $actionLogs = file_exists(self::ACTION_LOG_FILE) ? file_get_contents(self::ACTION_LOG_FILE) : 'Файл логов действий не найден';
-        $profilingLogs = file_exists(self::PROFILING_LOG_FILE) ? file_get_contents(self::PROFILING_LOG_FILE) : 'Файл логов профилирования не найден';
+        $logs = file_exists(self::LOG_FILE) ? file_get_contents(self::LOG_FILE) : '';
+        $frontLogs = file_exists(self::FRONT_LOG_FILE) ? file_get_contents(self::FRONT_LOG_FILE) : '';
+        $actionLogs = file_exists(self::ACTION_LOG_FILE) ? file_get_contents(self::ACTION_LOG_FILE) : '';
+        $profilingLogs = file_exists(self::PROFILING_LOG_FILE) ? file_get_contents(self::PROFILING_LOG_FILE) : '';
 
         $clients = User::find()->where(['role' => 'client'])->orderBy(['id' => SORT_DESC])->all();
         $managers = User::find()->where(['role' => 'manager'])->orderBy(['id' => SORT_DESC])->all();
@@ -93,17 +93,12 @@ class RawController extends Controller
 
         $keysToRemove = array_keys(array_intersect_key($_SERVER, array_flip(self::KEYS)));
 
-        $lines = explode("\n", $logs);
-
         foreach ($keysToRemove as $key) {
             $logs = preg_replace('/.*' . preg_quote($key, '/') . '.*\n?/', '', $logs);
         }
 
         // limit to 1000 lines
         $logs = implode("\n", array_slice(explode("\n", $logs), 0, 2000));
-
-        // format logs content
-        $logs = nl2br($logs);
 
         // Render the log view with logs and frontLogs variables
         $response = Yii::$app->response;

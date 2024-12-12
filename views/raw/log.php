@@ -711,10 +711,10 @@
         // Инициализация форматирования при загрузке страницы
         document.addEventListener('DOMContentLoaded', function() {
             // Format all logs first
-            const appLogs = <?= json_encode($logs) ?>;
-            const frontLogs = <?= json_encode($frontLogs) ?>;
-            const actionLogs = <?= json_encode($actionLogs) ?>;
-            const profilingLogs = <?= json_encode($profilingLogs) ?>;
+            const appLogs = <?= $logs ?>;
+            const frontLogs = <?= $frontLogs ?>;
+            const actionLogs = <?= $actionLogs ?>;
+            const profilingLogs = <?= $profilingLogs ?>;
 
             if (appLogs) formatAppLogs(appLogs, 'app-logs-container');
             if (frontLogs) formatFrontendLogs(frontLogs, 'front-logs-container');
@@ -727,14 +727,6 @@
             // Get active tab from URL hash or default to 'app'
             const hash = window.location.hash.replace('#', '') || 'app';
             showLogTab(hash);
-
-            // Show default model tab
-            showModelTab('users');
-
-            // Setup dark mode based on system preference
-            if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                toggleDarkMode();
-            }
         });
     </script>
 </body>
