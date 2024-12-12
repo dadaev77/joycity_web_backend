@@ -97,8 +97,11 @@ class RawController extends Controller
             $logs = preg_replace('/.*' . preg_quote($key, '/') . '.*\n?/', '', $logs);
         }
 
-        // limit to 1000 lines
-        $logs = implode("\n", array_slice(explode("\n", $logs), 0, 2000));
+        // Ограничиваем количество строк в логах
+        $logs = implode("\n", array_slice(explode("\n", $logs), -500));
+        $frontLogs = implode("\n", array_slice(explode("\n", $frontLogs), -500));
+        $actionLogs = implode("\n", array_slice(explode("\n", $actionLogs), -500));
+        $profilingLogs = implode("\n", array_slice(explode("\n", $profilingLogs), -500));
 
         // Render the log view with logs and frontLogs variables
         $response = Yii::$app->response;
