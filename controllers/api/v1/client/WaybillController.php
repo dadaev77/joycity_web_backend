@@ -31,7 +31,7 @@ class WaybillController extends ClientController
             $blockEditDate = new \DateTime($waybill->block_edit_date);
             $currentDate = new \DateTime();
             $interval = $currentDate->diff($blockEditDate);
-            if (true) {
+            if ($interval->days > 2) {
                 return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
                     'waybill_path' => $path,
                 ]);
