@@ -72,7 +72,7 @@ class WaybillService
 
         // Курс и страховка
         $rates = RateService::getRate();
-        $course = number_format(floatval($rates['USD'] / $rates['CNY']), 2);
+        $course = floatval($rates['USD'] / $rates['CNY']);
         $insuranceRate = 0.01;
         $insuranceSum = $data['price_product'] * $data['total_quantity'];
         $insuranceSum = RateService::convertValue(floatval($insuranceSum), $manager->settings->currency, 'CNY');
@@ -100,23 +100,23 @@ class WaybillService
             'delivery_type' => self::getDeliveryType($data),
             'course' => $course,
             'assortment' => $order->subcategory->ru_name ?? 'Отсутствует',
-            'price_per_kg' => $pricePerKg,
-            'insurance_sum_yuan' => $insuranceSum,
-            'china_advance_usd' => floatval($data['china_advance'] ?? 0),
-            'china_payment_usd' => floatval($data['china_payment'] ?? 0),
-            'volume' => $volume,
-            'weight' => $weight,
+            'price_per_kg' => self::formatNumber($pricePerKg),
+            'insurance_sum_yuan' => self::formatNumber($insuranceSum),
+            'china_advance_usd' => self::formatNumber(floatval($data['china_advance'] ?? 0)),
+            'china_payment_usd' => self::formatNumber(floatval($data['china_payment'] ?? 0)),
+            'volume' => self::formatNumber($volume),
+            'weight' => self::formatNumber($weight),
             'insurance_rate' => $insuranceRate,
-            'package_expenses' => floatval($data['package_expenses'] ?? 0),
-            'weight_costs' => $weightCosts,
-            'insurance_costs' => $insuranceCosts,
+            'package_expenses' => self::formatNumber(floatval($data['package_expenses'] ?? 0)),
+            'weight_costs' => self::formatNumber($weightCosts),
+            'insurance_costs' => self::formatNumber($insuranceCosts),
             'total_pairs' => 0,
             'total_customs_duty' => 0,
             'volume_costs' => 0,
             'total_quantity' => intval($data['amount_of_space'] ?? 0),
             'approved_by' => $manager ? $manager->name : '',
             'executor' => 'JoyCity Company',
-            'total_payment' => floatval($data['package_expenses'] ?? 0) + $weightCosts + $insuranceCosts,
+            'total_payment' => self::formatNumber(floatval($data['package_expenses'] ?? 0) + $weightCosts + $insuranceCosts),
             'first_attachment' => $waybillAttachment,
         ];
 
@@ -252,25 +252,25 @@ class WaybillService
             'destination_city' => 'Москва',
             'date_of_production' => $data['date_of_production'],
             'delivery_type' => self::getDeliveryType($data),
-            'course' => $data['course'],
+            'course' => self::formatNumber($data['course']),
             'assortment' => Order::findOne($bdo->order_id)->subcategory->ru_name ?? 'Отсутствует',
-            'price_per_kg' => $data['price_per_kg'],
-            'insurance_sum_yuan' => $insuranceSumCNY,
-            'china_advance_usd' => floatval($data['china_advance'] ?? 0),
-            'china_payment_usd' => floatval($data['china_payment'] ?? 0),
-            'volume' => $volume,
-            'weight' => $weight,
+            'price_per_kg' => self::formatNumber($data['price_per_kg']),
+            'insurance_sum_yuan' => self::formatNumber($insuranceSumCNY),
+            'china_advance_usd' => self::formatNumber(floatval($data['china_advance'] ?? 0)),
+            'china_payment_usd' => self::formatNumber(floatval($data['china_payment'] ?? 0)),
+            'volume' => self::formatNumber($volume),
+            'weight' => self::formatNumber($weight),
             'insurance_rate' => $insuranceRate,
-            'package_expenses' => floatval($bdo['package_expenses'] ?? 0),
-            'weight_costs' => $weightCosts,
-            'insurance_costs' => $insuranceCosts,
+            'package_expenses' => self::formatNumber(floatval($bdo['package_expenses'] ?? 0)),
+            'weight_costs' => self::formatNumber($weightCosts),
+            'insurance_costs' => self::formatNumber($insuranceCosts),
             'total_pairs' => isset($data['total_number_pairs']) ? intval($data['total_number_pairs']) : 0,
-            'total_customs_duty' => isset($data['total_customs_duty']) ? floatval($data['total_customs_duty']) : 0,
-            'volume_costs' => isset($data['volume_costs']) ? floatval($data['volume_costs']) : 0,
+            'total_customs_duty' => isset($data['total_customs_duty']) ? self::formatNumber(floatval($data['total_customs_duty'])) : 0,
+            'volume_costs' => isset($data['volume_costs']) ? self::formatNumber(floatval($data['volume_costs'])) : 0,
             'total_quantity' => intval($bdo->amount_of_space ?? 0),
             'approved_by' => $manager ? $manager->name : '',
             'executor' => 'JoyCity Company',
-            'total_payment' => floatval($bdo->package_expenses ?? 0) + $weightCosts + $insuranceCosts,
+            'total_payment' => self::formatNumber(floatval($bdo->package_expenses ?? 0) + $weightCosts + $insuranceCosts),
             'first_attachment' => $waybillAttachment,
         ];
 
@@ -430,6 +430,19 @@ class WaybillService
         $filePath = Yii::getAlias('@webroot/uploads/waybills') . '/' . $fileName;
         if (file_exists($filePath)) {
             unlink($filePath);
+        }
+    }
+
+    /**
+     * Форматирует число до 2 знаков после запятой
+     */
+    private static function formatNumber($number)
+    {
+        $rounded = round($number, 2);
+        if (floor($rounded) == $rounded) {
+            return (string) $rounded;
+        } else {
+            return number_format($rounded, 2, '.', '');
         }
     }
 }
