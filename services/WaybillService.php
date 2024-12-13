@@ -336,7 +336,9 @@ class WaybillService
     public static function lockEditing(int $orderId): Waybill
     {
         $waybill = self::getByOrderId($orderId);
+
         $waybill->editable = false;
+        $waybill->block_edit_date = date('Y-m-d H:i:s');
 
         if (!$waybill->save()) {
             throw new Exception('Ошибка при блокировке редактирования накладной');

@@ -22,9 +22,20 @@ class WaybillController extends ClientController
     {
         $apiCodes = Order::apiCodes();
         $waybill = WaybillService::getByOrderId($id);
-        $path = $_ENV['APP_URL'] . '/uploads/waybills/' . $waybill->file_path;
-        return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
-            'waybill_path' => $path,
-        ]);
+
+        if ($waybill) {
+            $path = $_ENV['APP_URL'] . '/uploads/waybills/' . $waybill->file_path;
+        }
+
+        if (!$waybill->editable && $waybill->block_edit_date) {
+            $blockEditDate = new \DateTime($waybill->block_edit_date);
+            $currentDate = new \DateTime();
+            $interval = $currentDate->diff($blockEditDate);
+            if ($interval->days > 2) {
+                return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
+                    'waybill_path' => $path,
+                ]);
+            }
+        }
     }
 }
