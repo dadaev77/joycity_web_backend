@@ -13,7 +13,7 @@ class RateService
     public const CURRENCY_CNY = 'CNY';
     public const CURRENCY_USD = 'USD';
 
-    public static int $SYMBOLS_AFTER_DECIMAL_POINT = 0;
+    public static int $SYMBOLS_AFTER_DECIMAL_POINT = 4;
 
     protected static array $currentRate;
     protected static array $orderRates = [];
@@ -24,9 +24,10 @@ class RateService
     }
 
     // Get the latest currency rate
-    protected static function getRate(): array
+    public static function getRate(): array
     {
-        if (!empty(self::$currentRate)) return self::$currentRate;
+        if (!empty(self::$currentRate))
+            return self::$currentRate;
         return self::$currentRate = Rate::find()->orderBy(['id' => SORT_DESC])->asArray()->one();
     }
 
@@ -47,7 +48,7 @@ class RateService
             return 0;
         }
 
-        $rate = self::getRate();        
+        $rate = self::getRate();
         if ($fromCurrency === $toCurrency) {
             return $value;
         }

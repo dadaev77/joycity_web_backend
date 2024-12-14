@@ -138,6 +138,7 @@ class OrderController extends ClientController
             LogService::log('manager id is set to ' . $randomManager->id);
             $order->currency = $currency;
 
+
             $order->type_delivery_point_id = $typeDeliveryPointId;
             $order->expected_price_per_item = $expected_price_per_item;
 
@@ -181,7 +182,7 @@ class OrderController extends ClientController
                 $request->post()['product_description'],
             );
             $translations = $translation->result;
-            
+
             foreach ($translations as $key => $value) {
                 $order->{'product_name_' . $key} = $value['name'];
                 $order->{'product_description_' . $key} = $value['description'];
@@ -222,6 +223,7 @@ class OrderController extends ClientController
 
             if ($order->product_id) {
                 $withProduct = true;
+
                 $buyerId = $order->product->buyer_id;
                 $distributionStatus = OrderDistributionService::createDistributionTask($order->id, $buyerId);
                 LogService::success('add buyer to order. buyer id is ' . $buyerId);
@@ -262,6 +264,7 @@ class OrderController extends ClientController
                 /**
                  * Create conversation between client, buyer and manager
                  */
+
                 $conversationManager = ChatConstructorService::createChatOrder(
                     Chat::GROUP_CLIENT_BUYER_MANAGER,
                     [$user->id, $buyerId, $randomManager->id],
@@ -310,7 +313,6 @@ class OrderController extends ClientController
 
             if ($repeatOrderId && $repeatImagesToKeep) {
                 $repeatOrder = Order::findOne(['id' => $repeatOrderId]);
-
                 if ($repeatOrder && $repeatOrder->created_by === $user->id) {
                     $attachmentsToKeep = Attachment::find()
                         ->joinWith([

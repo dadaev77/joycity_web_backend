@@ -311,7 +311,7 @@ class AuthController extends V1Controller implements ApiAuth
             $country = $request->post('country');
             $city = $request->post('city');
             $address = $request->post('address');
-            $telegram = $request->post('telegram');
+            $telegram = $request->post('telegram') ? ($request->post('telegram') != "" ? $request->post('telegram') : null) : null;
 
             $user = new User([
                 'email' => $email,

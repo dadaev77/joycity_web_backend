@@ -176,7 +176,7 @@ class ChatController extends FulfillmentController
         $chats = Chat::find()
             ->select('id')
             ->where(['order_id' => $orderId])
-            ->andWhere(['like', 'group', Chat::GROUP_CLIENT_FULFILMENT])
+            ->andWhere(['like', 'group', Chat::GROUP_CLIENT_FULFILMENT_MANAGER])
             ->andWhere(['is_archive' => 0])
             ->column();
 

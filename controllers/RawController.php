@@ -38,6 +38,7 @@ class RawController extends Controller
     public const LOG_FILE = __DIR__ . '/../runtime/logs/app.log';
     public const FRONT_LOG_FILE = __DIR__ . '/../runtime/logs/front.log';
     public const ACTION_LOG_FILE = __DIR__ . '/../runtime/logs/action.log';
+    public const PROFILING_LOG_FILE = __DIR__ . '/../runtime/logs/profiling.log';
     public const SERVER_ACCESS_LOG_FILE = '/var/log/nginx/nginx-joycityrussia.store.local.access.log';
     public const SERVER_ERROR_LOG_FILE = '/var/log/nginx/nginx-joycityrussia.store.local.error.log';
 
@@ -77,32 +78,39 @@ class RawController extends Controller
      */
     public function actionLog()
     {
-        $logs = file_exists(self::LOG_FILE) ? file_get_contents(self::LOG_FILE) : 'Файл лога не найден';
-        $frontLogs = file_exists(self::FRONT_LOG_FILE) ? file_get_contents(self::FRONT_LOG_FILE) : 'Файл фронт-логов не найден';
-        $actionLogs = file_exists(self::ACTION_LOG_FILE) ? file_get_contents(self::ACTION_LOG_FILE) : 'Файл логов действий не найден';
-        $serverAccessLogs = 'Файл логов доступа сервера не найден';
-        $serverErrorLogs = 'Файл логов ошибок сервера не найден';
+        $logs = file_exists(self::LOG_FILE) ? file_get_contents(self::LOG_FILE) : '';
+        $frontLogs = file_exists(self::FRONT_LOG_FILE) ? file_get_contents(self::FRONT_LOG_FILE) : '';
+        $actionLogs = file_exists(self::ACTION_LOG_FILE) ? file_get_contents(self::ACTION_LOG_FILE) : '';
+        $profilingLogs = file_exists(self::PROFILING_LOG_FILE) ? file_get_contents(self::PROFILING_LOG_FILE) : '';
+
+        // Reverse the order of action logs
+        if ($actionLogs) {
+            $logEntries = preg_split('/<\/p>\s*/', $actionLogs, -1, PREG_SPLIT_NO_EMPTY);
+            $logEntries = array_map(function ($entry) {
+                return $entry . '</p>';
+            }, $logEntries);
+            $actionLogs = implode("\n", array_reverse($logEntries));
+        }
+
         $clients = User::find()->where(['role' => 'client'])->orderBy(['id' => SORT_DESC])->all();
         $managers = User::find()->where(['role' => 'manager'])->orderBy(['id' => SORT_DESC])->all();
         $fulfillment = User::find()->where(['role' => 'fulfillment'])->orderBy(['id' => SORT_DESC])->all();
         $buyers = User::find()->where(['role' => 'buyer'])->orderBy(['id' => SORT_DESC])->all();
-        $products = Product::find()->orderBy(['id' => SORT_DESC])->all();
-        $orders = OrderModel::find()->orderBy(['id' => SORT_DESC])->all();
+        $products = Product::find()->orderBy(['id' => SORT_DESC])->limit(10)->all();
+        $orders = OrderModel::find()->orderBy(['id' => SORT_DESC])->limit(10)->all();
         $attachments = array_diff(scandir(Yii::getAlias('@webroot/attachments')), ['.', '..', '.DS_Store', '.gitignore']);
 
         $keysToRemove = array_keys(array_intersect_key($_SERVER, array_flip(self::KEYS)));
-        $lines = explode("\n", $logs);
+
         foreach ($keysToRemove as $key) {
             $logs = preg_replace('/.*' . preg_quote($key, '/') . '.*\n?/', '', $logs);
         }
 
-        // limit to 1000 lines
-        $logs = implode("\n", array_slice(explode("\n", $logs), 0, 2000));
-        // $frontLogs = implode("\n", array_slice(explode("\n", $frontLogs), 0, 2000));
-
-        // format logs content
-        $logs = nl2br($logs);
-        // $frontLogs = nl2br($frontLogs);
+        // Ограничиваем количество строк в логах
+        $logs = implode("\n", array_slice(explode("\n", $logs), -500));
+        $frontLogs = implode("\n", array_slice(explode("\n", $frontLogs), -500));
+        $actionLogs = implode("\n", array_slice(explode("\n", $actionLogs), -100));
+        $profilingLogs = implode("\n", array_slice(explode("\n", $profilingLogs), -500));
 
         // Render the log view with logs and frontLogs variables
         $response = Yii::$app->response;
@@ -119,8 +127,7 @@ class RawController extends Controller
             'orders' => $orders,
             'attachments' => $attachments,
             'actionLogs' => $actionLogs,
-            'serverAccessLogs' => $serverAccessLogs,
-            'serverErrorLogs' => $serverErrorLogs,
+            'profilingLogs' => $profilingLogs,
         ], false);
     }
 

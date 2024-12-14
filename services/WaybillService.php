@@ -4,6 +4,7 @@ namespace app\services;
 
 use app\models\Order;
 use app\models\Waybill;
+use app\services\RateService;
 use Mpdf\Mpdf;
 use Yii;
 use yii\base\Exception;
@@ -17,18 +18,46 @@ class WaybillService
 {
     /**
      * Создает накладную для заказа
-     * 
+     *
      * @param array $data Данные для накладной
      * @return Waybill
      * @throws Exception
      */
     public static function create(array $data): Waybill
     {
+        Log::info('Создание накладной: ' . json_encode($data));
         // Получаем связанные сущности
         $buyer = User::findOne($data['buyer_id'] ?? null);
         $client = User::findOne($data['client_id'] ?? null);
         $manager = User::findOne($data['manager_id'] ?? null);
         $order = Order::findOne($data['order_id'] ?? null);
+
+        $waybillAttachment = '';
+        $order = Order::findOne($data['order_id']);
+        $product = \app\models\Product::findOne($order->product_id);
+
+        try {
+            if ($product) {
+                if ($product->getAttachments()->exists()) {
+                    $attachments = $product->getAttachments()->all();
+                    if (!empty($attachments)) {
+                        $waybillAttachment = $attachments[0]->path; // Берем первое изображение
+                    }
+                }
+            }
+            if ($order) {
+                if ($order->getAttachments()->exists()) {
+                    $attachments = $order->getAttachments()->all();
+                    if (!empty($attachments)) {
+                        $waybillAttachment = $attachments[0]->path; // Берем первое изображение
+                    }
+                }
+            }
+            $waybillAttachment = base64_encode(file_get_contents(Yii::getAlias('@webroot') . $waybillAttachment));
+        } catch (Exception $e) {
+            Log::danger('Error: ' . $e->getMessage());
+            $waybillAttachment = '';
+        }
 
         // Расчет объема
         $volume = isset($data['product_height'], $data['product_width'], $data['product_depth'], $data['amount_of_space'])
@@ -37,53 +66,58 @@ class WaybillService
 
         // Расчет веса и связанных расходов
         $weight = floatval($data['product_weight'] ?? 0);
-        $pricePerKg = floatval($data['price_product'] ?? 0);
+        $pricePerKg = RateService::convertValue(floatval(($data['price_product'] / $weight) ?? 0), $manager->settings->currency, 'USD');
         $weightCosts = $weight * $pricePerKg;
+        $weightCosts = $weightCosts * $data['amount_of_space'];
 
         // Курс и страховка
-        $course = floatval($data['course'] ?? 1);
+        $rates = RateService::getRate();
+        $course = floatval($rates['USD'] / $rates['CNY']);
         $insuranceRate = 0.01;
-        $insuranceSum = floatval($data['price_product'] ?? 0); // в юанях
-        $insuranceCosts = $insuranceSum / ($insuranceRate * $course);
+        $insuranceSum = $data['price_product'] * $data['total_quantity'];
+        $insuranceSum = RateService::convertValue(floatval($insuranceSum), $manager->settings->currency, 'CNY');
+        $insuranceCosts = $insuranceSum / $course * $insuranceRate;
 
         // Формирование номера накладной
+        // $data['cargo_number'] ?? 'UNKNOWN';
+
         $waybillNumber = sprintf(
-            "JoyCity313-%s-%s-%s",
+            "JoyCity313-%s-%s",
             $client ? $client->uuid : 'UNKNOWN',
-            $data['cargo_number'] ?? 'UNKNOWN',
             $data['amount_of_space'] ?? '0'
         );
 
         $waybillData = [
             'order_id' => $data['order_id'],
             'waybill_number' => $waybillNumber,
-            'sender_name' => $buyer ? $buyer->name : '',
+            'sender_name' => $buyer ? $buyer->name : 'не указано',
             'sender_phone' => $buyer ? $buyer->phone_number : '',
             'recipient_name' => $client ? $client->name : '',
             'recipient_phone' => $client ? $client->phone_number : '',
             'departure_city' => 'Иу',
             'destination_city' => 'Москва',
-            'date_of_production' => date('Y:m:d H:i:s'), // TODO: заменить на дату подтверждения
+            'date_of_production' => date('Y-m-d', strtotime('+2 days')),
             'delivery_type' => self::getDeliveryType($data),
             'course' => $course,
-            'assortment' => $data['parent_category'] ?? '',
-            'price_per_kg' => $pricePerKg,
-            'insurance_sum_yuan' => $insuranceSum,
-            'china_advance_usd' => floatval($data['china_advance'] ?? 0),
-            'china_payment_usd' => floatval($data['china_payment'] ?? 0),
-            'volume' => $volume,
-            'weight' => $weight,
+            'assortment' => $order->subcategory->ru_name ?? 'Отсутствует',
+            'price_per_kg' => self::formatNumber($pricePerKg),
+            'insurance_sum_yuan' => self::formatNumber($insuranceSum),
+            'china_advance_usd' => self::formatNumber(floatval($data['china_advance'] ?? 0)),
+            'china_payment_usd' => self::formatNumber(floatval($data['china_payment'] ?? 0)),
+            'volume' => self::formatNumber($volume),
+            'weight' => self::formatNumber($weight),
             'insurance_rate' => $insuranceRate,
-            'package_expenses' => floatval($data['package_expenses'] ?? 0),
-            'weight_costs' => $weightCosts,
-            'insurance_costs' => $insuranceCosts,
-            'total_pairs' => isset($data['total_pairs']) ? intval($data['total_pairs']) : 0, // TODO: добавить
-            'total_customs_duty' => isset($data['total_customs_duty']) ? floatval($data['total_customs_duty']) : 0, // TODO: добавить
-            'volume_costs' => isset($data['volume_costs']) ? floatval($data['volume_costs']) : 0, // TODO: добавить
+            'package_expenses' => self::formatNumber(floatval($data['package_expenses'] ?? 0)),
+            'weight_costs' => self::formatNumber($weightCosts),
+            'insurance_costs' => self::formatNumber($insuranceCosts),
+            'total_pairs' => 0,
+            'total_customs_duty' => 0,
+            'volume_costs' => 0,
             'total_quantity' => intval($data['amount_of_space'] ?? 0),
             'approved_by' => $manager ? $manager->name : '',
             'executor' => 'JoyCity Company',
-            'total_payment' => floatval($data['package_expenses'] ?? 0) + $weightCosts + $insuranceCosts,
+            'total_payment' => self::formatNumber(floatval($data['package_expenses'] ?? 0) + $weightCosts + $insuranceCosts),
+            'first_attachment' => $waybillAttachment,
         ];
 
         // Генерируем PDF и получаем путь к файлу
@@ -96,12 +130,12 @@ class WaybillService
             'created_at' => date('Y-m-d H:i:s'),
             'regenerated_at' => null,
             'editable' => true,
-            'price_per_kg' => $pricePerKg,
+            'price_per_kg' => $pricePerKg, // in USD already
             'course' => $course,
             'total_number_pairs' => 0,
             'total_customs_duty' => 0,
             'volume_costs' => 0,
-            'date_of_production' => date('Y-m-d H:i:s'),
+            'date_of_production' => date('Y-m-d', strtotime('+2 days')),
         ];
 
         // Создаем новую накладную в БД
@@ -134,18 +168,20 @@ class WaybillService
     {
         $typeDeliveryId = $data['type_delivery_id'] ?? null;
         if (!$typeDeliveryId) {
-            return '';
+            return 'Не указано';
         }
+
         $typeDelivery = TypeDelivery::findOne($typeDeliveryId);
         if (!$typeDelivery) {
             return 'Неизвестный тип доставки';
         }
-        return $typeDelivery->name;
+
+        return $typeDelivery->ru_name;
     }
 
     /**
      * Обновляет существующую накладную
-     * 
+     *
      * @param Waybill $waybill Существующая накладная
      * @param array $data Новые данные
      * @return Waybill
@@ -159,6 +195,32 @@ class WaybillService
         $client = User::findOne($data['client_id']);
         $manager = User::findOne($data['manager_id']);
 
+        $order = Order::findOne($data['order_id']);
+        $product = \app\models\Product::findOne($order->product_id);
+        $waybillAttachment = '';
+        try {
+            if ($product) {
+                if ($product->getAttachments()->exists()) {
+                    $attachments = $product->getAttachments()->all();
+                    if (!empty($attachments)) {
+                        $waybillAttachment = $attachments[0]->path; // Берем первое изображение
+                    }
+                }
+            }
+            if ($order) {
+                if ($order->getAttachments()->exists()) {
+                    $attachments = $order->getAttachments()->all();
+                    if (!empty($attachments)) {
+                        $waybillAttachment = $attachments[0]->path; // Берем первое изображение
+                    }
+                }
+            }
+            $waybillAttachment = base64_encode(file_get_contents(Yii::getAlias('@webroot') . $waybillAttachment));
+        } catch (Exception $e) {
+            Log::danger('Error: ' . $e->getMessage());
+            $waybillAttachment = '';
+        }
+
         // Расчет объема
         $volume = isset($bdo->product_height, $bdo->product_width, $bdo->product_depth, $bdo->amount_of_space)
             ? ($bdo->product_height / 100) * ($bdo->product_width / 100) * ($bdo->product_depth / 100) * $bdo->amount_of_space
@@ -166,47 +228,50 @@ class WaybillService
 
         // Расчет веса и связанных расходов
         $weight = $bdo->product_weight ?? 0;
-        $pricePerKg = $waybill->price_per_kg; // USD
+        $pricePerKg = $data['price_per_kg']; // USD
         $weightCosts = $weight * $pricePerKg;
+        $weightCosts = $weightCosts * $bdo->amount_of_space;
 
         // Курс и страховка
-        $course = $waybill->course;
+        $course = $data['course'];
         $insuranceRate = 0.01;
-        $insuranceSum = $bdo->price_product; // в юанях
-        $insuranceCosts = $insuranceSum / ($insuranceRate * $course);
+        $insuranceSumCNY = $bdo->total_quantity * $bdo->price_product;
+        $insuranceSumCNY = RateService::convertValue(floatval($insuranceSumCNY), $bdo->currency, 'CNY');
+        $insuranceCosts = $insuranceSumCNY / $course * $insuranceRate;
 
         $waybillData = [
             // Общие данные
             'order_id' => $data['order_id'],
             'waybill_number' => $waybill->waybill_number,
-            'sender_name' => $buyer ? $buyer->name : '',
-            'sender_phone' => $buyer ? $buyer->phone_number : '',
-            'recipient_name' => $client ? $client->name : '',
-            'recipient_phone' => $client ? $client->phone_number : '',
+            'sender_name' => $buyer ? $buyer->name : 'не указано',
+            'sender_phone' => $buyer ? $buyer->phone_number : 'не указано',
+            'recipient_name' => $client ? $client->name : 'не указ��но',
+            'recipient_phone' => $client ? $client->phone_number : 'не указано',
             // Доставка
             'departure_city' => 'Иу',
             'destination_city' => 'Москва',
-            'date_of_production' => date('Y:m:d H:i:s'), // TODO: заменить на дату подтверждения
+            'date_of_production' => $data['date_of_production'],
             'delivery_type' => self::getDeliveryType($data),
-            'course' => $waybill->course,
-            'assortment' => $data['parent_category'] ?? '',
-            'price_per_kg' => $waybill->price_per_kg,
-            'insurance_sum_yuan' => $insuranceSum,
-            'china_advance_usd' => floatval($data['china_advance'] ?? 0),
-            'china_payment_usd' => floatval($data['china_payment'] ?? 0),
-            'volume' => $volume,
-            'weight' => $weight,
+            'course' => self::formatNumber($data['course']),
+            'assortment' => Order::findOne($bdo->order_id)->subcategory->ru_name ?? 'Отсутствует',
+            'price_per_kg' => self::formatNumber($data['price_per_kg']),
+            'insurance_sum_yuan' => self::formatNumber($insuranceSumCNY),
+            'china_advance_usd' => self::formatNumber(floatval($data['china_advance'] ?? 0)),
+            'china_payment_usd' => self::formatNumber(floatval($data['china_payment'] ?? 0)),
+            'volume' => self::formatNumber($volume),
+            'weight' => self::formatNumber($weight),
             'insurance_rate' => $insuranceRate,
-            'package_expenses' => floatval($data['package_expenses'] ?? 0),
-            'weight_costs' => $weightCosts,
-            'insurance_costs' => $insuranceCosts,
+            'package_expenses' => self::formatNumber(floatval($bdo['package_expenses'] ?? 0)),
+            'weight_costs' => self::formatNumber($weightCosts),
+            'insurance_costs' => self::formatNumber($insuranceCosts),
             'total_pairs' => isset($data['total_number_pairs']) ? intval($data['total_number_pairs']) : 0,
-            'total_customs_duty' => isset($data['total_customs_duty']) ? floatval($data['total_customs_duty']) : 0,
-            'volume_costs' => isset($data['volume_costs']) ? floatval($data['volume_costs']) : 0,
-            'total_quantity' => intval($data['amount_of_space'] ?? 0),
+            'total_customs_duty' => isset($data['total_customs_duty']) ? self::formatNumber(floatval($data['total_customs_duty'])) : 0,
+            'volume_costs' => isset($data['volume_costs']) ? self::formatNumber(floatval($data['volume_costs'])) : 0,
+            'total_quantity' => intval($bdo->amount_of_space ?? 0),
             'approved_by' => $manager ? $manager->name : '',
             'executor' => 'JoyCity Company',
-            'total_payment' => floatval($data['package_expenses'] ?? 0) + $weightCosts + $insuranceCosts,
+            'total_payment' => self::formatNumber(floatval($bdo->package_expenses ?? 0) + $weightCosts + $insuranceCosts),
+            'first_attachment' => $waybillAttachment,
         ];
 
         // Удаляем старый файл
@@ -233,12 +298,15 @@ class WaybillService
             self::deleteWaybillFile($fileName);
             throw new Exception('Ошибка при обновлении накладной в БД: ' . json_encode($waybill->errors));
         }
-        return $waybill;
+
+
+
+        return self::getByOrderId($waybill->order_id);
     }
 
     /**
      * Получает накладную по ID заказа
-     * 
+     *
      * @param int $orderId ID заказа
      * @return Waybill
      * @throws NotFoundHttpException
@@ -254,12 +322,13 @@ class WaybillService
         if (!$waybill) {
             throw new NotFoundHttpException('Накладная не найдена');
         }
+
         return $waybill;
     }
 
     /**
      * Блокирует возможность редактирования накладной
-     * 
+     *
      * @param int $orderId ID заказа
      * @return Waybill
      * @throws Exception
@@ -267,7 +336,9 @@ class WaybillService
     public static function lockEditing(int $orderId): Waybill
     {
         $waybill = self::getByOrderId($orderId);
+
         $waybill->editable = false;
+        $waybill->block_edit_date = date('Y-m-d H:i:s');
 
         if (!$waybill->save()) {
             throw new Exception('Ошибка при блокировке редактирования накладной');
@@ -278,7 +349,7 @@ class WaybillService
 
     /**
      * Форматирует путь к файлу накладной для отдачи клиенту
-     * 
+     *
      * @param Waybill $waybill Накладная
      * @return Waybill
      */
@@ -290,7 +361,7 @@ class WaybillService
 
     /**
      * Генерирует PDF файл накладной
-     * 
+     *
      * @param array $data Данные для накладной
      * @return string Имя сгенерированного файла
      * @throws Exception
@@ -331,7 +402,7 @@ class WaybillService
 
     /**
      * Проверяет и создает директорию для накладных если её нет
-     * 
+     *
      * @param string $uploadDir Путь к директории
      * @throws Exception
      */
@@ -351,7 +422,7 @@ class WaybillService
 
     /**
      * Удаляет файл накладной
-     * 
+     *
      * @param string $fileName Имя файла
      */
     private static function deleteWaybillFile(string $fileName): void
@@ -359,6 +430,19 @@ class WaybillService
         $filePath = Yii::getAlias('@webroot/uploads/waybills') . '/' . $fileName;
         if (file_exists($filePath)) {
             unlink($filePath);
+        }
+    }
+
+    /**
+     * Форматирует число до 2 знаков после запятой
+     */
+    private static function formatNumber($number)
+    {
+        $rounded = round($number, 2);
+        if (floor($rounded) == $rounded) {
+            return (string) $rounded;
+        } else {
+            return number_format($rounded, 2, '.', '');
         }
     }
 }

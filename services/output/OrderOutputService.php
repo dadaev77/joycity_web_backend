@@ -10,7 +10,7 @@ use app\services\MarketplaceTransactionService;
 // modified services
 use app\services\modificators\price\OrderPrice;
 use app\services\RateService;
-
+use app\services\UserActionLogService as Log;
 
 use app\services\SqlQueryService;
 use Yii;
@@ -39,6 +39,7 @@ class OrderOutputService extends OutputService
     public static function getCollection(array $ids, $showDeleted = false, $imageSize = 'large'): array
     {
         $relations = [
+
             'fulfillmentMarketplaceTransactions' => fn($q) => $q->orderBy(['id' => SORT_DESC]),
             'createdBy' => fn($q) => $q->select(SqlQueryService::getUserSelect())->with(['avatar']),
             'buyer' => fn($q) => $q->select(SqlQueryService::getBuyerSelect())->with(['avatar']),
@@ -52,11 +53,8 @@ class OrderOutputService extends OutputService
             'typeDeliveryPoint',
             'typePackaging',
             'chats',
-
             'subcategory',
-
             'product' => fn($q) => $q->select(['id', 'name_ru', 'description_ru', 'product_height', 'product_width', 'product_depth', 'product_weight'])->with(['attachments']),
-
             'productInspectionReports',
             'fulfillmentInspectionReport',
             'fulfillmentStockReport' => fn($q) => $q->with(['attachments']),
@@ -91,11 +89,11 @@ class OrderOutputService extends OutputService
             }
             unset($tracking);
 
-            foreach ($info as $key => $value) {
-                if ($value && (str_starts_with($key, 'price_') || $key === 'expected_price_per_item')) {
-                    $info[$key] = RateService::convertValue($value, $info['currency'], $userCurrency);
-                }
-            }
+            // foreach ($info as $key => $value) {
+            //     if ($value && (str_starts_with($key, 'price_') || $key === 'expected_price_per_item')) {
+            //         $info[$key] = RateService::convertValue($value, $info['currency'], $userCurrency);
+            //     }
+            // }
 
             foreach ($info['chats'] as &$chat) {
                 unset($chat['order_id'], $chat['user_verification_request_id']);
@@ -152,41 +150,14 @@ class OrderOutputService extends OutputService
 
 
             if ($info['buyerOffer']) {
-                $info['buyerOffer'] = RateService::convertDataPrices(
-                    $info['buyerOffer'],
-                    ['price_product', 'price_inspection', 'expected_price_per_item'],
-                    $info['currency'],
-                    $userCurrency
-                );
+                $info['buyerOffer']['price_product'] = RateService::convertValue($info['buyerOffer']['price_product'], $info['buyerOffer']['currency'], $userCurrency);
+                $info['buyerOffer']['price_inspection'] = RateService::convertValue($info['buyerOffer']['price_inspection'], $info['buyerOffer']['currency'], $userCurrency);
+                $info['expected_price_per_item'] = RateService::convertValue($info['expected_price_per_item'], $info['currency'], $userCurrency);
             }
+
             $info['type'] = in_array($info['status'], Order::STATUS_GROUP_ORDER, true) ? 'order' : 'request';
-            $info['price'] = OrderPrice::calculateOrderPrices($info['id']);
 
-            // Конвертация цен в валюту пользователя
-            $info['price'] = RateService::convertDataPrices(
-                $info['price'],
-                [
-                    'product.price_per_item',
-                    'product.overall',
-                    'product_inspection',
-                    'delivery.packaging',
-                    'delivery.delivery',
-                    'delivery.overall',
-                    'fulfillment',
-                    'overall',
-                ],
-                $info['currency'],
-                $userCurrency
-            );
-
-            if ($info['buyerOffer']) {
-                $info['buyerOffer'] = RateService::convertDataPrices(
-                    $info['buyerOffer'],
-                    ['price_product', 'price_inspection', 'expected_price_per_item'],
-                    $info['currency'],
-                    $userCurrency
-                );
-            }
+            $info['price'] = OrderPrice::calculateOrderPrices($info['id'], $userCurrency);
 
             unset(
                 // $info['created_at'],

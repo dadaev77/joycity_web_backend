@@ -95,6 +95,7 @@ class BuyerDeliveryOfferController extends ManagerController
 
             // Устанавливаем флаг наличия накладной для заказа
             $order->waybill_isset = true;
+            $order->client_waybill_isset = true;
             if (!$order->save()) {
                 return ApiResponse::codeErrors(
                     $apiCodes->ERROR_SAVE,
@@ -106,15 +107,19 @@ class BuyerDeliveryOfferController extends ManagerController
             $waybillData = array_merge($params, [
                 'buyer_id' => $order->buyer_id,
                 'client_id' => $order->created_by,
-                'manager_id' => $user->id,
-                'parent_category' => $order->category ?
-                    ($order->category->parent ? $order->category->parent->name : $order->category->name)
-                    : '',
+                'manager_id' => $user->id
             ]);
 
-            // Получаем актуальный курс
-            $rate = Rate::find()->orderBy(['id' => SORT_DESC])->one();
-            $waybillData['course'] = $rate ? $rate->USD : 1;
+            $firstAttachment = $order->getFirstAttachment();
+            $uploadDir = Yii::getAlias('@webroot/uploads/');
+            if ($firstAttachment && file_exists($uploadDir . $firstAttachment->path)) {
+                $fileContents = file_get_contents($uploadDir . $firstAttachment->path);
+                $base64Image = 'data:' . $firstAttachment->mime_type . ';base64,' . base64_encode($fileContents);
+                $waybillData['first_attachment'] = $base64Image;
+            } else {
+                $waybillData['first_attachment'] = null; // Если файла нет или он недоступен
+            }
+
 
             // Создаем накладную через сервис
             try {

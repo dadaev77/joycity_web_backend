@@ -218,4 +218,18 @@ class Order extends OrderStructure
     {
         return $this->hasOne(Waybill::class, ['order_id' => 'id']);
     }
+
+    /**
+     * Получить первый прикрепленный файл
+     *
+     * @return Attachment|null
+     */
+    public function getFirstAttachment()
+    {
+        return Attachment::find()
+            ->joinWith('orderLinkAttachments')
+            ->where(['order_link_attachment.order_id' => $this->id])
+            ->orderBy(['order_link_attachment.id' => SORT_ASC])
+            ->one();
+    }
 }
