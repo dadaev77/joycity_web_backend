@@ -175,17 +175,26 @@ class OrderController extends ClientController
             $transaction = Yii::$app->db->beginTransaction();
 
 
+            try {
 
-            // translate order name and description
-            $translation = TranslationService::translateProductAttributes(
-                $request->post()['product_name'],
-                $request->post()['product_description'],
-            );
-            $translations = $translation->result;
+                // translate order name and description
+                $translation = TranslationService::translateProductAttributes(
+                    $request->post()['product_name'],
+                    $request->post()['product_description'],
+                );
 
-            foreach ($translations as $key => $value) {
-                $order->{'product_name_' . $key} = $value['name'];
-                $order->{'product_description_' . $key} = $value['description'];
+                $translations = $translation->result;
+
+                foreach ($translations as $key => $value) {
+                    $order->{'product_name_' . $key} = $value['name'];
+                    $order->{'product_description_' . $key} = $value['description'];
+                }
+            } catch (Throwable $e) {
+                LogService::danger('Error translating order name and description: ' . $e->getMessage());
+                return ApiResponse::byResponseCode(ResponseCodes::getStatic()->INTERNAL_ERROR, [
+                    'error' => $e->getMessage(),
+                    'text' => 'Error translating order name and description. Check translation service',
+                ]);
             }
             // end translate order name and description
 
