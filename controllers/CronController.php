@@ -28,9 +28,13 @@ class CronController extends Controller
      */
     public function actionCreate(string $taskID = null)
     {
-        if (!$taskID) return;
+        if (!$taskID) return ['status' => 'error', 'message' => 'Неверный ID задачи'];
         $command = '* * * * * curl -X GET "' . $_ENV['APP_URL'] . '/cron/distribution?taskID=' . $taskID . '"';
-        exec(" crontab -l | { cat; echo '$command'; } | crontab - ");
+        if (exec(" crontab -l | { cat; echo '$command'; } | crontab - ")) {
+            return ['status' => 'success', 'message' => 'Задача cron создана'];
+        } else {
+            return ['status' => 'error', 'message' => 'Ошибка создания задачи cron'];
+        }
     }
 
     /**
