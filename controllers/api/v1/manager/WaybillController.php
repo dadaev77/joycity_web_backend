@@ -73,6 +73,7 @@ class WaybillController extends ManagerController
 
     public function actionView($id)
     {
+        Log::info('Вызов actionView: ' . $id);
         try {
             $apiCodes = Order::apiCodes();
 

@@ -25,7 +25,6 @@ class WaybillService
      */
     public static function create(array $data): Waybill
     {
-        Log::info('Создание накладной: ' . json_encode($data));
         // Получаем связанные сущности
         $buyer = User::findOne($data['buyer_id'] ?? null);
         $client = User::findOne($data['client_id'] ?? null);
@@ -142,7 +141,7 @@ class WaybillService
             self::deleteWaybillFile($fileName);
             throw new Exception('Ошибка при сохранении накладной в БД: ' . json_encode($waybill->errors));
         }
-
+        Log::info('Накладная создана WBS: ' . json_encode($waybill));
         return $waybill;
     }
 

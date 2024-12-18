@@ -130,7 +130,7 @@ class BuyerDeliveryOfferController extends ManagerController
                     ['waybill' => $e->getMessage()]
                 );
             }
-
+            Log::info('Накладная создана BDO: ' . json_encode($waybill));
             return ApiResponse::info(
                 BuyerDeliveryOfferOutputService::getEntity(
                     $buyerDeliveryOffer->id,
