@@ -81,8 +81,7 @@ class WaybillService
         // Формирование номера накладной
         // $data['cargo_number'] ?? 'UNKNOWN';
 
-        // $waybillNumber = "JoyCity313-" . ($client->uuid ?? 'UNKNOWN') . "-" . ($data['amount_of_space'] ?? '0');
-        $waybillNumber = "JNSDNFKNSDKFND";
+        $waybillNumber = "JoyCity313-" . ($client->uuid ?? 'UNKNOWN') . "-" . ($data['amount_of_space'] ?? '0');
 
         $waybillData = [
             'order_id' => $data['order_id'],
