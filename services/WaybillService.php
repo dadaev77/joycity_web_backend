@@ -116,9 +116,6 @@ class WaybillService
             'first_attachment' => $waybillAttachment,
         ];
 
-        // Генерируем PDF и получаем путь к файлу
-        $fileName = self::generatePdf($waybillData);
-
         $waybillInstance = [
             'waybill_number' => $waybillNumber,
             'order_id' => $data['order_id'],
@@ -137,11 +134,16 @@ class WaybillService
         // Создаем новую накладную в БД
         $waybill = new Waybill($waybillInstance);
 
+        // Генерируем PDF и получаем путь к файлу
+        $fileName = self::generatePdf($waybillData);
+
         if (!$waybill->save()) {
             // Если не удалось сохранить в БД - удаляем файл
             self::deleteWaybillFile($fileName);
             throw new Exception('Ошибка при сохранении накладной в БД: ' . json_encode($waybill->errors));
         }
+
+
 
         return $waybill;
     }
