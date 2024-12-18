@@ -122,15 +122,8 @@ class BuyerDeliveryOfferController extends ManagerController
 
 
             // Создаем накладную через сервис
-            try {
-                $waybill = WaybillService::create($waybillData);
-            } catch (\Exception $e) {
-                return ApiResponse::codeErrors(
-                    $apiCodes->ERROR_SAVE,
-                    ['waybill' => $e->getMessage()]
-                );
-            }
-            Log::info('Накладная создана BDO: ' . json_encode($waybill));
+            $waybill = WaybillService::create($waybillData);
+
             return ApiResponse::info(
                 BuyerDeliveryOfferOutputService::getEntity(
                     $buyerDeliveryOffer->id,
