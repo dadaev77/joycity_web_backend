@@ -120,10 +120,9 @@ class BuyerDeliveryOfferController extends ManagerController
                 $waybillData['first_attachment'] = null; // Если файла нет или он недоступен
             }
 
-
             // Создаем накладную через сервис
             $waybill = WaybillService::create($waybillData);
-            Log::info('Накладная создана BDO: ' . json_encode($waybill));
+            sleep(1); // TODO: Удалить
             return ApiResponse::info(
                 BuyerDeliveryOfferOutputService::getEntity(
                     $buyerDeliveryOffer->id,

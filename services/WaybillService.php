@@ -141,7 +141,7 @@ class WaybillService
             self::deleteWaybillFile($fileName);
             throw new Exception('Ошибка при сохранении накладной в БД: ' . json_encode($waybill->errors));
         }
-        Log::info('Накладная создана WBS: ' . json_encode($waybill));
+
         return $waybill;
     }
 
