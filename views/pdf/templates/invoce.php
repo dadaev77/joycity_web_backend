@@ -98,7 +98,7 @@
                 <td>Вид перевозки</td>
                 <td><?= htmlspecialchars($data['delivery_type']) ?></td>
                 <td>Номер</td>
-                <td><?= htmlspecialchars($data['waybill_number']) ?></td>
+                <td><?= htmlspecialchars($data['waybill_number']) . 'asdsad' ?></td>
             </tr>
             <tr>
                 <td colspan="8" class="header-cell">Накладная</td>
