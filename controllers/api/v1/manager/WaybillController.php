@@ -76,6 +76,8 @@ class WaybillController extends ManagerController
         try {
             $apiCodes = Order::apiCodes();
 
+            sleep(3); // TODO: Удалить
+
             // Получаем накладную через сервис
             $waybill = WaybillService::getByOrderId($id);
             $waybill->date_of_production = date('Y-m-d', strtotime($waybill->date_of_production));
