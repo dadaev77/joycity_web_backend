@@ -256,7 +256,7 @@ class OrderStructure extends Base
             [
                 ['product_name_ru', 'product_description_ru'],
                 'match',
-                'pattern' => '/^[\x{201C}\x{201D}\x{2018}\x{2019}\x{AB}\x{BB}\'"()!:\';*%\-.,\d\s\u0400-\u04FFёЁA-Za-z\u4E00-\u9FFF\u0300-\u0302]*$/u',
+                'pattern' => '/^[\x{201C}\x{201D}\x{2018}\x{2019}\x{AB}\x{BB}\'"()!:\';*%\-.,\d\s\p{Cyrillic}\p{Latin}\p{Han}\p{M}]*$/u',
                 'message' =>
                 'Текст должен содержать кириллицу, латиницу, цифры и специальные символы. Допустимы символы: A-z, А-я, 0-9, пробелы и спецсимволы.',
             ],
