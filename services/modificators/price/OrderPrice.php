@@ -191,6 +191,10 @@ class OrderPrice extends OrderPriceService
                 $out['fulfillment'],
             self::SYMBOLS_AFTER_DECIMAL_POINT,
         );
+        $out['product_overall'] = round(
+            $out['product']['overall'],
+            self::SYMBOLS_AFTER_DECIMAL_POINT
+        );
 
         return $out;
     }
@@ -290,6 +294,7 @@ class OrderPrice extends OrderPriceService
             ],
             'fulfillment' => 0,
             'overall' => 0,
+            'product_overall' => 0
         ];
     }
 
