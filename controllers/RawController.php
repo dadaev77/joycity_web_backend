@@ -308,4 +308,13 @@ class RawController extends Controller
             return $e->getMessage();
         }
     }
+    public function actionFormatNumber($number)
+    {
+        $rounded = round($number, 2);
+        if (floor($rounded) == $rounded) {
+            return (string) $rounded;
+        } else {
+            return rtrim(rtrim(number_format($rounded, 2, '.', ''), '0'), '.');
+        }
+    }
 }

@@ -120,17 +120,9 @@ class BuyerDeliveryOfferController extends ManagerController
                 $waybillData['first_attachment'] = null; // Если файла нет или он недоступен
             }
 
-
             // Создаем накладную через сервис
-            try {
-                $waybill = WaybillService::create($waybillData);
-            } catch (\Exception $e) {
-                return ApiResponse::codeErrors(
-                    $apiCodes->ERROR_SAVE,
-                    ['waybill' => $e->getMessage()]
-                );
-            }
-
+            $waybill = WaybillService::create($waybillData);
+            sleep(1); // TODO: Удалить
             return ApiResponse::info(
                 BuyerDeliveryOfferOutputService::getEntity(
                     $buyerDeliveryOffer->id,

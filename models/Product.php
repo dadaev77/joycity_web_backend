@@ -82,7 +82,7 @@ class Product extends Base
             [
                 ['description_ru'],
                 'match',
-                'pattern' => '/^[\x{201C}\x{201D}\x{2018}\x{2019}\x{AB}\x{BB}\'"()!:\';*%\-.,\d\s\u0400-\u04FFёЁA-Za-z\u4E00-\u9FFF\u0300-\u0302]*$/u',
+                'pattern' => '/^[\x{201C}\x{201D}\x{2018}\x{2019}\x{AB}\x{BB}\'"()!:\';*%\-.,\d\s\p{Cyrillic}\p{Latin}\p{Han}\p{M}]*$/u',
                 'message' => 'Описание может содержать буквы, цифры, пробелы и специальные символы'
             ],
             [
@@ -120,7 +120,7 @@ class Product extends Base
             [
                 ['name_ru'],
                 'match',
-                'pattern' => '/^[\x{201C}\x{201D}\x{2018}\x{2019}\x{AB}\x{BB}\'"()!:\';*%\-.,\d\s\u0400-\u04FFёЁA-Za-z\u4E00-\u9FFF\u0300-\u0302]*$/u',
+                'pattern' => '/^[\x{201C}\x{201D}\x{2018}\x{2019}\x{AB}\x{BB}\'"()!:\';*%\-.,\d\s\p{Cyrillic}\p{Latin}\p{Han}\p{M}]*$/u',
                 'message' => 'Название может содержать буквы, цифры, пробелы и специальные символы.',
             ],
             [

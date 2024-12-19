@@ -25,7 +25,6 @@ class WaybillService
      */
     public static function create(array $data): Waybill
     {
-        Log::info('Создание накладной: ' . json_encode($data));
         // Получаем связанные сущности
         $buyer = User::findOne($data['buyer_id'] ?? null);
         $client = User::findOne($data['client_id'] ?? null);
@@ -81,11 +80,7 @@ class WaybillService
         // Формирование номера накладной
         // $data['cargo_number'] ?? 'UNKNOWN';
 
-        $waybillNumber = sprintf(
-            "JoyCity313-%s-%s",
-            $client ? $client->uuid : 'UNKNOWN',
-            $data['amount_of_space'] ?? '0'
-        );
+        $waybillNumber = "JoyCity313-" . ($client->uuid ?? 'UNKNOWN') . "-" . ($data['amount_of_space'] ?? '0');
 
         $waybillData = [
             'order_id' => $data['order_id'],
@@ -442,7 +437,7 @@ class WaybillService
         if (floor($rounded) == $rounded) {
             return (string) $rounded;
         } else {
-            return number_format($rounded, 2, '.', '');
+            return rtrim(rtrim(number_format($rounded, 2, '.', ''), '0'), '.');
         }
     }
 }
