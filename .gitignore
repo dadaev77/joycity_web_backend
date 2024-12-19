@@ -9,6 +9,7 @@ dist/
 logs/
 !components/logs/
 
+
 # Compiled Java class files
 *.class
 
@@ -57,5 +58,7 @@ controllers/api/v1/user/RelationshipController.php
 config/db.php
 vendor
 config/smtp.php
+
 /entrypoint/api/attachments/
 /entrypoint/api/uploads/
+/entrypoint/api/admin/
