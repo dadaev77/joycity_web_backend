@@ -437,7 +437,7 @@ class WaybillService
         if (floor($rounded) == $rounded) {
             return (string) $rounded;
         } else {
-            return number_format($rounded, 2, '.', '');
+            return rtrim(rtrim(number_format($rounded, 2, '.', ''), '0'), '.');
         }
     }
 }

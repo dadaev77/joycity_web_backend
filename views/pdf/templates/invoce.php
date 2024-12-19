@@ -131,7 +131,7 @@
                 <td>Авансирование на территории Китая($)</td>
                 <td><?= number_format($data['china_advance_usd'], 2) ?></td>
                 <td>Объем(м³)</td>
-                <td><?= number_format($data['volume'], 4) ?></td>
+                <td><?= $data['volume'] ?></td>
                 <td>Расходы на объем($)</td>
                 <td colspan="3"><?= number_format($data['volume_costs'], 2) ?></td>
             </tr>
