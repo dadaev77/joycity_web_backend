@@ -154,7 +154,7 @@ class OrderOutputService extends OutputService
                 $info['buyerOffer']['price_inspection'] = RateService::convertValue($info['buyerOffer']['price_inspection'], $info['buyerOffer']['currency'], $userCurrency);
                 $info['expected_price_per_item'] = RateService::convertValue($info['expected_price_per_item'], $info['currency'], $userCurrency);
             }
-
+            $info['buyerDeliveryOffer']['price_product'] = RateService::convertValue($info['buyerDeliveryOffer']['price_product'], $info['buyerDeliveryOffer']['currency'], $userCurrency);
             $info['type'] = in_array($info['status'], Order::STATUS_GROUP_ORDER, true) ? 'order' : 'request';
 
             $info['price'] = OrderPrice::calculateOrderPrices($info['id'], $userCurrency);
