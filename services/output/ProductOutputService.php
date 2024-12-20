@@ -34,6 +34,7 @@ class ProductOutputService extends OutputService
 
             $language = Yii::$app->user->identity->getSettings()->application_language;
 
+            $info['subcategory']['category'] = $info['subcategory']['parent_id'] ? app\models\Category::find()->where(['id' => $info['subcategory']['parent_id']])->one() : null;
             $keys = [
                 'name_ru',
                 'description_ru',
