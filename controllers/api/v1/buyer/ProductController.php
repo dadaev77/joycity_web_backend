@@ -216,6 +216,7 @@ class ProductController extends BuyerController
         $apiCodes = Product::apiCodes();
         $user = User::getIdentity();
         $request = Yii::$app->request;
+
         $product = Product::findOne(['id' => $id]);
         $repeatImagesToKeep = $request->post('repeat_images_to_keep');
 
@@ -255,6 +256,21 @@ class ProductController extends BuyerController
             // Загрузка данных в модель
             $product->load($data, '');
 
+            $translation = TranslationService::translateProductAttributes($request->post('name'), $request->post('description'));
+            $translations = $translation->result;
+
+            foreach ($translations as $key => $value) {
+                $product->{"name_$key"} = $value['name'];
+                $product->{"description_$key"} = $value['description'];
+            }
+
+            if (!$product->validate()) {
+                Yii::error('Validation errors: ' . json_encode($product->getErrors()));
+                return ApiResponse::byResponseCode($apiCodes->VALIDATION_ERROR, [
+                    'errors' => $product->getErrors(),
+                ]);
+            }
+
             // Установка валюты из настроек пользователя
             $product->currency = $user->settings->currency;
 
@@ -264,10 +280,10 @@ class ProductController extends BuyerController
             $product->range_3_price = $request->post('range_3_price') ?? 0;
             $product->range_4_price = $request->post('range_4_price') ?? 0;
 
-            $productSave = SaveModelService::validateAndSave($product, [], $transaction);
-
-            if (!$productSave->success) {
-                return $productSave->apiResponse;
+            if (!$product->save()) {
+                return ApiResponse::byResponseCode($apiCodes->ERROR_SAVE, [
+                    'errors' => $product->getFirstErrors(),
+                ]);
             }
 
             // Обработка изображений
