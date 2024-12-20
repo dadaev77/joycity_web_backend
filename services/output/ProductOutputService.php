@@ -3,6 +3,7 @@
 namespace app\services\output;
 
 use app\helpers\ModelTypeHelper;
+use app\models\Category;
 use app\models\Product;
 use app\services\RateService;
 use app\services\SqlQueryService;
