@@ -219,8 +219,6 @@ class ProductController extends BuyerController
         $product = Product::findOne(['id' => $id]);
         $repeatImagesToKeep = $request->post('repeat_images_to_keep');
 
-        $transaction = null;
-
         if (!$product) {
             return ApiResponse::code($apiCodes->NOT_FOUND);
         }
@@ -232,98 +230,84 @@ class ProductController extends BuyerController
         try {
             $transaction = Yii::$app->db->beginTransaction();
 
-            $product->load(
-                array_diff_key(
-                    $request->post(),
-                    array_flip([
-                        'rating',
-                        'feedback_count',
-                        'buyer_id',
-                        'is_deleted',
-                        'range_1_price',
-                        'range_2_price',
-                        'range_3_price',
-                        'range_4_price',
-                    ]),
-                ),
-                '',
+            // Загрузка данных из запроса
+            $data = array_diff_key(
+                $request->post(),
+                array_flip([
+                    'rating',
+                    'feedback_count',
+                    'buyer_id',
+                    'is_deleted',
+                    'range_1_price',
+                    'range_2_price',
+                    'range_3_price',
+                    'range_4_price',
+                ])
             );
-            // set currency from user settings
+
+            // Удаление полей с undefined значениями
+            foreach ($data as $key => $value) {
+                if ($value === 'undefined') {
+                    unset($data[$key]);
+                }
+            }
+
+            // Загрузка данных в модель
+            $product->load($data, '');
+
+            // Установка валюты из настроек пользователя
             $product->currency = $user->settings->currency;
-            // assign prices as is, without conversion
+
+            // Обработка цен
             $product->range_1_price = $request->post('range_1_price') ?? 0;
             $product->range_2_price = $request->post('range_2_price') ?? 0;
             $product->range_3_price = $request->post('range_3_price') ?? 0;
             $product->range_4_price = $request->post('range_4_price') ?? 0;
 
-            $productSave = SaveModelService::validateAndSave(
-                $product,
-                [],
-                $transaction,
-            );
+            $productSave = SaveModelService::validateAndSave($product, [], $transaction);
 
             if (!$productSave->success) {
                 return $productSave->apiResponse;
             }
 
+            // Обработка изображений
             $attachmentsToLink = [];
             $images = UploadedFile::getInstancesByName('images');
 
             if ($images) {
-                $attachmentSaveResponse = AttachmentService::writeFilesCollection(
-                    $images,
-                );
+                $attachmentSaveResponse = AttachmentService::writeFilesCollection($images);
 
                 if (!$attachmentSaveResponse->success) {
                     $transaction?->rollBack();
-
-                    return ApiResponse::byResponseCode(
-                        $apiCodes->INTERNAL_ERROR,
-                        ['errors' => ['images' => 'Failed to save images']],
-                    );
+                    return ApiResponse::byResponseCode($apiCodes->INTERNAL_ERROR, ['errors' => ['images' => 'Failed to save images']]);
                 }
 
-                $attachmentsToLink = array_merge(
-                    $attachmentsToLink,
-                    $attachmentSaveResponse->result,
-                );
+                $attachmentsToLink = array_merge($attachmentsToLink, $attachmentSaveResponse->result);
             }
 
+            // Обработка повторяющихся изображений
             if ($repeatImagesToKeep) {
-                $repeatProduct = Product::findOne(['id' => $id]);
+                $repeatProduct = Product::findOne(['id' => $request->post('repeat_product_id')]);
 
                 if ($repeatProduct && $repeatProduct->buyer_id === $user->id) {
                     $attachmentsToKeep = Attachment::find()
-                        ->joinWith([
-                            'productLinkAttachments' => fn($q) => $q->where([
-                                'product_id' => $repeatProduct->id,
-                            ]),
-                        ])
+                        ->joinWith(['productLinkAttachments' => fn($q) => $q->where(['product_id' => $repeatProduct->id])])
                         ->where(['attachment.id' => $repeatImagesToKeep])
                         ->all();
 
-                    $attachmentsToLink = array_merge(
-                        $attachmentsToLink,
-                        $attachmentsToKeep,
-                    );
+                    $attachmentsToLink = array_merge($attachmentsToLink, $attachmentsToKeep);
                 }
             }
 
             if ($attachmentsToLink) {
-                $product->linkAll('attachments', $attachmentsToLink, [
-                    'type' => productLinkAttachment::TYPE_DEFAULT,
-                ]);
+                $product->linkAll('attachments', $attachmentsToLink, ['type' => ProductLinkAttachment::TYPE_DEFAULT]);
             }
 
             $transaction?->commit();
 
-            return ApiResponse::info(ProductOutputService::getEntity(
-                $id,
-                'small'
-            ));
+            return ApiResponse::info(ProductOutputService::getEntity($id, 'small'));
         } catch (Throwable $e) {
             $transaction?->rollBack();
-
             return ApiResponse::internalError($e);
         }
     }
