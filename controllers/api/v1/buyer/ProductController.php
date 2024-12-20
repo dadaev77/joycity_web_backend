@@ -18,6 +18,7 @@ use Yii;
 use yii\web\UploadedFile;
 use linslin\yii2\curl\Curl;
 use app\services\TranslationService;
+use app\services\UserActionLogService as Log;
 
 class ProductController extends BuyerController
 {
@@ -79,6 +80,9 @@ class ProductController extends BuyerController
             $apiCodes = Product::apiCodes();
             $user = User::getIdentity();
             $request = Yii::$app->request;
+
+            Log::info('request', json_encode($request->post()));
+
             $images = UploadedFile::getInstancesByName('images');
 
             if (!$images) {
@@ -127,6 +131,8 @@ class ProductController extends BuyerController
                 [],
                 $transaction,
             );
+
+            Log::info('productSave', json_encode($productSave));
 
             if (!$productSave->success) {
                 return $productSave->apiResponse;
