@@ -3,6 +3,7 @@
 namespace app\services\output;
 
 use app\helpers\ModelTypeHelper;
+use app\models\Category;
 use app\models\Product;
 use app\services\RateService;
 use app\services\SqlQueryService;
@@ -34,7 +35,11 @@ class ProductOutputService extends OutputService
 
             $language = Yii::$app->user->identity->getSettings()->application_language;
 
-            $info['subcategory']['category'] = $info['subcategory']['parent_id'] ? app\models\Category::find()->where(['id' => $info['subcategory']['parent_id']])->one() : null;
+            if ($model->subcategory->parent_id) {
+                $info['subcategory']['category'] = Category::find()->where(['id' => $model->subcategory->parent_id])->one();
+            }
+
+
             $keys = [
                 'name_ru',
                 'description_ru',
