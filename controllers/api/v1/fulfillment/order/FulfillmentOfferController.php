@@ -55,6 +55,7 @@ class FulfillmentOfferController extends FulfillmentController
                 ['order_id', 'overall_price'],
                 true,
             );
+            $params['currency'] = $user->settings->currency;
             Log::info('params', json_encode($params));
 
             $notValidParams = POSTHelper::getEmptyParams($params, true);
@@ -98,6 +99,7 @@ class FulfillmentOfferController extends FulfillmentController
                 'fulfillment_id' => $user->id,
                 'status' => FulfillmentOffer::STATUS_CREATED,
                 'overall_price' => $params['overall_price'],
+                'currency' => $params['currency'],
             ]);
 
             Log::info('fulfillmentOffer(CREATE)', json_encode($fulfillmentOffer));
@@ -156,6 +158,7 @@ class FulfillmentOfferController extends FulfillmentController
             $user = User::getIdentity();
             $fulfillmentOffer = FulfillmentOffer::findOne(['id' => $id]);
             $params = POSTHelper::getPostWithKeys(['overall_price']);
+            $params['currency'] = $user->settings->currency;
 
             Log::info('params', json_encode($params));
 

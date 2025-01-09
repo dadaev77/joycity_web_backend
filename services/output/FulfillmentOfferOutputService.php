@@ -17,9 +17,10 @@ class FulfillmentOfferOutputService extends OutputService
         $query = FulfillmentOffer::find()->where(['id' => $ids]);
 
         return array_map(static function ($model) {
+            //
             $info = ModelTypeHelper::toArray($model);
-
             return $info;
+            //
         }, $query->all());
     }
 }
