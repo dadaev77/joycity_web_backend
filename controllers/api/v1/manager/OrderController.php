@@ -66,9 +66,10 @@ class OrderController extends ManagerController
             }
 
             if (
-                $order->status !== Order::STATUS_TRANSFERRING_TO_WAREHOUSE ||
+                // $order->status !== Order::STATUS_TRANSFERRING_TO_WAREHOUSE ||
                 $order->manager_id !== $user->id
             ) {
+                LogService::danger('ManagerOrderController. No access for order id: ' . $id . ' by Manager id: ' . $user->id);
                 return ApiResponse::code($apiCodes->NO_ACCESS);
             }
 
