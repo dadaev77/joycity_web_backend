@@ -149,7 +149,7 @@ class OrderOutputService extends OutputService
             }
 
             if ($info['fulfillmentOffer'] !== null) {
-                $info['fulfillmentOffer']['overall_price'] = RateService::convertValue($info['fulfillmentOffer']['overall_price'], $info['fulfillmentOffer']['currency'], $userCurrency);
+                $info['fulfillmentOffer']['overall_price'] = 500;
             }
 
             if ($info['buyerOffer']) {
