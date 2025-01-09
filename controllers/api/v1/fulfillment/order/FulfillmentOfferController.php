@@ -9,6 +9,7 @@ use app\models\FulfillmentOffer;
 use app\models\Order;
 use app\models\User;
 use app\services\output\FulfillmentOfferOutputService;
+use app\services\UserActionLogService as Log;
 use Throwable;
 use Yii;
 
@@ -54,8 +55,9 @@ class FulfillmentOfferController extends FulfillmentController
                 ['order_id', 'overall_price'],
                 true,
             );
-            $notValidParams = POSTHelper::getEmptyParams($params, true);
+            Log::info('params', json_encode($params));
 
+            $notValidParams = POSTHelper::getEmptyParams($params, true);
             if ($notValidParams) {
                 $errors = array_map(
                     static fn($idx) => "Param `$notValidParams[$idx]` empty",
@@ -97,6 +99,8 @@ class FulfillmentOfferController extends FulfillmentController
                 'status' => FulfillmentOffer::STATUS_CREATED,
                 'overall_price' => $params['overall_price'],
             ]);
+
+            Log::info('fulfillmentOffer(CREATE)', json_encode($fulfillmentOffer));
 
             if (!$fulfillmentOffer->save()) {
                 $transaction?->rollBack();
@@ -153,6 +157,8 @@ class FulfillmentOfferController extends FulfillmentController
             $fulfillmentOffer = FulfillmentOffer::findOne(['id' => $id]);
             $params = POSTHelper::getPostWithKeys(['overall_price']);
 
+            Log::info('params', json_encode($params));
+
             if (!$fulfillmentOffer) {
                 return ApiResponse::code($apiCodes->NOT_FOUND);
             }
@@ -169,6 +175,8 @@ class FulfillmentOfferController extends FulfillmentController
             }
 
             $fulfillmentOffer->load($params, '');
+
+            Log::info('fulfillmentOffer(UPDATE)', json_encode($fulfillmentOffer));
 
             if (!$fulfillmentOffer->save()) {
                 return ApiResponse::codeErrors(
