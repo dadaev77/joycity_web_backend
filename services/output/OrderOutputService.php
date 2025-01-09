@@ -160,45 +160,6 @@ class OrderOutputService extends OutputService
 
             $info['type'] = in_array($info['status'], Order::STATUS_GROUP_ORDER, true) ? 'order' : 'request';
 
-            // Конвертация всех полей с ценами в валюту пользователя
-            foreach ($info as $key => $value) {
-                if ($value && (
-                    str_starts_with($key, 'price_') ||
-                    $key === 'expected_price_per_item' ||
-                    str_contains($key, '_price') ||
-                    str_contains($key, 'price') ||
-                    str_contains($key, 'overall')
-                )) {
-                    $info[$key] = RateService::convertValue($value, $info['currency'], $userCurrency);
-                }
-            }
-
-            // Конвертация цен во вложенных объектах
-            if (isset($info['fulfillmentOffer'])) {
-                $info['fulfillmentOffer']['overall_price'] = RateService::convertValue(
-                    $info['fulfillmentOffer']['overall_price'],
-                    $info['currency'],
-                    $userCurrency
-                );
-            }
-
-            if (isset($info['productStockReport'])) {
-                $info['productStockReport']['price'] = RateService::convertValue(
-                    $info['productStockReport']['price'],
-                    $info['currency'],
-                    $userCurrency
-                );
-            }
-
-            if ($info['buyerOffer']) {
-                $info['buyerOffer']['price_product'] = RateService::convertValue($info['buyerOffer']['price_product'], $info['buyerOffer']['currency'], $userCurrency);
-                $info['buyerOffer']['price_inspection'] = RateService::convertValue($info['buyerOffer']['price_inspection'], $info['buyerOffer']['currency'], $userCurrency);
-            }
-
-            if (isset($info['buyerDeliveryOffer'])) {
-                $info['buyerDeliveryOffer']['price_product'] = RateService::convertValue($info['buyerDeliveryOffer']['price_product'], $info['buyerDeliveryOffer']['currency'], $userCurrency);
-            }
-
             $info['price'] = OrderPrice::calculateOrderPrices($info['id'], $userCurrency);
 
             unset(
