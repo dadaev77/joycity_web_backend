@@ -79,6 +79,7 @@ class BuyerOfferController extends ManagerController
             }
 
             $order = $buyerOffer->order;
+            LogService::info('order', json_encode($order));
 
             if (
                 $order->status !== Order::STATUS_BUYER_OFFER_ACCEPTED ||
