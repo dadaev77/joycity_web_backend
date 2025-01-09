@@ -66,9 +66,10 @@ class OrderController extends ManagerController
             }
 
             if (
-                $order->status !== Order::STATUS_TRANSFERRING_TO_WAREHOUSE ||
+                // $order->status !== Order::STATUS_TRANSFERRING_TO_WAREHOUSE ||
                 $order->manager_id !== $user->id
             ) {
+                LogService::danger('ManagerOrderController. No access for order id: ' . $id . ' by Manager id: ' . $user->id);
                 return ApiResponse::code($apiCodes->NO_ACCESS);
             }
 
@@ -85,7 +86,9 @@ class OrderController extends ManagerController
 
             return ApiResponse::code($apiCodes->SUCCESS);
         } catch (Throwable $e) {
-            return ApiResponse::internalError($e);
+            LogService::danger('ManagerOrderController. Error arrived to warehouse for order id: ' . $id . ' by Manager id: ' . $user->id);
+            LogService::danger('ManagerOrderController. Error message: ' . $e->getMessage());
+            return ApiResponse::internalError($e->getMessage());
         }
     }
 
@@ -131,10 +134,10 @@ class OrderController extends ManagerController
             }
             LogService::log('ManagerOrderController.order found');
             if (
-                $order->manager_id !== $user->id ||
-                $order->type_delivery_point_id !==
-                TypeDeliveryPoint::TYPE_WAREHOUSE ||
-                $order->status !== Order::STATUS_ARRIVED_TO_WAREHOUSE
+                $order->manager_id !== $user->id
+                // $order->type_delivery_point_id !==
+                // TypeDeliveryPoint::TYPE_WAREHOUSE ||
+                // $order->status !== Order::STATUS_ARRIVED_TO_WAREHOUSE
             ) {
                 return ApiResponse::code($apiCodes->NO_ACCESS);
             }

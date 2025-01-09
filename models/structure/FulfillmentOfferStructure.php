@@ -59,6 +59,11 @@ class FulfillmentOfferStructure extends \app\models\Base
                 'targetAttribute' => ['order_id' => 'id'],
             ],
             [
+                ['currency'],
+                'string',
+                'max' => 3,
+            ],
+            [
                 ['fulfillment_id'],
                 'exist',
                 'skipOnError' => true,

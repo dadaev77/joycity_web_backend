@@ -148,6 +148,9 @@ class OrderOutputService extends OutputService
                 );
             }
 
+            if ($info['fulfillmentOffer'] !== null) {
+                $info['fulfillmentOffer']['overall_price'] = RateService::convertValue($info['fulfillmentOffer']['overall_price'], $info['fulfillmentOffer']['currency'], $userCurrency);
+            }
 
             if ($info['buyerOffer']) {
                 $info['buyerOffer']['price_product'] = RateService::convertValue($info['buyerOffer']['price_product'], $info['buyerOffer']['currency'], $userCurrency);
