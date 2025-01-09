@@ -134,10 +134,10 @@ class OrderController extends ManagerController
             }
             LogService::log('ManagerOrderController.order found');
             if (
-                $order->manager_id !== $user->id ||
-                $order->type_delivery_point_id !==
-                TypeDeliveryPoint::TYPE_WAREHOUSE ||
-                $order->status !== Order::STATUS_ARRIVED_TO_WAREHOUSE
+                $order->manager_id !== $user->id
+                // $order->type_delivery_point_id !==
+                // TypeDeliveryPoint::TYPE_WAREHOUSE ||
+                // $order->status !== Order::STATUS_ARRIVED_TO_WAREHOUSE
             ) {
                 return ApiResponse::code($apiCodes->NO_ACCESS);
             }
