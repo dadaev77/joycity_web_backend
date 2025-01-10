@@ -2,34 +2,46 @@
 
 namespace app\services;
 
-
 class ExchangeRateService
 {
-    // use open api to get exchange rates
-    private const URL = "https://www.cbr-xml-daily.ru/daily_json.js";
+    private const BASE_URL = "http://api.currencylayer.com/live";
     private static $currencies;
 
     /**
      * @param array $currencies allow [currency codes] in low case
-     * @param string $baseCurrency
      * @return array
      */
     public static function getRate(array $currencies)
     {
         try {
+            $apiKey = $_ENV['CURRENCY_LAYER_API_KEY'];
+            $currenciesList = strtoupper(implode(',', $currencies));
 
-            $response = json_decode(file_get_contents(self::URL), true);
-            $data = $response['Valute'];
+            $url = self::BASE_URL . "?access_key=" . $apiKey . "&currencies=RUB," . $currenciesList . "&source=USD&format=1";
+            $response = json_decode(file_get_contents($url), true);
+
+            if (!$response['success']) {
+                throw new \Exception('Currency Layer API error: ' . ($response['error']['info'] ?? 'Unknown error'));
+            }
+
+            $rates = $response['quotes'];
+            $usdToRub = $rates['USDRUB'];
 
             $outputPairs = [];
             foreach ($currencies as $currency) {
                 $currency = strtoupper($currency);
-                $outputPairs[$currency] = $data[$currency]['Value'];
+                // Convert through USD rate since Currency Layer uses USD as base
+                if ($currency === 'USD') {
+                    $outputPairs[$currency] = $usdToRub;
+                } else {
+                    $usdToCurrency = $rates['USD' . $currency];
+                    $outputPairs[$currency] = ($usdToRub / $usdToCurrency);
+                }
             }
 
-            return array(
+            return [
                 'data' => $outputPairs
-            );
+            ];
         } catch (\Exception $e) {
             return ['error' => $e->getMessage()];
         }
