@@ -21,12 +21,18 @@ class TelegramLog
 
     public function send($type, $message)
     {
+
         // Здесь должна быть логика отправки сообщения в Telegram
         // Например, вы можете использовать API Telegram для отправки сообщения
 
         $response = $this->client->post($this->url, [
-            'type' => '$type',
-            'message' => '$message',
+            'json' => [
+                'type' => $type,
+                'message' => $message,
+            ],
+            'headers' => [
+                'Content-Type' => 'application/json',
+            ],
         ]);
 
         return $response;
