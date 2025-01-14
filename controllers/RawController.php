@@ -317,4 +317,8 @@ class RawController extends Controller
             return rtrim(rtrim(number_format($rounded, 2, '.', ''), '0'), '.');
         }
     }
+    public function actionTelLog()
+    {
+        return Yii::$app->telegramLog->send('info', 'test test test');
+    }
 }
