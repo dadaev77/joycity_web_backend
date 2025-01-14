@@ -25,8 +25,8 @@ class TelegramLog
         // Например, вы можете использовать API Telegram для отправки сообщения
 
         $response = $this->client->post($this->url, [
-            'type' => $type,
-            'message' => $message,
+            'type' => '$type',
+            'message' => '$message',
         ]);
 
         return $response;
