@@ -2,6 +2,8 @@
 
 namespace app\components;
 
+use GuzzleHttp\Client;
+
 class TelegramLog
 {
     /**
@@ -10,10 +12,11 @@ class TelegramLog
      * URL: APP_URL_LOG_BOT/send
      */
     protected $url;
-
+    protected $client;
     public function __construct()
     {
         $this->url = $_ENV['APP_URL_LOG_BOT'] . '/send';
+        $this->client = new Client();
     }
 
     public function send($type, $message)
@@ -21,7 +24,7 @@ class TelegramLog
         // Здесь должна быть логика отправки сообщения в Telegram
         // Например, вы можете использовать API Telegram для отправки сообщения
 
-        $response = Http::post($this->url, [
+        $response = $this->client->post($this->url, [
             'type' => $type,
             'message' => $message,
         ]);
