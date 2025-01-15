@@ -75,7 +75,6 @@ class BuyerOfferController extends ClientController
 
             if (!$buyerOffer->save()) {
                 $transaction?->rollBack();
-                Yii::$app->telegramLog->send('error', 'BuyerOfferController. buyer offer not saved with id ' . $buyerOffer->id . '. Flow is incorrect. Error: ' . $buyerOffer->getFirstErrors());
                 return ApiResponse::codeErrors(
                     $apiCodes->ERROR_SAVE,
                     $buyerOffer->getFirstErrors(),
@@ -88,7 +87,6 @@ class BuyerOfferController extends ClientController
 
             if (!$order->save()) {
                 $transaction?->rollBack();
-                Yii::$app->telegramLog->send('error', 'BuyerOfferController. order not saved with id ' . $order->id . '. Flow is incorrect. Error: ' . $order->getFirstErrors());
                 return ApiResponse::codeErrors(
                     $apiCodes->ERROR_SAVE,
                     $order->getFirstErrors(),
@@ -101,7 +99,6 @@ class BuyerOfferController extends ClientController
 
             if (!$orderStatusChange->success) {
                 $transaction?->rollBack();
-                Yii::$app->telegramLog->send('error', 'BuyerOfferController. order not saved with id ' . $order->id . '. Flow is incorrect. Error: ' . $orderStatusChange->reason);
                 return ApiResponse::codeErrors(
                     $apiCodes->ERROR_SAVE,
                     $orderStatusChange->reason,
@@ -115,7 +112,7 @@ class BuyerOfferController extends ClientController
             );
         } catch (Throwable $e) {
             isset($transaction) && $transaction->rollBack();
-            Yii::$app->telegramLog->send('error', 'BuyerOfferController. buyer offer not accepted with id ' . $buyerOffer->id . '. Flow is incorrect. Error: ' . $e->getMessage());
+            Yii::$app->telegramLog->send('error', 'Не удалось принять предложение продавца с ID ' . $buyerOffer->id . '. Ошибка: ' . $e->getMessage());
             return ApiResponse::internalError($e);
         }
     }
@@ -172,7 +169,6 @@ class BuyerOfferController extends ClientController
 
             if (!$buyerOffer->save()) {
                 $transaction?->rollBack();
-                Yii::$app->telegramLog->send('error', 'BuyerOfferController. buyer offer not saved with id ' . $buyerOffer->id . '. Flow is incorrect. Error: ' . $buyerOffer->getFirstErrors());
                 return ApiResponse::codeErrors(
                     $apiCodes->ERROR_SAVE,
                     $buyerOffer->getFirstErrors(),
@@ -186,7 +182,6 @@ class BuyerOfferController extends ClientController
 
             if (!$order->save()) {
                 $transaction?->rollBack();
-                Yii::$app->telegramLog->send('error', 'BuyerOfferController. order not saved with id ' . $order->id . '. Flow is incorrect. Error: ' . $order->getFirstErrors());
                 return ApiResponse::codeErrors(
                     $apiCodes->ERROR_SAVE,
                     $order->getFirstErrors(),
@@ -199,7 +194,6 @@ class BuyerOfferController extends ClientController
 
             if (!$orderStatusChange->success) {
                 $transaction?->rollBack();
-                Yii::$app->telegramLog->send('error', 'BuyerOfferController. order status not changed to cancelled with id ' . $order->id . '. Flow is incorrect. Error: ' . $orderStatusChange->reason);
                 return ApiResponse::codeErrors(
                     $apiCodes->ERROR_SAVE,
                     $orderStatusChange->reason,
@@ -212,7 +206,6 @@ class BuyerOfferController extends ClientController
 
             if (!$orderDistributionReload->success) {
                 $transaction?->rollBack();
-                Yii::$app->telegramLog->send('error', 'BuyerOfferController. order distribution not reloaded with id ' . $order->id . '. Flow is incorrect. Error: ' . $orderDistributionReload->reason);
                 return ApiResponse::codeErrors(
                     $apiCodes->ERROR_SAVE,
                     $orderDistributionReload->reason,
@@ -224,7 +217,7 @@ class BuyerOfferController extends ClientController
             return ApiResponse::code($apiCodes->SUCCESS);
         } catch (Throwable $e) {
             isset($transaction) && $transaction->rollBack();
-            Yii::$app->telegramLog->send('error', 'BuyerOfferController. buyer offer not declined with id ' . $buyerOffer->id . '. Flow is incorrect. Error: ' . $e->getMessage());
+            Yii::$app->telegramLog->send('error', 'Не удалось отклонить предложение продавца с ID ' . $buyerOffer->id . '. Ошибка: ' . $e->getMessage());
             return ApiResponse::internalError($e);
         }
     }

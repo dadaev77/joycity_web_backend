@@ -18,7 +18,6 @@ use Yii;
 use yii\web\UploadedFile;
 use linslin\yii2\curl\Curl;
 use app\services\TranslationService;
-use app\services\UserActionLogService as Log;
 
 class ProductController extends BuyerController
 {
@@ -81,7 +80,6 @@ class ProductController extends BuyerController
             $user = User::getIdentity();
             $request = Yii::$app->request;
 
-            Log::info('request: ' . json_encode($request->post()));
 
             $images = UploadedFile::getInstancesByName('images');
 
@@ -132,8 +130,6 @@ class ProductController extends BuyerController
                 $transaction,
             );
 
-            Log::info('productSave: ' . json_encode($productSave));
-
             if (!$productSave->success) {
                 return $productSave->apiResponse;
             }
@@ -166,6 +162,7 @@ class ProductController extends BuyerController
                 ),
             );
         } catch (Throwable $e) {
+            Yii::$app->telegramLog->send('error', 'Ошибка при создании продукта: ' . $e->getMessage());
             isset($transaction) && $transaction->rollBack();
 
             return ApiResponse::internalError($e);
@@ -323,6 +320,7 @@ class ProductController extends BuyerController
 
             return ApiResponse::info(ProductOutputService::getEntity($id, 'small'));
         } catch (Throwable $e) {
+            Yii::$app->telegramLog->send('error', 'Ошибка при обновлении продукта: ' . $e->getMessage());
             $transaction?->rollBack();
             return ApiResponse::internalError($e);
         }

@@ -129,6 +129,7 @@ class BuyerDeliveryOfferController extends ManagerController
                 ),
             );
         } catch (Throwable $e) {
+            Yii::$app->telegramLog->send('error', 'Ошибка при создании предложения по доставке: ' . $e->getMessage());
             return ApiResponse::internalError($e);
         }
     }
@@ -151,7 +152,7 @@ class BuyerDeliveryOfferController extends ManagerController
      *     ),
      *     @OA\Response(
      *         response=404,
-     *         description="П��едложение по доставке не найдено"
+     *         description="Предложение по доставке не найдено"
      *     ),
      *     @OA\Response(
      *         response=403,
@@ -169,30 +170,24 @@ class BuyerDeliveryOfferController extends ManagerController
             $user = User::getIdentity();
 
             $buyerDeliveryOffer = BuyerDeliveryOffer::findOne(['id' => $id]);
-            Log::log('buyerDeliveryOffer: ' . json_encode($buyerDeliveryOffer));
             if (!$buyerDeliveryOffer) {
-                Log::danger('buyerDeliveryOffer not found');
                 return ApiResponse::code($apiCodes->NOT_FOUND);
             }
 
             $order = $buyerDeliveryOffer->order;
-            Log::log('order: ' . json_encode($order));
 
             if (
                 $order->manager_id !== $user->id ||
                 $buyerDeliveryOffer->status === BuyerDeliveryOffer::STATUS_PAID
             ) {
-                Log::danger('no access');
                 return ApiResponse::code($apiCodes->NO_ACCESS);
             }
 
             $transaction = Yii::$app->db->beginTransaction();
 
             $buyerDeliveryOffer->status = BuyerDeliveryOffer::STATUS_PAID;
-            Log::log('buyerDeliveryOffer status: ' . $buyerDeliveryOffer->status);
 
             if (!$buyerDeliveryOffer->save()) {
-                Log::danger('buyerDeliveryOffer save error: ' . json_encode($buyerDeliveryOffer->getFirstErrors()));
                 return ApiResponse::transactionCodeErrors(
                     $transaction,
                     $apiCodes->ERROR_SAVE,
@@ -225,8 +220,7 @@ class BuyerDeliveryOfferController extends ManagerController
                 BuyerDeliveryOfferOutputService::getEntity($id),
             );
         } catch (Throwable $e) {
-            Log::danger('error: ' . json_encode($e->getMessage()));
-
+            Yii::$app->telegramLog->send('error', 'Ошибка при оплате предложения по доставке: ' . $e->getMessage());
             isset($transaction) && $transaction->rollBack();
             return ApiResponse::internalError($e);
         }

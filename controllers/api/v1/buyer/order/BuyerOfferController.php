@@ -15,7 +15,6 @@ use app\services\output\BuyerOfferOutputService;
 use app\services\RateService;
 use Throwable;
 use Yii;
-use app\services\UserActionLogService as LogService;
 
 class BuyerOfferController extends BuyerController
 {
@@ -151,6 +150,7 @@ class BuyerOfferController extends BuyerController
                 BuyerOfferOutputService::getEntity($buyerOffer->id),
             );
         } catch (Throwable $e) {
+            Yii::$app->telegramLog->send('error', 'Ошибка при создании предложения продавца: ' . $e->getMessage());
             isset($transaction) && $transaction->rollBack();
             return ApiResponse::internalError($e);
         }

@@ -10,7 +10,6 @@ use yii\web\NotFoundHttpException;
 use yii\web\BadRequestHttpException;
 use Yii;
 use app\models\Rate;
-use app\services\UserActionLogService as Log;
 
 /**
  * Контроллер для работы с накладными
@@ -35,7 +34,6 @@ class WaybillController extends ManagerController
             $apiCodes = Order::apiCodes();
             $data = Yii::$app->request->post();
 
-            Log::info('Генерация накладной: ' . json_encode($data));
             // Проверяем существование заказа
             $order = Order::findOne($data['order_id']);
             if (!$order) {
@@ -65,6 +63,7 @@ class WaybillController extends ManagerController
                 'waybill' => $waybill
             ]);
         } catch (\Exception $e) {
+            Yii::$app->telegramLog->send('error', 'Ошибка при генерации накладной: ' . $e->getMessage());
             return ApiResponse::byResponseCode($apiCodes->ERROR_SAVE, [
                 'message' => $e->getMessage()
             ]);
@@ -88,6 +87,7 @@ class WaybillController extends ManagerController
                 'message' => $e->getMessage()
             ]);
         } catch (\Exception $e) {
+            Yii::$app->telegramLog->send('error', 'Ошибка при получении накладной: ' . $e->getMessage());
             return ApiResponse::byResponseCode($apiCodes->ERROR_SAVE, [
                 'message' => $e->getMessage()
             ]);
@@ -115,6 +115,7 @@ class WaybillController extends ManagerController
                 'message' => $e->getMessage()
             ]);
         } catch (\Exception $e) {
+            Yii::$app->telegramLog->send('error', 'Ошибка при блокировке редактирования накладной: ' . $e->getMessage());
             return ApiResponse::byResponseCode($apiCodes->ERROR_SAVE, [
                 'message' => $e->getMessage()
             ]);
