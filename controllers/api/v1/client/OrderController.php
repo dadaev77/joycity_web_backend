@@ -26,7 +26,7 @@ use Throwable;
 use Yii;
 use yii\base\Exception;
 use yii\web\UploadedFile;
-use app\services\UserActionLogService as LogService;
+
 use app\services\twilio\TwilioService;
 use app\controllers\CronController;
 use app\models\OrderDistribution;
@@ -38,7 +38,6 @@ class OrderController extends ClientController
     public function init()
     {
         parent::init();
-        LogService::setController('OrderController');
         Yii::beginProfile('OrderOutput');
     }
     public function behaviors()
@@ -66,6 +65,8 @@ class OrderController extends ClientController
 
             Yii::$app->response->data = $response;
         };
+
+        Yii::$app->telegramLog->send('info', 'Правила доступа установлены в behaviors');
 
         return $behaviours;
     }
@@ -109,9 +110,10 @@ class OrderController extends ClientController
      */
     public function actionCreate()
     {
+        Yii::$app->telegramLog->send('info', 'Начато создание заказа клиентом');
         $user = User::getIdentity();
         $request = Yii::$app->request;
-        LogService::log('create client order is called by ' . $user->email);
+        Yii::$app->telegramLog->send('info', 'Создание заказа клиентом вызвано пользователем ' . $user->email);
         $apiCodes = Order::apiCodes();
         $images = UploadedFile::getInstancesByName('images');
         $repeatOrderId = $request->post('repeat_order_id');
@@ -135,7 +137,7 @@ class OrderController extends ClientController
             $order->created_at = date('Y-m-d H:i:s');
             $order->status = Order::STATUS_CREATED;
             $order->manager_id = $randomManager->id;
-            LogService::log('manager id is set to ' . $randomManager->id);
+            Yii::$app->telegramLog->send('info', 'ID менеджера установлен на ' . $randomManager->id);
             $order->currency = $currency;
 
 
@@ -151,7 +153,7 @@ class OrderController extends ClientController
                     ->one();
                 if ($fulfillmentUser) {
                     $order->fulfillment_id = $fulfillmentId;
-                    LogService::log('fulfillment id is set to ' . $fulfillmentId);
+                    Yii::$app->telegramLog->send('info', 'fulfillment id is set to ' . $fulfillmentId);
                 } else {
                     return ApiResponse::code($apiCodes->NOT_FOUND);
                 }
@@ -215,7 +217,7 @@ class OrderController extends ClientController
                 true,
             );
 
-            Yii::$app->telegramLog->send('success', 'OrderController. order saved with id ' . $order->id);
+            Yii::$app->telegramLog->send('success', 'Заказ создан с продуктом');
 
             if (!$orderSave->success) {
                 return $orderSave->apiResponse;
@@ -226,7 +228,7 @@ class OrderController extends ClientController
 
                 $buyerId = $order->product->buyer_id;
                 $distributionStatus = OrderDistributionService::createDistributionTask($order->id, $buyerId);
-                LogService::success('add buyer to order. buyer id is ' . $buyerId);
+                Yii::$app->telegramLog->send('info', 'add buyer to order. buyer id is ' . $buyerId);
 
                 if (!$distributionStatus->success) {
                     return ApiResponse::transactionCodeErrors(
@@ -363,14 +365,14 @@ class OrderController extends ClientController
 
             if ($orderSave->success) {
                 if ($withProduct) {
-                    LogService::success('Order created with product');
+                    Yii::$app->telegramLog->send('info', 'Order created with product');
                 } else {
-                    LogService::warning('Order created without product');
+                    Yii::$app->telegramLog->send('warning', 'Заказ создан без продукта');
                     $distTaskID = OrderDistribution::find()->where(['order_id' => $order->id])->one();
                     if ($distTaskID) {
                         exec('curl -X GET "' . $_ENV['APP_URL'] . '/cron/create?taskID=' . $distTaskID->id . '"');
                     } else {
-                        LogService::danger('Distribution task not found');
+                        Yii::$app->telegramLog->send('error', 'Distribution task not found');
                     }
                 }
                 return ApiResponse::byResponseCode(null, [
@@ -378,7 +380,7 @@ class OrderController extends ClientController
                     'message' => 'Order created successfully',
                 ]);
             } else {
-                Yii::$app->telegramLog->send('error', 'order not saved with id ' . $order->id . '. Flow is incorrect');
+                Yii::$app->telegramLog->send('error', 'Заказ не сохранен с ID ' . $order->id . '. Ошибка: ' . $orderSave->reason);
                 return ApiResponse::codeErrors(
                     $apiCodes->ERROR_SAVE,
                     $orderSave->reason
@@ -386,7 +388,7 @@ class OrderController extends ClientController
             }
         } catch (Throwable $e) {
             $transaction?->rollBack();
-            Yii::$app->telegramLog->send('error', 'order not saved with id ' . $order->id . '. Flow is incorrect. Error: ' . $e->getMessage());
+            Yii::$app->telegramLog->send('error', 'Заказ не сохранен с ID ' . $order->id . '. Ошибка: ' . $e->getMessage());
             return ApiResponse::internalError($e);
         }
     }
@@ -430,6 +432,7 @@ class OrderController extends ClientController
      */
     public function actionUpdate(int $id)
     {
+        Yii::$app->telegramLog->send('info', 'Начато обновление заказа с ID ' . $id);
         try {
             $request = Yii::$app->request;
             $user = User::getIdentity();
@@ -503,7 +506,7 @@ class OrderController extends ClientController
 
             return ApiResponse::info(OrderOutputService::getEntity($order->id));
         } catch (Throwable $e) {
-            Yii::$app->telegramLog->send('error', 'order not saved with id ' . $order->id . '. Flow is incorrect. Error: ' . $e->getMessage());
+            Yii::$app->telegramLog->send('error', 'Ошибка при обновлении заказа: ' . $e->getMessage());
             isset($transaction) && $transaction->rollBack();
             return ApiResponse::internalError($e);
         }
@@ -541,7 +544,8 @@ class OrderController extends ClientController
      */
     public function actionCancel(int $id)
     {
-        LogService::info('OrderController. actionCancel is called by user with email ' . User::getIdentity()->email);
+        Yii::$app->telegramLog->send('info', 'Начато отмена заказа с ID ' . $id);
+        Yii::$app->telegramLog->send('info', 'OrderController. actionCancel вызван пользователем с email ' . User::getIdentity()->email);
         $apiCodes = Order::apiCodes();
         $user = User::getIdentity();
         $order = Order::findOne(['id' => $id]);
@@ -549,13 +553,13 @@ class OrderController extends ClientController
         if (!$order) {
             return ApiResponse::byResponseCode($apiCodes->NOT_FOUND);
         }
-        Yii::$app->telegramLog->send('success', 'OrderController. order found with id ' . $order->id);
+        Yii::$app->telegramLog->send('success', 'OrderController. Заказ найден с ID ' . $order->id);
         if ($order->created_by !== $user->id) {
             return ApiResponse::byResponseCode($apiCodes->NO_ACCESS);
         }
         $orderChangeStatus = OrderStatusService::cancelled($order->id);
         if (!$orderChangeStatus->success) {
-            Yii::$app->telegramLog->send('error', 'order not saved with id ' . $order->id . '. Flow is incorrect. Error: ' . $orderChangeStatus->reason);
+            Yii::$app->telegramLog->send('error', 'Заказ не сохранен с ID ' . $order->id . '. Ошибка: ' . $orderChangeStatus->reason);
             return ApiResponse::byResponseCode(
                 $apiCodes->ERROR_SAVE,
                 $orderChangeStatus->reason,
@@ -594,6 +598,7 @@ class OrderController extends ClientController
      */
     public function actionView(int $id)
     {
+        Yii::$app->telegramLog->send('info', 'Запрос информации о заказе с ID ' . $id);
         $apiCodes = Order::apiCodes();
         $user = User::getIdentity();
         $order = Order::find()
@@ -602,11 +607,12 @@ class OrderController extends ClientController
             ->one();
 
         if (!$order) {
+            Yii::$app->telegramLog->send('error', 'Заказ не найден с ID ' . $id);
             return ApiResponse::byResponseCode($apiCodes->NOT_FOUND);
         }
 
         if ($order->created_by !== $user->id) {
-            Yii::$app->telegramLog->send('error', 'OrderController. order not found with id ' . $order->id . '. Flow is incorrect. Error: ' . $order->created_by . ' - ' . $user->id);
+            Yii::$app->telegramLog->send('error', 'OrderController. Заказ не найден с ID ' . $order->id . '. Ошибка: ' . $order->created_by . ' - ' . $user->id);
             return ApiResponse::code($apiCodes->NO_ACCESS);
         }
 
@@ -638,6 +644,7 @@ class OrderController extends ClientController
      */
     public function actionMy(string $type = 'request')
     {
+        Yii::$app->telegramLog->send('info', 'Запрос на получение заказов текущего пользователя');
         $user = User::getIdentity();
         $orderIds = Order::find()
             ->select(['id'])
@@ -684,6 +691,7 @@ class OrderController extends ClientController
      */
     public function actionHistory(string $type = 'request')
     {
+        Yii::$app->telegramLog->send('info', 'Запрос на получение истории заказов текущего пользователя');
         $user = User::getIdentity();
         $orderIds = Order::find()
             ->select(['id'])
@@ -724,6 +732,7 @@ class OrderController extends ClientController
      */
     public function actionFulfillmentList()
     {
+        Yii::$app->telegramLog->send('info', 'Запрос на получение списка фулфилмента');
         $users = User::find()
             ->select(['user.id'])
             ->joinWith(['userSettings', 'deliveryPointAddress'])
@@ -788,6 +797,7 @@ class OrderController extends ClientController
      */
     public function actionSetLinkTz($id)
     {
+        Yii::$app->telegramLog->send('info', 'Установка ссылки на TZ для заказа с ID ' . $id);
         $request = Yii::$app->request;
         $linkTz = $request->post('link_tz');
         $apiCodes = Order::apiCodes();
@@ -843,6 +853,7 @@ class OrderController extends ClientController
      */
     public function actionCalculatePrice()
     {
+        Yii::$app->telegramLog->send('info', 'Запрос на расчет цены');
         $request = Yii::$app->request;
         $product_price = $request->post('product_price');
         $product_quantity = $request->post('product_quantity');
