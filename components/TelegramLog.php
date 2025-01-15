@@ -11,8 +11,19 @@ class TelegramLog
      * Bot name: joycity_log_bot
      * URL: APP_URL_LOG_BOT/send
      */
+
     protected $url;
     protected $client;
+    private const MESSAGES_LEVEL = [
+        'info',
+        'warning',
+        'error',
+        'success',
+        'critical',
+        'debug',
+        'alert',
+    ];
+
     public function __construct()
     {
         $this->url = $_ENV['APP_URL_LOG_BOT'] . '/send';
@@ -36,5 +47,10 @@ class TelegramLog
         ]);
 
         return $response;
+    }
+
+    public static function getMessagesLevel()
+    {
+        return self::MESSAGES_LEVEL;
     }
 }
