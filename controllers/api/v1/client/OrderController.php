@@ -215,7 +215,7 @@ class OrderController extends ClientController
                 true,
             );
 
-            LogService::log('order saved with id ' . $order->id);
+            Yii::$app->telegramLog->send('success', 'OrderController. order saved with id ' . $order->id);
 
             if (!$orderSave->success) {
                 return $orderSave->apiResponse;
@@ -378,7 +378,7 @@ class OrderController extends ClientController
                     'message' => 'Order created successfully',
                 ]);
             } else {
-                LogService::danger('order not saved with id ' . $order->id . '. Flow is incorrect');
+                Yii::$app->telegramLog->send('error', 'order not saved with id ' . $order->id . '. Flow is incorrect');
                 return ApiResponse::codeErrors(
                     $apiCodes->ERROR_SAVE,
                     $orderSave->reason
@@ -386,6 +386,7 @@ class OrderController extends ClientController
             }
         } catch (Throwable $e) {
             $transaction?->rollBack();
+            Yii::$app->telegramLog->send('error', 'order not saved with id ' . $order->id . '. Flow is incorrect. Error: ' . $e->getMessage());
             return ApiResponse::internalError($e);
         }
     }
@@ -502,8 +503,8 @@ class OrderController extends ClientController
 
             return ApiResponse::info(OrderOutputService::getEntity($order->id));
         } catch (Throwable $e) {
+            Yii::$app->telegramLog->send('error', 'order not saved with id ' . $order->id . '. Flow is incorrect. Error: ' . $e->getMessage());
             isset($transaction) && $transaction->rollBack();
-
             return ApiResponse::internalError($e);
         }
     }
@@ -548,19 +549,19 @@ class OrderController extends ClientController
         if (!$order) {
             return ApiResponse::byResponseCode($apiCodes->NOT_FOUND);
         }
-        LogService::success('OrderController. order found with id ' . $order->id);
+        Yii::$app->telegramLog->send('success', 'OrderController. order found with id ' . $order->id);
         if ($order->created_by !== $user->id) {
             return ApiResponse::byResponseCode($apiCodes->NO_ACCESS);
         }
-        LogService::success('OrderController. order created by is correct');
         $orderChangeStatus = OrderStatusService::cancelled($order->id);
         if (!$orderChangeStatus->success) {
+            Yii::$app->telegramLog->send('error', 'order not saved with id ' . $order->id . '. Flow is incorrect. Error: ' . $orderChangeStatus->reason);
             return ApiResponse::byResponseCode(
                 $apiCodes->ERROR_SAVE,
                 $orderChangeStatus->reason,
             );
         }
-        LogService::success('OrderController. order status changed to cancelled');
+        Yii::$app->telegramLog->send('success', 'OrderController. order status changed to cancelled');
         return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
             'info' => OrderOutputService::getEntity($order->id),
         ]);
@@ -605,6 +606,7 @@ class OrderController extends ClientController
         }
 
         if ($order->created_by !== $user->id) {
+            Yii::$app->telegramLog->send('error', 'OrderController. order not found with id ' . $order->id . '. Flow is incorrect. Error: ' . $order->created_by . ' - ' . $user->id);
             return ApiResponse::code($apiCodes->NO_ACCESS);
         }
 
