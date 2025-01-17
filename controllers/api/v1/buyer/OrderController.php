@@ -267,6 +267,7 @@ class OrderController extends BuyerController
 
             return ApiResponse::info(OrderOutputService::getEntity($id));
         } catch (Throwable $e) {
+            Yii::$app->telegramLog->send('error', 'Ошибка при отклонении заказа: ' . $e->getMessage());
             $transaction?->rollBack();
 
             return ApiResponse::internalError($e);

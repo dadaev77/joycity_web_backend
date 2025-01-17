@@ -143,6 +143,7 @@ class AttachmentService
             $transaction->commit();
         } catch (Exception $e) {
             // Если произошла ошибка во время транзакции, ткатываем ее и выбрасываем исключение
+            Yii::$app->telegramLog->send('error', 'Ошибка при сохранении вложений: ' . $e->getMessage());
             $transaction->rollBack();
             return ApiResponse::byResponseCode(
                 ResponseCodes::getSelf()->INTERNAL_ERROR,
@@ -244,7 +245,9 @@ class AttachmentService
 
             $manager = new ImageManager(new GdDriver());
             $image = $manager->read($file->tempName);
-            $image->cover($width, $height)->toWebp(80)->save($fullPath);
+            $image->resize($width, $height, function ($constraint) {
+                $constraint->aspectRatio();
+            })->toWebp(80)->save($fullPath);
             $mimeType = mime_content_type($fullPath);
             $size = filesize($fullPath);
         } else {

@@ -127,9 +127,11 @@ class AuthController extends V1Controller implements ApiAuth
             ->one();
 
         if (!$user) {
+            Yii::$app->telegramLog->send('error', 'Ошибка при входе в систему: пользователь не найден');
             return ApiResponse::code(User::apiCodes()->CREDENTIALS_NOT_FOUND);
         }
         if ($user->role !== $params['role']) {
+            Yii::$app->telegramLog->send('error', 'Ошибка при входе в систему: неверная роль');
             return ApiResponse::code(
                 User::apiCodes()->CREDENTIALS_NOT_PASSED_FOR_THIS_ROLE,
             );
@@ -140,6 +142,7 @@ class AuthController extends V1Controller implements ApiAuth
                 ->getSecurity()
                 ->validatePassword($params['password'], $user->password)
         ) {
+            Yii::$app->telegramLog->send('error', 'Ошибка при входе в систему: неверный пароль');
             return ApiResponse::code(User::apiCodes()->CREDENTIALS_NOT_PASSED);
         }
 
@@ -174,7 +177,6 @@ class AuthController extends V1Controller implements ApiAuth
     public function actionLogout()
     {
         $user = User::getIdentity();
-        LogService::log('logout is called by ' . $user->email);
         $user->access_token =
             Yii::$app->security->generateRandomString() .
             Yii::$app->security->generateRandomString();
@@ -231,7 +233,6 @@ class AuthController extends V1Controller implements ApiAuth
         );
 
         if ($user) {
-            LogService::log('email check is called by ' . $user->email);
             return ApiResponse::code($apiCodes->EMAIL_EXISTS);
         }
 
@@ -296,7 +297,6 @@ class AuthController extends V1Controller implements ApiAuth
     {
         $request = Yii::$app->request;
         $apiCodes = User::apiCodes();
-        LogService::log('register is called by ' . $request->post('email'));
         try {
             $transaction = Yii::$app->db->beginTransaction();
             $email = strtolower($request->post('email'));
@@ -457,6 +457,7 @@ class AuthController extends V1Controller implements ApiAuth
                 'uuid' => $user->uuid,
             ]);
         } catch (Throwable $e) {
+            Yii::$app->telegramLog->send('error', 'Ошибка при регистрации: ' . $e->getMessage());
             isset($transaction) && $transaction->rollBack();
 
             return ApiResponse::internalError($e);
@@ -548,7 +549,8 @@ class AuthController extends V1Controller implements ApiAuth
             }
 
             return ApiResponse::code($apiCodes->SUCCESS);
-        } catch (BaseException | Throwable) {
+        } catch (BaseException | Throwable $e) {
+            Yii::$app->telegramLog->send('error', 'Ошибка при отправке кода для обновления email: ' . $e->getMessage());
             return ApiResponse::code($apiCodes->INTERNAL_ERROR);
         }
     }
@@ -621,7 +623,8 @@ class AuthController extends V1Controller implements ApiAuth
                 $apiCodes->SUCCESS,
                 ProfileOutputService::getEntity($user->id),
             );
-        } catch (BaseException | Throwable) {
+        } catch (BaseException | Throwable $e) {
+            Yii::$app->telegramLog->send('error', 'Ошибка при подтверждении обновления email: ' . $e->getMessage());
             return ApiResponse::code($apiCodes->INTERNAL_ERROR);
         }
     }
@@ -694,7 +697,8 @@ class AuthController extends V1Controller implements ApiAuth
             }
 
             return ApiResponse::code($apiCodes->SUCCESS);
-        } catch (BaseException | Throwable) {
+        } catch (BaseException | Throwable $e) {
+            Yii::$app->telegramLog->send('error', 'Ошибка при запросе на сброс пароля: ' . $e->getMessage());
             return ApiResponse::code($apiCodes->INTERNAL_ERROR);
         }
     }
@@ -759,7 +763,8 @@ class AuthController extends V1Controller implements ApiAuth
             }
 
             return ApiResponse::code($apiCodes->SUCCESS);
-        } catch (BaseException | Throwable) {
+        } catch (BaseException | Throwable $e) {
+            Yii::$app->telegramLog->send('error', 'Ошибка при проверке кода сброса пароля: ' . $e->getMessage());
             return ApiResponse::code($apiCodes->INTERNAL_ERROR);
         }
     }
@@ -870,7 +875,8 @@ class AuthController extends V1Controller implements ApiAuth
             return ApiResponse::code($apiCodes->SUCCESS, [
                 'access_token' => $user->access_token,
             ]);
-        } catch (BaseException | Throwable) {
+        } catch (BaseException | Throwable $e) {
+            Yii::$app->telegramLog->send('error', 'Ошибка при сбросе пароля: ' . $e->getMessage());
             return ApiResponse::code($apiCodes->INTERNAL_ERROR);
         }
     }
@@ -921,7 +927,6 @@ class AuthController extends V1Controller implements ApiAuth
     public function actionUpdatePassword()
     {
         $apiCodes = User::apiCodes();
-
         try {
             $user = User::getIdentity();
             $oldPassword = Yii::$app->request->post('old_password');
@@ -969,7 +974,8 @@ class AuthController extends V1Controller implements ApiAuth
             return ApiResponse::code($apiCodes->SUCCESS, [
                 'access_token' => $user->access_token,
             ]);
-        } catch (BaseException | Throwable) {
+        } catch (BaseException | Throwable $e) {
+            Yii::$app->telegramLog->send('error', 'Ошибка при обновлении пароля: ' . $e->getMessage());
             return ApiResponse::code($apiCodes->INTERNAL_ERROR);
         }
     }
@@ -1000,7 +1006,6 @@ class AuthController extends V1Controller implements ApiAuth
     public function actionTwilioToken()
     {
         $user = User::getIdentity();
-        LogService::log('twilio token is called by ' . $user->email);
         return ApiResponse::code(ResponseCodes::getStatic()->SUCCESS, [
             'access_token' => TwilioService::generateJWT($user->personal_id),
         ]);

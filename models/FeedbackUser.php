@@ -18,6 +18,7 @@ class FeedbackUser extends \app\models\Base
 {
     public const REASON_BUG = 'bug';
     public const REASON_PROPOSAL = 'proposal';
+    public const CHAT_INAPPROPRIATE_CONTENT = 'chat_inappropriate_content';
 
     /**
      * {@inheritdoc}
@@ -32,6 +33,7 @@ class FeedbackUser extends \app\models\Base
         return [
             ['key' => self::REASON_BUG, 'translate' => 'Баг'],
             ['key' => self::REASON_PROPOSAL, 'translate' => 'Предложение'],
+            ['key' => self::CHAT_INAPPROPRIATE_CONTENT, 'translate' => 'Неприемлемое содержание в чате'],
         ];
     }
 
@@ -47,6 +49,7 @@ class FeedbackUser extends \app\models\Base
                 'range' => [
                     FeedbackUser::REASON_BUG,
                     FeedbackUser::REASON_PROPOSAL,
+                    FeedbackUser::CHAT_INAPPROPRIATE_CONTENT,
                 ],
             ],
             [['created_at', 'created_by', 'text'], 'required'],

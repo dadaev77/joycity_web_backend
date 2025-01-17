@@ -19,7 +19,6 @@ use app\services\OrderTrackingConstructorService;
 use app\services\output\BuyerOfferOutputService;
 use app\services\output\OrderOutputService;
 use app\services\twilio\TwilioService;
-use app\services\UserActionLogService as LogService;
 use Throwable;
 use Yii;
 
@@ -207,6 +206,7 @@ class BuyerOfferController extends ManagerController
 
             return ApiResponse::info(BuyerOfferOutputService::getEntity($id));
         } catch (Throwable $e) {
+            Yii::$app->telegramLog->send('error', 'Ошибка при оплате предложения продавца: ' . $e->getMessage());
             isset($transaction) && $transaction->rollBack();
 
             return ApiResponse::internalError($e);

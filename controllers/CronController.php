@@ -98,9 +98,14 @@ class CronController extends Controller
             $rate->RUB = 1;
             $rate->USD = round($rates['data']['USD'] * 1.02, 4);
             $rate->CNY = round($rates['data']['CNY'] * 1.05, 4);
-            $rate->save();
+            if ($rate->save()) {
+                return ['status' => 'success', 'message' => 'Курсы обновлены'];
+            } else {
+                return ['status' => 'error', 'message' => 'Ошибка сохранения курсов'];
+            }
         }
-        return $rate;
+
+        return ['status' => 'error', 'message' => 'Нет данных для обновления курсов'];
     }
 
     /**

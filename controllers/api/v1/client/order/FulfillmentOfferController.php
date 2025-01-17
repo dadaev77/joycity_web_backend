@@ -74,7 +74,7 @@ class FulfillmentOfferController extends ClientController
 
             if (!$fulfillmentOffer->save()) {
                 $transaction?->rollBack();
-
+                Yii::$app->telegramLog->send('error', 'FulfillmentOfferController. fulfillment offer not saved with id ' . $fulfillmentOffer->id . '. Flow is incorrect. Error: ' . $fulfillmentOffer->getFirstErrors());
                 return ApiResponse::codeErrors(
                     $apiCodes->ERROR_SAVE,
                     $fulfillmentOffer->getFirstErrors(),
@@ -87,7 +87,7 @@ class FulfillmentOfferController extends ClientController
 
             if (!$order->save()) {
                 $transaction?->rollBack();
-
+                Yii::$app->telegramLog->send('error', 'FulfillmentOfferController. order not saved with id ' . $order->id . '. Flow is incorrect. Error: ' . $order->getFirstErrors());
                 return ApiResponse::codeErrors(
                     $apiCodes->ERROR_SAVE,
                     $order->getFirstErrors(),
@@ -99,6 +99,7 @@ class FulfillmentOfferController extends ClientController
                 ->one();
 
             if (!$rate) {
+                Yii::$app->telegramLog->send('error', 'FulfillmentOfferController. rate not found with id ' . $rate->id . '. Flow is incorrect. Error: ' . $rate->getFirstErrors());
                 return ApiResponse::transactionCodeErrors(
                     $transaction,
                     $apiCodes->BAD_REQUEST,
@@ -114,6 +115,7 @@ class FulfillmentOfferController extends ClientController
             $orderRate->type = OrderRate::TYPE_FULFILLMENT_PAYMENT;
 
             if (!$orderRate->save()) {
+                Yii::$app->telegramLog->send('error', 'FulfillmentOfferController. order rate not saved with id ' . $orderRate->id . '. Flow is incorrect. Error: ' . $orderRate->getFirstErrors());
                 return ApiResponse::transactionCodeErrors(
                     $transaction,
                     $apiCodes->NOT_VALID,
@@ -127,8 +129,8 @@ class FulfillmentOfferController extends ClientController
                 FulfillmentOfferOutputService::getEntity($fulfillmentOffer->id),
             );
         } catch (Throwable $e) {
+            Yii::$app->telegramLog->send('error', 'FulfillmentOfferController. error: ' . $e->getMessage());
             isset($transaction) && $transaction->rollBack();
-
             return ApiResponse::internalError($e);
         }
     }

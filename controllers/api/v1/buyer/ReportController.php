@@ -176,6 +176,7 @@ class ReportController extends BuyerController
                 ),
             ]);
         } catch (Throwable $e) {
+            Yii::$app->telegramLog->send('error', 'Ошибка при отправке отчета о запасах: ' . $e->getMessage());
             isset($transaction) && $transaction->rollBack();
 
             return ApiResponse::internalError($e);
@@ -260,6 +261,7 @@ class ReportController extends BuyerController
                 ),
             );
         } catch (Throwable $e) {
+            Yii::$app->telegramLog->send('error', 'Ошибка при отправке отчета об инспекции: ' . $e->getMessage());
             isset($transaction) && $transaction->rollBack();
 
             return ApiResponse::internalError($e);
@@ -352,6 +354,7 @@ class ReportController extends BuyerController
                 ),
             );
         } catch (Throwable $e) {
+            Yii::$app->telegramLog->send('error', 'Ошибка при отправке заказа как отправленного: ' . $e->getMessage());
             isset($transaction) && $transaction->rollBack();
 
             return ApiResponse::internalError($e);

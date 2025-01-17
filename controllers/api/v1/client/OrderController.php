@@ -26,7 +26,7 @@ use Throwable;
 use Yii;
 use yii\base\Exception;
 use yii\web\UploadedFile;
-use app\services\UserActionLogService as LogService;
+
 use app\services\twilio\TwilioService;
 use app\controllers\CronController;
 use app\models\OrderDistribution;
@@ -38,7 +38,6 @@ class OrderController extends ClientController
     public function init()
     {
         parent::init();
-        LogService::setController('OrderController');
         Yii::beginProfile('OrderOutput');
     }
     public function behaviors()
@@ -111,7 +110,6 @@ class OrderController extends ClientController
     {
         $user = User::getIdentity();
         $request = Yii::$app->request;
-        LogService::log('create client order is called by ' . $user->email);
         $apiCodes = Order::apiCodes();
         $images = UploadedFile::getInstancesByName('images');
         $repeatOrderId = $request->post('repeat_order_id');
@@ -135,7 +133,6 @@ class OrderController extends ClientController
             $order->created_at = date('Y-m-d H:i:s');
             $order->status = Order::STATUS_CREATED;
             $order->manager_id = $randomManager->id;
-            LogService::log('manager id is set to ' . $randomManager->id);
             $order->currency = $currency;
 
 
@@ -151,7 +148,6 @@ class OrderController extends ClientController
                     ->one();
                 if ($fulfillmentUser) {
                     $order->fulfillment_id = $fulfillmentId;
-                    LogService::log('fulfillment id is set to ' . $fulfillmentId);
                 } else {
                     return ApiResponse::code($apiCodes->NOT_FOUND);
                 }
@@ -224,9 +220,8 @@ class OrderController extends ClientController
                 true,
             );
 
-            LogService::log('order saved with id ' . $order->id);
-
             if (!$orderSave->success) {
+                Yii::$app->telegramLog->send('error', 'Ошибка при создании заказа: ' . $orderSave->reason);
                 return $orderSave->apiResponse;
             }
 
@@ -235,7 +230,6 @@ class OrderController extends ClientController
 
                 $buyerId = $order->product->buyer_id;
                 $distributionStatus = OrderDistributionService::createDistributionTask($order->id, $buyerId);
-                LogService::success('add buyer to order. buyer id is ' . $buyerId);
 
                 if (!$distributionStatus->success) {
                     return ApiResponse::transactionCodeErrors(
@@ -371,15 +365,10 @@ class OrderController extends ClientController
             $transaction?->commit();
 
             if ($orderSave->success) {
-                if ($withProduct) {
-                    LogService::success('Order created with product');
-                } else {
-                    LogService::warning('Order created without product');
+                if (!$withProduct) {
                     $distTaskID = OrderDistribution::find()->where(['order_id' => $order->id])->one();
                     if ($distTaskID) {
                         exec('curl -X GET "' . $_ENV['APP_URL'] . '/cron/create?taskID=' . $distTaskID->id . '"');
-                    } else {
-                        LogService::danger('Distribution task not found');
                     }
                 }
                 return ApiResponse::byResponseCode(null, [
@@ -387,7 +376,7 @@ class OrderController extends ClientController
                     'message' => 'Order created successfully',
                 ]);
             } else {
-                LogService::danger('order not saved with id ' . $order->id . '. Flow is incorrect');
+                Yii::$app->telegramLog->send('error', 'Заказ не сохранен с ID ' . $order->id . '. Ошибка: ' . $orderSave->reason);
                 return ApiResponse::codeErrors(
                     $apiCodes->ERROR_SAVE,
                     $orderSave->reason
@@ -395,6 +384,7 @@ class OrderController extends ClientController
             }
         } catch (Throwable $e) {
             $transaction?->rollBack();
+            Yii::$app->telegramLog->send('error', 'Заказ не сохранен с ID ' . $order->id . '. Ошибка: ' . $e->getMessage());
             return ApiResponse::internalError($e);
         }
     }
@@ -512,7 +502,6 @@ class OrderController extends ClientController
             return ApiResponse::info(OrderOutputService::getEntity($order->id));
         } catch (Throwable $e) {
             isset($transaction) && $transaction->rollBack();
-
             return ApiResponse::internalError($e);
         }
     }
@@ -549,7 +538,6 @@ class OrderController extends ClientController
      */
     public function actionCancel(int $id)
     {
-        LogService::info('OrderController. actionCancel is called by user with email ' . User::getIdentity()->email);
         $apiCodes = Order::apiCodes();
         $user = User::getIdentity();
         $order = Order::findOne(['id' => $id]);
@@ -557,11 +545,9 @@ class OrderController extends ClientController
         if (!$order) {
             return ApiResponse::byResponseCode($apiCodes->NOT_FOUND);
         }
-        LogService::success('OrderController. order found with id ' . $order->id);
         if ($order->created_by !== $user->id) {
             return ApiResponse::byResponseCode($apiCodes->NO_ACCESS);
         }
-        LogService::success('OrderController. order created by is correct');
         $orderChangeStatus = OrderStatusService::cancelled($order->id);
         if (!$orderChangeStatus->success) {
             return ApiResponse::byResponseCode(
@@ -569,7 +555,6 @@ class OrderController extends ClientController
                 $orderChangeStatus->reason,
             );
         }
-        LogService::success('OrderController. order status changed to cancelled');
         return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
             'info' => OrderOutputService::getEntity($order->id),
         ]);
