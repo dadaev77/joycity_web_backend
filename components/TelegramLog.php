@@ -12,6 +12,8 @@ class TelegramLog
      * URL: APP_URL_LOG_BOT/send
      */
 
+    // Добавить проерку окружения для отправки сообщений в телеграм чтобы урезать логи на проде
+
     protected $url;
     protected $client;
     private const MESSAGES_LEVEL = [
