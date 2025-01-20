@@ -125,4 +125,11 @@ class CronController extends Controller
             }
         }
     }
+
+    public function actionHeartbeat()
+    {
+        // TODO: добавить проверку на статус задания
+        // TODO: добавить проверку на время последнего запуска
+        
+    }
 }

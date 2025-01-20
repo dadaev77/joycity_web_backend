@@ -27,6 +27,9 @@ $config = [
         'telegramLog' => [
             'class' => 'app\components\TelegramLog',
         ],
+        'heartbeat' => [
+            'class' => 'app\components\HeartbeatService',
+        ],
         'i18n' => [
             'translations' => [
                 'app*' => [

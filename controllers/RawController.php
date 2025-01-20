@@ -322,4 +322,9 @@ class RawController extends Controller
         $request = Yii::$app->request->post();
         return Yii::$app->telegramLog->send($request['type'], $request['message']);
     }
+
+    public function actionHeartbeat()
+    {
+        return Yii::$app->heartbeat->addHeartbeat('test', 'test');
+    }
 }
