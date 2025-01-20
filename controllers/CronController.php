@@ -12,6 +12,12 @@ use app\models\Heartbeat;
 
 class CronController extends Controller
 {
+    private $services = [
+        'rates' => 'Курсы',
+        'distribution' => 'Распределение заказов',
+        'twilio' => 'Twilio Чаты',
+    ];
+
     public function init()
     {
         parent::init();
@@ -140,11 +146,6 @@ class CronController extends Controller
      */
     public function actionCheckPulse()
     {
-        $services = [
-            'rates' => 'Курсы',
-            'distribution' => 'Распределение заказов',
-            'twilio' => 'Twilio Чаты',
-        ];
         Yii::$app->heartbeat->addHeartbeat('check-pulse', 'success');
 
         $threshold = date(
@@ -159,7 +160,7 @@ class CronController extends Controller
 
         if (!empty($errors)) {
             $errorMessages = array_map(function ($error) {
-                return "Ошибка на сервисе {$services[$error->service_name]} в момент {$error->last_run_at}";
+                return "Ошибка на сервисе {$this->services[$error->service_name]} в момент {$error->last_run_at}";
             }, $errors);
             $message = implode("\n", $errorMessages);
             Yii::$app->telegramLog->send('error', $message);
