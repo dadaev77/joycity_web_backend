@@ -8,6 +8,7 @@ use app\models\OrderDistribution;
 use app\models\Rate;
 use yii\web\Controller;
 use app\services\ExchangeRateService;
+use app\models\Heartbeat;
 
 class CronController extends Controller
 {
