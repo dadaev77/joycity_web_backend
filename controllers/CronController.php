@@ -159,10 +159,10 @@ class CronController extends Controller
             ->all();
 
         if (!empty($errors)) {
-            $errorMessages = array_map(function ($error) {
-                return "Ошибка на сервисе {$this->services[$error->service_name]} в момент {$error->last_run_at}";
-            }, $errors);
-            $message = implode("\n", $errorMessages);
+            $uniqueServices = array_unique(array_column($errors, 'service_name'));
+            $message = "В следующих сервисах есть ошибки: " . implode(', ', array_map(function ($service) {
+                return $this->services[$service] ?? $service;
+            }, $uniqueServices));
             Yii::$app->telegramLog->send('error', $message);
         }
 
