@@ -100,13 +100,12 @@ class CronController extends Controller
             $rate->CNY = round($rates['data']['CNY'] * 1.05, 4);
             if ($rate->save()) {
                 Yii::$app->heartbeat->addHeartbeat('rates', 'success');
-                return ['status' => 'success', 'message' => 'Курсы обновлены'];
             } else {
-                Yii::$app->heartbeat->addHeartbeat('rates', 'error');
                 return ['status' => 'error', 'message' => 'Ошибка сохранения курсов'];
             }
+            Yii::$app->heartbeat->addHeartbeat('rates', 'success');
         }
-
+        Yii::$app->heartbeat->addHeartbeat('rates', 'error');
         return ['status' => 'error', 'message' => 'Нет данных для обновления курсов'];
     }
 
@@ -128,18 +127,34 @@ class CronController extends Controller
         }
     }
     /**
+     * Сервис для проверки статуса сервисов приложения 
+     * Вызывается раз в полчаса и проверяет статус сервисов
+     * При нахождении ошибки в сервисе, отправляется сообщение в телеграм
      * @OA\Get(
      *     path="/cron/check-pulse",
      *     summary="Проверка статуса сервисов приложения",
      *     @OA\Response(response="200", description="Сервисы проверены"),
      * )
+     * @return null
      */
     public function actionCheckPulse()
     {
-        $services = ['rates', 'distribution', 'twilio'];
-
-        
-
         Yii::$app->heartbeat->addHeartbeat('check-pulse', 'success');
+
+        $threshold = date(
+            'Y-m-d H:i:s',
+            strtotime('-30 minutes')
+        );
+
+        $errors = Heartbeat::find()
+            ->where(['status' => 'error'])
+            ->andWhere(['>', 'created_at', $threshold])
+            ->all();
+
+        if (!empty($errors)) {
+            foreach ($errors as $error) {
+                Yii::$app->telegramLog->send('error', "Ошибка на сервисе {$error->service_name} в момент {$error->last_run_at}\n");
+            }
+        }
     }
 }
