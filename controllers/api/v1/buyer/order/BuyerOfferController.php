@@ -115,10 +115,10 @@ class BuyerOfferController extends BuyerController
                 'price_product' => $postData['price_product'] ?? 0,
                 'price_inspection' => $postData['price_inspection'] ?? 0,
                 'total_quantity' => $postData['total_quantity'] ?? 0,
-                'product_height' => $postData['product_height'] ?? 0,
-                'product_width' => $postData['product_width'] ?? 0,
-                'product_depth' => $postData['product_depth'] ?? 0,
-                'product_weight' => $postData['product_weight'] ?? 0,
+                // 'product_height' => $postData['product_height'] ?? 0,
+                // 'product_width' => $postData['product_width'] ?? 0,
+                // 'product_depth' => $postData['product_depth'] ?? 0,
+                // 'product_weight' => $postData['product_weight'] ?? 0,
                 'currency' => $user->settings->currency,
             ]);
 
