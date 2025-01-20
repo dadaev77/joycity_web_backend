@@ -157,5 +157,12 @@ class CronController extends Controller
                 Yii::$app->telegramLog->send('error', "Ошибка на сервисе {$error->service_name} в момент {$error->last_run_at}\n");
             }
         }
+
+        Yii::$app->response->format = yii\web\Response::FORMAT_JSON;
+        return [
+            'status' => 'success',
+            'message' => 'Проверка сервисов завершена',
+            'errors' => $errors
+        ];
     }
 }
