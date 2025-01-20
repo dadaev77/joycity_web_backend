@@ -149,7 +149,7 @@ class CronController extends Controller
 
         $errors = Heartbeat::find()
             ->where(['status' => 'error'])
-            ->andWhere(['>', 'created_at', $threshold])
+            ->andWhere(['>', 'last_run_at', $threshold])
             ->all();
 
         if (!empty($errors)) {
