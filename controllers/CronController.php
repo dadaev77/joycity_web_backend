@@ -140,6 +140,11 @@ class CronController extends Controller
      */
     public function actionCheckPulse()
     {
+        $services = [
+            'rates' => 'Курсы',
+            'distribution' => 'Распределение заказов',
+            'twilio' => 'Twilio Чаты',
+        ];
         Yii::$app->heartbeat->addHeartbeat('check-pulse', 'success');
 
         $threshold = date(
@@ -153,9 +158,11 @@ class CronController extends Controller
             ->all();
 
         if (!empty($errors)) {
-            foreach ($errors as $error) {
-                Yii::$app->telegramLog->send('error', "Ошибка на сервисе {$error->service_name} в момент {$error->last_run_at}\n");
-            }
+            $errorMessages = array_map(function ($error) {
+                return "Ошибка на сервисе {$services[$error->service_name]} в момент {$error->last_run_at}";
+            }, $errors);
+            $message = implode("\n", $errorMessages);
+            Yii::$app->telegramLog->send('error', $message);
         }
 
         Yii::$app->response->format = yii\web\Response::FORMAT_JSON;
