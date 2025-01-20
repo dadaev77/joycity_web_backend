@@ -62,3 +62,5 @@ config/smtp.php
 /entrypoint/api/attachments/
 /entrypoint/api/uploads/
 /entrypoint/api/admin/
+
+components/docker/cron_tasks.txt
