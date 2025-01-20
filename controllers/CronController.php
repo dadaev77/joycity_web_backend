@@ -14,8 +14,8 @@ use app\services\twilio\TwilioService;
 class CronController extends Controller
 {
     private $services = [
-        'rates' => 'Курсы',
-        'distribution' => 'Распределение заказов',
+        'rates' => 'Курсы валют',
+        'distribution' => 'Распределение заказов байеров',
         'twilio' => 'Twilio Чаты',
     ];
 
