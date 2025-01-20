@@ -9,6 +9,7 @@ use app\models\Rate;
 use yii\web\Controller;
 use app\services\ExchangeRateService;
 use app\models\Heartbeat;
+use app\services\twilio\TwilioService;
 
 class CronController extends Controller
 {
@@ -144,6 +145,30 @@ class CronController extends Controller
      * )
      * @return null
      */
+
+
+    /**
+     * @OA\Get(
+     *     path="/cron/twilio-check",
+     *     summary="Проверка статуса Twilio",
+     *     @OA\Response(response="200", description="Twilio проверен"),
+     *     @OA\Response(response="500", description="Ошибка проверки Twilio")
+     * )
+     */
+    public function actionTwilioCheck()
+    {
+        $twilioClient = TwilioService::getClient();
+        $conversations = $twilioClient->conversations->v1->conversations->read();
+
+        if (!empty($conversations)) {
+            Yii::$app->heartbeat->addHeartbeat('twilio', 'success');
+            return true;
+        } else {
+            Yii::$app->heartbeat->addHeartbeat('twilio', 'error');
+            return false;
+        }
+    }
+
     public function actionCheckPulse()
     {
         Yii::$app->heartbeat->addHeartbeat('check-pulse', 'success');
@@ -160,7 +185,7 @@ class CronController extends Controller
 
         if (!empty($errors)) {
             $uniqueServices = array_unique(array_column($errors, 'service_name'));
-            $message = "В следующих сервисах есть ошибки: " . implode(', ', array_map(function ($service) {
+            $message = "В следующих сервисах есть ошибки: \n " . implode(', ', array_map(function ($service) {
                 return $this->services[$service] ?? $service;
             }, $uniqueServices));
             Yii::$app->telegramLog->send('error', $message);
@@ -170,7 +195,7 @@ class CronController extends Controller
         return [
             'status' => 'success',
             'message' => 'Проверка сервисов завершена',
-            'errors' => $errors
+            // 'errors' => $errors
         ];
     }
 }
