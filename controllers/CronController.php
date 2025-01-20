@@ -99,8 +99,10 @@ class CronController extends Controller
             $rate->USD = round($rates['data']['USD'] * 1.02, 4);
             $rate->CNY = round($rates['data']['CNY'] * 1.05, 4);
             if ($rate->save()) {
+                Yii::$app->heartbeat->addHeartbeat('rates', 'success');
                 return ['status' => 'success', 'message' => 'Курсы обновлены'];
             } else {
+                Yii::$app->heartbeat->addHeartbeat('rates', 'error');
                 return ['status' => 'error', 'message' => 'Ошибка сохранения курсов'];
             }
         }
@@ -125,11 +127,19 @@ class CronController extends Controller
             }
         }
     }
-
-    public function actionHeartbeat()
+    /**
+     * @OA\Get(
+     *     path="/cron/check-pulse",
+     *     summary="Проверка статуса сервисов приложения",
+     *     @OA\Response(response="200", description="Сервисы проверены"),
+     * )
+     */
+    public function actionCheckPulse()
     {
-        // TODO: добавить проверку на статус задания
-        // TODO: добавить проверку на время последнего запуска
+        $services = ['rates', 'distribution', 'twilio'];
+
         
+
+        Yii::$app->heartbeat->addHeartbeat('check-pulse', 'success');
     }
 }
