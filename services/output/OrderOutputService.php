@@ -160,7 +160,9 @@ class OrderOutputService extends OutputService
             $info['price'] = OrderPrice::calculateOrderPrices($info['id'], $userCurrency);
 
             if ($info['buyerOffer']) {
-                $info['price']['product_overall'] = $info['buyerOffer']['price_product'] * $info['buyerOffer']['total_quantity'];
+                $info['price']['product_overall'] =
+                    RateService::convertValue($info['buyerOffer']['price_product'], $info['buyerOffer']['currency'], $userCurrency) * $info['buyerOffer']['total_quantity'] *
+                    $info['buyerOffer']['total_quantity'];
             }
             unset(
                 // $info['created_at'],
