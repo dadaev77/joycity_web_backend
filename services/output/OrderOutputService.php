@@ -6,11 +6,8 @@ use app\helpers\ModelTypeHelper;
 use app\models\BuyerOffer;
 use app\models\Order;
 use app\services\MarketplaceTransactionService;
-
-// modified services
 use app\services\modificators\price\OrderPrice;
 use app\services\RateService;
-use app\services\UserActionLogService as Log;
 
 use app\services\SqlQueryService;
 use Yii;
@@ -137,7 +134,6 @@ class OrderOutputService extends OutputService
             };
 
             if ($info['product']) {
-
                 $info['product']['name'] = $model->product_name_ru;
                 $info['product']['description'] = $model->product_description_ru;
                 unset($info['product']['name_ru']);
@@ -160,11 +156,9 @@ class OrderOutputService extends OutputService
             if (isset($info['buyerDeliveryOffer'])) {
                 $info['buyerDeliveryOffer']['price_product'] = RateService::convertValue($info['buyerDeliveryOffer']['price_product'], $info['buyerDeliveryOffer']['currency'], $userCurrency);
             }
-
             $info['type'] = in_array($info['status'], Order::STATUS_GROUP_ORDER, true) ? 'order' : 'request';
-
             $info['price'] = OrderPrice::calculateOrderPrices($info['id'], $userCurrency);
-
+            $info['price']['overall'] = 10;
             unset(
                 // $info['created_at'],
                 // $info['status'],
