@@ -247,7 +247,7 @@ class AttachmentService
             $image = $manager->read($file->tempName);
             $image->resize($width, $height, function ($constraint) {
                 $constraint->aspectRatio();
-                $constraint->upsize();
+                // $constraint->upsize();
             })->toWebp(80)->save($fullPath);
             $mimeType = mime_content_type($fullPath);
             $size = filesize($fullPath);
