@@ -84,6 +84,21 @@ class ReportController extends BuyerController
                 return ApiResponse::code($apiCodes->NO_ACCESS);
             }
 
+            $order->delivery_start_date = date('Y-m-d H:i:s');
+
+            /**
+             * TODO: автоматизировать назначение срока доставки
+             * $order->delivery_days_expected = $request->post('delivery_days_expected');
+             * $order->delivery_delay_days = $request->post('delivery_delay_days');
+             */
+
+            if (!$order->save()) {
+                return ApiResponse::codeErrors(
+                    $apiCodes->ERROR_SAVE,
+                    $order->getFirstErrors(),
+                );
+            }
+
             $transaction = null;
 
             $stockReport = new ProductStockReport();

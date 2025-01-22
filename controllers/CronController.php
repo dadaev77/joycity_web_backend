@@ -8,9 +8,17 @@ use app\models\OrderDistribution;
 use app\models\Rate;
 use yii\web\Controller;
 use app\services\ExchangeRateService;
+use app\models\Heartbeat;
+use app\services\twilio\TwilioService;
 
 class CronController extends Controller
 {
+    private $services = [
+        'rates' => 'Курсы валют',
+        'distribution' => 'Распределение заказов байеров',
+        'twilio' => 'Twilio Чаты',
+    ];
+
     public function init()
     {
         parent::init();
@@ -99,12 +107,13 @@ class CronController extends Controller
             $rate->USD = round($rates['data']['USD'] * 1.02, 4);
             $rate->CNY = round($rates['data']['CNY'] * 1.05, 4);
             if ($rate->save()) {
-                return ['status' => 'success', 'message' => 'Курсы обновлены'];
+                Yii::$app->heartbeat->addHeartbeat('rates', 'success');
             } else {
                 return ['status' => 'error', 'message' => 'Ошибка сохранения курсов'];
             }
+            Yii::$app->heartbeat->addHeartbeat('rates', 'success');
         }
-
+        Yii::$app->heartbeat->addHeartbeat('rates', 'error');
         return ['status' => 'error', 'message' => 'Нет данных для обновления курсов'];
     }
 
@@ -124,5 +133,69 @@ class CronController extends Controller
                 $rate->delete();
             }
         }
+    }
+    /**
+     * Сервис для проверки статуса сервисов приложения 
+     * Вызывается раз в полчаса и проверяет статус сервисов
+     * При нахождении ошибки в сервисе, отправляется сообщение в телеграм
+     * @OA\Get(
+     *     path="/cron/check-pulse",
+     *     summary="Проверка статуса сервисов приложения",
+     *     @OA\Response(response="200", description="Сервисы проверены"),
+     * )
+     * @return null
+     */
+
+
+    /**
+     * @OA\Get(
+     *     path="/cron/twilio-check",
+     *     summary="Проверка статуса Twilio",
+     *     @OA\Response(response="200", description="Twilio проверен"),
+     *     @OA\Response(response="500", description="Ошибка проверки Twilio")
+     * )
+     */
+    public function actionTwilioCheck()
+    {
+        $twilioClient = TwilioService::getClient();
+        $conversations = $twilioClient->conversations->v1->conversations->read();
+
+        if (!empty($conversations)) {
+            Yii::$app->heartbeat->addHeartbeat('twilio', 'success');
+            return true;
+        } else {
+            Yii::$app->heartbeat->addHeartbeat('twilio', 'error');
+            return false;
+        }
+    }
+
+    public function actionCheckPulse()
+    {
+        Yii::$app->heartbeat->addHeartbeat('check-pulse', 'success');
+
+        $threshold = date(
+            'Y-m-d H:i:s',
+            strtotime('-30 minutes')
+        );
+
+        $errors = Heartbeat::find()
+            ->where(['status' => 'error'])
+            ->andWhere(['>', 'last_run_at', $threshold])
+            ->all();
+
+        if (!empty($errors)) {
+            $uniqueServices = array_unique(array_column($errors, 'service_name'));
+            $message = "В следующих сервисах есть ошибки: \n " . implode(', ', array_map(function ($service) {
+                return $this->services[$service] ?? $service;
+            }, $uniqueServices));
+            Yii::$app->telegramLog->send('error', $message);
+        }
+
+        Yii::$app->response->format = yii\web\Response::FORMAT_JSON;
+        return [
+            'status' => 'success',
+            'message' => 'Проверка сервисов завершена',
+            // 'errors' => $errors
+        ];
     }
 }

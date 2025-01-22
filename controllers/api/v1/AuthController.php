@@ -127,7 +127,7 @@ class AuthController extends V1Controller implements ApiAuth
             ->one();
 
         if (!$user) {
-            Yii::$app->telegramLog->send('error', 'Ошибка при входе в систему: пользователь не найден');
+            Yii::$app->telegramLog->send('error', "Ошибка при входе в систему. \nЛогин: " . $params['email'] . " не найден");
             return ApiResponse::code(User::apiCodes()->CREDENTIALS_NOT_FOUND);
         }
         if ($user->role !== $params['role']) {
@@ -142,7 +142,7 @@ class AuthController extends V1Controller implements ApiAuth
                 ->getSecurity()
                 ->validatePassword($params['password'], $user->password)
         ) {
-            Yii::$app->telegramLog->send('error', 'Ошибка при входе в систему: неверный пароль');
+            Yii::$app->telegramLog->send('error', "Ошибка при входе в систему. \nЛогин: " . $params['email'] . " неверный пароль");
             return ApiResponse::code(User::apiCodes()->CREDENTIALS_NOT_PASSED);
         }
 

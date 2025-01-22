@@ -27,6 +27,9 @@ $config = [
         'telegramLog' => [
             'class' => 'app\components\TelegramLog',
         ],
+        'heartbeat' => [
+            'class' => 'app\components\HeartbeatService',
+        ],
         'i18n' => [
             'translations' => [
                 'app*' => [
@@ -145,6 +148,7 @@ $config = [
                         'api/v1/manager/order/fulfillment-offer',
                         'api/v1/manager/order/marketplace-transaction',
                         'api/v1/manager/verification',
+                        'api/v1/manager/buyer',
                         'api/v1/service/profile',
                         'api/v1/notifications',
                         'api/v1/order-request',
@@ -157,6 +161,10 @@ $config = [
                 ],
                 'swagger' => '/swagger',
                 'sign-up' => 'api/v1/auth/register',
+
+                // Правило для update-order
+                'api/v1/manager/buyer/update-order/<orderId>' => 'api/v1/manager/buyer/update-order',
+
                 'api/v1/<controller>/<id:\d+>/<action>' =>
                 'api/v1/<controller>/<action>',
                 'api/v1/<group>/<controller>/<action>' =>
