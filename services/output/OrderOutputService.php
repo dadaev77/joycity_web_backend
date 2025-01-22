@@ -162,7 +162,8 @@ class OrderOutputService extends OutputService
             if ($info['buyerOffer']) {
                 $info['price']['product_overall'] = $info['buyerOffer']['price_product'] * $info['buyerOffer']['total_quantity'];
             }
-            $info['timeDelivery'] = 16;
+            $info['timeDelivery'] = $info['delivery_days_expected'];
+
             unset(
                 // $info['created_at'],
                 // $info['status'],
