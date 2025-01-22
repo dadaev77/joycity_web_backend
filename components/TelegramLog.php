@@ -16,6 +16,11 @@ class TelegramLog
         'debug' => ['text' => 'Отладка', 'icon' => '🟢'],
         'success' => ['text' => 'Успех', 'icon' => '🟢'],
     ];
+    protected $envTypes = [
+        'dev' => 'Тестовый контур',
+        'prod' => 'Продакшн контур',
+        'both' => 'Оба контура',
+    ];
 
     public function __construct()
     {
@@ -24,9 +29,18 @@ class TelegramLog
         $this->chatId = $this->getChatId($_ENV['APP_ENV']);
     }
 
-    public function send(string $type, string $message, string $env = 'dev')
+    public function send(string $type, string $message, string $env = null)
     {
+        $env = $env ?? $_ENV['APP_ENV'];
         $message = $this->prepareMessage($type, $message, $env);
+        if ($env === 'both') {
+            $responseProd = $this->client->request('GET', $this->getUrl('prod') . $message);
+            $responseDev = $this->client->request('GET', $this->getUrl('dev') . $message);
+            return [
+                'prod' => $responseProd->getStatusCode(),
+                'dev' => $responseDev->getStatusCode(),
+            ];
+        }
         $response = $this->client->request('GET', $this->getUrl($env) . $message);
         return $response->getStatusCode();
     }
