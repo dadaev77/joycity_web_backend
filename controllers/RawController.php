@@ -193,47 +193,6 @@ class RawController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/raw/fetch-chats",
-     *     summary="Получить чаты из Twilio",
-     *     @OA\Response(response="200", description="Чаты успешно получены"),
-     *     @OA\Response(response="404", description="Чат не найден")
-     * )
-     */
-    public function actionDropChats()
-    {
-        $twilio = \app\services\twilio\TwilioService::getClient();
-        $conversations = $twilio->conversations->v1->conversations->read();
-
-        foreach ($conversations as $conversation) {
-            $conversation->delete();
-        }
-
-        return 'ok';
-    }
-
-    /**
-     * @OA\Get(
-     *     path="/raw/conversations",
-     *     summary="Получить разговоры Twilio",
-     *     @OA\Response(response="200", description="Разговоры успешно получены"),
-     *     @OA\Response(response="500", description="Ошибка получения разговоров")
-     * )
-     */
-    public function actionConversations()
-    {
-        try {
-            $twilio = \app\services\twilio\TwilioService::getClient();
-            $conversations = $twilio->conversations->v1->conversations->read();
-            echo '<pre>';
-            print_r($conversations);
-            echo '</pre>';
-        } catch (\Exception $e) {
-            return $e->getMessage();
-        }
-    }
-
-    /**
-     * @OA\Get(
      *     path="/raw/truncate-tables",
      *     summary="Очистить таблицы",
      *     @OA\Response(response="200", description="Таблицы успешно очищены"),
@@ -307,18 +266,5 @@ class RawController extends Controller
         } catch (\Exception $e) {
             return $e->getMessage();
         }
-    }
-    public function actionFormatNumber($number)
-    {
-        $rounded = round($number, 2);
-        if (floor($rounded) == $rounded) {
-            return (string) $rounded;
-        } else {
-            return rtrim(rtrim(number_format($rounded, 2, '.', ''), '0'), '.');
-        }
-    }
-    public function actionTelLog()
-    {
-        return Yii::$app->telegramLog->send('info', 'Тестовое сообщение для тест', 'test');
     }
 }
