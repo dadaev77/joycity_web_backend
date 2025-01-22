@@ -6,53 +6,44 @@ use GuzzleHttp\Client;
 
 class TelegramLog
 {
-    /**
-     * Component for sending messages to Telegram
-     * Bot name: joycity_log_bot
-     * URL: APP_URL_LOG_BOT/send
-     */
-
-    // Добавить проерку окружения для отправки сообщений в телеграм чтобы урезать логи на проде
-
-    protected $url;
-    protected $client;
-    private const MESSAGES_LEVEL = [
-        'info',
-        'warning',
-        'error',
-        'success',
-        'critical',
-        'debug',
-        'alert',
+    private $token;
+    private $chatId;
+    private $client;
+    protected $types = [
+        'error' => ['text' => 'Ошибка', 'icon' => '🔴'],
+        'info' => ['text' => 'Информация', 'icon' => '🔵'],
+        'warning' => ['text' => 'Предупреждение', 'icon' => '🟡'],
+        'debug' => ['text' => 'Отладка', 'icon' => '🟢'],
+        'success' => ['text' => 'Успех', 'icon' => '🟢'],
     ];
 
     public function __construct()
     {
-        $this->url = $_ENV['APP_URL_LOG_BOT'] . '/send';
         $this->client = new Client();
+        $this->token = $_ENV['APP_LOG_BOT_TOKEN'];
+        $this->chatId = $this->getChatId($_ENV['APP_ENV']);
     }
 
-    public function send($type, $message)
+    public function send(string $type, string $message, string $env = 'dev')
     {
-
-        // Здесь должна быть логика отправки сообщения в Telegram
-        // Например, вы можете использовать API Telegram для отправки сообщения
-
-        $response = $this->client->post($this->url, [
-            'json' => [
-                'type' => $type,
-                'message' => $message,
-            ],
-            'headers' => [
-                'Content-Type' => 'application/json',
-            ],
-        ]);
-
-        return $response;
+        $message = $this->prepareMessage($type, $message, $env);
+        $response = $this->client->request('GET', $this->getUrl($env) . $message);
+        return $response->getStatusCode();
     }
 
-    public static function getMessagesLevel()
+    private function prepareMessage(string $type, string $message, string $env)
     {
-        return self::MESSAGES_LEVEL;
+        return "{$this->types[$type]['icon']} {$this->types[$type]['text']}\nENV [{$env}] \n\n{$message}";
+    }
+
+    private function getUrl($env)
+    {
+        $this->chatId = $this->getChatId($env);
+        return "https://api.telegram.org/bot{$this->token}/sendMessage?chat_id={$this->chatId}&text=";
+    }
+
+    private function getChatId($env)
+    {
+        return $env === 'prod' ? $_ENV['APP_LOG_BOT_CHAT_ID_PROD'] : $_ENV['APP_LOG_BOT_CHAT_ID_TEST'];
     }
 }
