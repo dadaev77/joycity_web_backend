@@ -245,12 +245,25 @@ class AttachmentService
             if (in_array($extension, self::AllowedImageExtensions, true)) {
                 $manager = new ImageManager(new GdDriver());
                 $image = $manager->read($file->tempName);
-
-                $image->resize(null, $height, function ($constraint) {
-                    $constraint->aspectRatio();
-                    $constraint->upsize();
-                })->resizeCanvas($width, $height, 'center', false, '#ffffff')
-                    ->toWebp(80)->save($fullPath);
+                // Получаем исходные размеры изображения
+                $originalWidth = $image->width();
+                $originalHeight = $image->height();
+                // Определяем, как лучше вписать изображение в 1024x1024
+                if ($originalWidth >= $originalHeight) {
+                    $image->resize(1024, null, function ($constraint) {
+                        $constraint->aspectRatio();
+                        $constraint->upsize();
+                    });
+                } else {
+                    $image->resize(null, 1024, function ($constraint) {
+                        $constraint->aspectRatio();
+                        $constraint->upsize();
+                    });
+                }
+                // Добавляем холст для создания финального изображения 1024x1024
+                $image->resizeCanvas(1024, 1024, 'center', false, '#ffffff')
+                    ->toWebp(80)
+                    ->save($fullPath);
 
                 $mimeType = mime_content_type($fullPath);
                 $size = filesize($fullPath);
@@ -282,7 +295,6 @@ class AttachmentService
             }
 
             $attachment->save();
-
             return Result::success($attachment);
         } catch (Exception $e) {
             // Логируем ошибку
