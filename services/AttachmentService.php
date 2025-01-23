@@ -245,9 +245,11 @@ class AttachmentService
             if (in_array($extension, self::AllowedImageExtensions, true)) {
                 $manager = new ImageManager(new GdDriver());
                 $image = $manager->read($file->tempName);
+
                 // Получаем исходные размеры изображения
                 $originalWidth = $image->width();
                 $originalHeight = $image->height();
+                Yii::$app->telegramLog->send('info', 'Original width: ' . $originalWidth . ', Original height: ' . $originalHeight, 'test');
                 if ($originalWidth >= $originalHeight) {
                     $image->resize(1024, null, function ($constraint) {
                         $constraint->aspectRatio();
