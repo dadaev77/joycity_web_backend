@@ -238,7 +238,8 @@ class AttachmentService
 
             if (in_array($extension, self::AllowedImageExtensions, true)) {
                 $image = new Imagick($file->tempName);
-
+                // Применяем автоматическую ориентацию на основе EXIF-данных
+                $image->autoOrient();
                 // Получаем исходные размеры изображения
                 $originalWidth = $image->getImageWidth();
                 $originalHeight = $image->getImageHeight();
@@ -253,7 +254,7 @@ class AttachmentService
                 // Изменяем размер изображения без учета ориентации
                 $image->resizeImage($newWidth, $newHeight, Imagick::FILTER_LANCZOS, 1);
                 // Вписываем изображение в холст
-                $canvas->compositeImage($image, Imagick::COMPOSITE_OVER, 0, 0);
+                $canvas->compositeImage($image, Imagick::COMPOSITE_OVER, (int)(($width - $newWidth) / 2), (int)(($height - $newHeight) / 2));
                 // Сохраняем итоговое изображение
                 $canvas->writeImage($fullPath);
                 // Очищаем ресурсы
