@@ -240,23 +240,19 @@ class AttachmentService
                 $manager = new ImageManager(new GdDriver());
                 $image = $manager->read($file->tempName);
 
-                // Получаем исходные размеры изображения
-                $originalWidth = $image->width();
-                $originalHeight = $image->height();
-                Yii::$app->telegramLog->send('info', 'Original width: ' . $originalWidth . ', Original height: ' . $originalHeight, 'test');
+                $image->resize($width, $height, function ($constraint) {
+                    $constraint->aspectRatio();
+                    $constraint->upsize(); // Не увеличиваем маленькие изображения
+                });
 
-                // Уменьшаем изображение с сохранением соотношения сторон
-                if ($originalWidth > $originalHeight) {
-                    $image->resize($width, null, function ($constraint) {
-                        $constraint->aspectRatio();
-                        $constraint->upsize();
-                    })->toWebp(80)->save($fullPath);
-                } else {
-                    $image->resize(null, $height, function ($constraint) {
-                        $constraint->aspectRatio();
-                        $constraint->upsize();
-                    })->toWebp(80)->save($fullPath);
+                $endWidth = $image->width();
+                $endHeight = $image->height();
+
+                if ($endWidth !== $width || $endHeight !== $height) {
+                    $image->resizeCanvas($width, $height, 'center', false, '#ffffff');
                 }
+
+                $image->toWebp(80)->save($fullPath);
 
                 $mimeType = mime_content_type($fullPath);
                 $size = filesize($fullPath);
