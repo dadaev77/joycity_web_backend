@@ -248,7 +248,7 @@ class AttachmentService
                 // Получаем исходные размеры изображения
                 $originalWidth = $image->width();
                 $originalHeight = $image->height();
-                // Определяем, как лучше вписать изображение в 1024x1024
+                Yii::$app->telegramLog->send('info', 'Original width: ' . $originalWidth . ', Original height: ' . $originalHeight);
                 if ($originalWidth >= $originalHeight) {
                     $image->resize(1024, null, function ($constraint) {
                         $constraint->aspectRatio();
