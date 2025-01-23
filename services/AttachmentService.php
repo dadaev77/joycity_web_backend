@@ -242,13 +242,15 @@ class AttachmentService
         $size = $file->size;
 
         if (in_array($extension, self::AllowedImageExtensions, true)) {
-
             $manager = new ImageManager(new GdDriver());
             $image = $manager->read($file->tempName);
+
+            // Изменяем размер изображения с сохранением соотношения сторон
             $image->resize($width, $height, function ($constraint) {
                 $constraint->aspectRatio();
-                // $constraint->upsize();
+                $constraint->upsize();
             })->toWebp(80)->save($fullPath);
+
             $mimeType = mime_content_type($fullPath);
             $size = filesize($fullPath);
         } else {
