@@ -10,14 +10,13 @@ use app\services\output\ChatOutputService;
 use Throwable;
 use Yii;
 use app\models\Order;
-use app\services\UserActionLogService as LogService;
+
 
 class ChatController extends ManagerController
 {
     public function init()
     {
         parent::init();
-        LogService::setController('ChatController');
     }
     public function behaviors()
     {
@@ -52,10 +51,8 @@ class ChatController extends ManagerController
     {
         // define vars
         $user = User::getIdentity();
-        LogService::log('manager: ' . $user->name);
         $request = Yii::$app->request;
         $type = $request->get('group', '');
-        LogService::log('type: ' . $type);
         $isArchive = (int) $request->get('is_archive', 0);
         try {
             $query = Chat::find()

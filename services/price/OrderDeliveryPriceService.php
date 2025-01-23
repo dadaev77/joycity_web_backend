@@ -196,7 +196,6 @@ class OrderDeliveryPriceService extends PriceOutputService
         int $packagingQuantity,
     ): float {
         try {
-            \app\services\UserActionLogService::log('call calculate packaging price');
             $typePackaging = TypePackaging::findOne([
                 'id' => $typePackagingId,
             ]);

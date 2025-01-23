@@ -14,7 +14,6 @@ use app\models\UserSettings;
 use app\services\EmailService;
 use app\services\output\ProfileOutputService;
 use app\services\twilio\TwilioService;
-use app\services\UserActionLogService as LogService;
 use Exception as BaseException;
 use Throwable;
 use Yii;
@@ -24,7 +23,6 @@ class AuthController extends V1Controller implements ApiAuth
     public function init()
     {
         parent::init();
-        LogService::setController('AuthController');
     }
     private const PASSWORD_RESET_CODE_KEY = 'password_reset_code_<CODE>';
     private const EMAIL_UPDATE_CODE_KEY = 'email_update_code_<CODE>';
@@ -398,7 +396,6 @@ class AuthController extends V1Controller implements ApiAuth
 
             $user->uuid = generateCustomUUID();
 
-            LogService::success('created user ' . $request->post('email'));
             $user->personal_id = md5(time() . random_int(1e3, 9e3));
             $user->password = Yii::$app
                 ->getSecurity()

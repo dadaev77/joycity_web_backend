@@ -6,7 +6,6 @@ use app\helpers\ArrayHelperExtended;
 use app\models\Order;
 use app\services\RateService;
 use Throwable;
-use app\services\UserActionLogService as LogService;
 
 class OrderPriceService extends PriceOutputService
 {
@@ -15,7 +14,6 @@ class OrderPriceService extends PriceOutputService
         try {
             $order = Order::findOne(['id' => $orderId]);
             if (!$order) {
-                \app\services\UserActionLogService::danger('order not found');
                 return self::getPricesConfig();
             }
             // get offers 
@@ -50,16 +48,6 @@ class OrderPriceService extends PriceOutputService
                     : self::TYPE_CALCULATION_PRODUCT,
             );
         } catch (Throwable $e) {
-            \app\services\UserActionLogService::danger(
-                'error in OrderPriceService::calculateOrderPrices: ' .
-                    json_encode([
-                        'message' => $e->getMessage(),
-                        'code' => $e->getCode(),
-                        'file' => $e->getFile(),
-                        'line' => $e->getLine(),
-                        'trace' => $e->getTraceAsString(),
-                    ])
-            );
             return self::getPricesConfig();
         }
     }
@@ -81,8 +69,6 @@ class OrderPriceService extends PriceOutputService
         string $calculationType,
     ): array {
 
-        \app\services\UserActionLogService::setController('OrderPriceService');
-        \app\services\UserActionLogService::log(json_encode($currency));
 
         $out = self::getPricesConfig();
         $isTypePackaging = $calculationType === self::TYPE_CALCULATION_PACKAGING;

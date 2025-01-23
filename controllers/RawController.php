@@ -20,8 +20,6 @@ use app\services\ExchangeRateService;
 // modificators
 use app\services\modificators\RateService;
 
-// log service
-use app\services\UserActionLogService as LogService;
 use Twilio\Rest\Client;
 // image processing
 use Intervention\Image\ImageManager;

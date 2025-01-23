@@ -17,7 +17,6 @@ use app\services\WaybillService;
 use Mpdf\Mpdf;
 use Throwable;
 use Yii;
-use app\services\UserActionLogService as Log;
 
 class BuyerDeliveryOfferController extends ManagerController
 {
