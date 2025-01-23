@@ -250,7 +250,7 @@ class AttachmentService
 
                 // Создаем холст нужного размера
                 $canvas = new Imagick();
-                $canvas->newImage($width, $height, new ImagickPixel('white'));
+                $canvas->newImage($width, $height, new \ImagickPixel('white'));
                 $canvas->setImageFormat('webp');
 
                 // Вписываем изображение в холст
