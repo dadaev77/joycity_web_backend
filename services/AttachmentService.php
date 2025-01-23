@@ -237,29 +237,25 @@ class AttachmentService
             $size = $file->size;
 
             if (in_array($extension, self::AllowedImageExtensions, true)) {
-                $manager = new ImageManager(new GdDriver());
-                $image = $manager->read($file->tempName);
+                $image = new Imagick($file->tempName);
 
-                $originalWidth = $image->width();
-                $originalHeight = $image->height();
+                // Получаем исходные размеры изображения
+                $originalWidth = $image->getImageWidth();
+                $originalHeight = $image->getImageHeight();
 
-                if ($originalWidth > $width) {
-                    $image->resize($width, null, function ($constraint) {
-                        $constraint->aspectRatio();
-                        $constraint->upsize();
-                    });
+                // Уменьшаем изображение с сохранением соотношения сторон
+                if ($originalWidth > $originalHeight) {
+                    if ($originalWidth > $width) {
+                        $image->resizeImage($width, 0, Imagick::FILTER_LANCZOS, 1);
+                    }
+                } else {
+                    if ($originalHeight > $height) {
+                        $image->resizeImage(0, $height, Imagick::FILTER_LANCZOS, 1);
+                    }
                 }
 
-                if ($originalHeight > $height) {
-                    $image->resize(null, $height, function ($constraint) {
-                        $constraint->aspectRatio();
-                        $constraint->upsize();
-                    });
-                }
-
-                $image->resizeCanvas($width, $height, 'center', false, '#ffffff');
-
-                $image->toWebp(80)->save($fullPath);
+                $image->setImageFormat('webp');
+                $image->writeImage($fullPath);
 
                 $mimeType = mime_content_type($fullPath);
                 $size = filesize($fullPath);
