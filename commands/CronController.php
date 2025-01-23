@@ -11,7 +11,6 @@ namespace app\commands;
 use Throwable;
 use yii\console\Controller;
 use app\models\OrderDistribution;
-use app\services\UserActionLogService as Log;
 use app\services\ExchangeRateService;
 use app\models\Rate;
 use yii\db\Expression;

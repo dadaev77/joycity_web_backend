@@ -3,7 +3,6 @@
 namespace app\models;
 
 use yii\db\ActiveQuery;
-use app\services\UserActionLogService as Log;
 
 /**
  * This is the model class for table "order_distribution".

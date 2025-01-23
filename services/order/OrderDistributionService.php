@@ -7,14 +7,13 @@ use app\components\responseFunction\ResultAnswer;
 use app\models\Order;
 use app\models\OrderDistribution;
 use app\models\User;
-use app\services\UserActionLogService as Log;
 use Yii;
 
 class OrderDistributionService
 {
     public function init()
     {
-        Log::setController('OrderDistributionService');
+        //
     }
     public const DISTRIBUTION_SCRIPT_TIMEOUT = 300;
     public const DISTRIBUTION_ACCEPT_TIMEOUT = 65;
@@ -45,10 +44,8 @@ class OrderDistributionService
         ]);
 
         if ($task->save()) {
-            // Log::info('Distribution task created: ' . $task->id);
             return Result::success($task);
         }
-        Log::error('Error creating distribution task: ' . json_encode($task->getFirstErrors(), JSON_THROW_ON_ERROR));
         return Result::errors($task->getFirstErrors());
     }
 

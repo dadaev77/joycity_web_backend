@@ -4,7 +4,6 @@ namespace app\services\modificators\price;
 
 use app\services\price\OrderPriceService;
 use app\models\Order;
-use app\services\UserActionLogService as Log;
 use app\models\TypePackaging;
 use Throwable;
 use app\models\TypeDeliveryPrice;
@@ -56,7 +55,6 @@ class OrderPrice extends OrderPriceService
         try {
             $order = Order::findOne($orderId);
             if (!$order) {
-                Log::danger('Order not found');
                 return self::defaultOutput();
             }
 
@@ -71,10 +69,8 @@ class OrderPrice extends OrderPriceService
             }
 
             $params = self::prepareOrderParams($order, $lastOffer, $product, $fulfillmentOffer, $buyerDeliveryOffer);
-            Log::info('OrderPrice::calculateOrderPrices params: ' . json_encode($params));
             return self::calcOrderPrices($params);
         } catch (Throwable $th) {
-            Log::danger(self::logError('OrderPrice::calculateOrderPrices', $th));
             return self::defaultOutput();
         }
     }
@@ -83,13 +79,9 @@ class OrderPrice extends OrderPriceService
     {
         $userCurrency = \Yii::$app->user->getIdentity()->getSettings()->currency;
         $orderCurrency = $order->currency;
-
-        Log::warning('LastOffer: ' . json_encode($lastOffer?->price_product));
-        Log::warning('Order: ' . json_encode($order->expected_price_per_item));
         // Конвертируем все цены в валюту пользователя
         $productPrice = $lastOffer?->price_product ?? $order->expected_price_per_item;
         $productPrice = RateService::convertValue($productPrice, $lastOffer?->currency ?? $orderCurrency, $userCurrency);
-        Log::warning('ProductPrice: ' . json_encode($productPrice));
 
         $productInspectionPrice = $lastOffer?->price_inspection ?: 0;
         $productInspectionPrice = RateService::convertValue($productInspectionPrice, $lastOffer?->currency ?? $orderCurrency, $userCurrency);
@@ -114,7 +106,6 @@ class OrderPrice extends OrderPriceService
             'fulfillmentPrice' => $fulfillmentPrice,
             'calculationType' => $buyerDeliveryOffer ? self::TYPE_CALCULATION_PACKAGING : self::TYPE_CALCULATION_PRODUCT,
         ];
-        Log::info('OrderPrice::prepareOrderParams response: ' . json_encode($response));
         return $response;
     }
 
@@ -211,7 +202,6 @@ class OrderPrice extends OrderPriceService
 
             return round($price * $packagingQuantity, self::SYMBOLS_AFTER_DECIMAL_POINT);
         } catch (Throwable $th) {
-            Log::danger('error in OrderPrice::calcPackagingPrice: ' . $th->getMessage());
             return 0;
         }
     }
@@ -236,7 +226,6 @@ class OrderPrice extends OrderPriceService
             }
             return (float) $deliveryPrice;
         } catch (Throwable $th) {
-            Log::danger('error in OrderPrice::calcDeliveryPrice: ' . $th->getMessage());
             return self::defaultOutput();
         }
     }
@@ -258,7 +247,6 @@ class OrderPrice extends OrderPriceService
             // Конвертируем цену доставки в валюту пользователя
             return RateService::convertValue($price?->price ?? 0, 'USD', $userCurrency);
         } catch (Throwable $th) {
-            Log::danger('error in OrderPrice::getPriceByWeight: ' . $th->getMessage());
             return 0;
         }
     }
@@ -274,7 +262,6 @@ class OrderPrice extends OrderPriceService
             // Конвертируем цену доставки в валюту пользователя
             return RateService::convertValue($price?->price ?? 0, 'USD', $userCurrency);
         } catch (Throwable $th) {
-            Log::danger('error in OrderPrice::getPriceByVolume: ' . $th->getMessage());
             return 0;
         }
     }
@@ -326,7 +313,6 @@ class OrderPrice extends OrderPriceService
 
             return self::calcOrderPrices($params);
         } catch (Throwable $th) {
-            Log::danger('error in OrderPrice::calculatorFacade: ' . $th->getMessage());
             return self::defaultOutput();
         }
     }

@@ -3,7 +3,6 @@
 namespace app\controllers;
 
 use Yii;
-use app\services\UserActionLogService as Log;
 use app\models\OrderDistribution;
 use app\models\Rate;
 use yii\web\Controller;
@@ -22,7 +21,6 @@ class CronController extends Controller
     public function init()
     {
         parent::init();
-        Log::setController('CronController');
     }
 
     /**
@@ -56,26 +54,21 @@ class CronController extends Controller
      */
     public function actionDistribution(string $taskID = null)
     {
-        // Log::log('Distribution task started');
         $actualTask = OrderDistribution::find()->where(['id' => $taskID])->one();
 
         if (
             !$actualTask ||
             $actualTask->status !== OrderDistribution::STATUS_IN_WORK
         ) {
-            Log::danger('Задача не найдена или статус не "в работе". Удаление задания из списка');
             $command = "crontab -l | grep -v 'taskID={$taskID}' | crontab -";
             exec($command);
             return;
         }
-        // Log::success('Task found. ID: ' . $actualTask->id);
         $buyers = explode(',', $actualTask->buyer_ids_list);
         $currentBuyer = $actualTask->current_buyer_id;
         $nextBuyer = $this->getNextBuyer($buyers, $currentBuyer);
         $actualTask->current_buyer_id = $nextBuyer;
-        // Log::success('Текущий ID покупателя для задачи ' . $actualTask->id . ' : ' . $nextBuyer);
         if (!$actualTask->save()) {
-            Log::danger('Ошибка сохранения задачи');
             return;
         }
     }
