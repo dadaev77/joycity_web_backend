@@ -243,20 +243,22 @@ class AttachmentService
                 $originalWidth = $image->getImageWidth();
                 $originalHeight = $image->getImageHeight();
 
-                // Уменьшаем изображение с сохранением соотношения сторон
-                if ($originalWidth > $originalHeight) {
-                    if ($originalWidth > $width) {
-                        $image->resizeImage($width, 0, Imagick::FILTER_LANCZOS, 1);
-                    }
-                } else {
-                    if ($originalHeight > $height) {
-                        $image->resizeImage(0, $height, Imagick::FILTER_LANCZOS, 1);
-                    }
-                }
+                // Вычисляем коэффициент масштабирования
+                $scale = min($width / $originalWidth, $height / $originalHeight);
+                $newWidth = (int)($originalWidth * $scale);
+                $newHeight = (int)($originalHeight * $scale);
 
-                $image->setImageFormat('webp');
-                $image->writeImage($fullPath);
+                // Создаем холст нужного размера
+                $canvas = new Imagick();
+                $canvas->newImage($width, $height, new ImagickPixel('white'));
+                $canvas->setImageFormat('webp');
 
+                // Вписываем изображение в холст
+                $image->resizeImage($newWidth, $newHeight, Imagick::FILTER_LANCZOS, 1);
+                $canvas->compositeImage($image, Imagick::COMPOSITE_OVER, (int)(($width - $newWidth) / 2), (int)(($height - $newHeight) / 2));
+
+                // Сохраняем итоговое изображение
+                $canvas->writeImage($fullPath);
                 $mimeType = mime_content_type($fullPath);
                 $size = filesize($fullPath);
             } else {
