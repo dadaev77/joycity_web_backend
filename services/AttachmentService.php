@@ -243,12 +243,16 @@ class AttachmentService
 
         if (in_array($extension, self::AllowedImageExtensions, true)) {
             $manager = new ImageManager(new GdDriver());
-            $image = $manager->read($file->tempName);
+
+            $image = $manager->make($file->tempName);
             $image->resize($width, $height, function ($constraint) {
                 $constraint->aspectRatio();
                 $constraint->upsize();
-            })->resizeCanvas($width, $height, 'center', false, '#ffffff')
-                ->toWebp(80)->save($fullPath);
+            });
+            $canvas = $manager->canvas($width, $height, '#ffffff');
+            $canvas->insert($image, 'center');
+            $canvas->save($fullPath);
+
             $mimeType = mime_content_type($fullPath);
             $size = filesize($fullPath);
         } else {
