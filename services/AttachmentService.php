@@ -248,7 +248,7 @@ class AttachmentService
                 // Получаем исходные размеры изображения
                 $originalWidth = $image->width();
                 $originalHeight = $image->height();
-                Yii::$app->telegramLog->send('info', 'Original width: ' . $originalWidth . ', Original height: ' . $originalHeight);
+                Yii::$app->telegramLog->send('info', 'Original width: ' . $originalWidth . ', Original height: ' . $originalHeight, 'test');
                 if ($originalWidth >= $originalHeight) {
                     $image->resize(1024, null, function ($constraint) {
                         $constraint->aspectRatio();
@@ -262,8 +262,8 @@ class AttachmentService
                 }
                 // Добавляем холст для создания финального изображения 1024x1024
                 $image->resizeCanvas(1024, 1024, 'center', false, '#ffffff')
+                    ->toWebp(80)
                     ->save($fullPath);
-
                 $mimeType = mime_content_type($fullPath);
                 $size = filesize($fullPath);
             } else {
@@ -293,7 +293,10 @@ class AttachmentService
                 ]);
             }
 
-            $attachment->save();
+            if (!$attachment->save()) {
+                return Result::notValid(['errors' => $attachment->getFirstErrors()]);
+                Yii::$app->telegramLog->send('error', 'Ошибка при сохранении вложения: ' . $attachment->getFirstErrors(), 'test');
+            }
             return Result::success($attachment);
         } catch (Exception $e) {
             // Логируем ошибку
