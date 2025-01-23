@@ -232,7 +232,7 @@ class AttachmentService
         return Result::success($out);
     }
 
-    public static function writeFileWithModel(UploadedFile $file, int $maxWidth = 1024, int $maxHeight = 1024, string $name = 'large'): ResultAnswer
+    public static function writeFileWithModel(UploadedFile $file, int $width = 1024, int $height = 1024, string $name = 'large'): ResultAnswer
     {
         $extension = pathinfo($file->name, PATHINFO_EXTENSION);
         $mimeType = $file->type;
@@ -245,24 +245,11 @@ class AttachmentService
             $manager = new ImageManager(new GdDriver());
             $image = $manager->read($file->tempName);
 
-            // Получаем исходные размеры изображения
-            $originalWidth = $image->getWidth();
-            $originalHeight = $image->getHeight();
-
-            // Вычисляем новое соотношение
-            $ratio = $originalWidth / $originalHeight;
-
-            if ($maxWidth / $maxHeight > $ratio) {
-                $maxWidth = $maxHeight * $ratio; // Устанавливаем ширину на основе высоты
-            } else {
-                $maxHeight = $maxWidth / $ratio; // Устанавливаем высоту на основе ширины
-            }
-
-            // Изменяем размер изображения с сохранением соотношения сторон
-            $image->resize($maxWidth, $maxHeight, function ($constraint) {
+            $image->resize($width, $height, function ($constraint) {
                 $constraint->aspectRatio();
                 $constraint->upsize();
-            })->toWebp(80)->save($fullPath);
+            })->resizeCanvas($width, $height, 'center', false, '#ffffff')
+                ->toWebp(80)->save($fullPath);
 
             $mimeType = mime_content_type($fullPath);
             $size = filesize($fullPath);
