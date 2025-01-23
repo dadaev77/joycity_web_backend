@@ -245,19 +245,7 @@ class AttachmentService
             $manager = new ImageManager(new GdDriver());
             $image = $manager->read($file->tempName);
 
-
-            $originalWidth = $image->width();
-            $originalHeight = $image->height();
-
-            $aspectRatio = $originalWidth / $originalHeight;
-
-            if ($width / $height > $aspectRatio) {
-                $width = $height * $aspectRatio;
-            } else {
-                $height = $width / $aspectRatio;
-            }
-
-            $image->resize($width, $height, function ($constraint) {
+            $image->resize(null, $height, function ($constraint) {
                 $constraint->aspectRatio();
                 $constraint->upsize();
             })->resizeCanvas($width, $height, 'center', false, '#ffffff')
