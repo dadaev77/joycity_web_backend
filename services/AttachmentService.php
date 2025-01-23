@@ -171,7 +171,6 @@ class AttachmentService
         foreach ($files as $file) {
             $extension = $file->getExtension();
             $fileSize = $file->size;
-
             if (in_array($extension, self::AllowedImageExtensions, true)) {
                 $imageCount++;
             } elseif (
@@ -211,24 +210,19 @@ class AttachmentService
             // create images for all sizes
             foreach (self::IMAGE_SIZES as $size) {
                 $fileModelResponse = self::writeFileWithModel($file, $size['width'], $size['height'], $size['name']);
-
-
                 if (!$fileModelResponse->success) {
                     $transaction?->rollBack();
-
                     return Result::error([
                         'errors' => [
                             'file_save' => 'Ошибка: ошибка записи файлов',
                         ],
                     ]);
                 }
-
                 $out[] = $fileModelResponse->result;
             }
         }
 
         $transaction?->commit();
-
         return Result::success($out);
     }
 
@@ -247,20 +241,24 @@ class AttachmentService
                 $image = $manager->read($file->tempName);
 
                 // Получаем исходные размеры изображения
-                $originalWidth = $image->width();
-                $originalHeight = $image->height();
-                Yii::$app->telegramLog->send('info', 'Original width: ' . $originalWidth . ', Original height: ' . $originalHeight, 'test');
-                if ($originalWidth >= $originalHeight) {
-                    $image->resize(1024, null, function ($constraint) {
-                        $constraint->aspectRatio();
-                        $constraint->upsize();
-                    })->toWebp(80)->save($fullPath);
-                } else {
-                    $image->resize(null, 1024, function ($constraint) {
-                        $constraint->aspectRatio();
-                        $constraint->upsize();
-                    })->toWebp(80)->save($fullPath);
-                }
+                // $originalWidth = $image->width();
+                // $originalHeight = $image->height();
+                // Yii::$app->telegramLog->send('info', 'Original width: ' . $originalWidth . ', Original height: ' . $originalHeight, 'test');
+                // if ($originalWidth >= $originalHeight) {
+                //     $image->resize(1024, null, function ($constraint) {
+                //         $constraint->aspectRatio();
+                //         $constraint->upsize();
+                //     })->toWebp(80)->save($fullPath);
+                // } else {
+                //     $image->resize(null, 1024, function ($constraint) {
+                //         $constraint->aspectRatio();
+                //         $constraint->upsize();
+                //     })->toWebp(80)->save($fullPath);
+                // }
+
+                $image->fit($width, $height, function ($constraint) {
+                    $constraint->upsize(); // Не увеличиваем изображение, если оно меньше
+                })->toWebp(80)->save($fullPath);
 
                 $mimeType = mime_content_type($fullPath);
                 $size = filesize($fullPath);
