@@ -57,7 +57,6 @@ class WaybillController extends ManagerController
             }
 
             $waybill = WaybillService::update($order->waybill, $data);
-
             return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
                 'invoice' => $_ENV['APP_URL'] . '/uploads/waybills/' . $waybill->file_path,
                 'waybill' => $waybill
