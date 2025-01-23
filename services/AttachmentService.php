@@ -171,7 +171,6 @@ class AttachmentService
         foreach ($files as $file) {
             $extension = $file->getExtension();
             $fileSize = $file->size;
-
             if (in_array($extension, self::AllowedImageExtensions, true)) {
                 $imageCount++;
             } elseif (
@@ -211,76 +210,95 @@ class AttachmentService
             // create images for all sizes
             foreach (self::IMAGE_SIZES as $size) {
                 $fileModelResponse = self::writeFileWithModel($file, $size['width'], $size['height'], $size['name']);
-
-
                 if (!$fileModelResponse->success) {
                     $transaction?->rollBack();
-
                     return Result::error([
                         'errors' => [
                             'file_save' => 'Ошибка: ошибка записи файлов',
                         ],
                     ]);
                 }
-
                 $out[] = $fileModelResponse->result;
             }
         }
 
         $transaction?->commit();
-
         return Result::success($out);
     }
 
     public static function writeFileWithModel(UploadedFile $file, int $width = 1024, int $height = 1024, string $name = 'large'): ResultAnswer
     {
-        $extension = pathinfo($file->name, PATHINFO_EXTENSION);
-        $mimeType = $file->type;
-        $pathName = Yii::$app->security->generateRandomString(16);
-        $path = '/' . self::PUBLIC_PATH . "/$pathName.$extension";
-        $fullPath = self::getFilesPath() . "/$pathName.$extension";
-        $size = $file->size;
+        try {
+            $extension = pathinfo($file->name, PATHINFO_EXTENSION);
+            $mimeType = $file->type;
+            $pathName = Yii::$app->security->generateRandomString(16);
+            $path = '/' . self::PUBLIC_PATH . "/$pathName.$extension";
+            $fullPath = self::getFilesPath() . "/$pathName.$extension";
+            $size = $file->size;
 
-        if (in_array($extension, self::AllowedImageExtensions, true)) {
+            if (in_array($extension, self::AllowedImageExtensions, true)) {
+                $image = new Imagick($file->tempName);
+                // Применяем автоматическую ориентацию на основе EXIF-данных
+                $image->autoOrient();
+                // Получаем исходные размеры изображения
+                $originalWidth = $image->getImageWidth();
+                $originalHeight = $image->getImageHeight();
+                // Вычисляем коэффициент масштабирования
+                $scale = min($width / $originalWidth, $height / $originalHeight);
+                $newWidth = (int)($originalWidth * $scale);
+                $newHeight = (int)($originalHeight * $scale);
+                // Создаем холст нужного размера
+                $canvas = new Imagick();
+                $canvas->newImage($width, $height, new \ImagickPixel('white'));
+                $canvas->setImageFormat('webp');
+                // Изменяем размер изображения без учета ориентации
+                $image->resizeImage($newWidth, $newHeight, Imagick::FILTER_LANCZOS, 1);
+                // Вписываем изображение в холст
+                $canvas->compositeImage($image, Imagick::COMPOSITE_OVER, (int)(($width - $newWidth) / 2), (int)(($height - $newHeight) / 2));
+                // Сохраняем итоговое изображение
+                $canvas->writeImage($fullPath);
+                // Очищаем ресурсы
+                $image->destroy();
+                $canvas->destroy();
 
-            $manager = new ImageManager(new GdDriver());
-            $image = $manager->read($file->tempName);
-            $image->resize($width, $height, function ($constraint) {
-                $constraint->aspectRatio();
-                // $constraint->upsize();
-            })->toWebp(80)->save($fullPath);
-            $mimeType = mime_content_type($fullPath);
-            $size = filesize($fullPath);
-        } else {
-            $status = rename($file->tempName, $fullPath);
-            if (!$status) {
-                return Result::error(['errors' => ['Error save file']]);
+                $mimeType = mime_content_type($fullPath);
+                $size = filesize($fullPath);
+            } else {
+                $status = rename($file->tempName, $fullPath);
+                if (!$status) {
+                    return Result::error(['errors' => ['Error save file']]);
+                }
             }
-        }
-        chmod($fullPath, 0666);
+            chmod($fullPath, 0666);
 
-        // Debugging: Check if the file exists
-        if (!file_exists($fullPath)) {
-            return Result::error(['errors' => ['File does not exist after saving']]);
-        }
+            // Debugging: Check if the file exists
+            if (!file_exists($fullPath)) {
+                return Result::error(['errors' => ['File does not exist after saving']]);
+            }
 
-        $attachment = new Attachment([
-            'path' => $path,
-            'size' => $size,
-            'extension' => $extension,
-            'mime_type' => $mimeType,
-            'img_size' => $name,
-        ]);
-
-        if (!$attachment->validate()) {
-            return Result::notValid([
-                'errors' => $attachment->getFirstErrors(),
+            $attachment = new Attachment([
+                'path' => $path,
+                'size' => $size,
+                'extension' => $extension,
+                'mime_type' => $mimeType,
+                'img_size' => $name,
             ]);
+
+            if (!$attachment->validate()) {
+                return Result::notValid([
+                    'errors' => $attachment->getFirstErrors(),
+                ]);
+            }
+
+            if (!$attachment->save()) {
+                return Result::notValid(['errors' => $attachment->getFirstErrors()]);
+            }
+
+            return Result::success($attachment);
+        } catch (Exception $e) {
+            Yii::$app->telegramLog->send('error', 'Ошибка при обработке изображения: ' . $e->getMessage());
+            return Result::error(['errors' => ['image_processing' => 'Ошибка при обработке изображения']]);
         }
-
-        $attachment->save();
-
-        return Result::success($attachment);
     }
 
     public static function getFilesPath()
