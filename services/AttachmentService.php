@@ -240,17 +240,24 @@ class AttachmentService
                 $manager = new ImageManager(new GdDriver());
                 $image = $manager->read($file->tempName);
 
-                $image->resize($width, $height, function ($constraint) {
-                    $constraint->aspectRatio();
-                    $constraint->upsize(); // Не увеличиваем маленькие изображения
-                });
+                $originalWidth = $image->width();
+                $originalHeight = $image->height();
 
-                $endWidth = $image->width();
-                $endHeight = $image->height();
-
-                if ($endWidth !== $width || $endHeight !== $height) {
-                    $image->resizeCanvas($width, $height, 'center', false, '#ffffff');
+                if ($originalWidth > $width) {
+                    $image->resize($width, null, function ($constraint) {
+                        $constraint->aspectRatio();
+                        $constraint->upsize();
+                    });
                 }
+
+                if ($originalHeight > $height) {
+                    $image->resize(null, $height, function ($constraint) {
+                        $constraint->aspectRatio();
+                        $constraint->upsize();
+                    });
+                }
+
+                $image->resizeCanvas($width, $height, 'center', false, '#ffffff');
 
                 $image->toWebp(80)->save($fullPath);
 
