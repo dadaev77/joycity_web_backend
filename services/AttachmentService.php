@@ -262,7 +262,6 @@ class AttachmentService
                 }
                 // Добавляем холст для создания финального изображения 1024x1024
                 $image->resizeCanvas(1024, 1024, 'center', false, '#ffffff')
-                    ->toWebp(80)
                     ->save($fullPath);
 
                 $mimeType = mime_content_type($fullPath);
