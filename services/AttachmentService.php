@@ -288,21 +288,20 @@ class AttachmentService
             ]);
 
             if (!$attachment->validate()) {
+                Yii::$app->telegramLog->send('error', 'Ошибка при валидации вложения: ' . $attachment->getFirstErrors(), 'test');
                 return Result::notValid([
                     'errors' => $attachment->getFirstErrors(),
                 ]);
             }
 
             if (!$attachment->save()) {
-                return Result::notValid(['errors' => $attachment->getFirstErrors()]);
                 Yii::$app->telegramLog->send('error', 'Ошибка при сохранении вложения: ' . $attachment->getFirstErrors(), 'test');
+                return Result::notValid(['errors' => $attachment->getFirstErrors()]);
             }
+
             return Result::success($attachment);
         } catch (Exception $e) {
-            // Логируем ошибку
             Yii::$app->telegramLog->send('error', 'Ошибка при обработке изображения: ' . $e->getMessage());
-
-            // Возвращаем ошибку
             return Result::error(['errors' => ['image_processing' => 'Ошибка при обработке изображения']]);
         }
     }
