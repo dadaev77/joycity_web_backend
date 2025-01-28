@@ -64,7 +64,7 @@ class TwilioService
 
             return Result::success($conversation);
         } catch (RuntimeException | TwilioException $e) {
-            Yii::$app->telegramLog->send('error', 'Ошибка при создании чата: ' . $e->getMessage());
+            \Yii::$app->telegramLog->send('error', 'Ошибка при создании чата: ' . $e->getMessage());
             return Result::error([
                 'errors' => [
                     'twilio' => $e->getMessage(),
