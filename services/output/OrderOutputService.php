@@ -49,7 +49,6 @@ class OrderOutputService extends OutputService
             'typeDelivery',
             'typeDeliveryPoint',
             'typePackaging',
-            'chats',
             'subcategory',
             'product' => fn($q) => $q->select(['id', 'name_ru', 'description_ru', 'product_height', 'product_width', 'product_depth', 'product_weight'])->with(['attachments']),
             'productInspectionReports',
@@ -91,11 +90,6 @@ class OrderOutputService extends OutputService
             //         $info[$key] = RateService::convertValue($value, $info['currency'], $userCurrency);
             //     }
             // }
-
-            foreach ($info['chats'] as &$chat) {
-                unset($chat['order_id'], $chat['user_verification_request_id']);
-            }
-            unset($chat);
 
             $keys = [
                 'product_name_ru',
@@ -195,7 +189,7 @@ class OrderOutputService extends OutputService
                 // $info['typeDelivery'],
                 // $info['typeDeliveryPoint'],
                 // $info['typePackaging'],
-                // $info['chats'],
+                $info['chats'],
                 // $info['subcategory'],
                 // $info['product'],
                 // $info['productInspectionReport'],
