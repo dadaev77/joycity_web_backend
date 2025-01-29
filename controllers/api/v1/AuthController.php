@@ -404,6 +404,12 @@ class AuthController extends V1Controller implements ApiAuth
                 Yii::$app->security->generateRandomString() .
                 Yii::$app->security->generateRandomString();
 
+            // TODO: remove after implementing new chats 
+            if ($role === User::ROLE_CLIENT) {
+                $user->is_email_confirmed = 1;
+                $user->is_verified = 1;
+            }
+
             if (!$user->save(false)) {
                 return ApiResponse::transactionCodeErrors(
                     $transaction,
