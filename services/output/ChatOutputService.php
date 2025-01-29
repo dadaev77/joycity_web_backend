@@ -18,7 +18,7 @@ class ChatOutputService extends OutputService
     {
 
         return [];
-        
+
         $query = Chat::find()
             ->with([
                 'order',
@@ -30,7 +30,7 @@ class ChatOutputService extends OutputService
                 ]),
             ])
             ->orderBy(self::getOrderByIdExpression($ids))
-            ->where(['id' => $ids]);
+            ->one();
 
         return array_map(static function ($model) {
 
