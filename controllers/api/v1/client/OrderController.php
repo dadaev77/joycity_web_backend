@@ -7,12 +7,10 @@ use app\components\response\ResponseCodes;
 use app\controllers\api\v1\ClientController;
 use app\helpers\POSTHelper;
 use app\models\Attachment;
-use app\models\Chat;
 use app\models\Order;
 use app\models\TypeDeliveryPoint;
 use app\models\User;
 use app\services\AttachmentService;
-use app\services\chat\ChatConstructorService;
 use app\services\CronService;
 use app\services\notification\NotificationConstructor;
 use app\services\order\OrderDistributionService;
@@ -27,7 +25,6 @@ use Yii;
 use yii\base\Exception;
 use yii\web\UploadedFile;
 
-use app\services\twilio\TwilioService;
 use app\controllers\CronController;
 use app\models\OrderDistribution;
 use app\services\modificators\price\OrderPrice;
@@ -254,24 +251,6 @@ class OrderController extends ClientController
                         $orderChangeStatus->reason,
                     );
                 }
-
-                /**
-                 * Create conversation between client, buyer and manager
-                 */
-
-                $conversationManager = ChatConstructorService::createChatOrder(
-                    Chat::GROUP_CLIENT_BUYER_MANAGER,
-                    [$user->id, $buyerId, $randomManager->id],
-                    $order->id,
-                );
-
-                if (!$conversationManager->success) {
-                    return ApiResponse::transactionCodeErrors(
-                        $transaction,
-                        $apiCodes->ERROR_SAVE,
-                        $conversationManager->reason,
-                    );
-                }
             } else {
                 $distributionStatus = OrderDistributionService::createDistributionTask($order->id);
                 if (!$distributionStatus->success) {
@@ -328,30 +307,10 @@ class OrderController extends ClientController
                 $order->linkAll('attachments', $attachmentsToLink);
             }
 
-            /**
-             * Create conversation between client and manager
-             */
-            $conversationManager = ChatConstructorService::createChatOrder(
-                Chat::GROUP_CLIENT_MANAGER,
-                [$user->id, $randomManager->id],
-                $order->id,
-            );
-
             NotificationConstructor::orderOrderCreated(
                 $order->manager_id,
                 $order->id,
             );
-
-            // code block where return error
-            if (!$conversationManager->success) {
-                $transaction?->rollBack();
-                return ApiResponse::codeErrors(
-                    $apiCodes->ERROR_SAVE,
-                    $conversationManager->reason,
-                );
-            }
-            //Twilio service end
-
 
             $transaction?->commit();
 
