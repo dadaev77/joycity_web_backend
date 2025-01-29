@@ -36,7 +36,6 @@ class OrderOutputService extends OutputService
     public static function getCollection(array $ids, $showDeleted = false, $imageSize = 'large'): array
     {
         $relations = [
-
             'fulfillmentMarketplaceTransactions' => fn($q) => $q->orderBy(['id' => SORT_DESC]),
             'createdBy' => fn($q) => $q->select(SqlQueryService::getUserSelect())->with(['avatar']),
             'buyer' => fn($q) => $q->select(SqlQueryService::getBuyerSelect())->with(['avatar']),
@@ -157,7 +156,7 @@ class OrderOutputService extends OutputService
                 $info['price']['product_overall'] = $info['buyerOffer']['price_product'] * $info['buyerOffer']['total_quantity'];
             }
             $info['timeDelivery'] = $info['delivery_days_expected'];
-
+            $info['chats'] = [];
             unset(
                 // $info['created_at'],
                 // $info['status'],
@@ -189,7 +188,7 @@ class OrderOutputService extends OutputService
                 // $info['typeDelivery'],
                 // $info['typeDeliveryPoint'],
                 // $info['typePackaging'],
-                $info['chats'],
+                // $info['chats'],
                 // $info['subcategory'],
                 // $info['product'],
                 // $info['productInspectionReport'],
