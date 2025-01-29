@@ -16,9 +16,7 @@ class ChatOutputService extends OutputService
 
     public static function getCollection(array $ids): array
     {
-
         return [];
-
         $query = Chat::find()
             ->with([
                 'order',
