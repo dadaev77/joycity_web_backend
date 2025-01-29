@@ -16,6 +16,7 @@ class ChatOutputService extends OutputService
 
     public static function getCollection(array $ids): array
     {
+        return [];
         $query = Chat::find()
             ->with([
                 'order',
@@ -27,14 +28,12 @@ class ChatOutputService extends OutputService
                 ]),
             ])
             ->orderBy(self::getOrderByIdExpression($ids))
-            ->where(['id' => $ids]);
+            ->one();
 
         return array_map(static function ($model) {
+
             $info = ModelTypeHelper::toArray($model);
-            $info['chatUsers'] = array_map(
-                static fn($item) => $item['user'],
-                $info['chatUsers'],
-            );
+            $info['chatUsers'] = [];
 
             if ($info['order']) {
                 $info['order']['type'] = in_array(

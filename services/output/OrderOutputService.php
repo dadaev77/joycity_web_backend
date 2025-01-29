@@ -36,7 +36,6 @@ class OrderOutputService extends OutputService
     public static function getCollection(array $ids, $showDeleted = false, $imageSize = 'large'): array
     {
         $relations = [
-
             'fulfillmentMarketplaceTransactions' => fn($q) => $q->orderBy(['id' => SORT_DESC]),
             'createdBy' => fn($q) => $q->select(SqlQueryService::getUserSelect())->with(['avatar']),
             'buyer' => fn($q) => $q->select(SqlQueryService::getBuyerSelect())->with(['avatar']),
@@ -49,7 +48,6 @@ class OrderOutputService extends OutputService
             'typeDelivery',
             'typeDeliveryPoint',
             'typePackaging',
-            'chats',
             'subcategory',
             'product' => fn($q) => $q->select(['id', 'name_ru', 'description_ru', 'product_height', 'product_width', 'product_depth', 'product_weight'])->with(['attachments']),
             'productInspectionReports',
@@ -91,11 +89,6 @@ class OrderOutputService extends OutputService
             //         $info[$key] = RateService::convertValue($value, $info['currency'], $userCurrency);
             //     }
             // }
-
-            foreach ($info['chats'] as &$chat) {
-                unset($chat['order_id'], $chat['user_verification_request_id']);
-            }
-            unset($chat);
 
             $keys = [
                 'product_name_ru',
@@ -163,7 +156,7 @@ class OrderOutputService extends OutputService
                 $info['price']['product_overall'] = $info['buyerOffer']['price_product'] * $info['buyerOffer']['total_quantity'];
             }
             $info['timeDelivery'] = $info['delivery_days_expected'];
-
+            $info['chats'] = [];
             unset(
                 // $info['created_at'],
                 // $info['status'],

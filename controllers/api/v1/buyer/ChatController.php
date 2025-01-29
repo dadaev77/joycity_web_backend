@@ -209,6 +209,7 @@ class ChatController extends BuyerController
             ->andWhere(['is_archive' => 0])
             ->column();
 
+        return [];
         // check if chats are found
         if (!$chats) return ApiResponse::code($apiCodes->NOT_FOUND);
 

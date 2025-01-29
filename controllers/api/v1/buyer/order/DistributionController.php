@@ -5,10 +5,10 @@ namespace app\controllers\api\v1\buyer\order;
 use app\components\ApiResponse;
 use app\components\response\ResponseCodes;
 use app\controllers\api\v1\BuyerController;
-use app\models\Chat;
+
 use app\models\OrderDistribution;
 use app\models\User;
-use app\services\chat\ChatConstructorService;
+
 use app\services\order\OrderDistributionService;
 use app\services\order\OrderStatusService;
 use app\services\output\OrderDistributionOutputService;
@@ -139,36 +139,6 @@ class DistributionController extends BuyerController
                     $orderStatusChange->reason,
                 );
             }
-
-            $conversationClient = ChatConstructorService::createChatOrder(
-                Chat::GROUP_CLIENT_BUYER_MANAGER,
-                [$user->id, $order->created_by, $order->manager_id],
-                $order->id,
-            );
-
-            if (!$conversationClient->success) {
-                $transaction?->rollBack();
-
-                return ApiResponse::codeErrors(
-                    $apiCodes->ERROR_SAVE,
-                    $conversationClient->reason,
-                );
-            }
-
-            // $conversationManager = ChatConstructorService::createChatOrder(
-            //     Chat::GROUP_MANAGER_BUYER,
-            //     [$user->id, $order->manager_id],
-            //     $order->id,
-            // );
-
-            // if (!$conversationManager->success) {
-            //     $transaction?->rollBack();
-
-            //     return ApiResponse::codeErrors(
-            //         $apiCodes->ERROR_SAVE,
-            //         $conversationManager->reason,
-            //     );
-            // }
 
             $transaction?->commit();
 

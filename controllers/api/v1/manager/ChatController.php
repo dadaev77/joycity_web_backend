@@ -199,10 +199,6 @@ class ChatController extends ManagerController
             }
         }
 
-        if (empty($outChats)) {
-            return ApiResponse::code($apiCodes->NOT_FOUND);
-        }
-
         return ApiResponse::collection(ChatOutputService::getCollection($outChats));
     }
 }
