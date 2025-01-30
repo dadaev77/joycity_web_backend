@@ -3,7 +3,6 @@
 namespace app\controllers;
 
 use app\components\ApiResponse;
-use app\models\Chat;
 use Yii;
 use yii\web\Controller;
 use yii\web\Response;
@@ -12,8 +11,12 @@ use yii\filters\VerbFilter;
 use app\models\User;
 use app\models\Product;
 use app\models\Order as OrderModel;
+use app\models\Chat;
+use app\models\Message;
 
-use app\services\chat\ChatConstructorService;
+// Сервисы чата
+use app\services\chats\ChatService;
+use app\services\chats\MessageService;
 
 // rates service
 use app\services\ExchangeRateService;

@@ -1,16 +1,16 @@
 <?php
 
-namespace app\services;
+namespace app\services\chats;
 
 use app\models\Message;
-use app\models\MessageAttachment;
 use yii\web\NotFoundHttpException;
+use yii\db\Exception;
+use yii\db\Expression;
 use Yii;
-use Google\Cloud\Translate\V2\TranslateClient;
 
 class MessageService
 {
-    private static $supportedLanguages = ['en', 'ru', 'es'];
+    private static $supportedLanguages = ['en', 'ru', 'cn'];
 
     /**
      * Создать новое сообщение
@@ -28,17 +28,15 @@ class MessageService
         $message = new Message([
             'chat_id' => $chatId,
             'user_id' => $userId,
-            'type' => $type,
-            'content' => $content,
+            'content' => self::translateMessage($content),
             'metadata' => $metadata,
             'reply_to_id' => $replyToId,
             'status' => 'delivered',
-            'created_at' => new \yii\db\Expression('NOW()'),
-            'updated_at' => new \yii\db\Expression('NOW()'),
         ]);
+        $message->type = $type;
 
         if (!$message->save()) {
-            throw new \yii\db\Exception('Ошибка при создании сообщения');
+            throw new Exception('Ошибка при создании сообщения: ' . json_encode($message->getErrors()));
         }
 
         return $message;
@@ -59,15 +57,21 @@ class MessageService
      */
     public static function createMessageWithAttachment($chatId, $userId, $type, $filePath, $fileName, $mimeType, $metadata = null, $replyToId = null)
     {
-        $message = self::createMessage($chatId, $userId, $type, null, $metadata, $replyToId);
+        // Создаем метаданные для вложения
+        $attachmentMetadata = [
+            'path' => $filePath,
+            'original_name' => $fileName,
+            'mime_type' => $mimeType,
+            'size' => filesize($filePath),
+            'created_at' => date('Y-m-d H:i:s')
+        ];
 
-        $attachment = self::uploadAttachment($message->id, $filePath, $fileName, $mimeType);
+        // Объединяем с существующими метаданными
+        $fullMetadata = array_merge($metadata ?: [], [
+            'attachment' => $attachmentMetadata
+        ]);
 
-        // Обновляем сообщение с информацией о вложении
-        $message->attachments = json_encode([$attachment->id]);
-        $message->save();
-
-        return $message;
+        return self::createMessage($chatId, $userId, $type, null, $fullMetadata, $replyToId);
     }
 
     /**
@@ -99,25 +103,11 @@ class MessageService
      * @param string $fileName
      * @param string $mimeType
      * @param array|null $metadata
-     * @return MessageAttachment
      */
     public static function uploadAttachment($messageId, $filePath, $fileName, $mimeType, $metadata = null)
     {
-        $attachment = new MessageAttachment([
-            'message_id' => $messageId,
-            'path' => $filePath,
-            'original_name' => $fileName,
-            'mime_type' => $mimeType,
-            'size' => filesize($filePath),
-            'metadata' => $metadata,
-            'created_at' => new \yii\db\Expression('NOW()'),
-        ]);
-
-        if (!$attachment->save()) {
-            throw new \yii\db\Exception('Ошибка при загрузке вложения');
-        }
-
-        return $attachment;
+        // TODO: Implement attachment upload logic
+        return null;
     }
 
     /**
@@ -128,29 +118,12 @@ class MessageService
      */
     private static function translateMessage($text)
     {
-        try {
-            $translate = new TranslateClient([
-                'key' => Yii::$app->params['googleTranslateApiKey']
-            ]);
-
-            $translations = [];
-            $sourceLanguage = $translate->detectLanguage($text)['languageCode'];
-
-            foreach (self::$supportedLanguages as $targetLanguage) {
-                if ($targetLanguage !== $sourceLanguage) {
-                    $result = $translate->translate($text, [
-                        'source' => $sourceLanguage,
-                        'target' => $targetLanguage
-                    ]);
-                    $translations[$targetLanguage] = $result['text'];
-                }
-            }
-
-            return $translations;
-        } catch (\Exception $e) {
-            Yii::error('Ошибка перевода: ' . $e->getMessage());
-            return [];
-        }
+        // TODO: Implement translation logic
+        return [
+            'en' => $text,
+            'ru' => $text,
+            'es' => $text,
+        ];
     }
 
     /**
@@ -179,6 +152,8 @@ class MessageService
                 throw new \yii\base\InvalidArgumentException("Неизвестное событие");
         }
 
-        $message->save();
+        if (!$message->save()) {
+            throw new \yii\db\Exception('Ошибка при обработке события сообщения: ' . json_encode($message->getErrors()));
+        }
     }
 }

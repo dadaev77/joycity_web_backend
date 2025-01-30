@@ -41,10 +41,50 @@ class Message extends ActiveRecord
     {
         return [
             [['chat_id', 'user_id', 'reply_to_id'], 'integer'],
-            [['content', 'metadata', 'attachments'], 'json'],
+            [['content', 'metadata', 'attachments'], 'safe'],
             [['type', 'status'], 'string'],
             [['created_at', 'updated_at', 'edited_at', 'deleted_at'], 'safe'],
         ];
+    }
+
+    /**
+     * Преобразование JSON полей перед сохранением
+     */
+    public function beforeSave($insert)
+    {
+        if (!parent::beforeSave($insert)) {
+            return false;
+        }
+
+        if (is_array($this->content)) {
+            $this->content = json_encode($this->content);
+        }
+
+        if (is_array($this->metadata)) {
+            $this->metadata = json_encode($this->metadata);
+        }
+
+        if (is_array($this->attachments)) {
+            $this->attachments = json_encode($this->attachments);
+        }
+
+        return true;
+    }
+
+    /**
+     * Преобразование JSON полей после загрузки
+     */
+    public function afterFind()
+    {
+        parent::afterFind();
+
+        if ($this->metadata !== null) {
+            $this->metadata = json_decode($this->metadata, true);
+        }
+
+        if ($this->attachments !== null) {
+            $this->attachments = json_decode($this->attachments, true);
+        }
     }
 
     /**
@@ -100,26 +140,6 @@ class Message extends ActiveRecord
     }
 
     /**
-     * Получить статусы сообщения
-     *
-     * @return \yii\db\ActiveQuery
-     */
-    public function getStatuses()
-    {
-        return $this->hasMany(MessageStatus::class, ['message_id' => 'id']);
-    }
-
-    /**
-     * Получить вложения сообщения
-     *
-     * @return \yii\db\ActiveQuery
-     */
-    public function getAttachments()
-    {
-        return $this->hasMany(MessageAttachment::class, ['message_id' => 'id']);
-    }
-
-    /**
      * Поведение для временных меток
      *
      * @return array
@@ -127,9 +147,12 @@ class Message extends ActiveRecord
     public function behaviors()
     {
         return [
-            TimestampBehavior::class => [
-                'createdAtAttribute' => 'created_at',
-                'updatedAtAttribute' => 'updated_at',
+            [
+                'class' => TimestampBehavior::class,
+                'attributes' => [
+                    self::EVENT_BEFORE_INSERT => ['created_at', 'updated_at'],
+                    self::EVENT_BEFORE_UPDATE => ['updated_at'],
+                ],
                 'value' => new Expression('NOW()'),
             ],
         ];

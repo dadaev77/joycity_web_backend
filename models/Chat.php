@@ -61,9 +61,37 @@ class Chat extends ActiveRecord
             [['type', 'name', 'status', 'role'], 'string'],
             [['created_at', 'updated_at', 'left_at', 'joined_at'], 'safe'],
             [['last_message_id', 'order_id', 'verification_id', 'user_id', 'last_read_message_id'], 'integer'],
-            [['metadata'], 'json'],
+            [['metadata'], 'safe'],
             [['is_muted'], 'boolean'],
         ];
+    }
+
+    /**
+     * Преобразование метаданных перед сохранением
+     */
+    public function beforeSave($insert)
+    {
+        if (!parent::beforeSave($insert)) {
+            return false;
+        }
+
+        if (is_array($this->metadata)) {
+            $this->metadata = json_encode($this->metadata);
+        }
+
+        return true;
+    }
+
+    /**
+     * Преобразование метаданных после загрузки
+     */
+    public function afterFind()
+    {
+        parent::afterFind();
+
+        if ($this->metadata !== null) {
+            $this->metadata = json_decode($this->metadata, true);
+        }
     }
 
     /**

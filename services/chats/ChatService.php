@@ -1,11 +1,11 @@
 <?php
 
-namespace app\services;
+namespace app\services\chats;
 
 use app\models\Chat;
 use app\models\User;
-use app\services\ChatParticipantService;
 use yii\web\NotFoundHttpException;
+use yii\db\Exception;
 use Yii;
 
 class ChatService
@@ -22,18 +22,15 @@ class ChatService
         $chat = new Chat([
             'type' => 'private',
             'status' => 'active',
-            'metadata' => json_encode([
+            'user_id' => $firstUserId,
+            'metadata' => [
                 'participants' => [$firstUserId, $secondUserId]
-            ])
+            ]
         ]);
 
         if (!$chat->save()) {
-            throw new \yii\db\Exception('Ошибка при создании чата');
+            throw new \yii\db\Exception('Ошибка при создании чата: ' . json_encode($chat->getErrors()));
         }
-
-        // Добавляем участников
-        ChatParticipantService::addParticipant($chat->id, $firstUserId, 'member');
-        ChatParticipantService::addParticipant($chat->id, $secondUserId, 'member');
 
         return $chat;
     }
@@ -50,19 +47,16 @@ class ChatService
         $chat = new Chat([
             'type' => 'private',
             'status' => 'active',
+            'user_id' => $userId,
             'verification_id' => $verificationId,
-            'metadata' => json_encode([
-                'type' => 'verification',
-                'user_id' => $userId
-            ])
+            'metadata' => [
+                'type' => 'verification'
+            ]
         ]);
 
         if (!$chat->save()) {
-            throw new \yii\db\Exception('Ошибка при создании чата верификации');
+            throw new \yii\db\Exception('Ошибка при создании чата верификации: ' . json_encode($chat->getErrors()));
         }
-
-        // Добавляем пользователя и администратора
-        ChatParticipantService::addParticipant($chat->id, $userId, 'member');
 
         return $chat;
     }
@@ -81,24 +75,16 @@ class ChatService
             'type' => 'group',
             'name' => $name,
             'status' => 'active',
-            'metadata' => json_encode([
-                'creator_id' => $creatorId,
+            'user_id' => $creatorId,
+            'role' => 'owner',
+            'metadata' => [
+                'participants' => $participantIds,
                 'created_at' => date('Y-m-d H:i:s')
-            ])
+            ]
         ]);
 
         if (!$chat->save()) {
-            throw new \yii\db\Exception('Ошибка при создании группового чата');
-        }
-
-        // Добавляем создателя как админа
-        ChatParticipantService::addParticipant($chat->id, $creatorId, 'admin');
-
-        // Добавляем остальных участников
-        foreach ($participantIds as $participantId) {
-            if ($participantId != $creatorId) {
-                ChatParticipantService::addParticipant($chat->id, $participantId, 'member');
-            }
+            throw new \yii\db\Exception('Ошибка при создании группового чата: ' . json_encode($chat->getErrors()));
         }
 
         return $chat;
@@ -120,7 +106,9 @@ class ChatService
         }
 
         $chat->status = $newStatus;
-        $chat->save();
+        if (!$chat->save()) {
+            throw new \yii\db\Exception('Ошибка при изменении статуса чата: ' . json_encode($chat->getErrors()));
+        }
 
         return $chat;
     }
@@ -141,7 +129,70 @@ class ChatService
         }
 
         $chat->metadata = $newMetadata;
-        $chat->save();
+        if (!$chat->save()) {
+            throw new \yii\db\Exception('Ошибка при обновлении метаданных чата: ' . json_encode($chat->getErrors()));
+        }
+
+        return $chat;
+    }
+
+    /**
+     * Добавить участника в чат
+     * 
+     * @param bigint $chatId
+     * @param bigint $userId
+     * @param string $role
+     * @return Chat
+     */
+    public static function addParticipant($chatId, $userId, $role = 'member')
+    {
+        $chat = Chat::findOne($chatId);
+        if (!$chat) {
+            throw new NotFoundHttpException("Чат не найден");
+        }
+
+        $metadata = $chat->metadata ?: [];
+        $participants = $metadata['participants'] ?? [];
+
+        if (!in_array($userId, $participants)) {
+            $participants[] = $userId;
+            $metadata['participants'] = $participants;
+            $chat->metadata = $metadata;
+
+            if (!$chat->save()) {
+                throw new \yii\db\Exception('Ошибка при добавлении участника: ' . json_encode($chat->getErrors()));
+            }
+        }
+
+        return $chat;
+    }
+
+    /**
+     * Удалить участника из чата
+     * 
+     * @param bigint $chatId
+     * @param bigint $userId
+     * @return Chat
+     */
+    public static function removeParticipant($chatId, $userId)
+    {
+        $chat = Chat::findOne($chatId);
+        if (!$chat) {
+            throw new NotFoundHttpException("Чат не найден");
+        }
+
+        $metadata = $chat->metadata ?: [];
+        $participants = $metadata['participants'] ?? [];
+
+        if (($key = array_search($userId, $participants)) !== false) {
+            unset($participants[$key]);
+            $metadata['participants'] = array_values($participants);
+            $chat->metadata = $metadata;
+
+            if (!$chat->save()) {
+                throw new \yii\db\Exception('Ошибка при удалении участника: ' . json_encode($chat->getErrors()));
+            }
+        }
 
         return $chat;
     }
