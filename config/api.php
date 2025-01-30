@@ -94,6 +94,7 @@ $config = [
                     'class' => UrlRule::class,
                     // Контроллеры REST API
                     'controller' => [
+                        'api/v1/chat',
                         'api/v1/buyer/buyer',
                         'api/v1/buyer/chat',
                         'api/v1/buyer/feedback/buyer',
