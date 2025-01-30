@@ -42,16 +42,17 @@ class ChatService
      * @param bigint $verificationId
      * @return Chat
      */
-    public static function createVerificationChat($userId, $verificationId)
+    public static function createVerificationChat($userId, $verificationId = null, array $metadata = [])
     {
         $chat = new Chat([
+            'name' => 'Verification ' . $verificationId,
             'type' => 'private',
             'status' => 'active',
             'user_id' => $userId,
-            'verification_id' => $verificationId,
             'metadata' => [
-                'type' => 'verification'
-            ]
+                'type' => 'verification',
+                'verification_request_id' => $verificationId,
+            ] + $metadata
         ]);
 
         if (!$chat->save()) {
@@ -67,10 +68,14 @@ class ChatService
      * @param string $name
      * @param bigint $creatorId
      * @param array $participantIds
+     * @param array $metadata
      * @return Chat
      */
-    public static function createGroupChat($name, $creatorId, $participantIds)
-    {
+    public static function createGroupChat(
+        $name,
+        $creatorId,
+        array $metadata = []
+    ) {
         $chat = new Chat([
             'type' => 'group',
             'name' => $name,
@@ -78,9 +83,8 @@ class ChatService
             'user_id' => $creatorId,
             'role' => 'owner',
             'metadata' => [
-                'participants' => $participantIds,
                 'created_at' => date('Y-m-d H:i:s')
-            ]
+            ] + $metadata
         ]);
 
         if (!$chat->save()) {

@@ -5,10 +5,9 @@ namespace app\controllers\api\v1\client;
 use app\components\ApiResponse;
 use app\components\response\ResponseCodes;
 use app\controllers\api\v1\ClientController;
-use app\models\Chat;
 use app\models\User;
 use app\models\UserVerificationRequest;
-use app\services\chat\ChatConstructorService;
+use app\services\chats\ChatService;
 use app\services\notification\NotificationConstructor;
 use app\services\output\UserVerificationRequestOutputService;
 use app\services\RateService;
@@ -114,20 +113,15 @@ class VerificationController extends ClientController
                 );
             }
 
-            $conversation = ChatConstructorService::createChatVerification(
-                Chat::GROUP_CLIENT_MANAGER,
-                [$user->id, $randomManager->id],
+            // create verification chat for new client user with manager
+            ChatService::createVerificationChat(
+                $user->id,
                 $newRequest->id,
+                [
+                    'verification_request_id' => $newRequest->id,
+                    'participants' => [$user->id, $newRequest->manager_id],
+                ]
             );
-
-            if (!$conversation->success) {
-                $transaction?->rollBack();
-
-                return ApiResponse::codeErrors(
-                    $apiCodes->ERROR_SAVE,
-                    $conversation->reason,
-                );
-            }
 
             $transaction?->commit();
 

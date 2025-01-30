@@ -14,7 +14,6 @@ class ResponseCodes
     public ResponseCodesInfo|array $INTERNAL_ERROR = [1007, 500];
     public ResponseCodesInfo|array $DATABASE_ERROR = [1008, 500];
     public ResponseCodesInfo|array $METHOD_NOT_ALLOWED = [1009, 405];
-    public ResponseCodesInfo|array $TWILIO_ERROR = [1010, 500];
     public ResponseCodesInfo|array $NO_ACCESS_FOR_NOT_VERIFIED = [1011, 403];
 
     public function __construct()

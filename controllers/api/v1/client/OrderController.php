@@ -29,6 +29,7 @@ use app\controllers\CronController;
 use app\models\OrderDistribution;
 use app\services\modificators\price\OrderPrice;
 use app\services\TranslationService;
+use app\services\chats\ChatService;
 
 class OrderController extends ClientController
 {
@@ -251,6 +252,16 @@ class OrderController extends ClientController
                         $orderChangeStatus->reason,
                     );
                 }
+
+                // create group chat for order with manager, buyer and client
+                ChatService::createGroupChat(
+                    'Order ' . $order->id,
+                    $user->id,
+                    [$user->id, $order->manager_id, $buyerId],
+                    [
+                        'order_id' => $order->id,
+                    ]
+                );
             } else {
                 $distributionStatus = OrderDistributionService::createDistributionTask($order->id);
                 if (!$distributionStatus->success) {

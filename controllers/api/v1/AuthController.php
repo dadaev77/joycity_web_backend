@@ -13,10 +13,11 @@ use app\models\User;
 use app\models\UserSettings;
 use app\services\EmailService;
 use app\services\output\ProfileOutputService;
-use app\services\twilio\TwilioService;
 use Exception as BaseException;
 use Throwable;
 use Yii;
+
+use app\services\chats\ChatService;
 
 class AuthController extends V1Controller implements ApiAuth
 {
@@ -37,7 +38,6 @@ class AuthController extends V1Controller implements ApiAuth
         $behaviors['verbFilter']['actions']['update-email-step-1'] = ['put'];
         $behaviors['verbFilter']['actions']['update-email-step-2'] = ['put'];
         $behaviors['verbFilter']['actions']['change-password'] = ['put'];
-        $behaviors['verbFilter']['actions']['twilio-token'] = ['get'];
         $behaviors['authenticator']['except'] = [
             'login',
             'email-check',
@@ -404,11 +404,7 @@ class AuthController extends V1Controller implements ApiAuth
                 Yii::$app->security->generateRandomString() .
                 Yii::$app->security->generateRandomString();
 
-            // TODO: remove after implementing new chats 
-            if ($role === User::ROLE_CLIENT) {
-                $user->is_email_confirmed = 1;
-                $user->is_verified = 1;
-            }
+
 
             if (!$user->save(false)) {
                 return ApiResponse::transactionCodeErrors(
@@ -981,36 +977,5 @@ class AuthController extends V1Controller implements ApiAuth
             Yii::$app->telegramLog->send('error', 'Ошибка при обновлении пароля: ' . $e->getMessage());
             return ApiResponse::code($apiCodes->INTERNAL_ERROR);
         }
-    }
-
-    /**
-     * @OA\Post(
-     *     path="/api/v1/auth/twilio-token",
-     *     summary="Получение токена Twilio",
-     *     description="Этот метод позволяет получить токен для работы с Twilio.",
-     *     @OA\Response(
-     *         response=200,
-     *         description="Токен успешно получен",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="success"),
-     *             @OA\Property(property="access_token", type="string", example="your_twilio_access_token")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Внутренняя ошибка сервера",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="error"),
-     *             @OA\Property(property="message", type="string", example="Внутренняя ошибка сервера")
-     *         )
-     *     )
-     * )
-     */
-    public function actionTwilioToken()
-    {
-        $user = User::getIdentity();
-        return ApiResponse::code(ResponseCodes::getStatic()->SUCCESS, [
-            'access_token' => TwilioService::generateJWT($user->personal_id),
-        ]);
     }
 }

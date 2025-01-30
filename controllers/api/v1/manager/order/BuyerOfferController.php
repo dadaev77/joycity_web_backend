@@ -6,19 +6,17 @@ use app\components\ApiResponse;
 use app\controllers\api\v1\ManagerController;
 use app\helpers\POSTHelper;
 use app\models\BuyerOffer;
-use app\models\Chat;
 use app\models\Order;
 use app\models\OrderRate;
 use app\models\Rate;
 use app\models\TypeDeliveryPoint;
 use app\models\User;
-use app\services\chat\ChatConstructorService;
+use app\services\chats\ChatService;
 use app\services\notification\NotificationConstructor;
 use app\services\order\OrderStatusService;
 use app\services\OrderTrackingConstructorService;
 use app\services\output\BuyerOfferOutputService;
 use app\services\output\OrderOutputService;
-use app\services\twilio\TwilioService;
 use Throwable;
 use Yii;
 
@@ -124,35 +122,16 @@ class BuyerOfferController extends ManagerController
                     $order->id,
                 );
 
-                $conversationFulfilment = ChatConstructorService::createChatOrder(
-                    Chat::GROUP_CLIENT_FULFILMENT_MANAGER,
-                    [$order->created_by, $order->fulfillment_id, $order->manager_id],
-                    $order->id,
+
+                ChatService::createGroupChat(
+                    'Чат клиент, фулфилмент и менеджер',
+                    $order->created_by,
+                    [
+                        'order_id' => $order->id,
+                        'fulfillment_id' => $order->fulfillment_id,
+                        'manager_id' => $order->manager_id,
+                    ],
                 );
-
-                if (!$conversationFulfilment->success) {
-                    $transaction?->rollBack();
-
-                    return ApiResponse::codeErrors(
-                        $apiCodes->ERROR_SAVE,
-                        $conversationFulfilment->reason,
-                    );
-                }
-
-                // $conversationManagerFulfilment = ChatConstructorService::createChatOrder(
-                //     Chat::GROUP_CLIENT_FULFILMENT_MANAGER,
-                //     [$order->fulfillment_id, $order->manager_id],
-                //     $order->id,
-                // );
-
-                // if (!$conversationManagerFulfilment->success) {
-                //     $transaction?->rollBack();
-
-                //     return ApiResponse::codeErrors(
-                //         $apiCodes->ERROR_SAVE,
-                //         $conversationManagerFulfilment->reason,
-                //     );
-                // }
             }
 
             if (!$orderStatusChange->success) {

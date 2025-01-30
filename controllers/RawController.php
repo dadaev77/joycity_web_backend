@@ -11,7 +11,6 @@ use yii\filters\VerbFilter;
 use app\models\User;
 use app\models\Product;
 use app\models\Order as OrderModel;
-use app\models\Chat;
 use app\models\Message;
 
 // Сервисы чата
@@ -23,12 +22,6 @@ use app\services\ExchangeRateService;
 // modificators
 use app\services\modificators\RateService;
 
-use Twilio\Rest\Client;
-// image processing
-use Intervention\Image\ImageManager;
-use Intervention\Image\Drivers\Gd\Driver as GdDriver;
-// Twilio 
-use app\services\twilio\TwilioService as Twilio;
 // curl
 use linslin\yii2\curl\Curl;
 use app\services\TranslationService;
@@ -44,11 +37,6 @@ class RawController extends Controller
     public const SERVER_ERROR_LOG_FILE = '/var/log/nginx/nginx-joycityrussia.store.local.error.log';
 
     protected const KEYS = [
-        'TWILIO_ACCOUNT_SID',
-        'TWILIO_AUTH_TOKEN',
-        'TWILIO_CONVERSATION_SERVICE_SID',
-        'TWILIO_API_KEY_SID',
-        'TWILIO_API_KEY_SECRET',
         'GATEWAY_INTERFACE',
         'CONTEXT_PREFIX',
         'SCRIPT_NAME',
@@ -267,5 +255,18 @@ class RawController extends Controller
         } catch (\Exception $e) {
             return $e->getMessage();
         }
+    }
+
+    public function actionTest()
+    {
+        return
+            ChatService::createVerificationChat(
+                1,
+                1,
+                [
+                    'verification_request_id' => 1,
+                    'participants' => [1, 2],
+                ]
+            );
     }
 }
