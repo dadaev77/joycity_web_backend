@@ -1,0 +1,313 @@
+Анализ системы чатов и план миграции на собственное решение
+
+1. Текущая структура API (сохраняется для обратной совместимости):
+
+Чаты для покупателей (Buyer):
+GET /api/v1/buyer/chat
+- Получение списка чатов
+- Параметры:
+  * group (string) - группа чатов
+  * is_archive (int) - статус архивации (0/1)
+- Требует авторизации
+- Недоступно для демо-пользователей
+
+GET /api/v1/buyer/chat/search
+- Поиск чатов
+- Параметры:
+  * query (string) - поисковый запрос
+- Требует авторизации
+
+GET /api/v1/buyer/chat/get-chat
+- Получение конкретного чата
+- Требует авторизации
+- Недоступно для демо-пользователей
+
+Чаты для клиентов (Client):
+GET /api/v1/client/chat
+- Получение списка чатов
+- Параметры:
+  * group (string) - группа чатов
+  * is_archive (int) - статус архивации (0/1)
+- Возвращает:
+  * id (int) - ID чата
+  * name (string) - название чата
+  * last_message (string) - последнее сообщение
+  * created_at (datetime) - дата создания
+  * updated_at (datetime) - дата обновления
+
+GET /api/v1/client/chat/search
+- Поиск чатов
+- Параметры:
+  * query (string) - поисковый запрос
+
+Чаты для менеджеров (Manager):
+GET /api/v1/manager/chat
+- Получение списка чатов
+- Параметры:
+  * group (string) - группа чатов
+  * is_archive (int) - статус архивации (0/1)
+- Требует авторизации менеджера
+
+GET /api/v1/manager/chat/search
+- Поиск чатов по заказам
+- Параметры:
+  * query (string) - поисковый запрос (ID заказа)
+- Возвращает:
+  * order_id (int) - ID заказа
+  * buyer_id (int) - ID покупателя
+  * manager_id (int) - ID менеджера
+  * fulfillment_id (mixed) - ID фулфилмента или "не назначен"
+  * chats (array) - список чатов
+
+GET /api/v1/manager/chat/getChat
+- Получение чатов для конкретного заказа
+- Параметры:
+  * order_id (int) - ID заказа
+
+Перевод сообщений:
+POST /api/v1/chat-message
+- Обработка и перевод сообщения
+- Тело запроса:
+  * original_text (string) - исходный текст
+  * message_key (string) - уникальный ключ сообщения
+  * chat_id (int) - ID чата
+- Возвращает переводы на:
+  * Русский (ru)
+  * Английский (en)
+  * Китайский (zh)
+
+2. Схема базы данных:
+
+chats (Чаты):
+- id (bigint, PK) - уникальный идентификатор чата
+- type (enum) - тип чата (private, group)
+- name (varchar, null) - название чата (для групповых)
+- created_at (timestamp) - дата создания
+- updated_at (timestamp) - дата обновления
+- last_message_id (bigint, FK) - ID последнего сообщения
+- status (enum) - статус чата (active, archived)
+- order_id (bigint, FK, null) - связь с заказом
+- verification_id (bigint, FK, null) - связь с верификацией
+- metadata (jsonb) - дополнительные данные чата
+Индексы:
+- last_message_id (для быстрого получения последнего сообщения)
+- order_id, verification_id (для поиска чатов по связанным сущностям)
+- created_at (для сортировки)
+
+chat_participants (Участники чатов):
+- id (bigint, PK)
+- chat_id (bigint, FK) - ID чата
+- user_id (bigint, FK) - ID пользователя (из таблицы users)
+- role (enum) - роль в чате (owner, admin, member)
+- joined_at (timestamp) - дата присоединения
+- last_read_message_id (bigint, FK) - ID последнего прочитанного сообщения
+- is_muted (boolean) - отключены ли уведомления
+- left_at (timestamp, null) - дата выхода из чата
+Индексы:
+- chat_id, user_id (уникальный составной)
+- last_read_message_id (для статусов прочтения)
+
+messages (Сообщения):
+- id (bigint, PK)
+- chat_id (bigint, FK) - ID чата
+- user_id (bigint, FK) - ID отправителя
+- type (enum) - тип сообщения:
+  * text (текст)
+  * audio (аудио)
+  * image (изображение)
+  * file (файл)
+  * system (системное)
+- content (jsonb) - содержимое сообщения в формате:
+  {
+    "ru": "текст на русском",
+    "en": "text in english",
+    "zh": "中文文本"
+  }
+- metadata (jsonb) - метаданные сообщения:
+  * Для audio: {
+      "duration": 120,
+      "format": "mp3",
+      "size": 2048000
+    }
+  * Для image: {
+      "width": 800,
+      "height": 600,
+      "format": "jpeg",
+      "size": 1024000
+    }
+  * Для file: {
+      "name": "document.pdf",
+      "size": 5048000,
+      "mime": "application/pdf"
+    }
+- reply_to_id (bigint, FK, null) - ID сообщения, на которое отвечают
+- created_at (timestamp) - дата создания
+- updated_at (timestamp) - дата обновления
+- edited_at (timestamp, null) - дата редактирования
+- deleted_at (timestamp, null) - дата удаления (soft delete)
+Индексы:
+- chat_id, created_at (для быстрой загрузки истории)
+- user_id (для поиска сообщений пользователя)
+- reply_to_id (для связи с родительским сообщением)
+
+message_statuses (Статусы сообщений):
+- id (bigint, PK)
+- message_id (bigint, FK) - ID сообщения
+- user_id (bigint, FK) - ID пользователя
+- status (enum) - статус:
+  * delivered (доставлено)
+  * read (прочитано)
+- created_at (timestamp) - дата создания статуса
+- updated_at (timestamp) - дата обновления статуса
+Индексы:
+- message_id, user_id (уникальный составной)
+- user_id (для получения непрочитанных)
+
+message_attachments (Вложения):
+- id (bigint, PK)
+- message_id (bigint, FK) - ID сообщения
+- type (enum) - тип вложения (audio, image, file)
+- path (varchar) - путь к файлу
+- original_name (varchar) - оригинальное имя файла
+- mime_type (varchar) - MIME-тип файла
+- size (bigint) - размер в байтах
+- metadata (jsonb) - дополнительные данные файла
+- created_at (timestamp) - дата создания
+Индексы:
+- message_id (для связи с сообщением)
+- type (для фильтрации по типу)
+
+Особенности схемы:
+
+1. Масштабируемость:
+- Использование bigint для ID позволяет хранить большое количество записей
+- JSONB поля для метаданных позволяют добавлять новые свойства без изменения схемы
+- Отдельная таблица для вложений упрощает работу с файлами
+- Составные индексы оптимизируют типовые запросы
+
+2. Поддержка мультиязычности:
+- Контент сообщений хранится в JSONB с ключами для каждого языка
+- Можно легко добавить новые языки без изменения схемы
+
+3. Отслеживание статусов:
+- Таблица message_statuses хранит статусы прочтения для каждого участника
+- Временные метки создания и обновления статусов
+- Оптимизированные индексы для быстрого получения непрочитанных сообщений
+
+4. Гибкость типов сообщений:
+- Enum тип сообщения определяет базовый тип
+- JSONB метаданные хранят специфичные для типа данные
+- Отдельная таблица для вложений с поддержкой разных типов файлов
+
+5. Soft Delete:
+- Сообщения не удаляются физически
+- Поле deleted_at позволяет восстановить удаленные сообщения
+- Сохраняется целостность истории чата
+
+6. Оптимизация производительности:
+- Индексы на часто используемых полях
+- Составные индексы для типовых запросов
+- Денормализация некоторых данных для ускорения чтения
+
+3. Новые сервисы для реализации:
+
+ChatService:
+- createChat(group, type, userIds, orderId = null, verificationId = null)
+- addUserToChat(chatId, userId)
+- removeUserFromChat(chatId, userId)
+- archiveChat(chatId)
+- deleteChat(chatId)
+- getChatInfo(chatId)
+- getChatParticipants(chatId)
+- updateChatInfo(chatId, data)
+
+MessageService:
+- sendMessage(chatId, userId, content, type = 'text', replyToId = null)
+- editMessage(messageId, newContent)
+- deleteMessage(messageId)
+- getMessages(chatId, limit, offset, filter = {})
+- markAsRead(messageId, userId)
+- getMessageStatuses(messageId)
+
+WebSocketService:
+- handleConnection(userId, token)
+- handleDisconnection(userId)
+- subscribeToChat(userId, chatId)
+- unsubscribeFromChat(userId, chatId)
+- broadcastMessage(chatId, eventType, data)
+- sendPersonalMessage(userId, eventType, data)
+
+4. События WebSocket:
+
+Исходящие события:
+- chat.message.new - новое сообщение
+- chat.message.update - обновление сообщения
+- chat.message.delete - удаление сообщения
+- chat.message.status - статус сообщения
+- chat.user.join - пользователь присоединился
+- chat.user.leave - пользователь покинул чат
+- chat.user.typing - пользователь печатает
+- chat.archive - чат архивирован
+- chat.update - обновление информации чата
+
+Входящие события:
+- message.send - отправка сообщения
+- message.edit - редактирование сообщения
+- message.delete - удаление сообщения
+- message.read - прочтение сообщения
+- typing.start - начало печати
+- typing.stop - окончание печати
+
+5. Рекомендации по реализации:
+
+Архитектура:
+1. Использовать WebSocket для real-time коммуникации
+2. Реализовать очереди сообщений для надежной доставки
+3. Использовать Redis для хранения статусов онлайн и временных данных
+4. Внедрить систему кэширования для списков чатов и последних сообщений
+
+Безопасность:
+1. Реализовать JWT-авторизацию для WebSocket соединений
+2. Проверять права доступа к чатам при каждом действии
+3. Валидировать все входящие сообщения и данные
+4. Ограничивать количество соединений с одного IP
+
+Масштабируемость:
+1. Разделить сервис на микросервисы:
+   - Auth Service - авторизация и управление пользователями
+   - Chat Service - управление чатами и участниками
+   - Message Service - обработка сообщений
+   - WebSocket Service - real-time коммуникация
+2. Использовать горизонтальное масштабирование для WebSocket серверов
+3. Внедрить систему очередей для асинхронной обработки событий
+
+Мониторинг:
+1. Логировать все важные события
+2. Отслеживать метрики:
+   - Количество активных соединений
+   - Латентность сообщений
+   - Нагрузка на базу данных
+   - Использование памяти
+3. Настроить алерты при проблемах
+
+6. План миграции:
+
+1. Подготовка:
+   - Создать новые таблицы в базе данных
+   - Развернуть WebSocket сервер
+   - Реализовать базовые сервисы
+
+2. Миграция данных:
+   - Перенести существующие чаты в новую структуру
+   - Сохранить историю сообщений
+   - Обновить связи с заказами и верификациями
+
+3. Переключение:
+   - Развернуть новую версию API
+   - Обновить мобильные приложения
+   - Постепенно отключить Twilio
+
+4. Мониторинг:
+   - Отслеживать ошибки
+   - Собирать метрики производительности
+   - Оптимизировать на основе реальных данных

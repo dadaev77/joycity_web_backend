@@ -10,5 +10,5 @@ return [
     ],
 
     'verificationAmount' => 1500,
-    'baseRating' => 4.7,
+    'baseRating' => 5,
 ];

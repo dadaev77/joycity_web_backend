@@ -42,7 +42,6 @@
     "yidas/yii2-bower-asset": "2.0.13.1",
     "swiftmailer/swiftmailer": "^6.3",
     "ext-fileinfo": "*",
-    "twilio/sdk": "^7.9",
     "vlucas/phpdotenv": "^5.5",
     "linslin/yii2-curl": "^1.5",
     "ext-imagick": "*",
