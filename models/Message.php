@@ -26,6 +26,7 @@ use yii\db\Expression;
  */
 class Message extends ActiveRecord
 {
+    private static $supportedLanguages = ['en', 'ru', 'zh'];
     /**
      * {@inheritdoc}
      */

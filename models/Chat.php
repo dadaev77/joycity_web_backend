@@ -29,6 +29,12 @@ use yii\db\Expression;
  */
 class Chat extends ActiveRecord
 {
+    private static $dealTypes = ['order', 'deal'];
+    private static $groupName = [
+        'client_buyer_manager',
+        'client_fulfillment_manager',
+        'client_manager'
+    ];
 
     public function behaviors()
     {

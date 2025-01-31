@@ -29,11 +29,12 @@ class ChatController extends V1Controller
                 [
                     'allow' => true,
                     'matchCallback' => function () {
+                        // User::getIdentity()->role === User::ROLE_BUYER_DEMO ||
+                        // User::getIdentity()->role === User::ROLE_CLIENT_DEMO ||
                         return User::getIdentity()->role === User::ROLE_BUYER ||
-                            // User::getIdentity()->role === User::ROLE_BUYER_DEMO ||
                             User::getIdentity()->role === User::ROLE_CLIENT ||
-                            // User::getIdentity()->role === User::ROLE_CLIENT_DEMO ||
-                            User::getIdentity()->role === User::ROLE_MANAGER;
+                            User::getIdentity()->role === User::ROLE_MANAGER ||
+                            User::getIdentity()->role === User::ROLE_FULFILLMENT;
                     },
                 ],
             ],

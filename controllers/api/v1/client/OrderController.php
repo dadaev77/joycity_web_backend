@@ -260,6 +260,8 @@ class OrderController extends ClientController
                     [$user->id, $order->manager_id, $buyerId],
                     [
                         'order_id' => $order->id,
+                        'deal_type' => 'order',
+                        'group_name' => 'client_buyer_manager',
                     ]
                 );
             } else {
