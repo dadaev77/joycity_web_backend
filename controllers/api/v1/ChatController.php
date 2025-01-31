@@ -89,6 +89,7 @@ class ChatController extends V1Controller
     {
         $userId = User::getIdentity()->id;
         $data = [];
+        
         $chatsQuery = Chat::find()
             ->where(['like', 'order_id', $query])
             ->andWhere(['like', 'metadata', json_encode(['participants' => $userId])])
@@ -104,7 +105,7 @@ class ChatController extends V1Controller
         }
 
         return [
-            'chats' => $chats
+            'chats' => $data
         ];
     }
 
