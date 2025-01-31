@@ -259,8 +259,8 @@ class OrderController extends ClientController
                     $user->id,
                     $order->id,
                     [
-                        'participants' => [$user->id, $order->manager_id, $buyerId],
                         'deal_type' => 'order',
+                        'participants' => [$user->id, $order->manager_id, $buyerId],
                         'group_name' => 'client_buyer_manager',
                     ]
                 );

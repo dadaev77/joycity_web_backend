@@ -90,16 +90,14 @@ class ChatController extends V1Controller
         $userId = User::getIdentity()->id;
 
         $chatsQuery = Chat::find()
-            ->where(['user_id' => $userId])
-            ->orWhere(['like', 'metadata', json_encode(['participants' => $userId])])
-            ->andWhere(['like', 'name', $query])
-            ->orderBy(['updated_at' => SORT_DESC]);
+            ->where(['like', 'order_id', $query])
+            ->andWhere(['like', 'metadata', json_encode(['participants' => $userId])])
+            ->orderBy(['id' => SORT_DESC]);
 
         $chats = $chatsQuery->all();
 
         return [
-            'status' => 'success',
-            'data' => $chats
+            'chats' => $chats
         ];
     }
 
