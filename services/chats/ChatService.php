@@ -42,6 +42,8 @@ class ChatService
      * @param bigint $verificationId
      * @return Chat
      */
+
+    // обновления в UserVerificationRequest
     public static function createVerificationChat($userId, $verificationId = null, array $metadata = [])
     {
         $chat = new Chat([
