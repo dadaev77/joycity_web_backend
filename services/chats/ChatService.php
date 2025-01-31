@@ -85,9 +85,7 @@ class ChatService
             'status' => 'active',
             'user_id' => $creatorId,
             'role' => 'owner',
-            'metadata' => [
-                'created_at' => date('Y-m-d H:i:s')
-            ] + $metadata
+            'metadata' => [] + $metadata
         ]);
 
         if (!$chat->save()) {
