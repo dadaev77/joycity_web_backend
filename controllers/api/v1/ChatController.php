@@ -88,8 +88,13 @@ class ChatController extends V1Controller
     public function actionSearchChats($query = '')
     {
         $userId = User::getIdentity()->id;
-
         $data = [];
+
+        if (empty($query)) {
+            return [
+                'chats' => []
+            ];
+        }
 
         $chatsQuery = Chat::find()
             ->where(['like', 'order_id', $query])
