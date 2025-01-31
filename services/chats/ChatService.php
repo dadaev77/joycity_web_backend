@@ -49,10 +49,11 @@ class ChatService
             'type' => 'private',
             'status' => 'active',
             'user_id' => $userId,
+            'verification_id' => $verificationId,
             'metadata' => [
                 'type' => 'verification',
-                'verification_request_id' => $verificationId,
             ] + $metadata
+
         ]);
 
         if (!$chat->save()) {
