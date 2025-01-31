@@ -77,6 +77,7 @@ class ChatService
     public static function createGroupChat(
         $name,
         $creatorId,
+        int $orderId = null,
         array $metadata = []
     ) {
         $chat = new Chat([
@@ -85,6 +86,7 @@ class ChatService
             'status' => 'active',
             'user_id' => $creatorId,
             'role' => 'owner',
+            'order_id' => $orderId,
             'metadata' => [] + $metadata
         ]);
 
