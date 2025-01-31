@@ -242,4 +242,32 @@ class ChatController extends V1Controller
             throw new BadRequestHttpException($e->getMessage());
         }
     }
+    public function actionGetOrderChats($orderId)
+    {
+        $chats = Chat::find()->where(['order_id' => $orderId])->all();
+
+        foreach ($chats as $chat) {
+            $metadata = $chat->metadata ?? [];
+            $participants = $metadata['participants'] ?? [];
+            $metadata['participants'] = [];
+            foreach ($participants as $participant) {
+                $user = User::findOne($participant);
+                $metadata['participants'][] = [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'avatar' => $user->avatar,
+                    'role' => $user->role,
+                    'email' => $user->email,
+                    'phone_number' => $user->phone_number,
+                    'telegram' => $user->telegram,
+                ];
+            }
+            $chat->metadata = $metadata;
+        }
+
+        return [
+            'status' => 'success',
+            'data' => $chats
+        ];
+    }
 }
