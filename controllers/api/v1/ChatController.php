@@ -83,27 +83,6 @@ class ChatController extends V1Controller
     }
 
     /**
-     * Получить чаты для заявки на верификацию
-     */
-    public function actionGetVerificationChats($verificationId)
-    {
-        $userId = User::getIdentity()->id;
-
-        $chats = Chat::find()
-            ->where([
-                'verification_id' => $verificationId,
-                'user_id' => $userId
-            ])
-            ->orderBy(['created_at' => SORT_DESC])
-            ->all();
-
-        return [
-            'status' => 'success',
-            'data' => $chats
-        ];
-    }
-
-    /**
      * Просмотр сообщений с пагинацией
      */
     public function actionGetMessages($chatId, $page = 1, $perPage = 100)
