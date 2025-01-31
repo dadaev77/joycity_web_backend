@@ -128,6 +128,8 @@ class UserVerificationRequest extends Base
      */
     public function getChat()
     {
-        return $this->hasOne(Chat::class, ['id' => 'chat_id'])->where(['JSON_UNQUOTE(JSON_EXTRACT(metadata, "$.verification_request_id"))' => (string)$this->id]);
+        return $this->hasOne(Chat::class, [
+            'verification_id' => 'id',
+        ]);
     }
 }
