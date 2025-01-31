@@ -75,17 +75,22 @@ class VerificationController extends ManagerController
     {
         $apiCodes = UserVerificationRequest::apiCodes();
         $user = User::getIdentity();
-        $query = UserVerificationRequest::find()
-            ->select(['id'])
-            ->where(['status' => UserVerificationRequest::STATUS_WAITING])
-            ->andWhere(['manager_id' => $user->id]);
 
-        return ApiResponse::codeCollection(
-            $apiCodes->SUCCESS,
-            UserVerificationRequestOutputService::getCollection(
-                $query->column(),
-            ),
-        );
+        try {
+            $query = UserVerificationRequest::find()
+                ->select(['id'])
+                ->where(['status' => UserVerificationRequest::STATUS_WAITING])
+                ->andWhere(['manager_id' => $user->id]);
+
+            return ApiResponse::codeCollection(
+                $apiCodes->SUCCESS,
+                UserVerificationRequestOutputService::getCollection(
+                    $query->column(),
+                ),
+            );
+        } catch (Throwable $e) {
+            return $e->getMessage();
+        }
     }
 
     /**
