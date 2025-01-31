@@ -88,19 +88,48 @@ class ChatController extends V1Controller
     public function actionSearchChats($query = '')
     {
         $userId = User::getIdentity()->id;
+
         $data = [];
-        
+
         $chatsQuery = Chat::find()
             ->where(['like', 'order_id', $query])
-            ->andWhere(['like', 'metadata', json_encode(['participants' => $userId])])
             ->orderBy(['id' => SORT_DESC]);
 
         $chats = $chatsQuery->all();
 
-        foreach ($chats as $chat) {
+        foreach ($chats as $key => $chat) {
+            $metadata = $chat->metadata ?? [];
+            $participants = $metadata['participants'] ?? [];
+            if (!in_array($userId, $participants)) {
+                unset($chats[$key]);
+            }
+            $orderChats = Chat::find()->where(['order_id' => $chat->order_id])->all();
+
+            foreach ($orderChats as $orderChat) {
+                $metadata = $orderChat->metadata ?? [];
+                $participants = $metadata['participants'] ?? [];
+                $metadata['participants'] = [];
+                if (!in_array($userId, $participants)) {
+                    unset($orderChats[$key]);
+                }
+                foreach ($participants as $participant) {
+                    $user = User::findOne($participant);
+                    $metadata['participants'][] = [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'avatar' => $user->avatar,
+                        'role' => $user->role,
+                        'email' => $user->email,
+                        'phone_number' => $user->phone_number,
+                        'telegram' => $user->telegram,
+                    ];
+                }
+                $orderChat->metadata = $metadata;
+            }
+
             $data[] = [
                 'order_id' => $chat->order_id,
-                'chats' => Chat::find()->where(['order_id' => $chat->order_id])->all()
+                'chats' => $orderChats
             ];
         }
 
