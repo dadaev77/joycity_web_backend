@@ -257,8 +257,8 @@ class OrderController extends ClientController
                 ChatService::createGroupChat(
                     'Order ' . $order->id,
                     $user->id,
+                    $order->id,
                     [
-                        'order_id' => $order->id,
                         'participants' => [$user->id, $order->manager_id, $buyerId],
                         'deal_type' => 'order',
                         'group_name' => 'client_buyer_manager',
