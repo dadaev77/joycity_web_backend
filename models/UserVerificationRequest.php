@@ -103,18 +103,6 @@ class UserVerificationRequest extends Base
     }
 
     /**
-     * Gets query for [[Chat]].
-     *
-     * @return ActiveQuery
-     */
-    public function getChat()
-    {
-        return $this->hasOne(Chat::class, [
-            'user_verification_request_id' => 'id',
-        ]);
-    }
-
-    /**
      * Gets query for [[CreatedBy]].
      *
      * @return ActiveQuery
@@ -132,5 +120,16 @@ class UserVerificationRequest extends Base
     public function getManager()
     {
         return $this->hasOne(User::class, ['id' => 'manager_id']);
+    }
+    /**
+     * Gets query for [[Chat]].
+     *
+     * @return ActiveQuery
+     */
+    public function getChat()
+    {
+        return $this->hasOne(Chat::class, [
+            'user_verification_request_id' => 'id',
+        ])->where(['JSON_UNQUOTE(JSON_EXTRACT(metadata, "$.verification_request_id"))' => $this->id]);
     }
 }
