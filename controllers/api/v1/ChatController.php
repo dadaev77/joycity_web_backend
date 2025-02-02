@@ -179,6 +179,7 @@ class ChatController extends V1Controller
 
         return [
             'status' => 'success',
+            'authUser' => User::getIdentity()->id,
             'data' => [
                 'messages' => $messages,
                 'pagination' => [
