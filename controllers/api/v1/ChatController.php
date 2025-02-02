@@ -73,7 +73,7 @@ class ChatController extends V1Controller
                 ];
             }
             $chat->metadata = $metadata;
-            $chat->auth_user_id = $userId;
+            $chat->auth_user_id = User::getIdentity()->id;
         }
 
         return [
