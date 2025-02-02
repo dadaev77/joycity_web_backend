@@ -72,7 +72,7 @@ class ChatController extends V1Controller
                     'telegram' => $user->telegram,
                 ];
             }
-            $chat->auth_user_id = $userId;
+            $chat['auth_user_id'] = $userId;
             $chat->metadata = $metadata;
         }
 
