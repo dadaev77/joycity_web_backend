@@ -55,9 +55,8 @@ class ChatController extends V1Controller
             ->orderBy(['updated_at' => SORT_DESC]);
 
         $chats = $query->all();
-        $result = [];
+
         foreach ($chats as $chat) {
-            $newChat = $chat;
             $metadata = $chat->metadata ?? [];
             $participants = $metadata['participants'] ?? [];
             $metadata['participants'] = [];
@@ -74,13 +73,12 @@ class ChatController extends V1Controller
                 ];
             }
             $chat->metadata = $metadata;
-            $newChat->auth_user_id = $userId;
-            $result[] = $newChat;
+            $chat->auth_user_id = $userId;
         }
 
         return [
             'status' => 'success',
-            'data' => $result
+            'data' => $chats
         ];
     }
 
@@ -141,6 +139,7 @@ class ChatController extends V1Controller
         }
 
         return [
+
             'chats' => $data
         ];
     }
