@@ -29,7 +29,6 @@ use yii\db\Expression;
  */
 class Chat extends ActiveRecord
 {
-    public $auth_user_id;
     private static $dealTypes = ['order', 'deal'];
     private static $groupName = [
         'client_buyer_manager',

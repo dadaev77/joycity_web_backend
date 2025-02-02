@@ -73,11 +73,11 @@ class ChatController extends V1Controller
                 ];
             }
             $chat->metadata = $metadata;
-            $chat->auth_user_id = User::getIdentity()->id;
         }
 
         return [
             'status' => 'success',
+            'auth_user_id' => User::getIdentity()->id,
             'data' => $chats
         ];
     }
@@ -134,12 +134,12 @@ class ChatController extends V1Controller
 
             $data[] = [
                 'order_id' => $chat->order_id,
-                'chats' => $orderChats
+                'chats' => $orderChats,
             ];
         }
 
         return [
-
+            'auth_user_id' => User::getIdentity()->id,
             'chats' => $data
         ];
     }
@@ -270,6 +270,7 @@ class ChatController extends V1Controller
 
         return [
             'status' => 'success',
+            'auth_user_id' => User::getIdentity()->id,
             'data' => $chats
         ];
     }
