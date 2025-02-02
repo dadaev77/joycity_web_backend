@@ -242,6 +242,7 @@ class ChatController extends V1Controller
             throw new BadRequestHttpException($e->getMessage());
         }
     }
+
     public function actionGetOrderChats($orderId)
     {
         $chats = Chat::find()->where(['order_id' => $orderId])->all();

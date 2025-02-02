@@ -82,7 +82,9 @@ class Message extends ActiveRecord
         if ($this->metadata !== null) {
             $this->metadata = json_decode($this->metadata, true);
         }
-
+        if ($this->content !== null) {
+            $this->content = json_decode($this->content, true);
+        }
         if ($this->attachments !== null) {
             $this->attachments = json_decode($this->attachments, true);
         }
