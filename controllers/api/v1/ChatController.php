@@ -271,14 +271,15 @@ class ChatController extends V1Controller
 
         try {
 
-            $message = MessageService::createMessage([
-                'chat_id' => $chatId,
-                'user_id' => $userId,
-                'type' => $messageType,
-                'content' => $content,
-                'reply_to_id' => $replyToId,
-                'attachments' => $uploadedAttachments,
-            ]);
+            $message = MessageService::createMessage(
+                $chatId,
+                $userId,
+                $messageType,
+                $content,
+                [],
+                $replyToId,
+                $uploadedAttachments,
+            );
 
 
             // Обновляем last_message_id в чате

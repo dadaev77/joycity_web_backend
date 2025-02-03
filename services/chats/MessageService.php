@@ -23,15 +23,23 @@ class MessageService
      * @param bigint|null $replyToId
      * @return Message
      */
-    public static function createMessage($chatId, $userId, $type, $content = null, $metadata = null, $replyToId = null)
-    {
+    public static function createMessage(
+        $chatId,
+        $userId,
+        $type,
+        $content = null,
+        $metadata = null,
+        $replyToId = null,
+        $attachments = null
+    ) {
         $message = new Message([
             'chat_id' => $chatId,
             'user_id' => $userId,
             'content' => self::translateMessage($content),
-            'metadata' => $metadata,
+            'metadata' => [] + $metadata,
             'reply_to_id' => $replyToId,
             'status' => 'delivered',
+            'attachments' => $attachments,
         ]);
         $message->type = $type;
 
