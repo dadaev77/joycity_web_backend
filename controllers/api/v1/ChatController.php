@@ -244,7 +244,13 @@ class ChatController extends V1Controller
         foreach ($uploadedTypes as $type => $files) {
             if ($files) {
                 $methodName = 'upload' . ucfirst($type);
-                $uploadedTypes[$type] = call_user_func([ChatUploader::class, $methodName], $files);
+                $uploadedAttachments = call_user_func([ChatUploader::class, $methodName], $files);
+
+                foreach ($uploadedAttachments as $attachment) {
+                    $attachment->message_id = $message->id;
+                    $attachment->save();
+                }
+                $uploadedTypes[$type] = $uploadedAttachments;
             }
         }
 
