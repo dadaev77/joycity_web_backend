@@ -227,7 +227,7 @@ class ChatController extends V1Controller
     public function actionSendMessage()
     {
         Yii::$app->telegramLog->send('success', json_encode(Yii::$app->request->post()), 'dev');
-        file_put_contents('/runtime/logs/app.log', json_encode(Yii::$app->request->post()));
+
         $chatId = Yii::$app->request->post('chat_id');
         $content = Yii::$app->request->post('content');
         $type = Yii::$app->request->post('type', 'text');
