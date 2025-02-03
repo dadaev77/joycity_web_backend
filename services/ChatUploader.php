@@ -15,12 +15,12 @@ class ChatUploader
         foreach ($images as $image) {
             $attachment = new ChatAttachment();
             $attachment->type = 'image';
-            $attachment->file_name = $image['name'];
-            $attachment->file_path = $image['path'];
-            $attachment->file_size = $image['size'];
-            $attachment->mime_type = $image['type'];
+            $attachment->file_name = $image->name;
+            $attachment->file_path = $image->tempName;
+            $attachment->file_size = $image->size;
+            $attachment->mime_type = $image->type;
 
-            $imagick = new Imagick($image['path']);
+            $imagick = new Imagick($attachment->file_path);
             $imagick->setImageCompression(Imagick::COMPRESSION_JPEG);
             $imagick->setImageCompressionQuality(75);
             $imagick->stripImage();
