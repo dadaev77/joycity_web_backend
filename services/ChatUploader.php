@@ -27,6 +27,13 @@ class ChatUploader
             $attachment->file_size = $image->size;
             $attachment->mime_type = $image->type;
 
+            $targetPath = $this->uploadPath . $attachment->file_name;
+            if (move_uploaded_file($image->tempName, $targetPath)) {
+                $attachment->file_path = $targetPath;
+            } else {
+                throw new \Exception("Не удалось переместить файл: " . $image->name);
+            }
+
             $imagick = new Imagick($attachment->file_path);
             $imagick->setImageCompression(Imagick::COMPRESSION_JPEG);
             $imagick->setImageCompressionQuality(75);
