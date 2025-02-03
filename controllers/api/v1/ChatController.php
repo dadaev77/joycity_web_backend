@@ -248,6 +248,8 @@ class ChatController extends V1Controller
             }
         }
 
+        return $uploadedTypes;
+
         if (!$chatId || !$content) {
             throw new BadRequestHttpException('Необходимо указать chat_id и content');
         }
