@@ -59,6 +59,27 @@ class ChatUploader
     }
     public static function uploadAudios(array $audio)
     {
-        return $audio;
+        $uploader = new self();
+
+        $attachments = [];
+        foreach ($audio as $audioFile) {
+            $attachment = [
+                'type' => 'audio',
+                'file_name' => $audioFile->name,
+                'file_path' => $audioFile->tempName,
+                'file_size' => $audioFile->size,
+                'mime_type' => $audioFile->type,
+            ];
+
+            $targetPath = $uploader->uploadPath . $attachment['file_name'];
+            if (move_uploaded_file($audioFile->tempName, $targetPath)) {
+                $attachment['file_path'] = '/uploads/chats/' . $attachment['file_name'];
+            } else {
+                throw new \Exception("Не удалось переместить аудио файл: " . $audioFile->name);
+            }
+
+            $attachments[] = $attachment;
+        }
+        return $attachments;
     }
 }
