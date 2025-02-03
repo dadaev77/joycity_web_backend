@@ -26,6 +26,7 @@ use yii\db\Expression;
  */
 class Message extends ActiveRecord
 {
+    public $attachments = [];
     private static $supportedLanguages = ['en', 'ru', 'zh'];
     /**
      * {@inheritdoc}
@@ -87,6 +88,19 @@ class Message extends ActiveRecord
         }
         if ($this->attachments !== null) {
             $this->attachments = json_decode($this->attachments, true);
+        }
+
+        // Проверяем наличие вложений и добавляем их к модели
+        if ($this->getAttachments()->count() > 0) {
+            $this->attachments = array_map(function ($attachment) {
+                return [
+                    'created_at' => $attachment->created_at,
+                    'file_name' => $attachment->file_name,
+                    'file_path' => $attachment->file_path,
+                    'file_size' => $attachment->file_size,
+                    'file_type' => $attachment->mime_type,
+                ];
+            }, $this->getAttachments()->all());
         }
     }
 
@@ -159,5 +173,10 @@ class Message extends ActiveRecord
                 'value' => new Expression('NOW()'),
             ],
         ];
+    }
+
+    public function getAttachments()
+    {
+        return $this->hasMany(ChatAttachment::class, ['message_id' => 'id']);
     }
 }
