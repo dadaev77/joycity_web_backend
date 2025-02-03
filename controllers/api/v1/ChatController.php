@@ -248,7 +248,7 @@ class ChatController extends V1Controller
             }
         }
 
-        Yii::$app->telegramLog->send('success', json_encode($uploadedTypes), 'dev');
+        Yii::$app->telegramLog->send('success', json_encode($uploadedAttachments), 'dev');
 
         if (!$chatId) {
             throw new BadRequestHttpException('Необходимо указать chat_id');
@@ -270,15 +270,17 @@ class ChatController extends V1Controller
         }
 
         try {
-            $message = MessageService::createMessage(
-                $chatId,
-                $userId,
-                $messageType,
-                $content,
-                null,
-                $replyToId,
-                $uploadedAttachments
-            );
+
+            $message = MessageService::createMessage([
+                'chat_id' => $chatId,
+                'user_id' => $userId,
+                'type' => $messageType,
+                'content' => $content,
+                'reply_to_id' => $replyToId,
+                'attachments' => $uploadedAttachments,
+            ]);
+
+
             // Обновляем last_message_id в чате
             $chat->last_message_id = $message->id;
             $chat->save();
