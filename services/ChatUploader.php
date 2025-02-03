@@ -18,6 +18,8 @@ class ChatUploader
     }
     public static function uploadImages(array $images)
     {
+        $uploader = new self();
+
         $attachments = [];
         foreach ($images as $image) {
             $attachment = new ChatAttachment();
@@ -27,7 +29,7 @@ class ChatUploader
             $attachment->file_size = $image->size;
             $attachment->mime_type = $image->type;
 
-            $targetPath = $this->uploadPath . $attachment->file_name;
+            $targetPath = $uploader->uploadPath . $attachment->file_name;
             if (move_uploaded_file($image->tempName, $targetPath)) {
                 $attachment->file_path = $targetPath;
             } else {
