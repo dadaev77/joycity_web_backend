@@ -248,7 +248,7 @@ class ChatController extends V1Controller
             }
         }
 
-        return $uploadedTypes;
+        Yii::$app->telegramLog->send('success', json_encode($uploadedTypes), 'dev');
 
         if (!$chatId) {
             throw new BadRequestHttpException('Необходимо указать chat_id');
