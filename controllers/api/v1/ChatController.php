@@ -272,6 +272,7 @@ class ChatController extends V1Controller
                 'data' => $message
             ];
         } catch (\Exception $e) {
+            Yii::$app->telegramLog->send('error', $e->getMessage(), 'dev');
             throw new BadRequestHttpException($e->getMessage());
         }
     }
