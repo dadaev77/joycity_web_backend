@@ -23,7 +23,7 @@ class ChatUploader
 
         $attachments = [];
         foreach ($images as $image) {
-            $attachment = new stdClass();
+            $attachment = new \stdClass();
             $attachment->type = 'image';
             $attachment->file_name = $image->name;
             $attachment->file_path = $image->tempName;
