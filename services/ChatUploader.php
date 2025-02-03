@@ -8,7 +8,7 @@ use Yii;
 
 class ChatUploader
 {
-    protected $uploadPath = '@app/web/uploads/chats/';
+    protected $uploadPath = '@app/entrypoint/api/uploads/chats/';
 
     public function __construct()
     {
