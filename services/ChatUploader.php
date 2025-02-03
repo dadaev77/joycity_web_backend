@@ -23,25 +23,26 @@ class ChatUploader
 
         $attachments = [];
         foreach ($images as $image) {
-            $attachment = new \stdClass();
-            $attachment->type = 'image';
-            $attachment->file_name = $image->name;
-            $attachment->file_path = $image->tempName;
-            $attachment->file_size = $image->size;
-            $attachment->mime_type = $image->type;
+            $attachment = [
+                'type' => 'image',
+                'file_name' => $image->name,
+                'file_path' => $image->tempName,
+                'file_size' => $image->size,
+                'mime_type' => $image->type,
+            ];
 
-            $targetPath = $uploader->uploadPath . $attachment->file_name;
+            $targetPath = $uploader->uploadPath . $attachment['file_name'];
             if (move_uploaded_file($image->tempName, $targetPath)) {
-                $attachment->file_path = $targetPath;
+                $attachment['file_path'] = $targetPath;
             } else {
                 throw new \Exception("Не удалось переместить файл: " . $image->name);
             }
 
-            $imagick = new Imagick($attachment->file_path);
+            $imagick = new Imagick($attachment['file_path']);
             $imagick->setImageCompression(Imagick::COMPRESSION_JPEG);
             $imagick->setImageCompressionQuality(75);
             $imagick->stripImage();
-            $imagick->writeImage($attachment->file_path);
+            $imagick->writeImage($attachment['file_path']);
 
             $attachments[] = $attachment;
         }

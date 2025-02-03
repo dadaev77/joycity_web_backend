@@ -21,6 +21,7 @@ class MessageService
      * @param string|null $content
      * @param array|null $metadata
      * @param bigint|null $replyToId
+     * @param array|null $attachments
      * @return Message
      */
     public static function createMessage(
@@ -36,10 +37,9 @@ class MessageService
             'chat_id' => $chatId,
             'user_id' => $userId,
             'content' => self::translateMessage($content),
-            'metadata' => [] + $metadata,
+            'metadata' => $metadata ? json_encode($metadata) : null,
             'reply_to_id' => $replyToId,
             'status' => 'delivered',
-            'attachments' => $attachments,
         ]);
         $message->type = $type;
 
