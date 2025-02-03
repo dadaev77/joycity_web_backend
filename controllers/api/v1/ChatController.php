@@ -12,6 +12,7 @@ use Yii;
 use yii\data\Pagination;
 use yii\filters\AccessControl;
 use yii\web\BadRequestHttpException;
+use yii\web\UploadedFile;
 
 class ChatController extends V1Controller
 {
@@ -226,8 +227,8 @@ class ChatController extends V1Controller
      */
     public function actionSendMessage()
     {
-        Yii::$app->telegramLog->send('success', json_encode(Yii::$app->request->post()), 'dev');
-
+        $images = UploadedFile::getInstancesByName('images');
+        Yii::$app->telegramLog->send('success', json_encode($images), 'dev');
         $chatId = Yii::$app->request->post('chat_id');
         $content = Yii::$app->request->post('content');
         $type = Yii::$app->request->post('type', 'text');
