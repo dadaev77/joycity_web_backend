@@ -276,9 +276,9 @@ class ChatController extends V1Controller
                 $messageType,
                 $content,
                 null,
-                $replyToId
+                $replyToId,
+                $uploadedAttachments
             );
-            $message->attachments = $uploadedAttachments;
             // Обновляем last_message_id в чате
             $chat->last_message_id = $message->id;
             $chat->save();
