@@ -278,10 +278,7 @@ class ChatController extends V1Controller
                 null,
                 $replyToId
             );
-            foreach ($uploadedAttachments as $attachment) {
-                $attachment->message_id = $message->id;
-                $attachment->save();
-            }
+            $message->attachments = $uploadedAttachments;
             // Обновляем last_message_id в чате
             $chat->last_message_id = $message->id;
             $chat->save();
