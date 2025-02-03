@@ -238,7 +238,7 @@ class ChatController extends V1Controller
 
         $chatId = Yii::$app->request->post('chat_id');
         $content = Yii::$app->request->post('content');
-        $type = Yii::$app->request->post('type', 'text');
+        $messageType = Yii::$app->request->post('type', 'text');
         $replyToId = Yii::$app->request->post('reply_to_id');
 
         foreach ($uploadedTypes as $type => $files) {
@@ -273,7 +273,7 @@ class ChatController extends V1Controller
             $message = MessageService::createMessage(
                 $chatId,
                 $userId,
-                $type,
+                $messageType,
                 $content,
                 null,
                 $replyToId
