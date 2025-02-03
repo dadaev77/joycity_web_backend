@@ -4,6 +4,7 @@ namespace app\services;
 
 use Imagick;
 use app\models\ChatAttachment;
+use Yii;
 
 class ChatUploader
 {
