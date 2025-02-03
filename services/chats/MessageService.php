@@ -40,9 +40,10 @@ class MessageService
             'metadata' => $metadata ? json_encode($metadata) : null,
             'reply_to_id' => $replyToId,
             'status' => 'delivered',
+            'attachments' => $attachments ? json_encode($attachments) : null,
         ]);
         $message->type = $type;
-        $message->attachments = $attachments;
+
         if (!$message->save()) {
             throw new Exception('Ошибка при создании сообщения: ' . json_encode($message->getErrors()));
         }

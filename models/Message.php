@@ -67,8 +67,8 @@ class Message extends ActiveRecord
         }
 
         // Сохраняем вложения в JSON
-        if (!empty($this->_attachments)) {
-            $this->attachments = json_encode($this->_attachments);
+        if (is_array($this->attachments)) {
+            $this->attachments = json_encode($this->attachments);
         }
 
         return true;
@@ -88,7 +88,7 @@ class Message extends ActiveRecord
             $this->content = json_decode($this->content, true);
         }
         if ($this->attachments !== null) {
-            $this->_attachments = json_decode($this->attachments, true);
+            $this->attachments = json_decode($this->attachments, true);
         }
     }
 
