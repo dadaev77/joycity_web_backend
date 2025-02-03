@@ -241,10 +241,14 @@ class ChatController extends V1Controller
         $messageType = Yii::$app->request->post('type', 'text');
         $replyToId = Yii::$app->request->post('reply_to_id');
 
+        $uploadedAttachments = [];
         foreach ($uploadedTypes as $type => $files) {
             if ($files) {
                 $methodName = 'upload' . ucfirst($type);
-                $uploadedAttachments = call_user_func([ChatUploader::class, $methodName], $files);
+                $result = call_user_func([ChatUploader::class, $methodName], $files);
+                if (!empty($result)) {
+                    $uploadedAttachments = array_merge($uploadedAttachments, $result);
+                }
             }
         }
 

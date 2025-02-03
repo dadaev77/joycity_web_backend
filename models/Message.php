@@ -26,8 +26,21 @@ use yii\db\Expression;
  */
 class Message extends ActiveRecord
 {
-    public $attachments = [];
-    private static $supportedLanguages = ['en', 'ru', 'zh'];
+    /**
+     * @var array Массив вложений
+     */
+    private $_attachments = [];
+
+    public function getAttachments()
+    {
+        return $this->_attachments;
+    }
+
+    public function setAttachments($value)
+    {
+        $this->_attachments = $value;
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -66,8 +79,9 @@ class Message extends ActiveRecord
             $this->metadata = json_encode($this->metadata);
         }
 
-        if (is_array($this->attachments)) {
-            $this->attachments = json_encode($this->attachments);
+        // Сохраняем вложения в JSON
+        if (!empty($this->_attachments)) {
+            $this->attachments = json_encode($this->_attachments);
         }
 
         return true;
@@ -87,7 +101,7 @@ class Message extends ActiveRecord
             $this->content = json_decode($this->content, true);
         }
         if ($this->attachments !== null) {
-            $this->attachments = json_decode($this->attachments, true);
+            $this->_attachments = json_decode($this->attachments, true);
         }
     }
 
