@@ -43,7 +43,7 @@ class ChatUploader
             $imagick->setImageCompressionQuality(75);
             $imagick->stripImage();
             $imagick->writeImage($attachment['file_path']);
-            $attachment['file_path'] = '/entrypoint/api/uploads/chats/' . $attachment['file_name'];
+            $attachment['file_path'] = '/uploads/chats/' . $attachment['file_name'];
 
             $attachments[] = $attachment;
         }
