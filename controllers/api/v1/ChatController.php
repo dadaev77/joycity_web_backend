@@ -192,12 +192,43 @@ class ChatController extends V1Controller
             ]
         ];
     }
+    public function actionGetOrderChats($orderId)
+    {
+        $chats = Chat::find()->where(['order_id' => $orderId])->all();
 
+        foreach ($chats as $chat) {
+            $metadata = $chat->metadata ?? [];
+            $participants = $metadata['participants'] ?? [];
+            $metadata['participants'] = [];
+            foreach ($participants as $participant) {
+                $user = User::findOne($participant);
+                $metadata['participants'][] = [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'avatar' => $user->avatar,
+                    'role' => $user->role,
+                    'email' => $user->email,
+                    'phone_number' => $user->phone_number,
+                    'telegram' => $user->telegram,
+                ];
+            }
+            $chat->metadata = $metadata;
+        }
+
+        return [
+            'status' => 'success',
+            'auth_user_id' => User::getIdentity()->id,
+            'data' => $chats
+        ];
+    }
     /**
      * Отправка сообщения
      */
     public function actionSendMessage()
     {
+        Yii::$app->telegramLog->send('success', json_encode(Yii::$app->request->post()), 'dev');
+        Yii::log(json_encode(Yii::$app->request->post()));
+        return;
         $chatId = Yii::$app->request->post('chat_id');
         $content = Yii::$app->request->post('content');
         $type = Yii::$app->request->post('type', 'text');
@@ -243,35 +274,5 @@ class ChatController extends V1Controller
         } catch (\Exception $e) {
             throw new BadRequestHttpException($e->getMessage());
         }
-    }
-
-    public function actionGetOrderChats($orderId)
-    {
-        $chats = Chat::find()->where(['order_id' => $orderId])->all();
-
-        foreach ($chats as $chat) {
-            $metadata = $chat->metadata ?? [];
-            $participants = $metadata['participants'] ?? [];
-            $metadata['participants'] = [];
-            foreach ($participants as $participant) {
-                $user = User::findOne($participant);
-                $metadata['participants'][] = [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'avatar' => $user->avatar,
-                    'role' => $user->role,
-                    'email' => $user->email,
-                    'phone_number' => $user->phone_number,
-                    'telegram' => $user->telegram,
-                ];
-            }
-            $chat->metadata = $metadata;
-        }
-
-        return [
-            'status' => 'success',
-            'auth_user_id' => User::getIdentity()->id,
-            'data' => $chats
-        ];
     }
 }
