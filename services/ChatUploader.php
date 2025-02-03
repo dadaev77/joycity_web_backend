@@ -48,11 +48,11 @@ class ChatUploader
                 throw new \Exception("Не удалось переместить файл: " . $image->name);
             }
 
-            $imagick = new Imagick($attachment['file_path']);
+            $imagick = new Imagick($targetPath);
             $imagick->setImageCompression(Imagick::COMPRESSION_JPEG);
             $imagick->setImageCompressionQuality(75);
             $imagick->stripImage();
-            $imagick->writeImage($attachment['file_path']);
+            $imagick->writeImage($targetPath);
             $attachment['file_path'] = '/uploads/chats/' . $attachment['file_name'];
 
             $attachments[] = $attachment;
