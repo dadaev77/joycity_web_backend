@@ -259,7 +259,7 @@ class RawController extends Controller
 
     public function actionTest()
     {
-        $message = MessageService::createMessage(1, 2, 'text', 'asdasd', [], null, [['type' => 'image', 'file_name' => 'asdasd', 'file_path' => 'asdasd', 'file_size' => 123, 'mime_type' => 'image/png']]);
-        $message->save();
+        $message = \app\models\Message::findOne(7);
+        return $message;
     }
 }
