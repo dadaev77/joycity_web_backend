@@ -13,6 +13,8 @@ use yii\data\Pagination;
 use yii\filters\AccessControl;
 use yii\web\BadRequestHttpException;
 use yii\web\UploadedFile;
+use app\services\ChatUploader;
+
 
 class ChatController extends V1Controller
 {
@@ -227,12 +229,24 @@ class ChatController extends V1Controller
      */
     public function actionSendMessage()
     {
-        $images = UploadedFile::getInstancesByName('images');
-        Yii::$app->telegramLog->send('success', json_encode($images), 'dev');
+        $uploadedTypes = [
+            'images' => UploadedFile::getInstancesByName('images'),
+            'videos' => UploadedFile::getInstancesByName('videos'),
+            'files' => UploadedFile::getInstancesByName('files'),
+            'audios' => UploadedFile::getInstancesByName('audios'),
+        ];
+
         $chatId = Yii::$app->request->post('chat_id');
         $content = Yii::$app->request->post('content');
         $type = Yii::$app->request->post('type', 'text');
         $replyToId = Yii::$app->request->post('reply_to_id');
+
+        foreach ($uploadedTypes as $type => $files) {
+            if ($files) {
+                $methodName = 'upload' . ucfirst($type);
+                $uploadedTypes[$type] = call_user_func([ChatUploader::class, $methodName], $files);
+            }
+        }
 
         if (!$chatId || !$content) {
             throw new BadRequestHttpException('Необходимо указать chat_id и content');
