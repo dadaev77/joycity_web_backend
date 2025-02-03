@@ -9,6 +9,13 @@ class ChatUploader
 {
     protected $uploadPath = '@app/web/uploads/chats/';
 
+    public function __construct()
+    {
+        $this->uploadPath = Yii::getAlias($this->uploadPath);
+        if (!is_dir($this->uploadPath)) {
+            mkdir($this->uploadPath, 0777, true);
+        }
+    }
     public static function uploadImages(array $images)
     {
         $attachments = [];
