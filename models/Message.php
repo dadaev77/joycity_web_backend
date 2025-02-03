@@ -26,20 +26,7 @@ use yii\db\Expression;
  */
 class Message extends ActiveRecord
 {
-    /**
-     * @var array Массив вложений
-     */
-    private $_attachments = [];
 
-    public function getAttachments()
-    {
-        return $this->_attachments;
-    }
-
-    public function setAttachments($value)
-    {
-        $this->_attachments = $value;
-    }
 
     /**
      * {@inheritdoc}

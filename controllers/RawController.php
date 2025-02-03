@@ -259,15 +259,7 @@ class RawController extends Controller
 
     public function actionTest()
     {
-        ChatService::createGroupChat('asdasd', 132, 32, ['participants' => [31, 5]]);
-        ChatService::createGroupChat('asdasd', 132, 12, ['participants' => [31, 5]]);
-        ChatService::createGroupChat('asdasd', 132, 22, ['participants' => [31, 5]]);
-        ChatService::createGroupChat('asdasd', 132, 43, ['participants' => [31, 5]]);
-        ChatService::createGroupChat('asdasd', 132, 24, ['participants' => [31, 5]]);
-        ChatService::createGroupChat('asdasd', 132, 67, ['participants' => [31, 5]]);
-        ChatService::createGroupChat('asdasd', 132, 36, ['participants' => [31, 5]]);
-        ChatService::createGroupChat('asdasd', 132, 3567, ['participants' => [31, 5]]);
-        ChatService::createGroupChat('asdasd', 132, 5672, ['participants' => [31, 5]]);
-        ChatService::createGroupChat('asdasd', 132, 4432, ['participants' => [31, 5]]);
+        $message = MessageService::createMessage(1, 2, 'text', 'asdasd', [], null, [['type' => 'image', 'file_name' => 'asdasd', 'file_path' => 'asdasd', 'file_size' => 123, 'mime_type' => 'image/png']]);
+        $message->save();
     }
 }

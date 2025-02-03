@@ -42,7 +42,7 @@ class MessageService
             'status' => 'delivered',
         ]);
         $message->type = $type;
-
+        $message->attachments = $attachments;
         if (!$message->save()) {
             throw new Exception('Ошибка при создании сообщения: ' . json_encode($message->getErrors()));
         }
