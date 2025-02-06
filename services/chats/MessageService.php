@@ -6,11 +6,19 @@ use app\models\Message;
 use yii\web\NotFoundHttpException;
 use yii\db\Exception;
 use yii\db\Expression;
+use app\services\TranslationService;
 use Yii;
 
 class MessageService
 {
     private static $supportedLanguages = ['en', 'ru', 'cn'];
+    private $translator;
+
+
+    public function __construct()
+    {
+        $this->translator = new TranslationService();
+    }
 
     /**
      * Создать новое сообщение
@@ -127,12 +135,7 @@ class MessageService
      */
     private static function translateMessage($text)
     {
-        // TODO: Implement translation logic
-        return [
-            'en' => $text,
-            'ru' => $text,
-            'es' => $text,
-        ];
+        return $this->translator->translate($text);
     }
 
     /**
