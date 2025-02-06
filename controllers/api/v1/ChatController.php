@@ -366,11 +366,11 @@ class ChatController extends V1Controller
     /**
      * Отметить сообщения как прочитанные
      */
-    public function actionMarkAsRead($messageId)
+    public function actionMarkAsRead()
     {
         $userId = User::getIdentity()->id;
+        $messageId = Yii::$app->request->post('message_id');
         $message = Message::findOne($messageId);
-
         if (!$message) {
             throw new BadRequestHttpException('Сообщение не найдено');
         }
