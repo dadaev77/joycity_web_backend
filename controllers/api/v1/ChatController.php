@@ -56,7 +56,7 @@ class ChatController extends V1Controller
     public function actionGetChats()
     {
         $userId = User::getIdentity()->id;
-
+        Yii::$app->telegramLog->send('success', json_encode($userId));
         $query = Chat::find()
             ->where(['user_id' => $userId])
             ->orWhere(['=', 'metadata', json_encode(['participants' => $userId])])
