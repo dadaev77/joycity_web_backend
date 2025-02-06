@@ -64,6 +64,20 @@ class ChatController extends V1Controller
         return $unreadMessages;
     }
 
+    public function actionGetUnreadMessages()
+    {
+        $userId = User::getIdentity()->id;
+        $chats = Chat::find()->where(['user_id' => $userId])->all();
+        $unreadMessages = 0;
+        foreach ($chats as $chat) {
+            $unreadMessages += $this->calculateUnreadMessages($chat, $userId);
+        }
+        return [
+            'status' => 'success',
+            'auth_user_id' => User::getIdentity()->id,
+            'data' => $unreadMessages
+        ];
+    }
     /**
      * Получить список чатов текущего пользователя
      */
@@ -233,7 +247,7 @@ class ChatController extends V1Controller
     {
         $chats = Chat::find()->where(['order_id' => $orderId])->all();
         $userId = User::getIdentity()->id;
-        
+
         foreach ($chats as $chat) {
             $metadata = $chat->metadata ?? [];
             $participants = $metadata['participants'] ?? [];
