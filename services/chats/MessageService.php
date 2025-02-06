@@ -7,7 +7,6 @@ use yii\web\NotFoundHttpException;
 use yii\db\Exception;
 use yii\db\Expression;
 use Yii;
-use app\services\TranslationService;
 
 class MessageService
 {
@@ -128,11 +127,10 @@ class MessageService
      */
     private static function translateMessage($text)
     {
-        $translator = new TranslationService();
-        // получаем json и декодируем его в массив
-        $result = json_encode($translator->translate($text), true);
-        Yii::$app->telegramLog->send('success',$result);
-        // возвращаем массив с ключами en, ru, cn
+        $translator = new \app\services\TranslationService();
+        $result = $translator->translate($text);
+        $result = json_decode($result, true);
+        Yii::$app->telegramLog->send('success', $result);
         return [
             'en' => $result['en'],
             'ru' => $result['ru'],
