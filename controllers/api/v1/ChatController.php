@@ -359,4 +359,41 @@ class ChatController extends V1Controller
             throw new BadRequestHttpException($e->getMessage());
         }
     }
+
+    /**
+     * Отметить сообщения как прочитанные
+     */
+    public function actionMarkAsRead($messageId)
+    {
+        $userId = User::getIdentity()->id;
+        $message = Message::findOne($messageId);
+
+        if (!$message) {
+            throw new BadRequestHttpException('Сообщение не найдено');
+        }
+
+        $chat = $message->chat;
+        $metadata = $chat->metadata ?? [];
+        $participants = $metadata['participants'] ?? [];
+
+        if (!in_array($userId, $participants)) {
+            throw new BadRequestHttpException('У вас нет доступа к этому чату');
+        }
+
+        $messages = $chat->messages;
+        foreach ($messages as $message) {            
+            $messageMetadata = $message->metadata ?? [];
+            if (!in_array($userId, $messageMetadata['read_by'])) {
+                $messageMetadata['read_by'][] = $userId;
+                $message->metadata = $messageMetadata;
+                $message->save();
+            }
+        }
+
+        return [
+            'status' => 'success',
+            'message' => 'Сообщения отмечены как прочитанные'
+        ];
+
+    }
 }
