@@ -25,6 +25,34 @@ class ChatUploader
         return $baseName . '_' . uniqid() . '.' . $extension;
     }
 
+    public static function uploadAudios(array $audio)
+    {
+        $uploader = new self();
+
+        $attachments = [];
+        foreach ($audio as $audioFile) {
+            $uniqueName = self::generateUniqueFileName($audioFile->name);
+            $attachment = [
+                'type' => 'audio',
+                'original_name' => $audioFile->name,
+                'file_name' => $uniqueName,
+                'file_path' => $audioFile->tempName,
+                'file_size' => $audioFile->size,
+                'mime_type' => $audioFile->type,
+            ];
+
+            $targetPath = $uploader->uploadPath . $attachment['file_name'];
+            if (move_uploaded_file($audioFile->tempName, $targetPath)) {
+                $attachment['file_path'] = '/uploads/chats/' . $attachment['file_name'];
+            } else {
+                throw new \Exception("Не удалось переместить аудио файл: " . $audioFile->name);
+            }
+
+            $attachments[] = $attachment;
+        }
+        return $attachments;
+    }
+
     public static function uploadImages(array $images)
     {
         $uploader = new self();
@@ -61,33 +89,30 @@ class ChatUploader
     }
     public static function uploadVideos(array $videos)
     {
+        // TODO: Implement uploadVideos() method after.
         return $videos;
     }
     public static function uploadFiles(array $files)
     {
-        return $files;
-    }
-    public static function uploadAudios(array $audio)
-    {
         $uploader = new self();
 
         $attachments = [];
-        foreach ($audio as $audioFile) {
-            $uniqueName = self::generateUniqueFileName($audioFile->name);
+        foreach ($files as $file) {
+            $uniqueName = self::generateUniqueFileName($file->name);
             $attachment = [
-                'type' => 'audio',
-                'original_name' => $audioFile->name,
+                'type' => 'file',
+                'original_name' => $file->name,
                 'file_name' => $uniqueName,
-                'file_path' => $audioFile->tempName,
-                'file_size' => $audioFile->size,
-                'mime_type' => $audioFile->type,
+                'file_path' => $file->tempName,
+                'file_size' => $file->size,
+                'mime_type' => $file->type,
             ];
 
             $targetPath = $uploader->uploadPath . $attachment['file_name'];
-            if (move_uploaded_file($audioFile->tempName, $targetPath)) {
+            if (move_uploaded_file($file->tempName, $targetPath)) {
                 $attachment['file_path'] = '/uploads/chats/' . $attachment['file_name'];
             } else {
-                throw new \Exception("Не удалось переместить аудио файл: " . $audioFile->name);
+                throw new \Exception("Не удалось переместить файл: " . $file->name);
             }
 
             $attachments[] = $attachment;
