@@ -67,9 +67,19 @@ class ChatController extends V1Controller
     public function actionGetUnreadMessages()
     {
         $userId = User::getIdentity()->id;
-        $chats = Chat::find()->where(['user_id' => $userId])->all();
-        $unreadMessages = 0;
+        $userChats = [];
+        $chats = Chat::find()->all();
         foreach ($chats as $chat) {
+            $metadata = $chat->metadata ?? [];
+            $participants = $metadata['participants'] ?? [];
+            if (in_array($userId, $participants)) {
+                $userChats[] = $chat;
+            }
+        }
+
+        $unreadMessages = 0;
+        
+        foreach ($userChats as $chat) {
             $unreadMessages += $this->calculateUnreadMessages($chat, $userId);
         }
         return [
