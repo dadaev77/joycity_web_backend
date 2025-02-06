@@ -57,7 +57,7 @@ class ChatController extends V1Controller
     {
         $userId = User::getIdentity()->id;
         $filteredChats = [];
-        $chats = Chat::all()->orderBy(['updated_at' => SORT_DESC]);
+        $chats = Chat::find()->orderBy(['updated_at' => SORT_DESC])->all();
 
         foreach ($chats as $chat) {
             $metadata = $chat->metadata ?? [];
