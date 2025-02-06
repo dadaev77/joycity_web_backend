@@ -11,13 +11,12 @@ use Yii;
 
 class MessageService
 {
-    private static $supportedLanguages = ['en', 'ru', 'cn'];
-    private $translator;
+    private static $supportedLanguages = ['en', 'ru', 'zh'];
 
 
     public function __construct()
     {
-        $this->translator = new TranslationService();
+        //
     }
 
     /**
@@ -135,7 +134,8 @@ class MessageService
      */
     private static function translateMessage($text)
     {
-        return $this->translator->translate($text);
+        $translator = new TranslationService();
+        return $translator->translate($text);
     }
 
     /**
