@@ -56,7 +56,9 @@ class ChatController extends V1Controller
     public function actionGetChats()
     {
         $userId = User::getIdentity()->id;
+
         Yii::$app->telegramLog->send('success', 'Запрошены чаты для пользователя : ' . $userId);
+        
         $query = Chat::find()
             ->where(['user_id' => $userId])
             ->orWhere(['=', 'metadata', json_encode(['participants' => $userId])])
@@ -64,31 +66,37 @@ class ChatController extends V1Controller
 
         $chats = $query->all();
 
+        $filteredChats = [];
+
         foreach ($chats as $chat) {
             $metadata = $chat->metadata ?? [];
             $participants = $metadata['participants'] ?? [];
-            $metadata['participants'] = [];
+            if (in_array($userId, $participants)) {
+                $metadata['participants'] = [];
 
-            foreach ($participants as $participant) {
-                $user = User::findOne($participant);
-                $metadata['participants'][] = [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'avatar' => $user->avatar,
-                    'role' => $user->role,
-                    'email' => $user->email,
-                    'phone_number' => $user->phone_number,
-                    'telegram' => $user->telegram,
-                ];
+                foreach ($participants as $participant) {
+                    $user = User::findOne($participant);
+                    $metadata['participants'][] = [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'avatar' => $user->avatar,
+                        'role' => $user->role,
+                        'email' => $user->email,
+                        'phone_number' => $user->phone_number,
+                        'telegram' => $user->telegram,
+                    ];
+                }
+                $metadata['last_message'] = $this->getLastMessage($chat);
+                $chat->metadata = $metadata;
+
+                $filteredChats[] = $chat;
             }
-            $metadata['last_message'] = $this->getLastMessage($chat);
-            $chat->metadata = $metadata;
         }
 
         return [
             'status' => 'success',
             'auth_user_id' => User::getIdentity()->id,
-            'data' => $chats
+            'data' => $filteredChats 
         ];
     }
 
