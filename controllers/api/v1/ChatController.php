@@ -45,6 +45,11 @@ class ChatController extends V1Controller
         return $behaviours;
     }
 
+    private function getLastMessage($chat)
+    {
+        return Message::findOne($chat->last_message_id) ?? null;
+    }
+
     /**
      * Получить список чатов текущего пользователя
      */
@@ -64,9 +69,6 @@ class ChatController extends V1Controller
             $participants = $metadata['participants'] ?? [];
             $metadata['participants'] = [];
 
-            $lastMessage = Message::findOne($chat->last_message_id);
-            $metadata['last_message'] = $lastMessage ? $lastMessage : null;
-
             foreach ($participants as $participant) {
                 $user = User::findOne($participant);
                 $metadata['participants'][] = [
@@ -79,6 +81,7 @@ class ChatController extends V1Controller
                     'telegram' => $user->telegram,
                 ];
             }
+            $metadata['last_message'] = $this->getLastMessage($chat);
             $chat->metadata = $metadata;
         }
 
@@ -136,6 +139,7 @@ class ChatController extends V1Controller
                         'telegram' => $user->telegram,
                     ];
                 }
+                $metadata['last_message'] = $this->getLastMessage($orderChat);
                 $orderChat->metadata = $metadata;
             }
 
@@ -219,6 +223,7 @@ class ChatController extends V1Controller
                     'telegram' => $user->telegram,
                 ];
             }
+            $metadata['last_message'] = $this->getLastMessage($chat);
             $chat->metadata = $metadata;
         }
 
