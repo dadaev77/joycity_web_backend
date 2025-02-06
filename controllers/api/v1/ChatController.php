@@ -62,11 +62,24 @@ class ChatController extends V1Controller
         foreach ($chats as $chat) {
             $metadata = $chat->metadata ?? [];
             $participants = $metadata['participants'] ?? [];
+            $chatMessages = $chat->messages ?? [];
+            $unreadMessages = 0;
+            foreach ($chatMessages as $message) {
+                $messageMetadata = $message->metadata ?? [];
+                $readBy = $messageMetadata['read_by'] ?? [];
+                if (!in_array($userId, $readBy)) {
+                    $unreadMessages++;
+                }
+            }
+
+            $metadata['unread_messages'] = $unreadMessages;
+            $chat->metadata = $metadata;
+            
             if (in_array($userId, $participants)) {
                 $filteredChats[] = $chat;
             }
         }
-
+        
         foreach ($filteredChats as $chat) {
             $metadata = $chat->metadata ?? [];
             $participants = $metadata['participants'] ?? [];
