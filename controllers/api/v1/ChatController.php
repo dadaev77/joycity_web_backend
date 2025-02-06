@@ -211,7 +211,7 @@ class ChatController extends V1Controller
     /**
      * Просмотр сообщений с пагинацией
      */
-    public function actionGetMessages($chatId, $messageId = null, $perPage = 100)
+    public function actionGetMessages($chatId, $messageId = null, $perPage = 100, $page = 1)
     {
         $chat = Chat::findOne($chatId);
         if (!$chat) {
@@ -235,6 +235,7 @@ class ChatController extends V1Controller
             ->orderBy(['created_at' => SORT_DESC]);
 
         $countQuery = clone $query;
+        
         $pages = new Pagination([
             'totalCount' => $countQuery->count(),
             'pageSize' => $perPage,
