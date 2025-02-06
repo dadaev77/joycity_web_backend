@@ -211,7 +211,7 @@ class ChatController extends V1Controller
     /**
      * Просмотр сообщений с пагинацией
      */
-    public function actionGetMessages($chatId, $page = 1, $perPage = 100)
+    public function actionGetMessages($chatId, $messageId = null, $perPage = 100)
     {
         $chat = Chat::findOne($chatId);
         if (!$chat) {
@@ -223,12 +223,15 @@ class ChatController extends V1Controller
         $metadata = $chat->metadata ?? [];
         $participants = $metadata['participants'] ?? [];
 
-        if ($chat->user_id !== $userId && !in_array($userId, $participants)) {
+        if ($userId && !in_array($userId, $participants)) {
             throw new BadRequestHttpException('У вас нет доступа к этому чату');
         }
 
+        if (!$messageId) throw new BadRequestHttpException('Необходимо указать message_id');
+
         $query = Message::find()
             ->where(['chat_id' => $chatId])
+            ->andWhere(['<', 'id', $messageId])
             ->orderBy(['created_at' => SORT_DESC]);
 
         $countQuery = clone $query;
