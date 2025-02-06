@@ -127,19 +127,14 @@ class MessageService
      */
     private static function translateMessage($text)
     {
-        // $translator = new \app\services\TranslationService();
-        // $result = $translator->translate($text);
-        // $translateResult = $result->result;
+        $translator = new \app\services\TranslationService();
+        $result = $translator->translate($text);
+        $translateResult = $result->result;
         // Yii::$app->telegramLog->send('success', json_encode($translateResult));
-        // return [
-        //     'en' => $translateResult['en'],
-        //     'ru' => $translateResult['ru'],
-        //     'zh' => $translateResult['zh'],
-        // ];
         return [
-            'en' => $text,
-            'ru' => $text,
-            'zh' => $text,
+            'en' => $translateResult['en'],
+            'ru' => $translateResult['ru'],
+            'zh' => $translateResult['zh'],
         ];
     }
 
