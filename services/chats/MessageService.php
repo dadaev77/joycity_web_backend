@@ -6,18 +6,12 @@ use app\models\Message;
 use yii\web\NotFoundHttpException;
 use yii\db\Exception;
 use yii\db\Expression;
-use app\services\TranslationService;
 use Yii;
+use app\services\TranslationService;
 
 class MessageService
 {
-    private static $supportedLanguages = ['en', 'ru', 'zh'];
-
-
-    public function __construct()
-    {
-        //
-    }
+    private static $supportedLanguages = ['en', 'ru', 'cn'];
 
     /**
      * Создать новое сообщение
@@ -135,7 +129,14 @@ class MessageService
     private static function translateMessage($text)
     {
         $translator = new TranslationService();
-        return $translator->translate($text);
+        // получаем json и декодируем его в массив
+        $result = json_decode($translator->translate($text), true);
+        // возвращаем массив с ключами en, ru, cn
+        return [
+            'en' => $result['en'],
+            'ru' => $result['ru'],
+            'zh' => $result['zh'],
+        ];
     }
 
     /**
