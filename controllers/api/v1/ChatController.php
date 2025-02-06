@@ -232,7 +232,8 @@ class ChatController extends V1Controller
     public function actionGetOrderChats($orderId)
     {
         $chats = Chat::find()->where(['order_id' => $orderId])->all();
-
+        $userId = User::getIdentity()->id;
+        
         foreach ($chats as $chat) {
             $metadata = $chat->metadata ?? [];
             $participants = $metadata['participants'] ?? [];
