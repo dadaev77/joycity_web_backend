@@ -59,7 +59,7 @@ class ChatController extends V1Controller
 
         $query = Chat::find()
             ->where(['user_id' => $userId])
-            ->orWhere(['like', 'metadata', json_encode(['participants' => $userId])])
+            ->orWhere(['=', 'metadata', json_encode(['participants' => $userId])])
             ->orderBy(['updated_at' => SORT_DESC]);
 
         $chats = $query->all();
