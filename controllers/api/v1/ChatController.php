@@ -26,6 +26,8 @@ class ChatController extends V1Controller
         $behaviours['verbFilter']['actions']['get-verification-chats'] = ['get'];
         $behaviours['verbFilter']['actions']['get-messages'] = ['get'];
         $behaviours['verbFilter']['actions']['send-message'] = ['post'];
+        $behaviours['verbFilter']['actions']['mark-as-read'] = ['put'];
+        $behaviours['verbFilter']['actions']['get-unread-messages'] = ['get'];
         $behaviours['access'] = [
             'class' => AccessControl::class,
             'rules' => [
