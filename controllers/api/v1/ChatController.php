@@ -292,7 +292,7 @@ class ChatController extends V1Controller
                 $userId,
                 $messageType,
                 $content,
-                [],
+                [ 'read_by' => [ $userId ] ],
                 $replyToId,
                 $uploadedAttachments,
             );
