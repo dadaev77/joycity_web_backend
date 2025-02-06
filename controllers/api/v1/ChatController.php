@@ -50,6 +50,20 @@ class ChatController extends V1Controller
         return Message::findOne($chat->last_message_id) ?? null;
     }
 
+    private function calculateUnreadMessages($chat, $userId)
+    {
+        $unreadMessages = 0;
+        $chatMessages = $chat->messages ?? [];
+        foreach ($chatMessages as $message) {
+            $messageMetadata = $message->metadata ?? [];
+            $readBy = $messageMetadata['read_by'] ?? [];
+            if (!in_array($userId, $readBy)) {
+                $unreadMessages++;
+            }
+        }
+        return $unreadMessages;
+    }
+
     /**
      * Получить список чатов текущего пользователя
      */
@@ -62,22 +76,14 @@ class ChatController extends V1Controller
         foreach ($chats as $chat) {
             $metadata = $chat->metadata ?? [];
             $participants = $metadata['participants'] ?? [];
-            $chatMessages = $chat->messages ?? [];
-            $unreadMessages = 0;
-            foreach ($chatMessages as $message) {
-                $messageMetadata = $message->metadata ?? [];
-                $readBy = $messageMetadata['read_by'] ?? [];
-                if (!in_array($userId, $readBy)) {
-                    $unreadMessages++;
-                }
-            }
-
-            $metadata['unread_messages'] = $unreadMessages;
+            $metadata['last_message'] = $this->getLastMessage($chat);
+            $metadata['unread_messages'] = $this->calculateUnreadMessages($chat, $userId);
             $chat->metadata = $metadata;
             
             if (in_array($userId, $participants)) {
                 $filteredChats[] = $chat;
             }
+
         }
         
         foreach ($filteredChats as $chat) {
@@ -97,7 +103,6 @@ class ChatController extends V1Controller
                     'telegram' => $user->telegram,
                 ];
             }
-            $metadata['last_message'] = $this->getLastMessage($chat);
             $chat->metadata = $metadata;
         }
 
@@ -134,6 +139,10 @@ class ChatController extends V1Controller
             if (!in_array($userId, $participants)) {
                 unset($chats[$key]);
             }
+            $unreadMessages = $this->calculateUnreadMessages($chat, $userId);
+            $metadata['unread_messages'] = $unreadMessages;
+            $chat->metadata = $metadata;
+
             $orderChats = Chat::find()->where(['order_id' => $chat->order_id])->all();
 
             foreach ($orderChats as $orderChat) {
@@ -156,6 +165,7 @@ class ChatController extends V1Controller
                     ];
                 }
                 $metadata['last_message'] = $this->getLastMessage($orderChat);
+                $metadata['unread_messages'] = $this->calculateUnreadMessages($orderChat, $userId);
                 $orderChat->metadata = $metadata;
             }
 
@@ -240,6 +250,7 @@ class ChatController extends V1Controller
                 ];
             }
             $metadata['last_message'] = $this->getLastMessage($chat);
+            $metadata['unread_messages'] = $this->calculateUnreadMessages($chat, $userId);
             $chat->metadata = $metadata;
         }
 
