@@ -63,6 +63,10 @@ class ChatController extends V1Controller
             $metadata = $chat->metadata ?? [];
             $participants = $metadata['participants'] ?? [];
             $metadata['participants'] = [];
+
+            $lastMessage = Message::findOne($chat->last_message_id);
+            $metadata['last_message'] = $lastMessage ? $lastMessage : null;
+
             foreach ($participants as $participant) {
                 $user = User::findOne($participant);
                 $metadata['participants'][] = [
