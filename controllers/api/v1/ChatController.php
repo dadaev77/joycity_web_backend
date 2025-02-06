@@ -28,6 +28,7 @@ class ChatController extends V1Controller
         $behaviours['verbFilter']['actions']['send-message'] = ['post'];
         $behaviours['verbFilter']['actions']['mark-as-read'] = ['put'];
         $behaviours['verbFilter']['actions']['get-unread-messages'] = ['get'];
+        $behaviours['verbFilter']['actions']['get-order-chats'] = ['get'];
         $behaviours['access'] = [
             'class' => AccessControl::class,
             'rules' => [
@@ -394,7 +395,7 @@ class ChatController extends V1Controller
 
         return [
             'status' => 'success',
-            'message' => 'Сообщения отмечены как прочитанные'
+            'message' => 'all messages in chat ' . $chat->id . ' marked as read'
         ];
 
     }
