@@ -130,7 +130,8 @@ class MessageService
     {
         $translator = new TranslationService();
         // получаем json и декодируем его в массив
-        $result = json_decode($translator->translate($text), true);
+        $result = json_encode($translator->translate($text), true);
+        Yii::$app->telegramLog->send('success',$result);
         // возвращаем массив с ключами en, ru, cn
         return [
             'en' => $result['en'],
