@@ -129,7 +129,7 @@ class MessageService
     {
         $translator = new \app\services\TranslationService();
         $result = $translator->translate($text);
-        $translateResult = $result['result'];
+        $translateResult = $result->result;
         Yii::$app->telegramLog->send('success', json_encode($translateResult));
         return [
             'en' => $translateResult['en'],
