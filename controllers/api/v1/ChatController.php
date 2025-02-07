@@ -422,6 +422,5 @@ class ChatController extends V1Controller
                 ],   
             ]
         ]);
-        return $response;
     }
 }
