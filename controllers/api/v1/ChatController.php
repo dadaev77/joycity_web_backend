@@ -358,13 +358,15 @@ class ChatController extends V1Controller
 
             foreach ($participants as $participant) {
                 if ($participant !== $userId) {
-                    self::socketHandler($participant, Message::findOne($message->id)->toArray());
+                    self::socketHandler($participant, Message::findOne($message->id) ? Message::findOne($message->id)->toArray() : null);
                 }
             }
+
             return [
                 'status' => 'success',
                 'data' => Message::findOne($message->id)
             ];
+
         } catch (\Exception $e) {
             Yii::$app->telegramLog->send('error', $e->getMessage(), 'dev');
             throw new BadRequestHttpException($e->getMessage());
