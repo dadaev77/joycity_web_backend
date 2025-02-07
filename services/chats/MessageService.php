@@ -130,20 +130,15 @@ class MessageService
      */
     private static function translateMessage($text)
     {
-        return [
-            'en' => $text,
-            'ru' => $text,
-            'zh' => $text,
-        ];
-        // $translator = new \app\services\TranslationService();
-        // $result = $translator->translate($text);
-        // $translateResult = $result->result;
+        $translator = new \app\services\TranslationService();
+        $result = $translator->translate($text);
+        $translateResult = $result->result;
         
-        // return [
-        //     'en' => $translateResult['en'],
-        //     'ru' => $translateResult['ru'],
-        //     'zh' => $translateResult['zh'],
-        // ];
+        return [
+            'en' => $translateResult['en'],
+            'ru' => $translateResult['ru'],
+            'zh' => $translateResult['zh'],
+        ];
     }
 
     /**

@@ -331,7 +331,6 @@ class ChatController extends V1Controller
 
         $userId = User::getIdentity()->id;
 
-        // Проверяем, является ли пользователь участником чата
         $metadata = $chat->metadata ?? [];
         $participants = $metadata['participants'] ?? [];
 
