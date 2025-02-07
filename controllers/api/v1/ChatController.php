@@ -18,6 +18,7 @@ use app\services\ChatUploader;
 
 class ChatController extends V1Controller
 {
+
     public function behaviors()
     {
         $behaviours = parent::behaviors();
@@ -353,7 +354,7 @@ class ChatController extends V1Controller
             // Обновляем last_message_id в чате
             $chat->last_message_id = $message->id;
             $chat->save();
-
+            self::socketHandler($userId, $message);
             return [
                 'status' => 'success',
                 'data' => $message
@@ -400,15 +401,19 @@ class ChatController extends V1Controller
         ];
 
     }
-    public function actionSendNotification(){
-        //
+
+    private static function socketHandler($userId, $message)
+    {
         $client = new \GuzzleHttp\Client();
+        $event_types = ['new_message', 'new_order', 'new_chat', 'new_review', 'new_task'];
+
         $response = $client->request('POST', $_ENV['APP_URL_NOTIFICATIONS'] . '/notification/send', [
             'json' => [
                 'notification' => [
-                    'user_id' => 260
-                ],
-                
+                    'type' => 'new_message',
+                    'user_id' => $userId,
+                    'message' => $message,
+                ],   
             ]
         ]);
         return $response;
