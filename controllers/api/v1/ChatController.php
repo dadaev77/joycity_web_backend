@@ -354,13 +354,14 @@ class ChatController extends V1Controller
             // Обновляем last_message_id в чате
             $chat->last_message_id = $message->id;
             $chat->save();
-            $participants = $metadata['participants'] ?? [];
 
-            foreach ($participants as $participant) {
-                if ($participant !== $userId) {
-                    self::socketHandler($participant, Message::findOne($message->id) ? Message::findOne($message->id)->toArray() : null);
-                }
-            }
+            // $participants = $metadata['participants'] ?? [];
+
+            // foreach ($participants as $participant) {
+            //     if ($participant !== $userId) {
+            //         self::socketHandler($participant, Message::findOne($message->id) ? Message::findOne($message->id)->toArray() : null);
+            //     }
+            // }
 
             return [
                 'status' => 'success',
