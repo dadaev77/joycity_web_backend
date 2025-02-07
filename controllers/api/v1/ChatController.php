@@ -358,7 +358,7 @@ class ChatController extends V1Controller
             
             foreach ($participants as $participant) {
                 if ($participant !== $userId) {
-                    self::socketHandler($participant, Message::findOne($message->id));
+                    self::socketHandler($participant, json_encode(Message::findOne($message->id)));
                 }
             }
             return [
