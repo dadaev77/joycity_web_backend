@@ -355,9 +355,10 @@ class ChatController extends V1Controller
             $chat->last_message_id = $message->id;
             $chat->save();
             $participants = $metadata['participants'] ?? [];
+            $lastMessage = $this->getLastMessage($chat);
             foreach ($participants as $participant) {
                 if ($participant !== $userId) {
-                    self::socketHandler($participant, $message);
+                    self::socketHandler($participant, $lastMessage);
                 }
             }
             return [
