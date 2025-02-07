@@ -266,6 +266,17 @@ class OrderController extends ClientController
                 );
             } else {
                 $distributionStatus = OrderDistributionService::createDistributionTask($order->id);
+                ChatService::createGroupChat(
+                    'Order ' . $order->id,
+                    $user->id,
+                    $order->id,
+                    [
+                        'deal_type' => 'order',
+                        'participants' => [$user->id, $order->manager_id],
+                        'group_name' => 'client_manager',
+                    ]
+                );
+
                 if (!$distributionStatus->success) {
                     $transaction?->rollBack();
                     return ApiResponse::codeErrors(
