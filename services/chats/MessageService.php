@@ -33,22 +33,25 @@ class MessageService
         $replyToId = null,
         $attachments = null
     ) {
-        $message = new Message([
-            'chat_id' => $chatId,
-            'user_id' => $userId,
-            'content' => self::translateMessage($content),
-            'metadata' => $metadata ? json_encode($metadata) : null,
-            'reply_to_id' => $replyToId,
-            'status' => 'delivered',
-            'attachments' => $attachments ? json_encode($attachments) : null,
-        ]);
-        $message->type = $type;
+        try {
+            $message = new Message([
+                'chat_id' => $chatId,
+                'user_id' => $userId,
+                'content' => self::translateMessage($content),
+                'metadata' => $metadata ? json_encode($metadata) : null,
+                'reply_to_id' => $replyToId,
+                'status' => 'delivered',
+                'attachments' => $attachments ? json_encode($attachments) : null,
+            ]);
+            $message->type = $type;
 
-        if (!$message->save()) {
-            throw new Exception('Ошибка при создании сообщения: ' . json_encode($message->getErrors()));
+            if (!$message->save()) {
+                throw new Exception('Ошибка при создании сообщения: ' . json_encode($message->getErrors()));
+            }
+            return $message;
+        } catch (\Exception $e) {
+            throw new Exception('Ошибка при создании сообщения: ' . $e->getMessage());
         }
-
-        return $message;
     }
 
     /**

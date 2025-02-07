@@ -318,9 +318,12 @@ class ChatController extends V1Controller
             }
         }
 
-        // Yii::$app->telegramLog->send('success', json_encode($uploadedAttachments), 'dev');
+        Yii::$app->telegramLog->send('success', json_encode($uploadedAttachments), 'dev');
 
-        if (!$chatId) {
+        if (
+            //!$chatId
+            true
+            ) {
             throw new BadRequestHttpException('Необходимо указать chat_id');
         }
 
@@ -355,13 +358,13 @@ class ChatController extends V1Controller
             $chat->last_message_id = $message->id;
             $chat->save();
 
-            // $participants = $metadata['participants'] ?? [];
+            $participants = $metadata['participants'] ?? [];
 
-            // foreach ($participants as $participant) {
-            //     if ($participant !== $userId) {
-            //         self::socketHandler($participant, Message::findOne($message->id) ? Message::findOne($message->id)->toArray() : null);
-            //     }
-            // }
+            foreach ($participants as $participant) {
+                if ($participant !== $userId) {
+                    self::socketHandler($participant, Message::findOne($message->id) ? Message::findOne($message->id)->toArray() : null);
+                }
+            }
 
             return [
                 'status' => 'success',
