@@ -37,7 +37,7 @@ class MessageService
             $message = new Message([
                 'chat_id' => $chatId,
                 'user_id' => $userId,
-                'content' => self::translateMessage($content),
+                'content' => $type === 'text' ? self::translateMessage($content) : $content,
                 'metadata' => $metadata ? json_encode($metadata) : null,
                 'reply_to_id' => $replyToId,
                 'status' => 'delivered',
