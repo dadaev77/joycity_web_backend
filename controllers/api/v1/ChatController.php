@@ -355,11 +355,14 @@ class ChatController extends V1Controller
             $chat->last_message_id = $message->id;
             $chat->save();
             $participants = $metadata['participants'] ?? [];
+
+            $returnMessage = Message::findOne($message->id);
+            $returnMessage = json_encode($returnMessage);
+            Yii::$app->telegramLog->send('success', $returnMessage, 'dev');
             
             foreach ($participants as $participant) {
                 if ($participant !== $userId) {
-                    Yii::$app->telegramLog->send('success', json_encode(Message::findOne($message->id)), 'dev');
-                    self::socketHandler($participant, json_encode(Message::findOne($message->id)));
+                    self::socketHandler($participant, $returnMessage);
                 }
             }
             return [
