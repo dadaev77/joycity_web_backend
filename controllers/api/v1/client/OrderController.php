@@ -266,6 +266,14 @@ class OrderController extends ClientController
                 );
             } else {
                 $distributionStatus = OrderDistributionService::createDistributionTask($order->id);
+                if (!$distributionStatus->success) {
+                    $transaction?->rollBack();
+                    return ApiResponse::codeErrors(
+                        $apiCodes->ERROR_SAVE,
+                        $distributionStatus->reason,
+                    );
+                }
+
                 ChatService::createGroupChat(
                     'Order ' . $order->id,
                     $user->id,
@@ -276,14 +284,6 @@ class OrderController extends ClientController
                         'group_name' => 'client_manager',
                     ]
                 );
-
-                if (!$distributionStatus->success) {
-                    $transaction?->rollBack();
-                    return ApiResponse::codeErrors(
-                        $apiCodes->ERROR_SAVE,
-                        $distributionStatus->reason,
-                    );
-                }
             }
 
             $attachmentsToLink = [];
