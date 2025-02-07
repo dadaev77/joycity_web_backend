@@ -358,6 +358,7 @@ class ChatController extends V1Controller
             
             foreach ($participants as $participant) {
                 if ($participant !== $userId) {
+                    Yii::$app->telegramLog->send('success', json_encode(Message::findOne($message->id)), 'dev');
                     self::socketHandler($participant, json_encode(Message::findOne($message->id)));
                 }
             }
@@ -412,7 +413,7 @@ class ChatController extends V1Controller
     {
         $client = new \GuzzleHttp\Client();
         $event_types = ['new_message', 'new_order', 'new_chat', 'new_review', 'new_task'];
-        Yii::$app->telegramLog->send('success', $message, 'dev');
+       
         $response = $client->request('POST', $_ENV['APP_URL_NOTIFICATIONS'] . '/notification/send', [
             'json' => [
                 'notification' => [
