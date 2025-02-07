@@ -402,7 +402,7 @@ class ChatController extends V1Controller
     }
     public function actionSendNotification(){
         //
-        $client = new GuzzleHttp\Client();
+        $client = new \GuzzleHttp\Client();
         $response = $client->request('POST', $_ENV['APP_URL_NOTIFICATIONS'] . '/notification/send', [
             'json' => [
                 'notification' => [
