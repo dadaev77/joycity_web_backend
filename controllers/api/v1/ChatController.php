@@ -318,11 +318,8 @@ class ChatController extends V1Controller
             }
         }
 
-        Yii::$app->telegramLog->send('success', json_encode($uploadedAttachments), 'dev');
-
         if (
-            //!$chatId
-            true
+            !$chatId
             ) {
             throw new BadRequestHttpException('Необходимо указать chat_id');
         }
@@ -338,7 +335,7 @@ class ChatController extends V1Controller
         $metadata = $chat->metadata ?? [];
         $participants = $metadata['participants'] ?? [];
 
-        if ($chat->user_id !== $userId && !in_array($userId, $participants)) {
+        if (!in_array($userId, $participants)) {
             throw new BadRequestHttpException('У вас нет доступа к этому чату');
         }
 
