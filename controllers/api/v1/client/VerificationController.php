@@ -120,6 +120,7 @@ class VerificationController extends ClientController
                 [
                     'verification_request_id' => $newRequest->id,
                     'participants' => [$user->id, $newRequest->manager_id],
+                    'group_name' => 'client_manager',
                 ]
             );
 
