@@ -163,6 +163,19 @@ class ChatController extends V1Controller
                 $participants = $metadata['participants'] ?? [];
                 $metadata['unread_messages'] = $this->calculateUnreadMessages($chat, $userId);
                 $metadata['last_message'] = $this->getLastMessage($chat);
+                $metadata['participants'] = [];
+                foreach ($participants as $participant) {
+                    $user = User::findOne($participant);
+                    $metadata['participants'][] = [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'avatar' => $user->avatar,
+                        'role' => $user->role,
+                        'email' => $user->email,
+                        'phone_number' => $user->phone_number,
+                        'telegram' => $user->telegram,
+                    ];
+                }
                 $chat->metadata = $metadata;
                 if (in_array($userId, $participants)) {
                     $filteredChats[] = $chat;
