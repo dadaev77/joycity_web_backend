@@ -121,6 +121,7 @@ class ChatController extends V1Controller
 
             foreach ($participants as $participant) {
                 $user = User::findOne($participant);
+                if ($user) {
                 $metadata['participants'][] = [
                     'id' => $user->id,
                     'name' => $user->name,
@@ -129,7 +130,8 @@ class ChatController extends V1Controller
                     'email' => $user->email,
                     'phone_number' => $user->phone_number,
                     'telegram' => $user->telegram,
-                ];
+                    ];
+                }
             }
             $chat->metadata = $metadata;
         }
