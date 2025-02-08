@@ -168,10 +168,12 @@ class ChatController extends V1Controller
                     $filteredChats[] = $chat;
                 }
             }
-            $data[] = [
-                'order_id' => $order->id,
-                'chats' => $filteredChats,
-            ];
+            if (!empty($filteredChats)) {
+                $data[] = [
+                    'order_id' => $order->id,
+                    'chats' => $filteredChats,
+                ];
+            }
         }
 
         return [
