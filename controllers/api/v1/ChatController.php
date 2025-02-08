@@ -162,6 +162,8 @@ class ChatController extends V1Controller
         $chats = $chatsQuery->all();
 
         $filteredChats = [];
+        $orderChats = [];
+
         foreach ($chats as $chat) {
             $metadata = $chat->metadata ?? [];
             $participants = $metadata['participants'] ?? [];
@@ -173,9 +175,6 @@ class ChatController extends V1Controller
         foreach ($filteredChats as $key => $chat) {
             $metadata = $chat->metadata ?? [];
             $participants = $metadata['participants'] ?? [];
-            if (!in_array($userId, $participants)) {
-                unset($chats[$key]);
-            }
             $unreadMessages = $this->calculateUnreadMessages($chat, $userId);
             $metadata['unread_messages'] = $unreadMessages;
             $chat->metadata = $metadata;
@@ -208,7 +207,7 @@ class ChatController extends V1Controller
                 'chats' => $orderChats,
             ];
         }
-
+        Yii::$app->telegramLog->send('info', json_encode($data), 'dev');
         return [
             'auth_user_id' => User::getIdentity()->id,
             'chats' => $data
