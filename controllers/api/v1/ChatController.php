@@ -173,8 +173,6 @@ class ChatController extends V1Controller
             ];
         }
 
-        Yii::$app->telegramLog->send('info', json_encode($data), 'dev');
-
         return [
             'auth_user_id' => User::getIdentity()->id,
             'chats' => $data
