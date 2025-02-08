@@ -263,13 +263,21 @@ class ChatController extends V1Controller
         $chats = Chat::find()->where(['order_id' => $orderId])->all();
         $userId = User::getIdentity()->id;
         $filteredChats = [];
-        foreach ($chats as $key => $chat) {
+
+        foreach ($chats as $chat) {
+            $metadata = $chat->metadata ?? [];
+            $participants = $metadata['participants'] ?? [];
+            if (in_array($userId, $participants)) {
+                $filteredChats[] = $chat;
+            }
+            continue;
+        }
+
+
+        foreach ($filteredChats as $chat) {
             $metadata = $chat->metadata ?? [];
             $participants = $metadata['participants'] ?? [];
             $metadata['participants'] = [];
-            if (!in_array($userId, $participants)) {
-                unset($chats[$key]);
-            }
             foreach ($participants as $participant) {
                 $user = User::findOne($participant);
                 $metadata['participants'][] = [
@@ -285,7 +293,6 @@ class ChatController extends V1Controller
             $metadata['last_message'] = $this->getLastMessage($chat);
             $metadata['unread_messages'] = $this->calculateUnreadMessages($chat, $userId);
             $chat->metadata = $metadata;
-            $filteredChats[] = $chat;
         }
 
         return [
