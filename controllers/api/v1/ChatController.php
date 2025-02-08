@@ -147,66 +147,36 @@ class ChatController extends V1Controller
     public function actionSearchChats($query = '')
     {
         $userId = User::getIdentity()->id;
+        $order = null;
         $data = [];
+        
+        if (empty($query)) return ['chats' => []];
 
-        if (empty($query)) {
-            return [
-                'chats' => []
-            ];
-        }
+        $orders = \app\models\Order::find()
+            ->where(['like', 'id', $query])
+            ->orWhere(['like', 'order_number', $query])
+            ->all();
 
-        $chatsQuery = Chat::find()
-            ->where(['like', 'order_id', $query])
-            ->orderBy(['id' => SORT_DESC]);
-
-        $chats = $chatsQuery->all();
-
-        $filteredChats = [];
-        $orderChats = [];
-
-        foreach ($chats as $chat) {
-            $metadata = $chat->metadata ?? [];
-            $participants = $metadata['participants'] ?? [];
-            if (in_array($userId, $participants)) {
-                $filteredChats[] = $chat;
-            }
-        }
-
-        foreach ($filteredChats as $key => $chat) {
-            $metadata = $chat->metadata ?? [];
-            $participants = $metadata['participants'] ?? [];
-            $unreadMessages = $this->calculateUnreadMessages($chat, $userId);
-            $metadata['unread_messages'] = $unreadMessages;
-            $chat->metadata = $metadata;
-
-            $orderChats = Chat::find()->where(['order_id' => $chat->order_id])->all();
-
-            foreach ($orderChats as $orderChat) {
-                $metadata = $orderChat->metadata ?? [];
+        if (!$order) return ['chats' => []];
+        
+        foreach ($orders as $order) {
+            $filteredChats = [];
+            $chats = Chat::find()->where(['order_id' => $order->id])->all();
+            foreach ($chats as $chat) {
+                $metadata = $chat->metadata ?? [];
                 $participants = $metadata['participants'] ?? [];
-                $metadata['participants'] = [];
-                foreach ($participants as $participant) {
-                    $user = User::findOne($participant);
-                    $metadata['participants'][] = [
-                        'id' => $user->id,
-                        'name' => $user->name,
-                        'avatar' => $user->avatar,
-                        'role' => $user->role,
-                        'email' => $user->email,
-                        'phone_number' => $user->phone_number,
-                        'telegram' => $user->telegram,
-                    ];
+                $metadata['unread_messages'] = $this->calculateUnreadMessages($chat, $userId);
+                $chat->metadata = $metadata;
+                if (in_array($userId, $participants)) {
+                    $filteredChats[] = $chat;
                 }
-                $metadata['last_message'] = $this->getLastMessage($orderChat);
-                $metadata['unread_messages'] = $this->calculateUnreadMessages($orderChat, $userId);
-                $orderChat->metadata = $metadata;
             }
-
             $data[] = [
-                'order_id' => $chat->order_id,
-                'chats' => $orderChats,
+                'order_id' => $order->id,
+                'chats' => $filteredChats,
             ];
         }
+
         Yii::$app->telegramLog->send('info', json_encode($data), 'dev');
         return [
             'auth_user_id' => User::getIdentity()->id,
