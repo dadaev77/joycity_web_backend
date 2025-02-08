@@ -194,7 +194,7 @@ class RawController extends Controller
         $message = \app\models\Message::findOne(7);
         return $message;
     }
-    public function truncateTables(){
+    public function actionTruncateTables(){
         $tables = [
             // 'app_option',
             'attachment',
