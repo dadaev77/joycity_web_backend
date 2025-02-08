@@ -161,7 +161,16 @@ class ChatController extends V1Controller
 
         $chats = $chatsQuery->all();
 
-        foreach ($chats as $key => $chat) {
+        $filteredChats = [];
+        foreach ($chats as $chat) {
+            $metadata = $chat->metadata ?? [];
+            $participants = $metadata['participants'] ?? [];
+            if (in_array($userId, $participants)) {
+                $filteredChats[] = $chat;
+            }
+        }
+
+        foreach ($filteredChats as $key => $chat) {
             $metadata = $chat->metadata ?? [];
             $participants = $metadata['participants'] ?? [];
             if (!in_array($userId, $participants)) {
@@ -177,9 +186,6 @@ class ChatController extends V1Controller
                 $metadata = $orderChat->metadata ?? [];
                 $participants = $metadata['participants'] ?? [];
                 $metadata['participants'] = [];
-                if (!in_array($userId, $participants)) {
-                    unset($orderChats[$key]);
-                }
                 foreach ($participants as $participant) {
                     $user = User::findOne($participant);
                     $metadata['participants'][] = [
