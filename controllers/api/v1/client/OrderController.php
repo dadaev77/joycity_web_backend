@@ -213,7 +213,18 @@ class OrderController extends ClientController
                 Yii::$app->telegramLog->send('error', 'Ошибка при создании заказа: ' . $orderSave->reason);
                 return $orderSave->apiResponse;
             }
-
+            
+            ChatService::CreateGroupChat(
+                'Order ' . $order->id,
+                $user->id,
+                $order->id,
+                [
+                    'deal_type' => 'order',
+                    'participants' => [$user->id, $order->manager_id],
+                    'group_name' => 'client_manager',
+                ]
+            );
+            
             if ($order->product_id) {
                 $withProduct = true;
 
