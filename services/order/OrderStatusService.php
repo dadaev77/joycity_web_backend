@@ -202,15 +202,16 @@ class OrderStatusService
             }
             if ($linkedChats) {
                 foreach ($linkedChats as $chat) {
-                    $chatArchiveStatus = ChatArchiveService::archiveChat(
-                        $chat->id,
-                    );
+                    
+                    // $chatArchiveStatus = ChatArchiveService::archiveChat(
+                    //     $chat->id,
+                    // );
 
-                    if (!$chatArchiveStatus->success) {
-                        $transaction?->rollBack();
+                    // if (!$chatArchiveStatus->success) {
+                    //     $transaction?->rollBack();
 
-                        return $chatArchiveStatus;
-                    }
+                    //     return $chatArchiveStatus;
+                    // }
                 }
             }
             $transaction?->commit();
