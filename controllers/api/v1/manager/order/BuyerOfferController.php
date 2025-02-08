@@ -123,14 +123,15 @@ class BuyerOfferController extends ManagerController
                 );
 
 
-                ChatService::createGroupChat(
-                    'Чат клиент, фулфилмент и менеджер',
-                    $order->created_by,
+                ChatService::CreateGroupChat(
+                    'Order ' . $order->id,
+                    $order->manager_id,
+                    $order->id,
                     [
-                        'order_id' => $order->id,
-                        'fulfillment_id' => $order->fulfillment_id,
-                        'manager_id' => $order->manager_id,
-                    ],
+                        'deal_type' => 'order',
+                        'participants' => [$user->fulfillment_id, $order->manager_id, $order->created_by],
+                        'group_name' => 'client_fulfillment_manager',
+                    ]
                 );
             }
 
