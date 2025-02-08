@@ -147,7 +147,6 @@ class ChatController extends V1Controller
     public function actionSearchChats($query = '')
     {
         $userId = User::getIdentity()->id;
-        $order = null;
         $data = [];
         
         if (empty($query)) return ['chats' => []];
@@ -156,8 +155,6 @@ class ChatController extends V1Controller
             ->where(['like', 'id', $query])
             ->all();
 
-        if (!$order) return ['chats' => []];
-        
         foreach ($orders as $order) {
             $filteredChats = [];
             $chats = Chat::find()->where(['order_id' => $order->id])->all();
