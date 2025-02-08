@@ -129,7 +129,7 @@ class BuyerOfferController extends ManagerController
                     $order->id,
                     [
                         'deal_type' => 'order',
-                        'participants' => [$user->fulfillment_id, $order->manager_id, $order->created_by],
+                        'participants' => [$order->fulfillment_id, $order->manager_id, $order->created_by],
                         'group_name' => 'client_fulfillment_manager',
                     ]
                 );
