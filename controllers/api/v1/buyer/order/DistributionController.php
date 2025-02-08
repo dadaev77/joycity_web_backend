@@ -153,7 +153,7 @@ class DistributionController extends BuyerController
                 $order->id,
                 [
                     'deal_type' => 'order',
-                    'participants' => [$user->id, $order->manager_id, $order->buyer_id],
+                    'participants' => [$order->created_by, $order->manager_id, $order->buyer_id],
                     'group_name' => 'client_buyer_manager',
                 ]
             );
