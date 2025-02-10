@@ -411,9 +411,6 @@ class ChatController extends V1Controller
 
     private static function socketHandler(string $userId, array $message)
     {
-        $multiHandle = curl_multi_init();
-        $curlHandles = [];
-
         $url = $_ENV['APP_URL_NOTIFICATIONS'] . '/notification/send';
         $data = json_encode([
             'notification' => [
@@ -422,30 +419,6 @@ class ChatController extends V1Controller
                 'message' => $message,
             ],
         ]);
-
-        $curl = curl_init($url);
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($curl, CURLOPT_POST, true);
-        curl_setopt($curl, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
-        curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
-        
-        curl_multi_add_handle($multiHandle, $curl);
-        $curlHandles[] = $curl;
-
-        // Запускаем асинхронные запросы
-        do {
-            $status = curl_multi_exec($multiHandle, $active);
-            curl_multi_select($multiHandle);
-        } while ($active && $status == CURLM_CALL_MULTI_PERFORM);
-
-        // Обработка ответов
-        foreach ($curlHandles as $handle) {
-            $response = curl_multi_getcontent($handle);
-            echo 'Ответ: ' . $response . PHP_EOL;
-            curl_multi_remove_handle($multiHandle, $handle);
-            curl_close($handle);
-        }
-
-        curl_multi_close($multiHandle);
+        return;
     }
 }
