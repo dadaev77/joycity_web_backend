@@ -352,11 +352,14 @@ class ChatController extends V1Controller
             $chat->last_message_id = $message->id;
             $chat->save();
 
-            // foreach ($participants as $participant) {
-            //     if ($participant !== $userId) {
-            //         self::socketHandler($participant, Message::findOne($message->id) ? Message::findOne($message->id)->toArray() : null);
-            //     }
-            // }
+            foreach ($participants as $participant) {
+                if ($participant !== $userId) {
+                    self::socketHandler(
+                        $participant, 
+                        Message::findOne($message->id) ? Message::findOne($message->id)->toArray() : null
+                    );
+                }
+            }
 
             return [
                 'status' => 'success',
@@ -419,7 +422,7 @@ class ChatController extends V1Controller
                 'notification' => [
                     'type' => 'new_message',
                     'user_id' => $userId,
-                    'message' => $message,
+                    'message' => json_encode($message),
                 ],
             ],
         ])
