@@ -356,7 +356,7 @@ class ChatController extends V1Controller
                 if ($participant !== $userId) {
                     self::socketHandler(
                         $participant, 
-                        Message::findOne($message->id) ? json_encode(Message::findOne($message->id)->toArray()) : null
+                        Message::findOne($message->id) ? Message::findOne($message->id)->toArray() : null
                     );
                 }
             }
@@ -409,7 +409,7 @@ class ChatController extends V1Controller
 
     }
 
-    private static function socketHandler($userId, $message)
+    private static function socketHandler(string $userId, array $message)
     {
         $loop = Factory::create();
         $browser = new Browser($loop);
