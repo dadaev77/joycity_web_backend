@@ -51,22 +51,6 @@ class RawController extends Controller
         parent::__construct($id, $module, $config);
     }
 
-    public function behaviors()
-    {
-        return [
-            'access' => [
-                'class' => AccessControl::class,
-                'rules' => [
-                    [
-                        'allow' => true,
-                        'actions' => ['truncate-tables'],
-                        'roles' => ['@'],
-                    ],
-                ],
-            ],
-        ];
-    }
-
     public function beforeAction($action)
     {
         $this->enableCsrfValidation = ($action->id == "acceptFrontLogs");
@@ -88,7 +72,6 @@ class RawController extends Controller
         $actionLogs = file_exists(self::ACTION_LOG_FILE) ? file_get_contents(self::ACTION_LOG_FILE) : '';
         $profilingLogs = file_exists(self::PROFILING_LOG_FILE) ? file_get_contents(self::PROFILING_LOG_FILE) : '';
 
-        // Reverse the order of action logs
         if ($actionLogs) {
             $logEntries = preg_split('/<\/p>\s*/', $actionLogs, -1, PREG_SPLIT_NO_EMPTY);
             $logEntries = array_map(function ($entry) {
@@ -96,14 +79,14 @@ class RawController extends Controller
             }, $logEntries);
             $actionLogs = implode("\n", array_reverse($logEntries));
         }
-
-        $clients = User::find()->where(['role' => 'client'])->orderBy(['id' => SORT_DESC])->all();
-        $managers = User::find()->where(['role' => 'manager'])->orderBy(['id' => SORT_DESC])->all();
-        $fulfillment = User::find()->where(['role' => 'fulfillment'])->orderBy(['id' => SORT_DESC])->all();
-        $buyers = User::find()->where(['role' => 'buyer'])->orderBy(['id' => SORT_DESC])->all();
-        $products = Product::find()->orderBy(['id' => SORT_DESC])->limit(10)->all();
-        $orders = OrderModel::find()->orderBy(['id' => SORT_DESC])->limit(10)->all();
-        $attachments = array_diff(scandir(Yii::getAlias('@webroot/attachments')), ['.', '..', '.DS_Store', '.gitignore']);
+        
+            $clients = User::find()->where(['role' => 'client'])->orderBy(['id' => SORT_DESC])->all();
+            $managers = User::find()->where(['role' => 'manager'])->orderBy(['id' => SORT_DESC])->all();
+            $fulfillment = User::find()->where(['role' => 'fulfillment'])->orderBy(['id' => SORT_DESC])->all();
+            $buyers = User::find()->where(['role' => 'buyer'])->orderBy(['id' => SORT_DESC])->all();
+            $products = Product::find()->orderBy(['id' => SORT_DESC])->limit(10)->all();
+            $orders = OrderModel::find()->orderBy(['id' => SORT_DESC])->limit(10)->all();
+        
 
         $keysToRemove = array_keys(array_intersect_key($_SERVER, array_flip(self::KEYS)));
 
@@ -116,6 +99,8 @@ class RawController extends Controller
         $frontLogs = implode("\n", array_slice(explode("\n", $frontLogs), -500));
         $actionLogs = implode("\n", array_slice(explode("\n", $actionLogs), -100));
         $profilingLogs = implode("\n", array_slice(explode("\n", $profilingLogs), -500));
+
+        $attachments = []; // Инициализация переменной $attachments
 
         // Render the log view with logs and frontLogs variables
         $response = Yii::$app->response;
@@ -205,11 +190,7 @@ class RawController extends Controller
      * )
      */
 
-    public function actionTest()
-    {
-        $message = \app\models\Message::findOne(7);
-        return $message;
-    }
+
     public function actionTruncateTables(){
         $request = Yii::$app->request->post('access_token');
         if($request == '1234567890'){
