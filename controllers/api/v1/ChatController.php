@@ -296,12 +296,17 @@ class ChatController extends V1Controller
      */
     public function actionSendMessage()
     {
+        // время отправки сообщения
+        $startSendMessage = microtime(true);
+
         $uploadedTypes = [
             'images' => UploadedFile::getInstancesByName('images'),
             'videos' => UploadedFile::getInstancesByName('videos'),
             'files' => UploadedFile::getInstancesByName('files'),
             'audios' => UploadedFile::getInstancesByName('audios'),
         ];
+        // время загрузки вложений
+        $uploadAttachmentsTime =microtime(true);
 
         $chatId = Yii::$app->request->post('chat_id');
         $content = Yii::$app->request->post('content');
@@ -329,15 +334,19 @@ class ChatController extends V1Controller
         if (!$chat) {
             throw new BadRequestHttpException('Чат не найден');
         }
+        // время поиска чата
+        $findChatTime = microtime(true);
 
         $userId = User::getIdentity()->id;
 
         $metadata = $chat->metadata ?? [];
         $participants = $metadata['participants'] ?? [];
-
+        
         if (!in_array($userId, $participants)) {
             throw new BadRequestHttpException('У вас нет доступа к этому чату');
         }
+        // время проверки доступа к чату
+        $checkAccessTime = microtime(true);
 
         try {
 
@@ -350,10 +359,14 @@ class ChatController extends V1Controller
                 $replyToId,
                 $uploadedAttachments,
             );
+            // время создания сообщения
+            $createMessageTime = microtime(true);
 
             // Обновляем last_message_id в чате
             $chat->last_message_id = $message->id;
             $chat->save();
+            // время обновления last_message_id
+            $updateLastMessageIdTime = microtime(true);
 
             $participants = $metadata['participants'] ?? [];
 
@@ -362,7 +375,9 @@ class ChatController extends V1Controller
                     self::socketHandler($participant, Message::findOne($message->id) ? Message::findOne($message->id)->toArray() : null);
                 }
             }
-
+            // время отправки сообщения
+            $sendMessageTime = microtime(true);
+            Yii::$app->telegramLog->send('info', 'time: ' . $startSendMessage . ' - ' . $uploadAttachmentsTime . ' - ' . $findChatTime . ' - ' . $checkAccessTime . ' - ' . $createMessageTime . ' - ' . $updateLastMessageIdTime . ' - ' . $sendMessageTime, 'dev');
             return [
                 'status' => 'success',
                 'data' => Message::findOne($message->id)
