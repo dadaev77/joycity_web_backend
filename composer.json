@@ -48,7 +48,9 @@
     "intervention/image": "^3.8",
     "mpdf/mpdf": "^8.2",
     "zircote/swagger-php": "*",
-    "doctrine/annotations": "^2.0"
+    "doctrine/annotations": "^2.0",
+    "react/http": "^1.11",
+    "react/event-loop": "^1.5"
   },
   "require-dev": {
     

@@ -14,6 +14,8 @@ use yii\filters\AccessControl;
 use yii\web\BadRequestHttpException;
 use yii\web\UploadedFile;
 use app\services\ChatUploader;
+use React\EventLoop\Factory;
+use React\Http\Browser;
 
 
 class ChatController extends V1Controller
@@ -296,9 +298,6 @@ class ChatController extends V1Controller
      */
     public function actionSendMessage()
     {
-        // время отправки сообщения
-        $startSendMessage = microtime(true);
-
         $uploadedTypes = [
             'images' => UploadedFile::getInstancesByName('images'),
             'videos' => UploadedFile::getInstancesByName('videos'),
@@ -306,8 +305,6 @@ class ChatController extends V1Controller
             'audios' => UploadedFile::getInstancesByName('audios'),
         ];
 
-        // время загрузки вложений
-        $uploadAttachmentsStartTime = microtime(true);
         $uploadedAttachments = [];
         foreach ($uploadedTypes as $type => $files) {
             if ($files) {
@@ -318,7 +315,6 @@ class ChatController extends V1Controller
                 }
             }
         }
-        $uploadAttachmentsTime = microtime(true) - $uploadAttachmentsStartTime;
 
         $chatId = Yii::$app->request->post('chat_id');
         $content = Yii::$app->request->post('content');
@@ -329,16 +325,11 @@ class ChatController extends V1Controller
             throw new BadRequestHttpException('Необходимо указать chat_id');
         }
 
-        // время поиска чата
-        $findChatStartTime = microtime(true);
         $chat = Chat::findOne($chatId);
         if (!$chat) {
             throw new BadRequestHttpException('Чат не найден');
         }
-        $findChatTime = microtime(true) - $findChatStartTime;
 
-        // время проверки доступа к чату
-        $checkAccessStartTime = microtime(true);
         $userId = User::getIdentity()->id;
         $metadata = $chat->metadata ?? [];
         $participants = $metadata['participants'] ?? [];
@@ -346,11 +337,8 @@ class ChatController extends V1Controller
         if (!in_array($userId, $participants)) {
             throw new BadRequestHttpException('У вас нет доступа к этому чату');
         }
-        $checkAccessTime = microtime(true) - $checkAccessStartTime;
 
         try {
-            // время создания сообщения
-            $createMessageStartTime = microtime(true);
             $message = MessageService::createMessage(
                 $chatId,
                 $userId,
@@ -360,34 +348,16 @@ class ChatController extends V1Controller
                 $replyToId,
                 $uploadedAttachments,
             );
-            $createMessageTime = microtime(true) - $createMessageStartTime;
 
-            // Обновляем last_message_id в чате
-            $updateLastMessageStartTime = microtime(true);
             $chat->last_message_id = $message->id;
             $chat->save();
-            $updateLastMessageIdTime = microtime(true) - $updateLastMessageStartTime;
 
-            // время отправки сообщения
-            $sendMessageTime = microtime(true) - $startSendMessage;
+            foreach ($participants as $participant) {
+                if ($participant !== $userId) {
+                    self::socketHandler($participant, Message::findOne($message->id) ? Message::findOne($message->id)->toArray() : null);
+                }
+            }
 
-            $times = [
-                'startSendMessage' => $startSendMessage,
-                'uploadAttachmentsTime' => $uploadAttachmentsTime,
-                'findChatTime' => $findChatTime,
-                'checkAccessTime' => $checkAccessTime,
-                'createMessageTime' => $createMessageTime,
-                'updateLastMessageIdTime' => $updateLastMessageIdTime,
-                'sendMessageTime' => $sendMessageTime,
-            ];
-            Yii::$app->telegramLog->send('info', 'time: ' . json_encode($times), 'dev');
-
-            // foreach ($participants as $participant) {
-            //     if ($participant !== $userId) {
-            //         self::socketHandler($participant, Message::findOne($message->id) ? Message::findOne($message->id)->toArray() : null);
-            //     }
-            // }
-            
             return [
                 'status' => 'success',
                 'data' => Message::findOne($message->id)
@@ -438,17 +408,27 @@ class ChatController extends V1Controller
 
     private static function socketHandler($userId, $message)
     {
-        $client = new \GuzzleHttp\Client();
-        $event_types = ['new_message', 'new_order', 'new_chat', 'new_review', 'new_task'];
-       
-        $response = $client->request('POST', $_ENV['APP_URL_NOTIFICATIONS'] . '/notification/send', [
+        $loop = Factory::create();
+        $browser = new Browser($loop);
+        
+        $browser->post($_ENV['APP_URL_NOTIFICATIONS'] . '/notification/send', [
+            'headers' => [
+                'Content-Type' => 'application/json',
+            ],
             'json' => [
                 'notification' => [
                     'type' => 'new_message',
                     'user_id' => $userId,
                     'message' => $message,
-                ],   
-            ]
-        ]);
+                ],
+            ],
+            ])->then(function (Psr\Http\Message\ResponseInterface $response) {
+                echo 'Message sent: ' . $response->getBody() . PHP_EOL;
+            })
+            ->otherwise(function (Exception $e) {
+                echo 'Error: ' . $e->getMessage() . PHP_EOL;
+            });
+
+            $loop->run();
     }
 }
