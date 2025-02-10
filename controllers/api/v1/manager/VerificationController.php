@@ -21,7 +21,7 @@ class VerificationController extends ManagerController
         $behaviors['verbFilter']['actions']['index'] = ['get'];
         $behaviors['verbFilter']['actions']['view'] = ['get'];
         $behaviors['verbFilter']['actions']['accept'] = ['put'];
-
+        
         return $behaviors;
     }
 
@@ -181,5 +181,21 @@ class VerificationController extends ManagerController
 
             return ApiResponse::code($apiCodes->INTERNAL_ERROR);
         }
+    }
+
+    public function actionGetUnread()
+    {
+        $apiCodes = UserVerificationRequest::apiCodes();
+        $user = User::getIdentity();
+        $requests = UserVerificationRequest::find()
+            ->where(['status' => UserVerificationRequest::STATUS_WAITING])
+            ->andWhere(['manager_id' => $user->id])
+            ->andWhere(['is_read' => false])
+            ->all();
+
+        return ApiResponse::code(
+            $apiCodes->SUCCESS,
+            $requests ? true : false,
+        );
     }
 }
