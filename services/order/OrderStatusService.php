@@ -381,6 +381,7 @@ class OrderStatusService
                     $order->created_by,
                     $orderId,
                 );
+                
             }
 
             return Result::success();

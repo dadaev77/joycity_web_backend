@@ -113,15 +113,17 @@ class NotificationsController extends V1Controller
                 ->orderBy(['id' => SORT_DESC]);
             $notifications = $query->all();
             
+            $filteredNotifications = [];
             foreach($notifications as $key => $notification){
-                if ($notification->event === 'completed' || $notification->event === 'canceled'){
-                    unset($notifications[$key]);
+                if ($notification->event !== 'completed' && $notification->event !== 'canceled'){
+                    $filteredNotifications[] = $notification->id;
                 }
             }
 
             return ApiResponse::collection(
-                NotificationOutputService::getCollection($notifications),
+                NotificationOutputService::getCollection($filteredNotifications),
             );
+
         } catch (Throwable $e) {
             return ApiResponse::internalError($e);
         }
