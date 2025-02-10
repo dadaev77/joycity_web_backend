@@ -422,13 +422,14 @@ class ChatController extends V1Controller
                     'message' => $message,
                 ],
             ],
-            ])->then(function (Psr\Http\Message\ResponseInterface $response) {
-                echo 'Message sent: ' . $response->getBody() . PHP_EOL;
-            })
-            ->otherwise(function (Exception $e) {
-                echo 'Error: ' . $e->getMessage() . PHP_EOL;
-            });
+        ])
+        ->then(function (Psr\Http\Message\ResponseInterface $response) {
+            echo 'Message sent: ' . $response->getBody() . PHP_EOL;
+        })
+        ->otherwise(function (Exception $e) {
+            echo 'Error: ' . $e->getMessage() . PHP_EOL;
+        });
 
-            $loop->run();
+        $loop->run();
     }
 }
