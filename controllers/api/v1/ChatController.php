@@ -354,10 +354,10 @@ class ChatController extends V1Controller
 
             foreach ($participants as $participant) {
                 if ($participant !== $userId) {
-                    self::socketHandler(
-                        $participant, 
-                        Message::findOne($message->id) ? Message::findOne($message->id)->toArray() : null
-                    );
+                    // self::socketHandler(
+                    //     $participant, 
+                    //     Message::findOne($message->id) ? Message::findOne($message->id)->toArray() : null
+                    // );
                 }
             }
 
@@ -427,10 +427,10 @@ class ChatController extends V1Controller
             ],
         ])
         ->then(function (Psr\Http\Message\ResponseInterface $response) {
-            return Yii::$app->telegramLog->send('success', 'Message sent: ' . json_decode($response->getBody())->message . PHP_EOL, 'dev');
+            echo 'Message sent: ' . $response->getBody() . PHP_EOL;
         })
         ->otherwise(function (Exception $e) {
-            return Yii::$app->telegramLog->send('error', 'Error: ' . $e->getMessage() . PHP_EOL, 'dev');
+            echo 'Error: ' . $e->getMessage() . PHP_EOL;
         });
 
         $loop->run();
