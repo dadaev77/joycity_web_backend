@@ -422,15 +422,15 @@ class ChatController extends V1Controller
                 'notification' => [
                     'type' => 'new_message',
                     'user_id' => $userId,
-                    'message' => json_encode($message),
+                    'message' => $message,
                 ],
             ],
         ])
         ->then(function (Psr\Http\Message\ResponseInterface $response) {
-            echo 'Message sent: ' . $response->getBody() . PHP_EOL;
+            return Yii::$app->telegramLog->send('success', 'Message sent: ' . json_decode($response->getBody())->message . PHP_EOL, 'dev');
         })
         ->otherwise(function (Exception $e) {
-            echo 'Error: ' . $e->getMessage() . PHP_EOL;
+            return Yii::$app->telegramLog->send('error', 'Error: ' . $e->getMessage() . PHP_EOL, 'dev');
         });
 
         $loop->run();
