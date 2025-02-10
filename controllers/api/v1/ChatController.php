@@ -430,7 +430,7 @@ class ChatController extends V1Controller
             echo 'Message sent: ' . json_encode($response->getBody()) . PHP_EOL;
         })
         ->otherwise(function (Exception $e) {
-            echo 'Error: ' . $e->getMessage() . PHP_EOL;
+            echo 'Error: ' . json_encode($e->getMessage()) . PHP_EOL;
         });
 
         $loop->run();
