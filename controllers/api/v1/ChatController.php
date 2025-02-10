@@ -352,14 +352,7 @@ class ChatController extends V1Controller
             $chat->last_message_id = $message->id;
             $chat->save();
 
-            foreach ($participants as $participant) {
-                if ($participant !== $userId) {
-                    self::socketHandler(
-                        $participant, 
-                        Message::findOne($message->id) ? Message::findOne($message->id)->toArray() : null
-                    );
-                }
-            }
+            self::socketHandler($participants, Message::findOne($message->id) ? Message::findOne($message->id)->toArray() : null);
 
             return [
                 'status' => 'success',
@@ -409,16 +402,42 @@ class ChatController extends V1Controller
 
     }
 
-    private static function socketHandler(string $userId, array $message)
+    private static function socketHandler(array $participants, $message)
     {
-        $url = $_ENV['APP_URL_NOTIFICATIONS'] . '/notification/send';
-        $data = json_encode([
-            'notification' => [
-                'type' => 'new_message',
-                'user_id' => $userId,
-                'message' => $message,
-            ],
-        ]);
-        return;
+        $urls = [$_ENV['APP_URL_NOTIFICATIONS'] . '/notification/send'];
+        $multiHandle = curl_multi_init();
+        $curlHandles = [];
+
+        foreach ($participants as $participant) {
+            $ch = curl_init();
+            $data = json_encode([
+                'notification' => [
+                    'type' => 'new_message',
+                    'user_id' => $participant,
+                    'message' => $message,
+                ],
+            ]);
+
+            curl_setopt($ch, CURLOPT_URL, $urls[0]);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+
+            curl_multi_add_handle($multiHandle, $ch);
+            $curlHandles[] = $ch;
+        }
+
+        $running = null;
+        do {
+            curl_multi_exec($multiHandle, $running);
+        } while ($running > 0);
+
+        foreach ($curlHandles as $ch) {
+            $response = curl_multi_getcontent($ch);
+            curl_multi_remove_handle($multiHandle, $ch);
+        }
+
+        curl_multi_close($multiHandle);
     }
 }
