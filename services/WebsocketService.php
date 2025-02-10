@@ -14,11 +14,9 @@ class WebsocketService
             'json' => ['notification' => $notification],
             'headers' => ['Content-Type' => 'application/json']
         ]);
-        \Yii::$app->telegramLog->send('success', 'Send notification');
         if ($response->getBody()->getContents() !== 'ok') {
             return Result::error();
         }
-
         return Result::success();
     }
 }
