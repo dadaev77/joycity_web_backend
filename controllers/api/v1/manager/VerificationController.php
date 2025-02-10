@@ -4,8 +4,10 @@ namespace app\controllers\api\v1\manager;
 
 use app\components\ApiResponse;
 use app\controllers\api\v1\ManagerController;
+use app\models\Chat;
 use app\models\User;
 use app\models\UserVerificationRequest;
+use app\services\chats\ChatService;
 use app\services\output\UserVerificationRequestOutputService;
 use Throwable;
 use Yii;
@@ -166,6 +168,10 @@ class VerificationController extends ManagerController
             }
 
             $transaction?->commit();
+            $verificationChat = Chat::findOne(['verification_id' => $request->id]);
+            if ($verificationChat) {
+                ChatService::archiveChat($verificationChat->id);
+            }
 
             return ApiResponse::info(
                 UserVerificationRequestOutputService::getEntity($request->id),
