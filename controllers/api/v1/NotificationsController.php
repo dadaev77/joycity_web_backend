@@ -113,7 +113,7 @@ class NotificationsController extends V1Controller
                 ->orderBy(['id' => SORT_DESC]);
             $notifications = $query->all();
             
-            foreach($notifications as $key =>$notification){
+            foreach($notifications as $key => $notification){
                 if ($notification->event === 'completed' || $notification->event === 'canceled'){
                     unset($notifications[$key]);
                 }
