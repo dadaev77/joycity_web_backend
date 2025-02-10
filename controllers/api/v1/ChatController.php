@@ -381,6 +381,13 @@ class ChatController extends V1Controller
                 'sendMessageTime' => $sendMessageTime,
             ];
             Yii::$app->telegramLog->send('info', 'time: ' . json_encode($times), 'dev');
+
+            // foreach ($participants as $participant) {
+            //     if ($participant !== $userId) {
+            //         self::socketHandler($participant, Message::findOne($message->id) ? Message::findOne($message->id)->toArray() : null);
+            //     }
+            // }
+            
             return [
                 'status' => 'success',
                 'data' => Message::findOne($message->id)
