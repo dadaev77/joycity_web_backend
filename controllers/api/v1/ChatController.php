@@ -305,14 +305,9 @@ class ChatController extends V1Controller
             'files' => UploadedFile::getInstancesByName('files'),
             'audios' => UploadedFile::getInstancesByName('audios'),
         ];
+
         // время загрузки вложений
-        $uploadAttachmentsTime =microtime(true);
-
-        $chatId = Yii::$app->request->post('chat_id');
-        $content = Yii::$app->request->post('content');
-        $messageType = Yii::$app->request->post('type', 'text');
-        $replyToId = Yii::$app->request->post('reply_to_id');
-
+        $uploadAttachmentsStartTime = microtime(true);
         $uploadedAttachments = [];
         foreach ($uploadedTypes as $type => $files) {
             if ($files) {
@@ -323,60 +318,59 @@ class ChatController extends V1Controller
                 }
             }
         }
+        $uploadAttachmentsTime = microtime(true) - $uploadAttachmentsStartTime;
 
-        if (
-            !$chatId
-            ) {
+        $chatId = Yii::$app->request->post('chat_id');
+        $content = Yii::$app->request->post('content');
+        $messageType = Yii::$app->request->post('type', 'text');
+        $replyToId = Yii::$app->request->post('reply_to_id');
+
+        if (!$chatId) {
             throw new BadRequestHttpException('Необходимо указать chat_id');
         }
 
+        // время поиска чата
+        $findChatStartTime = microtime(true);
         $chat = Chat::findOne($chatId);
         if (!$chat) {
             throw new BadRequestHttpException('Чат не найден');
         }
-        // время поиска чата
-        $findChatTime = microtime(true);
+        $findChatTime = microtime(true) - $findChatStartTime;
 
+        // время проверки доступа к чату
+        $checkAccessStartTime = microtime(true);
         $userId = User::getIdentity()->id;
-
         $metadata = $chat->metadata ?? [];
         $participants = $metadata['participants'] ?? [];
         
         if (!in_array($userId, $participants)) {
             throw new BadRequestHttpException('У вас нет доступа к этому чату');
         }
-        // время проверки доступа к чату
-        $checkAccessTime = microtime(true);
+        $checkAccessTime = microtime(true) - $checkAccessStartTime;
 
         try {
-
+            // время создания сообщения
+            $createMessageStartTime = microtime(true);
             $message = MessageService::createMessage(
                 $chatId,
                 $userId,
                 $messageType,
                 $content,
-                [ 'read_by' => [ $userId ] ],
+                ['read_by' => [$userId]],
                 $replyToId,
                 $uploadedAttachments,
             );
-            // время создания сообщения
-            $createMessageTime = microtime(true);
+            $createMessageTime = microtime(true) - $createMessageStartTime;
 
             // Обновляем last_message_id в чате
+            $updateLastMessageStartTime = microtime(true);
             $chat->last_message_id = $message->id;
             $chat->save();
-            // время обновления last_message_id
-            $updateLastMessageIdTime = microtime(true);
+            $updateLastMessageIdTime = microtime(true) - $updateLastMessageStartTime;
 
-            $participants = $metadata['participants'] ?? [];
-
-            foreach ($participants as $participant) {
-                if ($participant !== $userId) {
-                    self::socketHandler($participant, Message::findOne($message->id) ? Message::findOne($message->id)->toArray() : null);
-                }
-            }
             // время отправки сообщения
-            $sendMessageTime = microtime(true);
+            $sendMessageTime = microtime(true) - $startSendMessage;
+
             $times = [
                 'startSendMessage' => $startSendMessage,
                 'uploadAttachmentsTime' => $uploadAttachmentsTime,
