@@ -10,7 +10,7 @@ class WebsocketService
     public static function sendNotification(array $notification)
     {
         $client = new \GuzzleHttp\Client();
-        $response = $client->post(self::getWebsocketUrl() . '/notification/send', [
+        $response = $client->post( $_ENV['APP_URL_NOTIFICATIONS'] . '/notification/send', [
             'json' => ['notification' => $notification],
             'headers' => ['Content-Type' => 'application/json']
         ]);
@@ -20,10 +20,5 @@ class WebsocketService
         }
 
         return Result::success();
-    }
-
-    public static function getWebsocketUrl()
-    {
-        return $_ENV['APP_URL_NOTIFICATIONS'] . '/notification/send';
     }
 }
