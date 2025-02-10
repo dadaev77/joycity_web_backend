@@ -427,7 +427,7 @@ class ChatController extends V1Controller
             ],
         ])
         ->then(function (Psr\Http\Message\ResponseInterface $response) {
-            echo 'Message sent: ' . $response->getBody() . PHP_EOL;
+            echo 'Message sent: ' . json_encode($response->getBody()) . PHP_EOL;
         })
         ->otherwise(function (Exception $e) {
             echo 'Error: ' . $e->getMessage() . PHP_EOL;
