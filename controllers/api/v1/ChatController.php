@@ -72,7 +72,7 @@ class ChatController extends V1Controller
     {
         $userId = User::getIdentity()->id;
         $userChats = [];
-        $chats = Chat::find()->all();
+        $chats = Chat::find()->where(['status' => 'active'])->all();
         foreach ($chats as $chat) {
             $metadata = $chat->metadata ?? [];
             $participants = $metadata['participants'] ?? [];
@@ -99,7 +99,7 @@ class ChatController extends V1Controller
     {
         $userId = User::getIdentity()->id;
         $filteredChats = [];
-        $chats = Chat::find()->orderBy(['updated_at' => SORT_DESC])->all();
+        $chats = Chat::find()->where(['status' => 'active'])->orderBy(['updated_at' => SORT_DESC])->all();
 
         foreach ($chats as $chat) {
             $metadata = $chat->metadata ?? [];
@@ -159,7 +159,7 @@ class ChatController extends V1Controller
 
         foreach ($orders as $order) {
             $filteredChats = [];
-            $chats = Chat::find()->where(['order_id' => $order->id])->all();
+            $chats = Chat::find()->where(['order_id' => $order->id, 'status' => 'active'])->all();
             foreach ($chats as $chat) {
                 $metadata = $chat->metadata ?? [];
                 $participants = $metadata['participants'] ?? [];
@@ -250,7 +250,7 @@ class ChatController extends V1Controller
     }
     public function actionGetOrderChats($orderId)
     {
-        $chats = Chat::find()->where(['order_id' => $orderId])->all();
+        $chats = Chat::find()->where(['order_id' => $orderId, 'status' => 'active'])->all();
         $userId = User::getIdentity()->id;
         $filteredChats = [];
 

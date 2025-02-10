@@ -13,8 +13,8 @@ class ChatService
     /**
      * Создать приватный чат между пользователями
      * 
-     * @param bigint $firstUserId
-     * @param bigint $secondUserId
+     * @param int|string $firstUserId
+     * @param int|string $secondUserId
      * @return Chat
      */
     public static function createPrivateChat($firstUserId, $secondUserId)
@@ -38,8 +38,8 @@ class ChatService
     /**
      * Создать чат для верификации пользователя
      * 
-     * @param bigint $userId
-     * @param bigint $verificationId
+     * @param int|string $userId
+     * @param int|string|null $verificationId
      * @return Chat
      */
 
@@ -100,7 +100,7 @@ class ChatService
     /**
      * Изменить статус чата
      * 
-     * @param bigint $chatId
+     * @param int|string $chatId
      * @param string $newStatus
      * @return Chat
      */
@@ -123,12 +123,16 @@ class ChatService
     /**
      * Обновить метаданные чата
      * 
-     * @param bigint $chatId
+     * @param int|string $chatId
      * @param array $newMetadata
      * @return Chat
      */
     public static function updateMetadata($chatId, $newMetadata)
     {
+        if (!is_array($newMetadata)) {
+            throw new \InvalidArgumentException('Метаданные должны быть массивом.');
+        }
+
         $chat = Chat::findOne($chatId);
 
         if ($chat === null) {
@@ -146,8 +150,8 @@ class ChatService
     /**
      * Добавить участника в чат
      * 
-     * @param bigint $chatId
-     * @param bigint $userId
+     * @param int|string $chatId
+     * @param int|string $userId
      * @param string $role
      * @return Chat
      */
@@ -177,8 +181,8 @@ class ChatService
     /**
      * Удалить участника из чата
      * 
-     * @param bigint $chatId
-     * @param bigint $userId
+     * @param int|string $chatId
+     * @param int|string $userId
      * @return Chat
      */
     public static function removeParticipant($chatId, $userId)
@@ -199,6 +203,28 @@ class ChatService
             if (!$chat->save()) {
                 throw new \yii\db\Exception('Ошибка при удалении участника: ' . json_encode($chat->getErrors()));
             }
+        }
+
+        return $chat;
+    }
+
+    /**
+     * Архивировать чат
+     * 
+     * @param int|string $chatId
+     * @return Chat
+     */
+    public static function archiveChat($chatId)
+    {
+        $chat = Chat::findOne($chatId);
+
+        if ($chat === null) {
+            throw new NotFoundHttpException("Чат не найден");
+        }
+
+        $chat->status = 'archived'; // Изменяем статус на 'archived'
+        if (!$chat->save()) {
+            throw new \yii\db\Exception('Ошибка при архивировании чата: ' . json_encode($chat->getErrors()));
         }
 
         return $chat;

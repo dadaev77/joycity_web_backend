@@ -7,7 +7,7 @@ use app\components\responseFunction\ResultAnswer;
 use app\models\Chat;
 use app\models\Notification;
 use app\models\Order;
-use app\services\chat\ChatArchiveService;
+use app\services\chats\ChatService;
 use app\services\notification\NotificationConstructor;
 use app\services\notification\NotificationManagementService;
 use Throwable;
@@ -202,16 +202,7 @@ class OrderStatusService
             }
             if ($linkedChats) {
                 foreach ($linkedChats as $chat) {
-                    
-                    // $chatArchiveStatus = ChatArchiveService::archiveChat(
-                    //     $chat->id,
-                    // );
-
-                    // if (!$chatArchiveStatus->success) {
-                    //     $transaction?->rollBack();
-
-                    //     return $chatArchiveStatus;
-                    // }
+                    ChatService::archiveChat($chat->id);
                 }
             }
             $transaction?->commit();
@@ -272,14 +263,7 @@ class OrderStatusService
             }
             if ($linkedChats) {
                 foreach ($linkedChats as $chat) {
-                    // $chatArchiveStatus = ChatArchiveService::archiveChat(
-                    //     $chat->id,
-                    // );
-
-                    // if (!$chatArchiveStatus->success) {
-                    //     $transaction?->rollBack();
-                    //     return $chatArchiveStatus;
-                    // }
+                    ChatService::archiveChat($chat->id);
                 }
             }
             $transaction?->commit();
