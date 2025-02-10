@@ -115,6 +115,7 @@ class NotificationsController extends V1Controller
             
             $filteredNotifications = [];
             foreach($notifications as $key => $notification){
+                \Yii::$app->telegramLog->send('success', $notification->event);
                 if ($notification->event !== 'completed' && $notification->event !== 'canceled'){
                     $filteredNotifications[] = $notification->id;
                 }
