@@ -203,11 +203,12 @@ class VerificationController extends ManagerController
         );
     }
 
-    public function actionReadRequest(int $id)
+    public function actionReadRequest()
     {
         $apiCodes = UserVerificationRequest::apiCodes();
         $user = User::getIdentity();
-        $request = UserVerificationRequest::findOne(['id' => $id]);
+        $request_id = Yii::$app->request->post('request_id');
+        $request = UserVerificationRequest::findOne(['id' => $request_id]);
 
         if (!$request) {
             return ApiResponse::code($apiCodes->NOT_FOUND);
