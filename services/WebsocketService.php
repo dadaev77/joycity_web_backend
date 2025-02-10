@@ -3,19 +3,20 @@
 namespace app\services;
 
 use app\components\responseFunction\Result;
-use linslin\yii2\curl\Curl;
+use GuzzleHttp\Client;
 
 class WebsocketService
 {
     public static function sendNotification(array $notification)
     {
         // todo Notification model
-        $response = (new Curl())
-            ->setHeader('Content-Type', 'application/json')
-            ->setRawPostData(json_encode(['notification' => $notification]))
-            ->post(self::getWebsocketUrl() . '/notification/send');
+        $client = new \GuzzleHttp\Client();
+        $response = $client->post(self::getWebsocketUrl() . '/notification/send', [
+            'json' => ['notification' => $notification],
+            'headers' => ['Content-Type' => 'application/json']
+        ]);
 
-        if ($response !== 'ok') {
+        if ($response->getBody()->getContents() !== 'ok') {
             return Result::error();
         }
 
@@ -24,6 +25,6 @@ class WebsocketService
 
     public static function getWebsocketUrl()
     {
-        return 'https://' . $_ENV['WEBSOCKET_CONTAINER_URL'] . '/socket.io/';
+        return 'https://' . $_ENV['APP_URL_NOTIFICATIONS'] . '/notification/send';
     }
 }

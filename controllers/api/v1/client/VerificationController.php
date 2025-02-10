@@ -142,11 +142,6 @@ class VerificationController extends ClientController
 
             $transaction?->commit();
 
-            NotificationConstructor::verificationVerificationCreated(
-                $newRequest->manager_id,
-                $newRequest->id,
-            );
-
             return ApiResponse::codeInfo(
                 $apiCodes->SUCCESS,
                 UserVerificationRequestOutputService::getEntity(
