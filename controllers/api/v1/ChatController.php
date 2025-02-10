@@ -357,19 +357,15 @@ class ChatController extends V1Controller
 
             $participants = $metadata['participants'] ?? [];
 
-            $messageModel = Message::findOne($message->id);
-            if ($messageModel) {
-                $messageArray = $messageModel->toArray();
-                foreach ($participants as $participant) {
-                    if ($participant !== $userId) {
-                        self::socketHandler($participant, $messageArray);
-                    }
+            foreach ($participants as $participant) {
+                if ($participant !== $userId) {
+                    self::socketHandler($participant, Message::findOne($message->id) ? Message::findOne($message->id)->toArray() : null);
                 }
             }
 
             return [
                 'status' => 'success',
-                'data' => $message
+                'data' => Message::findOne($message->id)
             ];
 
         } catch (\Exception $e) {
