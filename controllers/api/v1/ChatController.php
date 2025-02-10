@@ -14,8 +14,8 @@ use yii\filters\AccessControl;
 use yii\web\BadRequestHttpException;
 use yii\web\UploadedFile;
 use app\services\ChatUploader;
-use React\EventLoop\Factory;
 use React\Http\Browser;
+use React\EventLoop\Factory;
 
 
 class ChatController extends V1Controller
@@ -414,24 +414,24 @@ class ChatController extends V1Controller
         $loop = Factory::create();
         $browser = new Browser($loop);
         
+
         $browser->post($_ENV['APP_URL_NOTIFICATIONS'] . '/notification/send', [
-            'headers' => [
-                'Content-Type' => 'application/json',
+            'Content-Type' => 'application/json'
+        ], json_encode([
+            'notification' => [
+                'type' => 'new_message',
+                'user_id' => $userId,
+                'message' => $message,
             ],
-            'json' => [
-                'notification' => [
-                    'type' => 'new_message',
-                    'user_id' => $userId,
-                    'message' => $message,
-                ],
-            ],
-        ])
-        ->then(function (Psr\Http\Message\ResponseInterface $response) {
-            echo 'Message sent: ' . json_encode($response->getBody()) . PHP_EOL;
-        })
-        ->otherwise(function (Exception $e) {
-            echo 'Error: ' . json_encode($e->getMessage()) . PHP_EOL;
-        });
+        ]))
+        ->then(
+            function ($response) {
+                echo 'Ответ: ' . $response->getBody() . PHP_EOL;
+            },
+            function ($error) {
+                echo 'Ошибка: ' . $error->getMessage() . PHP_EOL;
+            }
+        );
 
         $loop->run();
     }

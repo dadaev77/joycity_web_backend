@@ -50,7 +50,8 @@
     "zircote/swagger-php": "*",
     "doctrine/annotations": "^2.0",
     "react/http": "^1.11",
-    "react/event-loop": "^1.5"
+    "react/event-loop": "^1.5",
+    "react/promise": "^3.2"
   },
   "require-dev": {
     
