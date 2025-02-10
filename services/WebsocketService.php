@@ -25,6 +25,6 @@ class WebsocketService
 
     public static function getWebsocketUrl()
     {
-        return 'https://' . $_ENV['APP_URL_NOTIFICATIONS'] . '/notification/send';
+        return $_ENV['APP_URL_NOTIFICATIONS'] . '/notification/send';
     }
 }
