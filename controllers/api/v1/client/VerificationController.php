@@ -124,6 +124,22 @@ class VerificationController extends ClientController
                 ]
             );
 
+            try{ 
+                $client = new \GuzzleHttp\Client();
+                $client->request('POST', $_ENV['APP_URL_NOTIFICATIONS'] . '/notification/send', [
+                    'json' => [
+                        'notification' => [
+                            'type' => 'new_verification_request',
+                            'user_id' => $newRequest->manager_id,
+                            'message' => 'Новый запрос на верификацию',
+                        ],
+                    ],
+                ]);
+            }
+            catch(Throwable $e){
+                
+            } 
+
             $transaction?->commit();
 
             NotificationConstructor::verificationVerificationCreated(
