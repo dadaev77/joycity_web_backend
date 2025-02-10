@@ -21,7 +21,9 @@ class VerificationController extends ManagerController
         $behaviors['verbFilter']['actions']['index'] = ['get'];
         $behaviors['verbFilter']['actions']['view'] = ['get'];
         $behaviors['verbFilter']['actions']['accept'] = ['put'];
-        
+        $behaviors['verbFilter']['actions']['getUnread'] = ['get'];
+        $behaviors['verbFilter']['actions']['readRequest'] = ['put'];
+
         return $behaviors;
     }
 
@@ -198,6 +200,30 @@ class VerificationController extends ManagerController
             [
                 'count' => $requests ? count($requests) : 0,
             ],
+        );
+    }
+
+    public function actionReadRequest(int $id)
+    {
+        $apiCodes = UserVerificationRequest::apiCodes();
+        $user = User::getIdentity();
+        $request = UserVerificationRequest::findOne(['id' => $id]);
+
+        if (!$request) {
+            return ApiResponse::code($apiCodes->NOT_FOUND);
+        }
+
+        $request->is_read = true;
+
+        if (!$request->save()) {
+            return ApiResponse::codeErrors(
+                $apiCodes->ERROR_SAVE,
+                $request->getFirstErrors(),
+            );
+        }
+
+        return ApiResponse::info(
+            UserVerificationRequestOutputService::getEntity($request->id),
         );
     }
 }
