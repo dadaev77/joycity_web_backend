@@ -377,7 +377,16 @@ class ChatController extends V1Controller
             }
             // время отправки сообщения
             $sendMessageTime = microtime(true);
-            Yii::$app->telegramLog->send('info', 'time: ' . $startSendMessage . ' - ' . $uploadAttachmentsTime . ' - ' . $findChatTime . ' - ' . $checkAccessTime . ' - ' . $createMessageTime . ' - ' . $updateLastMessageIdTime . ' - ' . $sendMessageTime, 'dev');
+            $times = [
+                'startSendMessage' => $startSendMessage,
+                'uploadAttachmentsTime' => $uploadAttachmentsTime,
+                'findChatTime' => $findChatTime,
+                'checkAccessTime' => $checkAccessTime,
+                'createMessageTime' => $createMessageTime,
+                'updateLastMessageIdTime' => $updateLastMessageIdTime,
+                'sendMessageTime' => $sendMessageTime,
+            ];
+            Yii::$app->telegramLog->send('info', 'time: ' . json_encode($times), 'dev');
             return [
                 'status' => 'success',
                 'data' => Message::findOne($message->id)
