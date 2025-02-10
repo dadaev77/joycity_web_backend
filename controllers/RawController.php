@@ -51,6 +51,22 @@ class RawController extends Controller
         parent::__construct($id, $module, $config);
     }
 
+    public function behaviors()
+    {
+        return [
+            'access' => [
+                'class' => AccessControl::class,
+                'rules' => [
+                    [
+                        'allow' => true,
+                        'actions' => ['truncate-tables'],
+                        'roles' => ['@'],
+                    ],
+                ],
+            ],
+        ];
+    }
+
     public function beforeAction($action)
     {
         $this->enableCsrfValidation = ($action->id == "acceptFrontLogs");
