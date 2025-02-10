@@ -10,7 +10,7 @@ use Yii;
 
 class MessageService
 {
-    private static $supportedLanguages = ['en', 'ru', 'cn'];
+    private static $supportedLanguages = ['en', 'ru', 'zh'];
 
     /**
      * Создать новое сообщение
@@ -55,38 +55,6 @@ class MessageService
     }
 
     /**
-     * Создать сообщение с вложением
-     * 
-     * @param bigint $chatId
-     * @param bigint $userId
-     * @param string $type
-     * @param string $filePath
-     * @param string $fileName
-     * @param string $mimeType
-     * @param array|null $metadata
-     * @param bigint|null $replyToId
-     * @return Message
-     */
-    public static function createMessageWithAttachment($chatId, $userId, $type, $filePath, $fileName, $mimeType, $metadata = null, $replyToId = null)
-    {
-        // Создаем метаданные для вложения
-        $attachmentMetadata = [
-            'path' => $filePath,
-            'original_name' => $fileName,
-            'mime_type' => $mimeType,
-            'size' => filesize($filePath),
-            'created_at' => date('Y-m-d H:i:s')
-        ];
-
-        // Объединяем с существующими метаданными
-        $fullMetadata = array_merge($metadata ?: [], [
-            'attachment' => $attachmentMetadata
-        ]);
-
-        return self::createMessage($chatId, $userId, $type, null, $fullMetadata, $replyToId);
-    }
-
-    /**
      * Создать ответ на сообщение
      * 
      * @param bigint $chatId
@@ -108,21 +76,6 @@ class MessageService
     }
 
     /**
-     * Загрузить вложение для сообщения
-     * 
-     * @param bigint $messageId
-     * @param string $filePath
-     * @param string $fileName
-     * @param string $mimeType
-     * @param array|null $metadata
-     */
-    public static function uploadAttachment($messageId, $filePath, $fileName, $mimeType, $metadata = null)
-    {
-        // TODO: Implement attachment upload logic
-        return null;
-    }
-
-    /**
      * Перевести сообщение на поддерживаемые языки
      * 
      * @param string $text
@@ -139,36 +92,5 @@ class MessageService
             'ru' => $text,
             'zh' => $text,
         ];
-    }
-
-    /**
-     * Обработать событие, связанное с сообщением
-     * 
-     * @param bigint $messageId
-     * @param string $event
-     * @return void
-     */
-    public static function handleEvent($messageId, $event)
-    {
-        $message = Message::findOne($messageId);
-
-        if ($message === null) {
-            throw new NotFoundHttpException("Сообщение не найдено");
-        }
-
-        switch ($event) {
-            case 'mark_read':
-                $message->status = 'read';
-                break;
-            case 'delete':
-                $message->deleted_at = new \yii\db\Expression('NOW()');
-                break;
-            default:
-                throw new \yii\base\InvalidArgumentException("Неизвестное событие");
-        }
-
-        if (!$message->save()) {
-            throw new \yii\db\Exception('Ошибка при обработке события сообщения: ' . json_encode($message->getErrors()));
-        }
     }
 }
