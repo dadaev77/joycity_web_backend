@@ -27,6 +27,7 @@ class NotificationConstructor
         }
 
         if ($publish) {
+            \Yii::$app->telegramLog->send('success', 'Create socket request');
             $pushResponse = WebsocketService::sendNotification(
                 NotificationOutputService::getEntity($notification->id),
             );
