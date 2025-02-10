@@ -107,22 +107,19 @@ class NotificationsController extends V1Controller
         try {
             $user = User::getIdentity();
             $query = Notification::find()
-                ->select(['id'])
                 ->where(['user_id' => $user->id])
                 ->andWhere(['is_read' => 0])
                 ->orderBy(['id' => SORT_DESC]);
             $notifications = $query->all();
             
-            $filteredNotifications = [];
-            foreach($notifications as $key => $notification){
-                \Yii::$app->telegramLog->send('success', json_encode($notification->event));
-                if ($notification->event !== 'completed' && $notification->event !== 'canceled'){
-                    $filteredNotifications[] = $notification->id;
+            foreach($notifications as $key => $notification){    
+                if ($notification->event == 'completed' || $notification->event == 'canceled'){
+                    unset($notifications[$key]);
                 }
             }
 
             return ApiResponse::collection(
-                NotificationOutputService::getCollection($filteredNotifications),
+                NotificationOutputService::getCollection($notifications),
             );
 
         } catch (Throwable $e) {
