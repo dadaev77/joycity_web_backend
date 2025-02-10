@@ -352,7 +352,10 @@ class ChatController extends V1Controller
             $chat->last_message_id = $message->id;
             $chat->save();
 
-            self::socketHandler($participants, Message::findOne($message->id) ? Message::findOne($message->id)->toArray() : null);
+            self::socketHandler(
+                array_diff($participants, [$userId]),
+                Message::findOne($message->id)->toArray()
+            );
 
             return [
                 'status' => 'success',
