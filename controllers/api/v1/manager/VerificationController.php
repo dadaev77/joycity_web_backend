@@ -195,7 +195,9 @@ class VerificationController extends ManagerController
 
         return ApiResponse::code(
             $apiCodes->SUCCESS,
-            $requests ? true : false,
+            [
+                'count' => $requests ? count($requests) : 0,
+            ],
         );
     }
 }
