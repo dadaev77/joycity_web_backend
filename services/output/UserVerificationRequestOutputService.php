@@ -26,8 +26,7 @@ class UserVerificationRequestOutputService extends OutputService
                 ),
                 'approvedBy' => fn($q) => $q->select(
                     SqlQueryService::getUserSelect(),
-                ),
-                'chat',
+                )
             ])
             ->where(['id' => $ids])
             ->orderBy(['id' => SORT_DESC]);
