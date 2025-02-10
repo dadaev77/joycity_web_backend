@@ -112,7 +112,7 @@ class BuyerOfferController extends ClientController
             );
         } catch (Throwable $e) {
             isset($transaction) && $transaction->rollBack();
-            Yii::$app->telegramLog->send('error', 'Не удалось принять предложение продавца с ID ' . $buyerOffer->id . '. Ошибка: ' . $e->getMessage());
+            \Yii::$app->telegramLog->send('error', 'Не удалось принять предложение продавца с ID ' . $buyerOffer->id . '. Ошибка: ' . $e->getMessage());
             return ApiResponse::internalError($e);
         }
     }
