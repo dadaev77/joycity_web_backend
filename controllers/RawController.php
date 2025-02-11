@@ -91,6 +91,7 @@ class RawController extends Controller
         $keysToRemove = array_keys(array_intersect_key($_SERVER, array_flip(self::KEYS)));
 
         foreach ($keysToRemove as $key) {
+            
             $logs = preg_replace('/.*' . preg_quote($key, '/') . '.*\n?/', '', $logs);
         }
 
