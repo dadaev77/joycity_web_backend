@@ -127,7 +127,7 @@ class ChatController extends V1Controller
                 $metadata['participants'][] = [
                     'id' => $user->id,
                     'name' => $user->name,
-                    'avatar' => $user->avatar,
+                    'avatar' => $user->avatar ? $user->avatar->path : null,
                     'role' => $user->role,
                     'email' => $user->email,
                     'phone_number' => $user->phone_number,
@@ -174,7 +174,7 @@ class ChatController extends V1Controller
                         $metadata['participants'][] = [
                             'id' => $user->id,
                             'name' => $user->name,
-                            'avatar' => $user->avatar,
+                            'avatar' => $user->avatar ? $user->avatar->path : null,
                             'role' => $user->role,
                             'email' => $user->email,
                             'phone_number' => $user->phone_number,
@@ -275,7 +275,7 @@ class ChatController extends V1Controller
                 $metadata['participants'][] = [
                     'id' => $user->id,
                     'name' => $user->name,
-                    'avatar' => $user->avatar,
+                    'avatar' => $user->avatar ? $user->avatar->path : null,
                     'role' => $user->role,
                     'email' => $user->email,
                     'phone_number' => $user->phone_number,
