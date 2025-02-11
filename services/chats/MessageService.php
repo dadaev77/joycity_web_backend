@@ -83,9 +83,17 @@ class MessageService
      */
     private static function translateMessage($text)
     {
-        // $translator = new \app\services\TranslationService();
-        // $result = $translator->translate($text);
-        // $translateResult = $result->result;
+        $translator = new \app\services\TranslationService();
+        $result = $translator->translate($text);
+        $translateResult = $result->result;
+
+        if (isset($translateResult['en']) && isset($translateResult['ru']) && isset($translateResult['zh'])) {
+            return [
+                'en' => $translateResult['en'],
+                'ru' => $translateResult['ru'],
+                'zh' => $translateResult['zh'],
+            ];
+        }
         
         return [
             'en' => $text,
