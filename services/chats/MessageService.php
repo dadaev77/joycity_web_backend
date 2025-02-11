@@ -86,11 +86,19 @@ class MessageService
         $translator = new \app\services\TranslationService();
         $result = $translator->translate($text);
         $translateResult = $result->result;
+
+        if (isset($translateResult['en']) && isset($translateResult['ru']) && isset($translateResult['zh'])) {
+            return [
+                'en' => $translateResult['en'],
+                'ru' => $translateResult['ru'],
+                'zh' => $translateResult['zh'],
+            ];
+        }
         
         return [
-            'en' => $translateResult['en'],
-            'ru' => $translateResult['ru'],
-            'zh' => $translateResult['zh'],
+            'en' => $text,
+            'ru' => $text,
+            'zh' => $text,
         ];
     }
 }
