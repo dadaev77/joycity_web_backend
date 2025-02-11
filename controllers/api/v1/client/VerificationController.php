@@ -5,10 +5,9 @@ namespace app\controllers\api\v1\client;
 use app\components\ApiResponse;
 use app\components\response\ResponseCodes;
 use app\controllers\api\v1\ClientController;
-use app\models\Chat;
 use app\models\User;
 use app\models\UserVerificationRequest;
-use app\services\chat\ChatConstructorService;
+use app\services\chats\ChatService;
 use app\services\notification\NotificationConstructor;
 use app\services\output\UserVerificationRequestOutputService;
 use app\services\RateService;
@@ -114,27 +113,34 @@ class VerificationController extends ClientController
                 );
             }
 
-            $conversation = ChatConstructorService::createChatVerification(
-                Chat::GROUP_CLIENT_MANAGER,
-                [$user->id, $randomManager->id],
+            // create verification chat for new client user with manager
+            ChatService::createVerificationChat(
+                $user->id,
                 $newRequest->id,
+                [
+                    'verification_request_id' => $newRequest->id,
+                    'participants' => [$user->id, $newRequest->manager_id],
+                    'group_name' => 'client_manager',
+                ]
             );
 
-            if (!$conversation->success) {
-                $transaction?->rollBack();
-
-                return ApiResponse::codeErrors(
-                    $apiCodes->ERROR_SAVE,
-                    $conversation->reason,
-                );
+            try{ 
+                $client = new \GuzzleHttp\Client();
+                $client->request('POST', $_ENV['APP_URL_NOTIFICATIONS'] . '/notification/send', [
+                    'json' => [
+                        'notification' => [
+                            'type' => 'new_verification_request',
+                            'user_id' => $newRequest->manager_id,
+                            'message' => 'Новый запрос на верификацию',
+                        ],
+                    ],
+                ]);
             }
+            catch(Throwable $e){
+                
+            } 
 
             $transaction?->commit();
-
-            NotificationConstructor::verificationVerificationCreated(
-                $newRequest->manager_id,
-                $newRequest->id,
-            );
 
             return ApiResponse::codeInfo(
                 $apiCodes->SUCCESS,

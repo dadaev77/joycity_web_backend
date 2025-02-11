@@ -42,14 +42,16 @@
     "yidas/yii2-bower-asset": "2.0.13.1",
     "swiftmailer/swiftmailer": "^6.3",
     "ext-fileinfo": "*",
-    "twilio/sdk": "^7.9",
     "vlucas/phpdotenv": "^5.5",
     "linslin/yii2-curl": "^1.5",
     "ext-imagick": "*",
     "intervention/image": "^3.8",
     "mpdf/mpdf": "^8.2",
     "zircote/swagger-php": "*",
-    "doctrine/annotations": "^2.0"
+    "doctrine/annotations": "^2.0",
+    "react/http": "^1.11",
+    "react/event-loop": "^1.5",
+    "react/promise": "^3.2"
   },
   "require-dev": {
     

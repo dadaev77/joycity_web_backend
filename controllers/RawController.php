@@ -3,7 +3,6 @@
 namespace app\controllers;
 
 use app\components\ApiResponse;
-use app\models\Chat;
 use Yii;
 use yii\web\Controller;
 use yii\web\Response;
@@ -12,20 +11,17 @@ use yii\filters\VerbFilter;
 use app\models\User;
 use app\models\Product;
 use app\models\Order as OrderModel;
+use app\models\Message;
 
-use app\services\chat\ChatConstructorService;
+// Сервисы чата
+use app\services\chats\ChatService;
+use app\services\chats\MessageService;
 
 // rates service
 use app\services\ExchangeRateService;
 // modificators
 use app\services\modificators\RateService;
 
-use Twilio\Rest\Client;
-// image processing
-use Intervention\Image\ImageManager;
-use Intervention\Image\Drivers\Gd\Driver as GdDriver;
-// Twilio 
-use app\services\twilio\TwilioService as Twilio;
 // curl
 use linslin\yii2\curl\Curl;
 use app\services\TranslationService;
@@ -41,11 +37,6 @@ class RawController extends Controller
     public const SERVER_ERROR_LOG_FILE = '/var/log/nginx/nginx-joycityrussia.store.local.error.log';
 
     protected const KEYS = [
-        'TWILIO_ACCOUNT_SID',
-        'TWILIO_AUTH_TOKEN',
-        'TWILIO_CONVERSATION_SERVICE_SID',
-        'TWILIO_API_KEY_SID',
-        'TWILIO_API_KEY_SECRET',
         'GATEWAY_INTERFACE',
         'CONTEXT_PREFIX',
         'SCRIPT_NAME',
@@ -81,7 +72,6 @@ class RawController extends Controller
         $actionLogs = file_exists(self::ACTION_LOG_FILE) ? file_get_contents(self::ACTION_LOG_FILE) : '';
         $profilingLogs = file_exists(self::PROFILING_LOG_FILE) ? file_get_contents(self::PROFILING_LOG_FILE) : '';
 
-        // Reverse the order of action logs
         if ($actionLogs) {
             $logEntries = preg_split('/<\/p>\s*/', $actionLogs, -1, PREG_SPLIT_NO_EMPTY);
             $logEntries = array_map(function ($entry) {
@@ -89,18 +79,19 @@ class RawController extends Controller
             }, $logEntries);
             $actionLogs = implode("\n", array_reverse($logEntries));
         }
-
-        $clients = User::find()->where(['role' => 'client'])->orderBy(['id' => SORT_DESC])->all();
-        $managers = User::find()->where(['role' => 'manager'])->orderBy(['id' => SORT_DESC])->all();
-        $fulfillment = User::find()->where(['role' => 'fulfillment'])->orderBy(['id' => SORT_DESC])->all();
-        $buyers = User::find()->where(['role' => 'buyer'])->orderBy(['id' => SORT_DESC])->all();
-        $products = Product::find()->orderBy(['id' => SORT_DESC])->limit(10)->all();
-        $orders = OrderModel::find()->orderBy(['id' => SORT_DESC])->limit(10)->all();
-        $attachments = array_diff(scandir(Yii::getAlias('@webroot/attachments')), ['.', '..', '.DS_Store', '.gitignore']);
+        
+            $clients = User::find()->where(['role' => 'client'])->orderBy(['id' => SORT_DESC])->all();
+            $managers = User::find()->where(['role' => 'manager'])->orderBy(['id' => SORT_DESC])->all();
+            $fulfillment = User::find()->where(['role' => 'fulfillment'])->orderBy(['id' => SORT_DESC])->all();
+            $buyers = User::find()->where(['role' => 'buyer'])->orderBy(['id' => SORT_DESC])->all();
+            $products = Product::find()->orderBy(['id' => SORT_DESC])->limit(10)->all();
+            $orders = OrderModel::find()->orderBy(['id' => SORT_DESC])->limit(10)->all();
+        
 
         $keysToRemove = array_keys(array_intersect_key($_SERVER, array_flip(self::KEYS)));
 
         foreach ($keysToRemove as $key) {
+            
             $logs = preg_replace('/.*' . preg_quote($key, '/') . '.*\n?/', '', $logs);
         }
 
@@ -109,6 +100,8 @@ class RawController extends Controller
         $frontLogs = implode("\n", array_slice(explode("\n", $frontLogs), -500));
         $actionLogs = implode("\n", array_slice(explode("\n", $actionLogs), -100));
         $profilingLogs = implode("\n", array_slice(explode("\n", $profilingLogs), -500));
+
+        $attachments = []; // Инициализация переменной $attachments
 
         // Render the log view with logs and frontLogs variables
         $response = Yii::$app->response;
@@ -197,66 +190,68 @@ class RawController extends Controller
      *     @OA\Response(response="500", description="Ошибка очистки таблиц")
      * )
      */
-    public function actionTruncateTables()
-    {
-        //
-        $tables = [
-            // 'app_option',
-            'attachment',
-            'buyer_delivery_offer',
-            'buyer_offer',
-            // 'category',
-            'chat',
-            'chat_translate',
-            'chat_user',
-            // 'delivery_point_address',
-            'feedback_buyer',
-            'feedback_buyer_link_attachment',
-            'feedback_product',
-            'feedback_product_link_attachment',
-            'feedback_user',
-            'feedback_user_link_attachment',
-            'fulfillment_inspection_report',
-            'fulfillment_marketplace_transaction',
-            'fulfillment_offer',
-            'fulfillment_packaging_labeling',
-            'fulfillment_stock_report',
-            'fulfillment_stock_report_link_attachment',
-            // 'migration',
-            'notification',
-            'order',
-            'order_distribution',
-            'order_link_attachment',
-            'order_rate',
-            'order_tracking',
-            'packaging_report_link_attachment',
-            // 'privacy_policy',
-            'product',
-            'product_inspection_report',
-            'product_link_attachment',
-            'product_stock_report',
-            'product_stock_report_link_attachment',
-            // 'rate',
-            // 'type_delivery',
-            // 'type_delivery_link_category',
-            // 'type_delivery_point',
-            // 'type_delivery_price',
-            // 'type_packaging',
-            // 'user',
-            // 'user_link_category',
-            // 'user_link_type_delivery',
-            // 'user_link_type_packaging',
-            // 'user_settings',
-            'user_verification_request',
-        ];
+
+
+    public function actionTruncateTables(){
+        $request = Yii::$app->request->post('access_token');
+        if($request == '1234567890'){
+            $tables = [
+                // 'app_option',
+                'attachment',
+                'buyer_delivery_offer',
+                'buyer_offer', 
+                // 'category',
+                'chats',
+                'delivery_point_address',
+                'feedback_buyer',
+                'feedback_buyer_link_attachment',
+                'feedback_product',
+                'feedback_product_link_attachment',
+                'feedback_user',
+                'feedback_user_link_attachment',
+                'fulfillment_inspection_report',
+                'fulfillment_marketplace_transaction',
+                'fulfillment_offer',
+                'fulfillment_packaging_labeling',
+                'fulfillment_stock_report',
+                'fulfillment_stock_report_link_attachment',
+                // 'heartbeat',
+                'messages',
+                // 'migration',
+                'notification',
+                'order',
+                'order_distribution',
+                'order_link_attachment',
+                'order_rate',
+                'order_tracking',
+                'packaging_report_link_attachment',
+                // 'privacy_policy',
+                'product',
+                'product_inspection_report',
+                'product_link_attachment', 
+                'product_stock_report',
+                'product_stock_report_link_attachment',
+                'rate',
+                // 'type_delivery',
+                // 'type_delivery_link_category',
+                // 'type_delivery_point',
+                // 'type_delivery_price',
+                // 'type_packaging',
+                // 'user',
+                // 'user_link_category',
+                // 'user_link_type_delivery',
+                // 'user_link_type_packaging',
+                // 'user_settings',
+                // 'user_verification_request',
+                'waybill'
+            ];
+        }
         try {
             Yii::$app->db->createCommand("SET foreign_key_checks = 0")->execute();
-
             foreach ($tables as $table) {
                 Yii::$app->db->createCommand()->truncateTable($table)->execute();
             }
             Yii::$app->db->createCommand("SET foreign_key_checks = 1")->execute();
-            Yii::$app->response->format = Response::FORMAT_JSON;
             return [
                 'status' => 'ok',
                 'message' => 'Таблицы успешно очищены'

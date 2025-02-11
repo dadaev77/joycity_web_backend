@@ -107,14 +107,21 @@ class NotificationsController extends V1Controller
         try {
             $user = User::getIdentity();
             $query = Notification::find()
-                ->select(['id'])
                 ->where(['user_id' => $user->id])
                 ->andWhere(['is_read' => 0])
                 ->orderBy(['id' => SORT_DESC]);
+            $notifications = $query->all();
+            
+            foreach($notifications as $key => $notification){    
+                if ($notification->event == 'completed' || $notification->event == 'canceled'){
+                    unset($notifications[$key]);
+                }
+            }
 
             return ApiResponse::collection(
-                NotificationOutputService::getCollection($query->column()),
+                NotificationOutputService::getCollection($notifications),
             );
+
         } catch (Throwable $e) {
             return ApiResponse::internalError($e);
         }

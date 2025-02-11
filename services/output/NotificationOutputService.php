@@ -18,7 +18,8 @@ class NotificationOutputService extends OutputService
 
         return array_map(static function ($model) {
             $info = ModelTypeHelper::toArray($model);
-
+            $info['type'] = $model->entity_type;
+            
             return $info;
         }, $query->all());
     }

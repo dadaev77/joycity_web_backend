@@ -2,49 +2,60 @@
 
 namespace app\models;
 
-use yii\db\ActiveQuery;
+use Yii;
+use yii\db\ActiveRecord;
+use yii\behaviors\TimestampBehavior;
+use yii\db\Expression;
 
 /**
- * This is the model class for table "chat".
+ * Модель для таблицы "chats"
  *
- * @property int $id
- * @property string $created_at
- * @property string $twilio_id
- * @property string $name
- * @property string $group
- * @property string $type
- * @property int|null $order_id
- * @property int|null $user_verification_request_id
- * @property int $is_archive
- *
- * @property ChatUser[] $chatUsers
- * @property Order $order
- * @property UserVerificationRequest $userVerificationRequest
+ * @property bigint $id
+ * @property string|null $type
+ * @property string|null $name
+ * @property string|null $created_at
+ * @property string|null $updated_at
+ * @property bigint|null $last_message_id
+ * @property string|null $status
+ * @property bigint|null $order_id
+ * @property bigint|null $verification_id
+ * @property string|null $metadata
+ * @property bigint|null $user_id
+ * @property string|null $role
+ * @property string|null $left_at
+ * @property bool|null $is_muted
+ * @property string|null $joined_at
+ * @property bigint|null $last_read_message_id
  */
-class Chat extends Base
+class Chat extends ActiveRecord
 {
-    public const GROUP_CLIENT_MANAGER = 'client_manager';
-    public const GROUP_CLIENT_BUYER_MANAGER = 'client_buyer_manager';
-    public const GROUP_CLIENT_FULFILMENT_MANAGER = 'client_fulfilment_manager';
-
-
-    public const GROUPS_ALL = [
-        self::GROUP_CLIENT_MANAGER,
-        self::GROUP_CLIENT_BUYER_MANAGER,
-        self::GROUP_CLIENT_FULFILMENT_MANAGER,
+    private static $dealTypes = ['order', 'deal'];
+    private static $groupName = [
+        'client_buyer_manager',
+        'client_fulfillment_manager',
+        'client_manager'
     ];
 
-    public const TYPE_ORDER = 'order';
-    public const TYPE_VERIFICATION = 'verification';
-
-    public const TYPES_ALL = [self::TYPE_ORDER, self::TYPE_VERIFICATION];
+    public function behaviors()
+    {
+        return [
+            [
+                'class' => TimestampBehavior::class,
+                'attributes' => [
+                    ActiveRecord::EVENT_BEFORE_INSERT => ['created_at', 'updated_at'],
+                    ActiveRecord::EVENT_BEFORE_UPDATE => 'updated_at',
+                ],
+                'value' => new Expression('NOW()'),
+            ],
+        ];
+    }
 
     /**
      * {@inheritdoc}
      */
     public static function tableName()
     {
-        return 'chat';
+        return 'chats';
     }
 
     /**
@@ -53,33 +64,40 @@ class Chat extends Base
     public function rules()
     {
         return [
-            [['created_at', 'twilio_id', 'group', 'type'], 'required'],
-            [['created_at'], 'safe'],
-            [
-                ['order_id', 'user_verification_request_id', 'is_archive'],
-                'integer',
-            ],
-            [['twilio_id', 'name', 'group', 'type'], 'string', 'max' => 255],
-            [['user_verification_request_id'], 'unique'],
-            [
-                ['order_id'],
-                'exist',
-                'skipOnError' => true,
-                'targetClass' => Order::class,
-                'targetAttribute' => ['order_id' => 'id'],
-            ],
-            [
-                ['user_verification_request_id'],
-                'exist',
-                'skipOnError' => true,
-                'targetClass' => UserVerificationRequest::class,
-                'targetAttribute' => ['user_verification_request_id' => 'id'],
-            ],
-
-            // custom validations
-            [['group'], 'in', 'range' => self::GROUPS_ALL],
-            [['type'], 'in', 'range' => self::TYPES_ALL],
+            [['type', 'name', 'status', 'role'], 'string'],
+            [['created_at', 'updated_at', 'left_at', 'joined_at'], 'safe'],
+            [['last_message_id', 'order_id', 'verification_id', 'user_id', 'last_read_message_id'], 'integer'],
+            [['metadata'], 'safe'],
+            [['is_muted'], 'boolean'],
         ];
+    }
+
+    /**
+     * Преобразование метаданных перед сохранением
+     */
+    public function beforeSave($insert)
+    {
+        if (!parent::beforeSave($insert)) {
+            return false;
+        }
+
+        if (is_array($this->metadata)) {
+            $this->metadata = json_encode($this->metadata);
+        }
+
+        return true;
+    }
+
+    /**
+     * Преобразование метаданных после загрузки
+     */
+    public function afterFind()
+    {
+        parent::afterFind();
+
+        if ($this->metadata !== null) {
+            $this->metadata = json_decode($this->metadata, true);
+        }
     }
 
     /**
@@ -89,31 +107,58 @@ class Chat extends Base
     {
         return [
             'id' => 'ID',
-            'created_at' => 'Created At',
-            'twilio_id' => 'Twilio ID',
-            'name' => 'Name',
-            'group' => 'Group',
-            'type' => 'Type',
-            'order_id' => 'Order ID',
-            'user_verification_request_id' => 'User Verification Request ID',
-            'is_archive' => 'Is Archive',
+            'type' => 'Тип',
+            'name' => 'Название',
+            'created_at' => 'Дата создания',
+            'updated_at' => 'Дата обновления',
+            'last_message_id' => 'ID последнего сообщения',
+            'status' => 'Статус',
+            'order_id' => 'ID заказа',
+            'verification_id' => 'ID верификации',
+            'metadata' => 'Метаданные',
+            'user_id' => 'ID пользователя',
+            'role' => 'Роль',
+            'left_at' => 'Дата выхода',
+            'is_muted' => 'Отключены уведомления',
+            'joined_at' => 'Дата присоединения',
+            'last_read_message_id' => 'ID последнего прочитанного сообщения',
         ];
     }
 
     /**
-     * Gets query for [[ChatUsers]].
+     * Получить все сообщения чата
      *
-     * @return ActiveQuery
+     * @return \yii\db\ActiveQuery
      */
-    public function getChatUsers()
+    public function getMessages()
     {
-        return $this->hasMany(ChatUser::class, ['chat_id' => 'id']);
+        return $this->hasMany(Message::class, ['chat_id' => 'id']);
     }
 
     /**
-     * Gets query for [[Order]].
+     * Получить участников чата
      *
-     * @return ActiveQuery
+     * @return \yii\db\ActiveQuery
+     */
+    public function getChatParticipants()
+    {
+        return $this->hasMany(ChatParticipant::class, ['chat_id' => 'id']);
+    }
+
+    /**
+     * Получить последнее сообщение чата
+     *
+     * @return \yii\db\ActiveQuery
+     */
+    public function getLastMessage()
+    {
+        return $this->hasOne(Message::class, ['id' => 'last_message_id']);
+    }
+
+    /**
+     * Получить заказ, связанный с чатом
+     *
+     * @return \yii\db\ActiveQuery
      */
     public function getOrder()
     {
@@ -121,28 +166,12 @@ class Chat extends Base
     }
 
     /**
-     * Gets query for [[UserVerificationRequest]].
+     * Получить верификацию, связанную с чатом
      *
-     * @return ActiveQuery
+     * @return \yii\db\ActiveQuery
      */
-    public function getUserVerificationRequest()
+    public function getVerification()
     {
-        return $this->hasOne(UserVerificationRequest::class, [
-            'id' => 'user_verification_request_id',
-        ]);
-    }
-
-    public static function getGroupsMap()
-    {
-        return array_map(static function ($key) {
-            return ['key' => $key, 'translate' => $key];
-        }, self::GROUPS_ALL);
-    }
-
-    public static function getTypesMap()
-    {
-        return array_map(static function ($key) {
-            return ['key' => $key, 'translate' => $key];
-        }, self::TYPES_ALL);
+        return $this->hasOne(Verification::class, ['id' => 'verification_id']);
     }
 }

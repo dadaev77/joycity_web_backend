@@ -8,6 +8,7 @@ use app\controllers\api\v1\BuyerController;
 
 use app\models\OrderDistribution;
 use app\models\User;
+use app\services\chats\ChatService;
 
 use app\services\order\OrderDistributionService;
 use app\services\order\OrderStatusService;
@@ -141,7 +142,24 @@ class DistributionController extends BuyerController
             }
 
             $transaction?->commit();
-
+            /**===============================================
+             * Создаем групповой чат для заказа
+             * Группа [ Клиент - Менеджер - Продавец ]
+             *===============================================
+             */
+            ChatService::CreateGroupChat(
+                'Order ' . $order->id,
+                $user->id,
+                $order->id,
+                [
+                    'deal_type' => 'order',
+                    'participants' => [$order->created_by, $order->manager_id, $order->buyer_id],
+                    'group_name' => 'client_buyer_manager',
+                ]
+            );
+            /**===============================================
+            *  ===============================================
+            */
             return ApiResponse::info(
                 OrderDistributionOutputService::getEntity($task->id),
             );

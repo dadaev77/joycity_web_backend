@@ -27,6 +27,7 @@ class NotificationConstructor
         }
 
         if ($publish) {
+            
             $pushResponse = WebsocketService::sendNotification(
                 NotificationOutputService::getEntity($notification->id),
             );

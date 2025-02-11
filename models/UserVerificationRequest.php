@@ -15,7 +15,7 @@ use yii\db\ActiveQuery;
  * @property string $created_at
  * @property float $amount
  * @property int $status
- *
+ * @property bool $is_read
  * @property User $approvedBy
  * @property Chat $chat
  * @property User $createdBy
@@ -50,6 +50,7 @@ class UserVerificationRequest extends Base
                 ['created_by_id', 'manager_id', 'approved_by_id', 'status'],
                 'integer',
             ],
+            [['is_read'], 'boolean'],
             [['created_at'], 'safe'],
             [['amount'], 'number'],
             [
@@ -89,6 +90,7 @@ class UserVerificationRequest extends Base
             'created_at' => 'Created At',
             'amount' => 'Amount',
             'status' => 'Status',
+            'is_read' => 'Is Read',
         ];
     }
 
@@ -100,18 +102,6 @@ class UserVerificationRequest extends Base
     public function getApprovedBy()
     {
         return $this->hasOne(User::class, ['id' => 'approved_by_id']);
-    }
-
-    /**
-     * Gets query for [[Chat]].
-     *
-     * @return ActiveQuery
-     */
-    public function getChat()
-    {
-        return $this->hasOne(Chat::class, [
-            'user_verification_request_id' => 'id',
-        ]);
     }
 
     /**
@@ -132,5 +122,16 @@ class UserVerificationRequest extends Base
     public function getManager()
     {
         return $this->hasOne(User::class, ['id' => 'manager_id']);
+    }
+    /**
+     * Gets query for [[Chat]].
+     *
+     * @return ActiveQuery
+     */
+    public function getChat()
+    {
+        return $this->hasOne(Chat::class, [
+            'verification_id' => 'id',
+        ]);
     }
 }

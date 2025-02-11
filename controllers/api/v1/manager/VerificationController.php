@@ -4,8 +4,10 @@ namespace app\controllers\api\v1\manager;
 
 use app\components\ApiResponse;
 use app\controllers\api\v1\ManagerController;
+use app\models\Chat;
 use app\models\User;
 use app\models\UserVerificationRequest;
+use app\services\chats\ChatService;
 use app\services\output\UserVerificationRequestOutputService;
 use Throwable;
 use Yii;
@@ -19,6 +21,8 @@ class VerificationController extends ManagerController
         $behaviors['verbFilter']['actions']['index'] = ['get'];
         $behaviors['verbFilter']['actions']['view'] = ['get'];
         $behaviors['verbFilter']['actions']['accept'] = ['put'];
+        $behaviors['verbFilter']['actions']['getUnread'] = ['get'];
+        $behaviors['verbFilter']['actions']['readRequest'] = ['put'];
 
         return $behaviors;
     }
@@ -75,17 +79,22 @@ class VerificationController extends ManagerController
     {
         $apiCodes = UserVerificationRequest::apiCodes();
         $user = User::getIdentity();
-        $query = UserVerificationRequest::find()
-            ->select(['id'])
-            ->where(['status' => UserVerificationRequest::STATUS_WAITING])
-            ->andWhere(['manager_id' => $user->id]);
 
-        return ApiResponse::codeCollection(
-            $apiCodes->SUCCESS,
-            UserVerificationRequestOutputService::getCollection(
-                $query->column(),
-            ),
-        );
+        try {
+            $query = UserVerificationRequest::find()
+                ->select(['id'])
+                ->where(['status' => UserVerificationRequest::STATUS_WAITING])
+                ->andWhere(['manager_id' => $user->id]);
+
+            return ApiResponse::codeCollection(
+                $apiCodes->SUCCESS,
+                UserVerificationRequestOutputService::getCollection(
+                    $query->column(),
+                ),
+            );
+        } catch (Throwable $e) {
+            return $e->getMessage();
+        }
     }
 
     /**
@@ -161,6 +170,10 @@ class VerificationController extends ManagerController
             }
 
             $transaction?->commit();
+            $verificationChat = Chat::findOne(['verification_id' => $request->id]);
+            if ($verificationChat) {
+                ChatService::archiveChat($verificationChat->id);
+            }
 
             return ApiResponse::info(
                 UserVerificationRequestOutputService::getEntity($request->id),
@@ -170,5 +183,48 @@ class VerificationController extends ManagerController
 
             return ApiResponse::code($apiCodes->INTERNAL_ERROR);
         }
+    }
+
+    public function actionGetUnread()
+    {
+        $apiCodes = UserVerificationRequest::apiCodes();
+        $user = User::getIdentity();
+        $requests = UserVerificationRequest::find()
+            ->where(['status' => UserVerificationRequest::STATUS_WAITING])
+            ->andWhere(['manager_id' => $user->id])
+            ->andWhere(['is_read' => false])
+            ->all();
+
+        return ApiResponse::code(
+            $apiCodes->SUCCESS,
+            [
+                'count' => $requests ? count($requests) : 0,
+            ],
+        );
+    }
+
+    public function actionReadRequest()
+    {
+        $apiCodes = UserVerificationRequest::apiCodes();
+        $user = User::getIdentity();
+        $request_id = Yii::$app->request->post('request_id');
+        $request = UserVerificationRequest::findOne(['id' => $request_id]);
+
+        if (!$request) {
+            return ApiResponse::code($apiCodes->NOT_FOUND);
+        }
+
+        $request->is_read = true;
+
+        if (!$request->save()) {
+            return ApiResponse::codeErrors(
+                $apiCodes->ERROR_SAVE,
+                $request->getFirstErrors(),
+            );
+        }
+
+        return ApiResponse::info(
+            UserVerificationRequestOutputService::getEntity($request->id),
+        );
     }
 }
