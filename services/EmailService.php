@@ -11,12 +11,19 @@ class EmailService
         $mailer = Yii::$app->mailer;
         $from = Yii::$app->params['adminEmail'];
 
-        return $mailer
-            ->compose()
-            ->setFrom($from)
-            ->setTo($to)
-            ->setSubject($subject)
-            ->setTextBody($message)
-            ->send();
+        try {
+            $result = $mailer
+                ->compose()
+                ->setFrom($from)
+                ->setTo($to)
+                ->setSubject($subject)
+                ->setTextBody($message)
+                ->send();
+
+            return $result;
+        } catch (Throwable $e) {
+            Yii::$app->telegramLog->send('error', 'Ошибка при отправке email: ' . $e->getMessage());
+            return false;
+        }
     }
 }
