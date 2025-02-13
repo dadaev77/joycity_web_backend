@@ -91,7 +91,7 @@ class CronController extends Controller
     public function actionUpdateRates()
     {
         $rates = ExchangeRateService::getRate(['cny', 'usd']);
-
+        
         if (!empty($rates['data'])) {
             $rate = new \app\models\Rate();
             $rate->RUB = 1;
@@ -99,11 +99,13 @@ class CronController extends Controller
             $rate->CNY = round($rates['data']['CNY'] * 1.05, 4);
             if ($rate->save()) {
                 Yii::$app->heartbeat->addHeartbeat('rates', 'success');
+                return ['status' => 'success', 'message' => 'Курсы обновлены'];
             } else {
                 return ['status' => 'error', 'message' => 'Ошибка сохранения курсов'];
             }
             Yii::$app->heartbeat->addHeartbeat('rates', 'success');
         }
+
         Yii::$app->heartbeat->addHeartbeat('rates', 'error');
         return ['status' => 'error', 'message' => 'Нет данных для обновления курсов'];
     }
