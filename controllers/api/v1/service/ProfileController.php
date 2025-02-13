@@ -30,7 +30,6 @@ class ProfileController extends ServiceController
      */
     public function actionInfo()
     {
-        return 'asd';
         try {
             $userToken = Yii::$app->request->get('user_token');
 

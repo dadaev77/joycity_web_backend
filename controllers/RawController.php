@@ -191,4 +191,21 @@ class RawController extends Controller
     {
         Yii::error('Test message');
     }
+
+    public function actionSocket(){
+        $userToken = Yii::$app->request->get('user_token');
+
+        $user = \app\models\User::find()
+                ->select(['id'])
+                ->where(['access_token' => $userToken])
+                ->one();
+        $apiCodes = \app\models\User::apiCodes();
+            if (!$user) {
+                return ApiResponse::code($apiCodes->NOT_FOUND);
+            }
+
+        return ApiResponse::info(
+            \app\services\output\ProfileOutputService::getEntity($user->id),
+        );
+    }
 }
