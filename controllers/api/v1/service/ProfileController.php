@@ -30,14 +30,15 @@ class ProfileController extends ServiceController
      */
     public function actionInfo()
     {
+        return 'asd';
         try {
             $userToken = Yii::$app->request->get('user_token');
+
             $user = User::find()
                 ->select(['id'])
                 ->where(['access_token' => $userToken])
                 ->one();
             $apiCodes = User::apiCodes();
-
             if (!$user) {
                 return ApiResponse::code($apiCodes->NOT_FOUND);
             }
