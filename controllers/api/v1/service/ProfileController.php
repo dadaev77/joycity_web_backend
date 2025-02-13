@@ -46,6 +46,7 @@ class ProfileController extends ServiceController
                 ProfileOutputService::getEntity($user->id),
             );
         } catch (Throwable $e) {
+            \Yii::$app->telegramLog->send('error', 'Error in ProfileController::actionInfo: ' . $e->getMessage());
             return ApiResponse::internalError($e);
         }
     }
