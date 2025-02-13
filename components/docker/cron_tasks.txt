@@ -1,0 +1,3 @@
+*/30 * * * * curl -X GET 'https://joycityrussia-prod.friflex.com/cron/check-pulse'
+0,15,30,45 * * * * curl -X GET 'https://joycityrussia-prod.friflex.com/cron/update-rates'
+0 0 * * * curl -X GET 'https://joycityrussia.friflex-prod.com/cron/clear-rates'
