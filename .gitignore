@@ -55,9 +55,9 @@ Thumbs.db
 .env
 controllers/api/v1/user/RelationshipController.php
 #entrypoint/api/index.php
-config/db.php
+# config/db.php
 vendor
-config/smtp.php
+# config/smtp.php
 
 /entrypoint/api/attachments/
 /entrypoint/api/uploads/
