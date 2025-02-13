@@ -97,6 +97,9 @@ class CronController extends Controller
             $rate->RUB = 1;
             $rate->USD = round($rates['data']['USD'] * 1.02, 4);
             $rate->CNY = round($rates['data']['CNY'] * 1.05, 4);
+
+            \Yii::$app->telegramLog->send('success', 'Курсы обновлены: USD - ' . $rates['data']['USD'] . ' CNY - ' . $rates['data']['CNY']);
+
             if ($rate->save()) {
                 Yii::$app->heartbeat->addHeartbeat('rates', 'success');
                 return ['status' => 'success', 'message' => 'Курсы обновлены'];
