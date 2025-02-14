@@ -180,14 +180,5 @@ class RawController extends Controller
             ];
         }
         return $response;
-    }
-
-    public function actionSendEmail()
-    {
-        
-            $result = \app\services\EmailService::sendEmail('code70@inbox.ru', 'Test', 'Test message');
-            return $result;
-        
-    }
-    
+    }    
 }
