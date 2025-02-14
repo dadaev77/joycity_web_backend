@@ -72,14 +72,32 @@ class SearchController extends ClientController
             ->where(['like', 'en_name', $query . '%', false])
             ->orWhere(['like', 'ru_name', $query . '%', false])
             ->orWhere(['like', 'zh_name', $query . '%', false])
-            ->limit(5)
+            ->limit(10)
             ->asArray()
             ->all();
 
-        if ($categories) {
+        $rootCategories = [];
+        $subCategories = [];
+
+        foreach ($categories as $category) {
+            if ($category['parent_id'] === null) {
+                $rootCategories[] = $category;
+            } else {
+                $subCategories[] = $category;
+            }
+        }
+
+        if ($rootCategories) {
             return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
-                'collection' => $categories,
+                'collection' => $rootCategories,
                 'type' => 'category',
+            ]);
+        }
+
+        if ($subCategories) {
+            return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
+                'collection' => $subCategories,
+                'type' => 'subcategory',
             ]);
         }
 
@@ -186,6 +204,7 @@ class SearchController extends ClientController
         $sort = $request->get('sort');
         $priceMin = (float) $request->get('price_min');
         $priceMax = (float) $request->get('price_max');
+
         $queryString = trim($request->get('query', ''));
 
         $requiredParams = [
