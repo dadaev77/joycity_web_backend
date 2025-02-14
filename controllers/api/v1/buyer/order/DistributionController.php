@@ -54,23 +54,16 @@ class DistributionController extends BuyerController
     public function actionStatus()
     {
         $user = User::getIdentity();
-        $activeTasks = Yii::$app->cache->getOrSet(
-            self::getCacheKey($user->id),
-            function () use ($user) {
-                $query = OrderDistribution::find()
-                    ->select(['id'])
-                    ->where([
-                        'current_buyer_id' => $user->id,
-                        'status' => OrderDistribution::STATUS_IN_WORK,
-                    ]);
+        
+        $query = OrderDistribution::find()
+            ->select(['id'])
+            ->where([
+                'current_buyer_id' => $user->id,
+                'status' => OrderDistribution::STATUS_IN_WORK,
+            ]);
 
-                return OrderDistributionOutputService::getCollection(
-                    $query->column(),
-                );
-            },
-            5,
-        );
-
+        $activeTasks = OrderDistributionOutputService::getCollection($query->column());
+                
         return ApiResponse::collection($activeTasks);
     }
 

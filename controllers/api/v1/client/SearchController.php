@@ -83,7 +83,6 @@ class SearchController extends ClientController
             $hasSubcategories = Category::find()
                 ->where(['parent_id' => $category['id']])
                 ->exists();
-
             if ($hasSubcategories) {
                 $rootCategories[] = $category;
             } else {
