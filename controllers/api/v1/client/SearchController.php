@@ -77,14 +77,17 @@ class SearchController extends ClientController
             ->all();
 
         $rootCategories = [];
-        $subCategories = [];
+        $endCategories = [];
 
         foreach ($categories as $category) {
-            $hasSubcategories = $category->subcategories;
+            $hasSubcategories = Category::find()
+                ->where(['parent_id' => $category['id']])
+                ->exists();
+
             if ($hasSubcategories) {
                 $rootCategories[] = $category;
             } else {
-                $subCategories[] = $category;
+                $endCategories[] = $category;
             }
         }
 
@@ -95,9 +98,9 @@ class SearchController extends ClientController
             ]);
         }
 
-        if ($subCategories) {
+        if ($endCategories) {
             return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
-                'collection' => $subCategories,
+                'collection' => $endCategories,
                 'type' => 'subcategory',
             ]);
         }

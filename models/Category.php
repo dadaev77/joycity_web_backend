@@ -96,6 +96,7 @@ class Category extends Base
     {
         return $this->hasMany(Category::class, ['parent_id' => 'id']);
     }
+    
     public function getCategory()
     {
         return $this->hasOne(Category::class, ['id' => 'parent_id']);
