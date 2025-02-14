@@ -77,6 +77,14 @@ class SearchController extends ClientController
             ->asArray()
             ->all();
 
+        $collection = array_map(function ($item) {
+            return [
+                'id' => $item['id'],
+                'name' => $item['name_ru'] ?? $item['name_en'] ?? $item['name_zh'],
+                'subcategory_id' => $item['subcategory_id'],
+            ];
+        }, $collection);
+
         if ($collection) {
             return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
                 'collection' => $collection,
