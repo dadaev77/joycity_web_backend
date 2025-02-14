@@ -184,12 +184,12 @@ class RawController extends Controller
 
     public function actionSendEmail()
     {
-        $result = EmailService::sendEmail('code70@inbox.ru', 'Test', 'Test message');
-        return $result;
+        try {
+            $result = EmailService::sendEmail('code70@inbox.ru', 'Test', 'Test message');
+            return $result;
+        } catch (Throwable $e) {
+            return $e->getMessage();
+        }
     }
-    public function actionTestLog()
-    {
-        Yii::error('Test message');
-    }
-
+    
 }
