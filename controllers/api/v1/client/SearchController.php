@@ -80,7 +80,8 @@ class SearchController extends ClientController
         $subCategories = [];
 
         foreach ($categories as $category) {
-            if ($category['parent_id'] === null) {
+            $hasSubcategories = $category->subcategories;
+            if ($hasSubcategories) {
                 $rootCategories[] = $category;
             } else {
                 $subCategories[] = $category;
