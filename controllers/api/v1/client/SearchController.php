@@ -69,7 +69,7 @@ class SearchController extends ClientController
         }
 
         $collection = Product::find()
-            ->select(['id', 'name', 'subcategory_id'])
+            ->select(['id', 'name_ru', 'name_en', 'name_zh', 'subcategory_id'])
             ->where(['like', 'name_ru', $query . '%', false])
             ->orWhere(['like', 'name_en', $query . '%', false])
             ->orWhere(['like', 'name_zh', $query . '%', false])
