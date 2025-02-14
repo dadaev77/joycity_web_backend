@@ -184,12 +184,10 @@ class RawController extends Controller
 
     public function actionSendEmail()
     {
-        try {
-            $result = EmailService::sendEmail('code70@inbox.ru', 'Test', 'Test message');
+        
+            $result = \app\services\EmailService::sendEmail('code70@inbox.ru', 'Test', 'Test message');
             return $result;
-        } catch (Throwable $e) {
-            return $e->getMessage();
-        }
+        
     }
     
 }
