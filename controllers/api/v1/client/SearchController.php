@@ -411,22 +411,4 @@ class SearchController extends ClientController
             ),
         ]);
     }
-
-    /**
-     * Получить дочерние категории по ID родительской категории
-     * 
-     * @param int $categoryId
-     * @return array
-     */
-    public function actionGetSubcategories($categoryId)
-    {
-        $subcategories = Category::find()
-            ->where(['parent_id' => $categoryId])
-            ->asArray()
-            ->all();
-
-        return ApiResponse::byResponseCode(ResponseCodes::getStatic()->SUCCESS, [
-            'collection' => $subcategories,
-        ]);
-    }
 }
