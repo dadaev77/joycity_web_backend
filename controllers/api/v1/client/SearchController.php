@@ -191,6 +191,7 @@ class SearchController extends ClientController
         $requiredParams = [
             'subcategoryId' => $request->get('subcategory_id'),
         ];
+
         $notValidParams = array_filter(
             $requiredParams,
             static fn($v) => empty($v),
@@ -237,6 +238,7 @@ class SearchController extends ClientController
             COALESCE(NULLIF(range_3_price, 0), 999999999),
             COALESCE(NULLIF(range_4_price, 0), 999999999)
         )';
+
         $priceMaxSql = 'GREATEST(
             COALESCE(NULLIF(range_1_price, 0), 0),
             COALESCE(NULLIF(range_2_price, 0), 0),
@@ -255,7 +257,9 @@ class SearchController extends ClientController
             ->limit(20);
 
         if ($queryString) {
-            $query->andWhere(['like', 'product.name', "%$queryString%", false]);
+            $query->andWhere(['like', 'product.name_ru', "%$queryString%", false])
+                ->orWhere(['like', 'product.name_en', "%$queryString%", false])
+                ->orWhere(['like', 'product.name_zh', "%$queryString%", false]);
         }
 
         if ($priceMin && $priceMax) {
