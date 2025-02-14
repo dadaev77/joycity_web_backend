@@ -54,7 +54,6 @@ class DistributionController extends BuyerController
     public function actionStatus()
     {
         $user = User::getIdentity();
-        
         $query = OrderDistribution::find()
             ->select(['id'])
             ->where([
@@ -63,7 +62,6 @@ class DistributionController extends BuyerController
             ]);
 
         $activeTasks = OrderDistributionOutputService::getCollection($query->column());
-                
         return ApiResponse::collection($activeTasks);
     }
 
