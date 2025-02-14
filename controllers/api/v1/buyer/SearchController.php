@@ -78,38 +78,57 @@ class SearchController extends BuyerController
             ->where(['like', 'en_name', $query . '%', false])
             ->orWhere(['like', 'ru_name', $query . '%', false])
             ->orWhere(['like', 'zh_name', $query . '%', false])
-            ->limit(5)
+            ->andWhere(['NOT IN', 'en_name', ['All', 'Все', '全部']])
+            ->andWhere(['NOT IN', 'ru_name', ['All', 'Все', '全部']])
+            ->andWhere(['NOT IN', 'zh_name', ['All', 'Все', '全部']])
+            ->limit(10)
             ->asArray()
             ->all();
 
-        if ($categories) {
+        $rootCategories = [];
+        $endCategories = [];
+
+        foreach ($categories as $category) {
+            $hasSubcategories = Category::find()
+                ->where(['parent_id' => $category['id']])
+                ->exists();
+            if ($hasSubcategories) {
+                $rootCategories[] = $category;
+            } else {
+                $endCategories[] = $category;
+            }
+        }
+
+        if ($rootCategories) {
             return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
-                'collection' => $categories,
+                'collection' => $rootCategories,
                 'type' => 'category',
             ]);
         }
 
-        $subcategories = Subcategory::find()
-            ->where(['like', 'en_name', $query . '%', false])
-            ->orWhere(['like', 'ru_name', $query . '%', false])
-            ->orWhere(['like', 'zh_name', $query . '%', false])
-            ->limit(5)
-            ->asArray()
-            ->all();
-
-        if ($subcategories) {
+        if ($endCategories) {
             return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
-                'collection' => $subcategories,
+                'collection' => $endCategories,
                 'type' => 'subcategory',
             ]);
         }
 
         $collection = Product::find()
-            ->select(['id', 'name', 'subcategory_id'])
-            ->where(['like', 'name', $query . '%', false])
+            ->select(['id', 'name_ru', 'name_en', 'name_zh', 'subcategory_id'])
+            ->where(['like', 'name_ru', $query . '%', false])
+            ->orWhere(['like', 'name_en', $query . '%', false])
+            ->orWhere(['like', 'name_zh', $query . '%', false])
             ->limit(5)
             ->asArray()
             ->all();
+
+        $collection = array_map(function ($item) {
+            return [
+                'id' => $item['id'],
+                'name' => $item['name_ru'] ?? $item['name_en'] ?? $item['name_zh'],
+                'subcategory_id' => $item['subcategory_id'],
+            ];
+        }, $collection);
 
         if ($collection) {
             return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
@@ -262,7 +281,9 @@ class SearchController extends BuyerController
             ->limit(20);
 
         if ($queryString) {
-            $query->andWhere(['like', 'product.name', "%$queryString%", false]);
+            $query->andWhere(['like', 'product.name_ru', "%$queryString%", false])
+                ->orWhere(['like', 'product.name_en', "%$queryString%", false])
+                ->orWhere(['like', 'product.name_zh', "%$queryString%", false]);
         }
 
         if ($priceMin && $priceMax) {
