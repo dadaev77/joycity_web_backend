@@ -68,6 +68,21 @@ class SearchController extends ClientController
             ]);
         }
 
+        $categories = Category::find()
+            ->where(['like', 'en_name', $query . '%', false])
+            ->orWhere(['like', 'ru_name', $query . '%', false])
+            ->orWhere(['like', 'zh_name', $query . '%', false])
+            ->limit(5)
+            ->asArray()
+            ->all();
+
+        if ($categories) {
+            return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
+                'collection' => $categories,
+                'type' => 'category',
+            ]);
+        }
+
         $collection = Product::find()
             ->select(['id', 'name_ru', 'name_en', 'name_zh', 'subcategory_id'])
             ->where(['like', 'name_ru', $query . '%', false])
