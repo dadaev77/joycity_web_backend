@@ -72,6 +72,9 @@ class SearchController extends ClientController
             ->where(['like', 'en_name', $query . '%', false])
             ->orWhere(['like', 'ru_name', $query . '%', false])
             ->orWhere(['like', 'zh_name', $query . '%', false])
+            ->andWhere(['NOT IN', 'en_name', ['All', 'Все', '全部']])
+            ->andWhere(['NOT IN', 'ru_name', ['All', 'Все', '全部']])
+            ->andWhere(['NOT IN', 'zh_name', ['All', 'Все', '全部']])
             ->limit(10)
             ->asArray()
             ->all();

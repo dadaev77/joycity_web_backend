@@ -161,7 +161,6 @@ $config = [
 
                 // Правило для update-order
                 'api/v1/manager/buyer/update-order/<orderId>' => 'api/v1/manager/buyer/update-order',
-
                 'api/v1/<controller>/<id:\d+>/<action>' =>
                 'api/v1/<controller>/<action>',
                 'api/v1/<group>/<controller>/<action>' =>
