@@ -182,16 +182,16 @@ class OrderController extends ClientController
             } catch (Throwable $e) {
                 $translations = [
                     'ru' => [
-                        'name' => $request->post()['product_name'],
-                        'description' => $request->post()['product_description'],
+                        'name' => $request->post()['product_name_ru'],
+                        'description' => $request->post()['product_description_ru'],
                     ],
                     'en' => [
-                        'name' => $request->post()['product_name'],
-                        'description' => $request->post()['product_description'],
+                        'name' => $request->post()['product_name_en'],
+                        'description' => $request->post()['product_description_en'],
                     ],
                     'zh' => [
-                        'name' => $request->post()['product_name'],
-                        'description' => $request->post()['product_description'],
+                        'name' => $request->post()['product_name_zh'],
+                        'description' => $request->post()['product_description_zh'],
                     ],
                 ];
                 foreach ($translations as $key => $value) {
