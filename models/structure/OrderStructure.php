@@ -307,7 +307,6 @@ class OrderStructure extends Base
             'product_name_zh' => 'Product Name Zh',
             'product_description_zh' => 'Product Description Zh',
             // end translations
-
             'expected_quantity' => 'Expected Quantity',
             'expected_price_per_item' => 'Expected Price Per Item',
             'expected_packaging_quantity' => 'Expected Packaging Quantity',
