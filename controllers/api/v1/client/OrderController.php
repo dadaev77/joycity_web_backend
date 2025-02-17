@@ -180,10 +180,29 @@ class OrderController extends ClientController
                     $order->{'product_description_' . $key} = $value['description'];
                 }
             } catch (Throwable $e) {
-                return ApiResponse::byResponseCode(ResponseCodes::getStatic()->INTERNAL_ERROR, [
-                    'error' => $e->getMessage(),
-                    'text' => 'Error translating order name and description. Check translation service',
-                ]);
+                $translations = [
+                    'ru' => [
+                        'name' => $request->post()['product_name'],
+                        'description' => $request->post()['product_description'],
+                    ],
+                    'en' => [
+                        'name' => $request->post()['product_name'],
+                        'description' => $request->post()['product_description'],
+                    ],
+                    'zh' => [
+                        'name' => $request->post()['product_name'],
+                        'description' => $request->post()['product_description'],
+                    ],
+                ];
+                foreach ($translations as $key => $value) {
+                    $order->{'product_name_' . $key} = $value['name'];
+                    $order->{'product_description_' . $key} = $value['description'];
+                }
+                \Yii::$app->telegramLog->send('error', 'Ошибка при переводе названия и описания продукта: ' . $e->getMessage());
+                // return ApiResponse::byResponseCode(ResponseCodes::getStatic()->INTERNAL_ERROR, [
+                //     'error' => $e->getMessage(),
+                //     'text' => 'Error translating order name and description. Check translation service',
+                // ]);
             }
 
             $orderSave = SaveModelService::loadValidateAndSave(
