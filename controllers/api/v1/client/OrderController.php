@@ -196,7 +196,7 @@ class OrderController extends ClientController
                 $order->{'product_name_' . $key} = $value['name'];
                 $order->{'product_description_' . $key} = $value['description'];
             }
-
+            Yii::$app->telegramLog->send('error', 'Translations: ' . json_encode($order));
             $orderSave = SaveModelService::loadValidateAndSave(
 
                 $order,
