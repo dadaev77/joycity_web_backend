@@ -103,6 +103,7 @@ class DistributionController extends BuyerController
             }
 
             if ($task->current_buyer_id !== $user->id) {
+                Yii::$app->telegramLog->send('error', 'Нет доступа к задаче: ' . $task->id);
                 return ApiResponse::code($apiCodes->NO_ACCESS);
             }
 
@@ -112,7 +113,7 @@ class DistributionController extends BuyerController
 
             if (!$status->success) {
                 $transaction?->rollBack();
-
+                Yii::$app->telegramLog->send('error', 'Ошибка при принятии задачи: ' . $status->reason);
                 return ApiResponse::codeErrors(
                     $apiCodes->ERROR_SAVE,
                     $status->reason,
@@ -125,7 +126,7 @@ class DistributionController extends BuyerController
 
             if (!$orderStatusChange->success) {
                 $transaction?->rollBack();
-
+                Yii::$app->telegramLog->send('error', 'Ошибка при изменении статуса заказа: ' . $orderStatusChange->reason);
                 return ApiResponse::codeErrors(
                     $apiCodes->ERROR_SAVE,
                     $orderStatusChange->reason,
@@ -195,12 +196,14 @@ class DistributionController extends BuyerController
             }
 
             if ($task->current_buyer_id !== $user->id) {
+                Yii::$app->telegramLog->send('error', 'Нет доступа к задаче: ' . $task->id);
                 return ApiResponse::code($apiCodes->NO_ACCESS);
             }
 
             $status = OrderDistributionService::buyerDecline($task);
 
             if (!$status->success) {
+                Yii::$app->telegramLog->send('error', 'Ошибка при отклонении задачи: ' . $status->reason);
                 return ApiResponse::codeErrors(
                     $apiCodes->ERROR_SAVE,
                     $status->reason,
