@@ -134,6 +134,7 @@ class OrderController extends ClientController
                     $request->post()['product_description'],
                 );
                 $translations = $translations->result;
+                Yii::$app->telegramLog->send('success', 'Перевод названия и описания продукта: ' . print_r($translations, true));
             } catch (Throwable $e) {
                 $translations = [
                     'ru' => [
