@@ -133,10 +133,12 @@ class OrderController extends ClientController
                 $request->post()['product_name'],
                 $request->post()['product_description'],
             );
+            
             if (isset($translation->result)) {
                 $translations = $translation->result;
             } else {
-                Yii::$app->telegramLog->send('error', 'Перевод не получен, используется значение по умолчанию');
+                // Логируем номер заявки в случае ошибки перевода
+                Yii::$app->telegramLog->send('error', 'Перевод не получен, используется язык приложения. Заявка номер: ' . $order->id);
                 $translations = [
                     'ru' => [
                         'name' => $request->post()['product_name'],
@@ -152,6 +154,7 @@ class OrderController extends ClientController
                     ],
                 ];
             }
+            
             // Заполняем базовые поля
             $order->created_by = $user->id;
             $order->created_at = date('Y-m-d H:i:s');
