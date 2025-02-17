@@ -384,7 +384,7 @@ class OrderController extends ClientController
             }
         } catch (Throwable $e) {
             $transaction?->rollBack();
-            Yii::$app->telegramLog->send('error', 'Заказ не сохранен с ID ' . $order->id . '. Ошибка: ' . $e->getMessage());
+            Yii::$app->telegramLog->send('error', 'Ошибка при создании заказа с ID ' . $order->id . '. Ошибка: ' . $e->getMessage());
             return ApiResponse::internalError($e);
         }
     }
