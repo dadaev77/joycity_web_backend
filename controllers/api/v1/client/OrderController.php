@@ -197,40 +197,35 @@ class OrderController extends ClientController
                 $order->{'product_description_' . $key} = $value['description'];
             }
 
-            try {
-                $orderSave = SaveModelService::loadValidateAndSave(
-                    $order,
-                    [
-                        'product_id',
-                        'product_name',
-                        'product_description',
-                        'product_name_ru',
-                        'product_description_ru',
-                        'product_name_en',
-                        'product_description_en',
-                        'product_name_zh',
-                        'product_description_zh',
-                        'expected_quantity',
-                        'expected_packaging_quantity',
-                        'subcategory_id',
-                        'type_packaging_id',
-                        'type_delivery_id',
-                        'type_delivery_point_id',
-                        'delivery_point_address_id',
-                        'is_need_deep_inspection',
-                    ],
-                    $transaction,
-                    true,
-                );
+            $orderSave = SaveModelService::loadValidateAndSave(
 
-                if (!$orderSave->success) {
-                    Yii::$app->telegramLog->send('error', 'Ошибка при создании заказа: ' . $orderSave->reason);
-                    return $orderSave->apiResponse;
-                }
-            } catch (Throwable $e) {
-                Yii::$app->telegramLog->send('error', 'Ошибка при создании заказа: ' . $e->getMessage());
+                $order,
+                [
+                    'product_id',
+                    'product_name',
+                    'product_description',
+                    'product_name_ru',
+                    'product_description_ru',
+                    'product_name_en',
+                    'product_description_en',
+                    'product_name_zh',
+                    'product_description_zh',
+                    'expected_quantity',
+                    'expected_packaging_quantity',
+                    'subcategory_id',
+                    'type_packaging_id',
+                    'type_delivery_id',
+                    'type_delivery_point_id',
+                    'delivery_point_address_id',
+                    'is_need_deep_inspection',
+                ],
+                $transaction,
+                true,
+            );
+
+            if (!$orderSave->success) {
                 Yii::$app->telegramLog->send('error', 'Ошибка при создании заказа: ' . $orderSave->reason);
-                return ApiResponse::internalError($e);
+                return $orderSave->apiResponse;
             }
             
             ChatService::CreateGroupChat(
