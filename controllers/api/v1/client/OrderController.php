@@ -118,6 +118,7 @@ class OrderController extends ClientController
         $typeDeliveryPointId = $request->post('type_delivery_point_id');
         $withProduct = false;
         $currency = $user->settings->currency;
+        $successTranslate = false;
 
         try {
             $randomManager = User::find()
@@ -136,9 +137,8 @@ class OrderController extends ClientController
             
             if (isset($translation->result)) {
                 $translations = $translation->result;
+                $successTranslate = true;
             } else {
-                // Логируем номер заявки в случае ошибки перевода
-                Yii::$app->telegramLog->send('error', 'Перевод не получен, используется язык приложения. Заявка номер: ' . $order->id);
                 $translations = [
                     'ru' => [
                         'name' => $request->post()['product_name'],
@@ -303,6 +303,10 @@ class OrderController extends ClientController
                     if ($distTaskID) {
                         exec('curl -X GET "' . $_ENV['APP_URL'] . '/cron/create?taskID=' . $distTaskID->id . '"');
                     }
+                }
+
+                if (!$successTranslate) {
+                    Yii::$app->telegramLog->send('error', 'Перевод не получен, используется язык приложения. Заявка номер: ' . $order->id);
                 }
 
                 return ApiResponse::byResponseCode(null, [
