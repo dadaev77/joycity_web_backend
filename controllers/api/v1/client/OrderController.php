@@ -170,15 +170,11 @@ class OrderController extends ClientController
 
 
             try {
-                $translation = TranslationService::translateProductAttributes(
+                $translations = TranslationService::translateProductAttributes(
                     $request->post()['product_name'],
                     $request->post()['product_description'],
                 );
-                $translations = $translation->result;
-                foreach ($translations as $key => $value) {
-                    $order->{'product_name_' . $key} = $value['name'];
-                    $order->{'product_description_' . $key} = $value['description'];
-                }
+                $translations = $translations->result;
             } catch (Throwable $e) {
                 $translations = [
                     'ru' => [
@@ -194,50 +190,47 @@ class OrderController extends ClientController
                         'description' => $request->post()['product_description'],
                     ],
                 ];
-
-                foreach ($translations as $key => $value) {
-                    $order->{'product_name_' . $key} = $value['name'];
-                    $order->{'product_description_' . $key} = $value['description'];
-                }
-
                 \Yii::$app->telegramLog->send('error', 'Ошибка при переводе названия и описания продукта: ' . $e->getMessage());
-                return ApiResponse::byResponseCode(ResponseCodes::getStatic()->INTERNAL_ERROR, [
-                    'error' => $e->getMessage(),
-                    'text' => 'Error translating order name and description. Check translation service',
-                ]);
+            }
+            foreach ($translations as $key => $value) {
+                $order->{'product_name_' . $key} = $value['name'];
+                $order->{'product_description_' . $key} = $value['description'];
             }
 
-            
+            try {
+                $orderSave = SaveModelService::loadValidateAndSave(
+                    $order,
+                    [
+                        'product_id',
+                        'product_name',
+                        'product_description',
+                        'product_name_ru',
+                        'product_description_ru',
+                        'product_name_en',
+                        'product_description_en',
+                        'product_name_zh',
+                        'product_description_zh',
+                        'expected_quantity',
+                        'expected_packaging_quantity',
+                        'subcategory_id',
+                        'type_packaging_id',
+                        'type_delivery_id',
+                        'type_delivery_point_id',
+                        'delivery_point_address_id',
+                        'is_need_deep_inspection',
+                    ],
+                    $transaction,
+                    true,
+                );
 
-            $orderSave = SaveModelService::loadValidateAndSave(
-
-                $order,
-                [
-                    'product_id',
-                    'product_name',
-                    'product_description',
-                    'product_name_ru',
-                    'product_description_ru',
-                    'product_name_en',
-                    'product_description_en',
-                    'product_name_zh',
-                    'product_description_zh',
-                    'expected_quantity',
-                    'expected_packaging_quantity',
-                    'subcategory_id',
-                    'type_packaging_id',
-                    'type_delivery_id',
-                    'type_delivery_point_id',
-                    'delivery_point_address_id',
-                    'is_need_deep_inspection',
-                ],
-                $transaction,
-                true,
-            );
-
-            if (!$orderSave->success) {
+                if (!$orderSave->success) {
+                    Yii::$app->telegramLog->send('error', 'Ошибка при создании заказа: ' . $orderSave->reason);
+                    return $orderSave->apiResponse;
+                }
+            } catch (Throwable $e) {
+                Yii::$app->telegramLog->send('error', 'Ошибка при создании заказа: ' . $e->getMessage());
                 Yii::$app->telegramLog->send('error', 'Ошибка при создании заказа: ' . $orderSave->reason);
-                return $orderSave->apiResponse;
+                return ApiResponse::internalError($e);
             }
             
             ChatService::CreateGroupChat(
