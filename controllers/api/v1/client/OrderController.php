@@ -201,10 +201,10 @@ class OrderController extends ClientController
                 }
 
                 \Yii::$app->telegramLog->send('error', 'Ошибка при переводе названия и описания продукта: ' . $e->getMessage());
-                // return ApiResponse::byResponseCode(ResponseCodes::getStatic()->INTERNAL_ERROR, [
-                //     'error' => $e->getMessage(),
-                //     'text' => 'Error translating order name and description. Check translation service',
-                // ]);
+                return ApiResponse::byResponseCode(ResponseCodes::getStatic()->INTERNAL_ERROR, [
+                    'error' => $e->getMessage(),
+                    'text' => 'Error translating order name and description. Check translation service',
+                ]);
             }
 
             
