@@ -129,11 +129,11 @@ class OrderController extends ClientController
             $order = new Order();
             
             try {
-                $translations = TranslationService::translateProductAttributes(
+                $translation = TranslationService::translateProductAttributes(
                     $request->post()['product_name'],
                     $request->post()['product_description'],
                 );
-                $translations = $translations->result ?? [];
+                $translations = $translation->result;
                 Yii::$app->telegramLog->send('success', 'Перевод названия и описания продукта: ' . print_r($translations, true));
             } catch (Throwable $e) {
                 $translations = [
