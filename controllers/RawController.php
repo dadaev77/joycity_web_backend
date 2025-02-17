@@ -2,30 +2,13 @@
 
 namespace app\controllers;
 
-use app\components\ApiResponse;
 use Yii;
 use yii\web\Controller;
 use yii\web\Response;
-use app\models\Order;
-use yii\filters\VerbFilter;
 use app\models\User;
 use app\models\Product;
 use app\models\Order as OrderModel;
-use app\models\Message;
 
-// Сервисы чата
-use app\services\chats\ChatService;
-use app\services\chats\MessageService;
-
-// rates service
-use app\services\ExchangeRateService;
-// modificators
-use app\services\modificators\RateService;
-
-// curl
-use linslin\yii2\curl\Curl;
-use app\services\TranslationService;
-use Exception;
 
 class RawController extends Controller
 {
@@ -51,6 +34,37 @@ class RawController extends Controller
         parent::__construct($id, $module, $config);
     }
 
+    public function actionAuth()
+    {
+        Yii::$app->response->format = Response::FORMAT_HTML;
+        return $this->renderPartial('auth');
+    }
+
+    public function actionLogin()
+    {
+        Yii::$app->response->format = Response::FORMAT_HTML;
+        $request = Yii::$app->request->post();
+        $email = $request['email'];
+        $password = $request['password'];
+
+        $user = User::find()->where(['email' => $email])->one();
+        if (!$user) {
+            return $this->renderPartial('auth', ['error' => 'Пользователь не найден']);
+        }
+
+        if (!Yii::$app->security->validatePassword($password, $user->password)) {
+            return $this->renderPartial('auth', ['error' => 'Неверный пароль']);
+        }
+
+        $_COOKIE['auth'] = hash('sha256', $user->password);
+        setcookie('auth', $_COOKIE['auth'], time() + 3600, '/');
+        if ($user->role == 'admin') {
+            header('Location: /raw/log');
+        } else {
+            return $this->renderPartial('auth', ['error' => 'Неверная роль пользователя для входа в систему']);
+        }
+    }
+
     public function beforeAction($action)
     {
         $this->enableCsrfValidation = ($action->id == "acceptFrontLogs");
@@ -67,6 +81,10 @@ class RawController extends Controller
      */
     public function actionLog()
     {
+        if (!isset($_COOKIE['auth'])) {
+            header('Location: /raw/auth');
+            exit;
+        }
         $logs = file_exists(self::LOG_FILE) ? file_get_contents(self::LOG_FILE) : '';
         $frontLogs = file_exists(self::FRONT_LOG_FILE) ? file_get_contents(self::FRONT_LOG_FILE) : '';
         $actionLogs = file_exists(self::ACTION_LOG_FILE) ? file_get_contents(self::ACTION_LOG_FILE) : '';
@@ -122,21 +140,7 @@ class RawController extends Controller
         ], false);
     }
 
-    /**
-     * @OA\Post(
-     *     path="/raw/clear-log",
-     *     summary="Очистить лог приложения",
-     *     @OA\Response(response="200", description="Лог очищен"),
-     *     @OA\Response(response="500", description="Ошибка очистки лога")
-     * )
-     */
-    public function actionClearLog()
-    {
-        if (file_put_contents(__DIR__ . '/../runtime/logs/app.log', '')) {
-            return 'ok';
-        }
-        return 'error';
-    }
+
 
     /**
      * @OA\Post(
@@ -182,13 +186,5 @@ class RawController extends Controller
         return $response;
     }
 
-    public function actionSendEmail()
-    {
-        $result = EmailService::sendEmail('code70@inbox.ru', 'Test', 'Test message');
-        return $result;
-    }
-    public function actionTestLog()
-    {
-        Yii::error('Test message');
-    }
+    
 }
