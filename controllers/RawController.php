@@ -185,15 +185,4 @@ class RawController extends Controller
         }
         return $response;
     }
-
-    public function actionCategories()
-    {
-        $categories = \app\models\Category::find()->all();
-
-        $categories = array_filter($categories, function($category) {
-            return (new \app\models\Category())->findOne($category['id'])->getProducts()->count() > 0;
-        });
-
-        return $categories;
-    }
 }
