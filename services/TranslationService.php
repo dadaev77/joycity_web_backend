@@ -53,6 +53,8 @@ class TranslationService
             $response = str_replace('```', '', $response);
             $responseParsed = json_decode($response, true);
 
+            \Yii::$app->telegramLog->send('error', 'Ответ от сервиса перевода: ' . $response);
+            
             if ($httpCode !== 200 || !$responseParsed['success']) {
                 return Result::error();
             }
