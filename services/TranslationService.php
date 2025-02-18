@@ -28,7 +28,6 @@ class TranslationService
 
     public static function translateProductAttributes(string $productName, string $productDescription)
     {
-        //
         $aiSevice = $_ENV['APP_URL_AI'];
         $path = '/translate_product_attributes';
         $url = $aiSevice . $path;
