@@ -49,13 +49,19 @@ class TranslationService
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             curl_close($ch);
 
+            // Обработка ответа
             $responseParsed = json_decode($response, true);
-
-            if ($httpCode !== 200 || !$responseParsed['success']) {
-                return Result::error();
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                $cleanedResponse = preg_replace('/^`(.*)`$/s', '$1', $response);
+                $responseParsed = json_decode($cleanedResponse, true);
             }
 
-            return Result::success($responseParsed['result']);
+            // Добавьте обработку для нового формата JSON
+            if (isset($responseParsed['ru']) && isset($responseParsed['en']) && isset($responseParsed['zh'])) {
+                return Result::success($responseParsed);
+            } elseif ($httpCode !== 200 || !$responseParsed['success']) {
+                return Result::error();
+            }
         } catch (Throwable $e) {
             return Result::error();
         }
