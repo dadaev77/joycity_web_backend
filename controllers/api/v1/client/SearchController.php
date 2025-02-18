@@ -116,7 +116,7 @@ class SearchController extends ClientController
             ->where(['like', 'name_ru', $query . '%', false])
             ->orWhere(['like', 'name_en', $query . '%', false])
             ->orWhere(['like', 'name_zh', $query . '%', false])
-            ->limit(5)
+            ->limit(10)
             ->asArray()
             ->all();
 
