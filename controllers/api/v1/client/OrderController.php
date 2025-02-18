@@ -273,6 +273,7 @@ class OrderController extends ClientController
                 if ($images) {
                     $attachmentSaveResponse = AttachmentService::writeFilesCollection($images);
                     if (!$attachmentSaveResponse->success) {
+                        Yii::$app->telegramLog->send('error', 'Не удалось сохранить изображения при создании заявки: ' . json_encode($attachmentSaveResponse->reason));
                         throw new Exception('Failed to save images');
                     }
                     $attachmentsToLink = array_merge($attachmentsToLink, $attachmentSaveResponse->result);

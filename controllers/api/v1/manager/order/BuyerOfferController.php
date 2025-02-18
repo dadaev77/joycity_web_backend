@@ -102,6 +102,7 @@ class BuyerOfferController extends ManagerController
             $order->amount_of_space = null;
 
             if (!$order->save()) {
+                \Yii::$app->telegramLog->send('error', 'Не удалось подтвердить оплату предложения продавца: ' . json_encode($order->getFirstErrors()));
                 return ApiResponse::transactionCodeErrors(
                     $transaction,
                     $apiCodes->NOT_VALID,

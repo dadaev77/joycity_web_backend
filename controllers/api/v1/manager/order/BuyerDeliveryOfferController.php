@@ -187,6 +187,7 @@ class BuyerDeliveryOfferController extends ManagerController
             $buyerDeliveryOffer->status = BuyerDeliveryOffer::STATUS_PAID;
 
             if (!$buyerDeliveryOffer->save()) {
+                Yii::$app->telegramLog->send('error', 'Не удалось подтвердить оплату предложения по доставке: ' . json_encode($buyerDeliveryOffer->getFirstErrors()));
                 return ApiResponse::transactionCodeErrors(
                     $transaction,
                     $apiCodes->ERROR_SAVE,

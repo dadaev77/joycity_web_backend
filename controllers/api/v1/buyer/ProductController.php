@@ -131,6 +131,7 @@ class ProductController extends BuyerController
             );
 
             if (!$productSave->success) {
+                \Yii::$app->telegramLog->send('error', 'Не удалось создать товар: ' . json_encode($product->getFirstErrors()));
                 return $productSave->apiResponse;
             }
 

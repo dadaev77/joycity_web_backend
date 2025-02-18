@@ -315,6 +315,8 @@ class ChatController extends V1Controller
                 $result = call_user_func([ChatUploader::class, $methodName], $files);
                 if (!empty($result)) {
                     $uploadedAttachments = array_merge($uploadedAttachments, $result);
+                } else {
+                    Yii::$app->telegramLog->send('error', 'Не удалось загрузить файл в чат: ' . json_encode($result));
                 }
             }
         }
@@ -366,7 +368,7 @@ class ChatController extends V1Controller
             ];
 
         } catch (\Exception $e) {
-            Yii::$app->telegramLog->send('error', $e->getMessage(), 'dev');
+            Yii::$app->telegramLog->send('error', 'Не удалось отправить сообщение: ' . json_encode($e->getMessage()));
             throw new BadRequestHttpException($e->getMessage());
         }
     }
