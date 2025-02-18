@@ -132,6 +132,7 @@ class ChatController extends V1Controller
                     'email' => $user->email,
                     'phone_number' => $user->phone_number,
                     'telegram' => $user->telegram,
+                    'uuid' => $user->uuid,
                     ];
                 }
             }
@@ -179,6 +180,7 @@ class ChatController extends V1Controller
                             'email' => $user->email,
                             'phone_number' => $user->phone_number,
                             'telegram' => $user->telegram,
+                            'uuid' => $user->uuid,
                         ];
                     }
                 }
@@ -280,6 +282,7 @@ class ChatController extends V1Controller
                     'email' => $user->email,
                     'phone_number' => $user->phone_number,
                     'telegram' => $user->telegram,
+                    'uuid' => $user->uuid,
                 ];
             }
             $metadata['last_message'] = $this->getLastMessage($chat);
