@@ -49,12 +49,14 @@ class TranslationService
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             curl_close($ch);
 
+            \Yii::$app->telegramLog->send('error', 'Ответ от сервиса перевода (before): ' . $response);
+
             $response = str_replace('```json', '', $response);
             $response = str_replace('```', '', $response);
             $responseParsed = json_decode($response, true);
 
-            \Yii::$app->telegramLog->send('error', 'Ответ от сервиса перевода: ' . $response);
-            
+            \Yii::$app->telegramLog->send('error', 'Ответ от сервиса перевода (after): ' . $response);
+
             if ($httpCode !== 200 || !$responseParsed['success']) {
                 return Result::error();
             }
