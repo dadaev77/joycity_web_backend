@@ -53,9 +53,10 @@ class TranslationService
             $response = str_replace('```', '', $response);
             $responseParsed = json_decode($response, true);
 
-            if (!$responseParsed) {
+            if ($httpCode !== 200 || !$responseParsed['success']) {
                 return Result::error();
             }
+
             return Result::success($responseParsed);
             
         } catch (Throwable $e) {
