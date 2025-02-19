@@ -80,12 +80,6 @@ class Product extends Base
             ],
             [['description_ru'], 'string', 'max' => 1000],
             [
-                ['description_ru'],
-                'match',
-                'pattern' => '/^[\x{201C}\x{201D}\x{2018}\x{2019}\x{AB}\x{BB}\'"()!:\';*%\-.,\d\s\p{Cyrillic}\p{Latin}\p{Han}\p{M}]*$/u',
-                'message' => 'Описание может содержать буквы, цифры, пробелы и специальные символы'
-            ],
-            [
                 [
                     'rating',
                     'range_1_price',
@@ -117,12 +111,6 @@ class Product extends Base
                 'integer',
             ],
             [['name_ru'], 'string', 'max' => 255],
-            [
-                ['name_ru'],
-                'match',
-                'pattern' => '/^[\x{201C}\x{201D}\x{2018}\x{2019}\x{AB}\x{BB}\'"()!:\';*%\-.,\d\s\p{Cyrillic}\p{Latin}\p{Han}\p{M}]*$/u',
-                'message' => 'Название может содержать буквы, цифры, пробелы и специальные символы.',
-            ],
             [
                 ['subcategory_id'],
                 'exist',
