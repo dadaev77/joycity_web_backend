@@ -137,10 +137,12 @@ class OrderDistributionService
         $transaction = Yii::$app->db->beginTransaction();
         if (!$task->save()) {
             $transaction?->rollBack();
+            Yii::$app->telegramLog->send('error', 'Пользователю ' . $buyerId . ' не удалось принять заявку: ' . json_encode($task->getFirstErrors(), true));
             return Result::errors($task->getFirstErrors());
         }
         if (!$task->order->save()) {
             $transaction?->rollBack();
+            Yii::$app->telegramLog->send('error', 'Не удалось установить продавца для заказа ' . $task->order->id . ': ' . json_encode($task->order->getFirstErrors(), true));
             return Result::errors($task->order->getFirstErrors());
         }
         $transaction?->commit();
@@ -211,6 +213,7 @@ class OrderDistributionService
         $task->requested_at = date('Y-m-d H:i:s');
 
         if ($task->save()) return Result::success($task);
+        Yii::$app->telegramLog->send('error', 'Не удалось обновить задачу распределения для передачи заказа ' . $task->order_id . ': ' . json_encode($task->getFirstErrors(), true));
         return Result::errors($task->getFirstErrors());
     }
 

@@ -74,7 +74,7 @@ class Category extends Base
      */
     public function getProducts()
     {
-        return $this->hasMany(Product::class, ['category_id' => 'id']);
+        return $this->hasMany(Product::class, ['subcategory_id' => 'id']);
     }
 
     /**

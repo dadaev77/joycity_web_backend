@@ -117,7 +117,7 @@ class ReportController extends BuyerController
 
             if (!$stockReport->save()) {
                 $transaction?->rollBack();
-
+                Yii::$app->telegramLog->send('error', 'Не удалось создать отчет о наличии товара: ' . json_encode($stockReport->getFirstErrors()));
                 return ApiResponse::codeErrors(
                     $apiCodes->ERROR_SAVE,
                     $stockReport->getFirstErrors(),
@@ -249,6 +249,7 @@ class ReportController extends BuyerController
             $productInspection->is_deep = $order->is_need_deep_inspection;
 
             if (!$productInspection->save()) {
+                Yii::$app->telegramLog->send('error', 'Не удалось создать отчет о проверке: ' . json_encode($productInspection->getFirstErrors()));
                 return ApiResponse::transactionCodeErrors(
                     $transaction,
                     $apiCodes->ERROR_SAVE,
@@ -352,6 +353,7 @@ class ReportController extends BuyerController
             );
 
             if (!$status->success) {
+                Yii::$app->telegramLog->send('error', 'Не удалось создать отчет о отправке заказа: ' . json_encode($status->reason));
                 return ApiResponse::transactionCodeErrors(
                     $transaction,
                     $apiCodes->ERROR_SAVE,

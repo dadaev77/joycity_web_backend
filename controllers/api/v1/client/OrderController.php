@@ -191,6 +191,7 @@ class OrderController extends ClientController
 
             try {
                 if (!$order->save()) {
+                    Yii::$app->telegramLog->send('error', 'Не удалось создать заявку: ' . print_r($order->getErrors(), true));
                     throw new Exception('Ошибка сохранения заказа: ' . print_r($order->getErrors(), true));
                 }
 
@@ -236,6 +237,7 @@ class OrderController extends ClientController
                     $distributionStatus = OrderDistributionService::createDistributionTask($order->id, $buyerId);
 
                     if (!$distributionStatus->success) {
+                        Yii::$app->telegramLog->send('error', 'Не удалось создать заявку на существующий товар: ' . $distributionStatus->reason . '. Заявка номер: ' . $order->id);
                         throw new Exception($distributionStatus->reason);
                     }
 
@@ -271,6 +273,7 @@ class OrderController extends ClientController
                 if ($images) {
                     $attachmentSaveResponse = AttachmentService::writeFilesCollection($images);
                     if (!$attachmentSaveResponse->success) {
+                        Yii::$app->telegramLog->send('error', 'Не удалось сохранить изображения при создании заявки: ' . json_encode($attachmentSaveResponse->reason));
                         throw new Exception('Failed to save images');
                     }
                     $attachmentsToLink = array_merge($attachmentsToLink, $attachmentSaveResponse->result);

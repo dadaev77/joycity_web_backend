@@ -135,6 +135,7 @@ class WaybillService
         $waybill = new Waybill($waybillInstance);
 
         if (!$waybill->save()) {
+            \Yii::$app->telegramLog->send('error', 'Ошибка при создании накладной по заявке ' . $data['order_id'] . ': ' . json_encode($waybill->errors));
             // Если не удалось сохранить в БД - удаляем файл
             self::deleteWaybillFile($fileName);
             throw new Exception('Ошибка при сохранении накладной в БД: ' . json_encode($waybill->errors));
@@ -286,6 +287,7 @@ class WaybillService
         ]);
 
         if (!$waybill->save()) {
+            \Yii::$app->telegramLog->send('error', 'Ошибка при обновлении накладной по заявке ' . $data['order_id'] . ': ' . json_encode($waybill->errors));
             self::deleteWaybillFile($fileName);
             throw new Exception('Ошибка при обновлении накладной в БД: ' . json_encode($waybill->errors));
         }
