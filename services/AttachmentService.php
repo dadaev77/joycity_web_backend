@@ -229,7 +229,7 @@ class AttachmentService
         try {
             $extension = pathinfo($file->name, PATHINFO_EXTENSION);
             $mimeType = $file->type;
-            $pathName = Yii::$app->security->generateRandomString(16);
+            $pathName = Yii::$app->security->generateRandomString(16) . '_' . $name;
             $path = '/' . self::PUBLIC_PATH . "/$pathName.$extension";
             $fullPath = self::getFilesPath() . "/$pathName.$extension";
 
@@ -239,24 +239,16 @@ class AttachmentService
                 $originalWidth = $image->getImageWidth();
                 $originalHeight = $image->getImageHeight();
                 $scale = min($size / $originalWidth, $size / $originalHeight);
-                
                 $newWidth = (int)($originalWidth * $scale);
                 $newHeight = (int)($originalHeight * $scale);
-                
                 $canvas = new Imagick();
                 $canvas->newImage($size, $size, new \ImagickPixel('white'));
                 $canvas->setImageFormat('webp');
-                
                 $image->resizeImage($newWidth, $newHeight, Imagick::FILTER_LANCZOS, 1);
-                
                 $canvas->compositeImage($image, Imagick::COMPOSITE_OVER, (int)(($size - $newWidth) / 2), (int)(($size - $newHeight) / 2));
-                
                 $canvas->writeImage($fullPath);
-                
                 $image->destroy();
                 $canvas->destroy();
-
-                
                 $fileSize = filesize($fullPath);
             } else {
                 $status = rename($file->tempName, $fullPath);
