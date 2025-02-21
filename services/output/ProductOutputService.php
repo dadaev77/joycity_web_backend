@@ -71,6 +71,7 @@ class ProductOutputService extends OutputService
                 'small' => $model->attachmentsSmallSize,
                 'medium' => $model->attachmentsMediumSize,
                 'large' => $model->attachmentsLargeSize,
+                'xlarge' => $model->attachmentsXlargeSize,
                 default => $model->attachments,
             };
 

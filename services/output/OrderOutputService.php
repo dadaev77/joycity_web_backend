@@ -17,7 +17,7 @@ class OrderOutputService extends OutputService
     /**
      * @param int $id
      * @param bool $showDeleted
-     * @param string $imageSize ['small', 'medium', 'large']
+     * @param string $imageSize ['small', 'medium', 'large', 'xlarge']
      * @return array
      * @throws Exception\InvalidParamException
      */
@@ -29,7 +29,7 @@ class OrderOutputService extends OutputService
     /**
      * @param array $ids
      * @param bool $showDeleted
-     * @param string $imageSize ['small', 'medium', 'large']
+     * @param string $imageSize ['small', 'medium', 'large', 'xlarge']
      * @return array
      * @throws Exception\InvalidParamException
      */
@@ -123,6 +123,7 @@ class OrderOutputService extends OutputService
                 'small' => $model->attachmentsSmallSize,
                 'medium' => $model->attachmentsMediumSize,
                 'large' => $model->attachmentsLargeSize,
+                'xlarge' => $model->attachmentsXlargeSize,
                 default => $model->attachments,
             };
 

@@ -3,12 +3,17 @@
 namespace app\services;
 
 use Imagick;
-use app\models\ChatAttachment;
 use Yii;
 
 class ChatUploader
 {
     protected $uploadPath = '@app/entrypoint/api/uploads/chats/';
+    protected static $sizes = [
+        'sm' => 256,
+        'md' => 512,
+        'lg' => 1024,
+        'xl' => 2048,
+    ];
 
     public function __construct()
     {
@@ -76,14 +81,18 @@ class ChatUploader
                 throw new \Exception("Не удалось переместить файл: " . $image->name);
             }
 
-            $imagick = new Imagick($targetPath);
-            $imagick->setImageCompression(Imagick::COMPRESSION_JPEG);
-            $imagick->setImageCompressionQuality(75);
-            $imagick->stripImage();
-            $imagick->writeImage($targetPath);
-            $attachment['file_path'] = '/uploads/chats/' . $attachment['file_name'];
+            // Создание изображений с разными размерами
+            foreach (self::$sizes as $label => $size) {
+                $imagick = new Imagick($targetPath);
+                $imagick->resizeImage($size, $size, Imagick::FILTER_LANCZOS, 1);
+                $resizedFileName = pathinfo($attachment['file_name'], PATHINFO_FILENAME) . "_{$label}." . pathinfo($attachment['file_name'], PATHINFO_EXTENSION);
+                $resizedPath = $uploader->uploadPath . $resizedFileName;
+                $imagick->writeImage($resizedPath);
+                $attachment['file_path'] = '/uploads/chats/' . $resizedFileName;
+                $attachments[] = $attachment;
+            }
 
-            $attachments[] = $attachment;
+            $attachments[] = $attachment; // Добавляем оригинал
         }
         return $attachments;
     }

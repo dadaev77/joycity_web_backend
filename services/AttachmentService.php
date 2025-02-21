@@ -13,9 +13,6 @@ use Imagick;
 use Yii;
 use yii\web\HttpException;
 use yii\web\UploadedFile;
-// intervention image
-use Intervention\Image\ImageManager;
-use Intervention\Image\Drivers\Gd\Driver as GdDriver;
 
 class AttachmentService
 {
@@ -26,6 +23,7 @@ class AttachmentService
         ['width' => 256, 'height' => 256, 'name' => 'small'],
         ['width' => 512, 'height' => 512, 'name' => 'medium'],
         ['width' => 1024, 'height' => 1024, 'name' => 'large'],
+        ['width' => 2048, 'height' => 2048, 'name' => 'xlarge'],
     ];
 
     /**
