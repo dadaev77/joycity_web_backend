@@ -126,6 +126,10 @@ class ChatController extends V1Controller
             foreach ($participants as $participant) {
                 $user = User::findOne($participant);
                 if ($user) {
+                    $organizationName = null;
+                    if ($user->role === User::ROLE_BUYER) {
+                        $organizationName = $user->organization_name;
+                    }
                 $metadata['participants'][] = [
                     'id' => $user->id,
                     'name' => $user->name,
@@ -135,6 +139,7 @@ class ChatController extends V1Controller
                     'phone_number' => $user->phone_number,
                     'telegram' => $user->telegram,
                     'uuid' => $user->uuid,
+                    'organization_name' => $organizationName,
                     ];
                 }
             }
@@ -174,6 +179,10 @@ class ChatController extends V1Controller
                 foreach ($participants as $participant) {
                     $user = User::findOne($participant);
                     if ($user) {
+                        $organizationName = null;
+                        if ($user->role === User::ROLE_BUYER) {
+                            $organizationName = $user->organization_name;
+                        }
                         $metadata['participants'][] = [
                             'id' => $user->id,
                             'name' => $user->name,
@@ -183,6 +192,7 @@ class ChatController extends V1Controller
                             'phone_number' => $user->phone_number,
                             'telegram' => $user->telegram,
                             'uuid' => $user->uuid,
+                            'organization_name' => $organizationName,
                         ];
                     }
                 }
@@ -276,6 +286,10 @@ class ChatController extends V1Controller
             $metadata['participants'] = [];
             foreach ($participants as $participant) {
                 $user = User::findOne($participant);
+                $organizationName = null;
+                if ($user->role === User::ROLE_BUYER) {
+                    $organizationName = $user->organization_name;
+                }
                 $metadata['participants'][] = [
                     'id' => $user->id,
                     'name' => $user->name,
@@ -285,6 +299,7 @@ class ChatController extends V1Controller
                     'phone_number' => $user->phone_number,
                     'telegram' => $user->telegram,
                     'uuid' => $user->uuid,
+                    'organization_name' => $organizationName,
                 ];
             }
             $metadata['last_message'] = $this->getLastMessage($chat);
