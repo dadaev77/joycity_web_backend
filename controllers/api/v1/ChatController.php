@@ -6,7 +6,6 @@ use app\controllers\api\V1Controller;
 use app\models\User;
 use app\models\Chat;
 use app\models\Message;
-use app\services\chats\ChatService;
 use app\services\chats\MessageService;
 use Yii;
 use yii\data\Pagination;
@@ -14,8 +13,6 @@ use yii\filters\AccessControl;
 use yii\web\BadRequestHttpException;
 use yii\web\UploadedFile;
 use app\services\ChatUploader;
-use React\Http\Browser;
-use React\EventLoop\Factory;
 
 
 class ChatController extends V1Controller
