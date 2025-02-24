@@ -3,6 +3,7 @@
 namespace app\services;
 
 use app\models\PushDevice;
+use app\models\PushNotificationType;
 use Yii;
 use yii\base\Component;
 
@@ -89,11 +90,110 @@ class PushService extends Component
 
     private function sendFirebaseNotification($token, $title, $message, $data)
     {
-        // Реализация отправки через Firebase
+        // Для тестирования просто логируем
+        Yii::info("Firebase notification: Token: $token, Title: $title, Message: $message, Data: " . json_encode($data));
+        
+        // Реальная отправка будет выглядеть примерно так:
+        /*
+        $client = new \GuzzleHttp\Client();
+        $response = $client->post('https://fcm.googleapis.com/fcm/send', [
+            'headers' => [
+                'Authorization' => 'key=' . YOUR_SERVER_KEY,
+                'Content-Type' => 'application/json',
+            ],
+            'json' => [
+                'to' => $token,
+                'notification' => [
+                    'title' => $title,
+                    'body' => $message,
+                ],
+                'data' => $data,
+            ],
+        ]);
+        */
     }
 
     private function sendApnsNotification($token, $title, $message, $data)
     {
-        // Реализация отправки через APNS
+        // Для тестирования просто логируем
+        Yii::info("APNS notification: Token: $token, Title: $title, Message: $message, Data: " . json_encode($data));
+    }
+
+    /**
+     * Отправка уведомления по типу
+     */
+    public function sendNotificationByType($userId, $typeCode, $params = [], $additionalData = [])
+    {
+        $type = PushNotificationType::findOne(['code' => $typeCode]);
+        if (!$type) {
+            throw new \Exception("Неизвестный тип уведомления: {$typeCode}");
+        }
+
+        // Формируем сообщение на основе шаблона
+        $message = $this->prepareMessage($type->template, $params);
+        
+        // Определяем заголовок в зависимости от типа
+        $title = $type->name;
+
+        // Добавляем тип уведомления в данные
+        $data = array_merge($additionalData, [
+            'type' => $typeCode,
+            'params' => $params
+        ]);
+
+        return $this->sendNotification($userId, $title, $message, $data);
+    }
+
+    /**
+     * Отправка уведомления о новом сообщении в чате
+     */
+    public function sendChatMessageNotification($userId, $senderId, $messageText)
+    {
+        return $this->sendNotificationByType('new_chat_message', [
+            'sender' => $senderId,
+            'message' => $messageText
+        ]);
+    }
+
+    /**
+     * Отправка уведомления о новой заявке
+     */
+    public function sendNewRequestNotification($userId, $requestId)
+    {
+        return $this->sendNotificationByType('new_request', [
+            'request_id' => $requestId
+        ]);
+    }
+
+    /**
+     * Отправка уведомления об изменении статуса
+     */
+    public function sendStatusChangeNotification($userId, $requestId, $status)
+    {
+        return $this->sendNotificationByType('status_changed', [
+            'request_id' => $requestId,
+            'status' => $status
+        ]);
+    }
+
+    /**
+     * Подготовка сообщения на основе шаблона
+     */
+    private function prepareMessage($template, $params)
+    {
+        return strtr($template, array_map(function($value) {
+            return '{' . $value . '}';
+        }, $params));
+    }
+
+    /**
+     * Получение устройств по роли пользователя
+     */
+    public function getUserDevicesByRole($role)
+    {
+        return PushDevice::find()
+            ->joinWith('user')
+            ->where(['user.role' => $role])
+            ->all();
     }
 } 

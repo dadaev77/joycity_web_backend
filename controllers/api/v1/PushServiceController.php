@@ -23,14 +23,6 @@ class PushServiceController extends Controller
         parent::__construct($id, $module, $config);
     }
 
-    public function behaviors()
-    {
-        $behaviors = parent::behaviors();
-        $behaviors['authenticator'] = [
-            'class' => HttpBearerAuth::class,
-        ];
-        return $behaviors;
-    }
 
     /**
      * @OA\Post(

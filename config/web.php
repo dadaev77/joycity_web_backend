@@ -21,10 +21,19 @@ return \yii\helpers\ArrayHelper::merge($common, [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
-                'POST api/v1/push-services/register' => 'api/v1/push-service/register',
-                'PUT api/v1/push-services/token' => 'api/v1/push-service/update-push-token',
-                'GET api/v1/push-services/devices' => 'api/v1/push-service/get-devices',
+                'POST /api/v1/push-services/register' => 'api/v1/push-service-controller/register',
+                'PUT /api/v1/push-services/token' => 'api/v1/push-service-controller/update-push-token',
+                'GET /api/v1/push-services/devices' => 'api/v1/push-service-controller/get-devices',
             ]
+        ],
+        'response' => [
+            'class' => 'yii\web\Response',
+            'on beforeSend' => function ($event) {
+                $response = $event->sender;
+                $response->headers->set('Access-Control-Allow-Origin', '*');
+                $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+                $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+            },
         ],
     ],
     'params' => $params,
