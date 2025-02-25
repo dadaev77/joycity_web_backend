@@ -2,12 +2,27 @@
 
 namespace app\controllers\api\v1;
 
-use app\models\PushNotification;
-use yii\rest\ActiveController;
+use app\controllers\api\V1Controller;
 
-class PushController extends ActiveController
+class PushController extends V1Controller
 {
-    public $modelClass = PushNotification::class;
+    protected $pushService;
 
-    // Здесь можно добавить дополнительные действия для обработки событий
+    public function __construct($id, $module, $config = [])
+    {
+        parent::__construct($id, $module, $config);
+    }
+
+    public function behaviors()
+    {
+        $behaviors = parent::behaviors();
+        return $behaviors; 
+    }
+    public function actionSend()
+    {
+        return [
+            'status' => 'success',
+            'message' => 'Push notification sent successfully',
+        ];
+    }
 } 
