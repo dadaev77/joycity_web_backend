@@ -153,6 +153,7 @@ $config = [
                         'api/v1/translate',
                         'api/v1/manager/waybill',
                         'api/v1/client/waybill',
+                        'api/v1/push',
                     ],
                     'pluralize' => false,
                 ],
