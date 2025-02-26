@@ -29,6 +29,7 @@ use app\models\UserLinkTypeDelivery;
 use app\models\UserLinkTypePackaging;
 use app\models\UserSettings;
 use app\models\UserVerificationRequest;
+use app\models\PushNotification;
 use yii\db\ActiveQuery;
 
 /**
@@ -627,5 +628,14 @@ class UserStructure extends Base
         return $this->hasMany(UserVerificationRequest::class, [
             'manager_id' => 'id',
         ]);
+    }
+    /**
+     * Gets query for [[DeviceTokens]].
+     *
+     * @return ActiveQuery
+     */
+    public function getDeviceTokens()
+    {
+        return $this->hasMany(PushNotification::class, ['client_id' => 'id'])->select('push_token')->column();
     }
 }

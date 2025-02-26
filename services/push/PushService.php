@@ -92,7 +92,7 @@ class PushService
      * @param string $token Токен устройства.
      * @param string $message Сообщение для отправки.
      */
-    public static function sendFirebaseNotification($token, $message)
+    public static function sendFirebaseNotification($user_id, $message)
     {
         // Логика для отправки уведомления через Firebase
         // Например, использовать FirebaseService для отправки уведомления
@@ -105,8 +105,8 @@ class PushService
      * @param string $message Сообщение для отправки.
      * @return mixed Результат отправки уведомления.
      */
-    public static function sendPushNotification($clientId, $message)
+    public static function sendPushNotification($user_id, $message)
     {
-        return FirebaseService::sendPushNotification($clientId, $message);
+        return FirebaseService::sendPushNotification($user_id, $message);
     }
 }

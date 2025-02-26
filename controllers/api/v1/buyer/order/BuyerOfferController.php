@@ -12,7 +12,7 @@ use app\models\User;
 use app\services\order\OrderDistributionService;
 use app\services\order\OrderStatusService;
 use app\services\output\BuyerOfferOutputService;
-use app\services\RateService;
+use app\services\push\PushService;
 use Throwable;
 use Yii;
 
@@ -143,6 +143,14 @@ class BuyerOfferController extends BuyerController
                     $orderStatusChange->reason,
                 );
             }
+
+            // PushService::sendPushNotification(
+            //     $order->created_by,
+            //     [
+            //         'title' => 'Новое предложение',
+            //         'body' => 'Вы получили новое предложение ' . $buyerOffer->id,
+            //     ]
+            // );
 
             $transaction?->commit();
 

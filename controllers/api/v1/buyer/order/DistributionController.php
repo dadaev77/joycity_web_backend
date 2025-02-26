@@ -13,6 +13,7 @@ use app\services\chats\ChatService;
 use app\services\order\OrderDistributionService;
 use app\services\order\OrderStatusService;
 use app\services\output\OrderDistributionOutputService;
+use app\services\push\PushService;
 use Throwable;
 use Yii;
 
@@ -123,6 +124,14 @@ class DistributionController extends BuyerController
             $orderStatusChange = OrderStatusService::buyerAssigned(
                 $task->order_id,
             );
+
+            // PushService::sendPushNotification(
+            //     $order->created_by,
+            //     [
+            //         'title' => 'Ваша заявка принята',
+            //         'body' => 'Ваша заявка ' . $order->id . ' принята была принята продавцом ' . $user->organization_name,
+            //     ]
+            // );
 
             if (!$orderStatusChange->success) {
                 $transaction?->rollBack();

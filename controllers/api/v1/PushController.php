@@ -92,7 +92,7 @@ class PushController extends V1Controller
      *     )
      * )
      */
-    
+
     public function actionDeleteToken()
     {
         $token = Yii::$app->request->post('push_token');
@@ -153,8 +153,16 @@ class PushController extends V1Controller
      *     )
      * )
      */
-    public function actionSendFirebaseNotification($token, $message)
+    public function actionPushTest()
     {
-        return PushService::sendFirebaseNotification($token, $message);
+        $user_id = Yii::$app->request->post('user_id');
+        $message = Yii::$app->request->post('message');
+
+        if (!$user_id) return ApiResponse::codeErrors(
+            $this->apiCodes->NOT_VALIDATED,
+            ['User is required']
+        );
+        
+        return PushService::sendPushNotification($user_id, $message);
     }
 } 

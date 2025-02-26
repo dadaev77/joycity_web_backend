@@ -16,8 +16,6 @@ use app\services\notification\NotificationConstructor;
 use app\services\order\OrderDistributionService;
 use app\services\order\OrderStatusService;
 use app\services\output\OrderOutputService;
-use app\services\price\OrderPriceService;
-use app\services\RateService;
 use app\services\SaveModelService;
 use app\services\TypeDeliveryService;
 use Throwable;
@@ -30,6 +28,7 @@ use app\models\OrderDistribution;
 use app\services\modificators\price\OrderPrice;
 use app\services\TranslationService;
 use app\services\chats\ChatService;
+use app\services\push\PushService;
 
 class OrderController extends ClientController
 {
@@ -250,6 +249,14 @@ class OrderController extends ClientController
                     if (!$orderChangeStatus->success) {
                         throw new Exception($orderChangeStatus->reason);
                     }
+
+                    // PushService::sendPushNotification(
+                    //     $buyerId,
+                    //     [
+                    //         'title' => 'Новый заказ',
+                    //         'body' => 'Вы получили новый заказ ' . $order->id,
+                    //     ]
+                    // );
 
                     ChatService::createGroupChat(
                         'Order ' . $order->id,

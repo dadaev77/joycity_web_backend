@@ -17,6 +17,7 @@ use app\services\order\OrderStatusService;
 use app\services\OrderTrackingConstructorService;
 use app\services\output\BuyerOfferOutputService;
 use app\services\output\OrderOutputService;
+use app\services\push\PushService;
 use Throwable;
 use Yii;
 
@@ -113,6 +114,14 @@ class BuyerOfferController extends ManagerController
             $orderStatusChange = OrderStatusService::transferringToBuyer(
                 $order->id,
             );
+
+            // PushService::sendPushNotification(
+            //     $order->created_by,
+            //     [
+            //         'title' => 'Ваш заказ оплачен',
+            //         'body' => 'Ваш заказ ' . $order->id . ' переведен в статус "Оплачен"'
+            //     ]
+            // );
 
             if (
                 $order->type_delivery_point_id ===
