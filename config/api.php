@@ -154,6 +154,10 @@ $config = [
                         'api/v1/manager/waybill',
                         'api/v1/client/waybill',
                         'api/v1/push',
+                        // Добавленные маршруты
+                        'GET api/v1/manager/buyers' => 'api/v1/manager/buyer/index',
+                        'GET api/v1/manager/buyers/<id:\d+>' => 'api/v1/manager/buyer/view',
+                        'PUT api/v1/manager/order/<id:\d+>' => 'api/v1/manager/order/update-order',
                     ],
                     'pluralize' => false,
                 ],

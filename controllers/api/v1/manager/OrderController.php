@@ -294,4 +294,32 @@ class OrderController extends ManagerController
             ),
         );
     }
+
+
+    public function actionUpdateOrder($id)
+    {
+        $post = \Yii::$app->request->post();
+        $buyerId = $post['buyer_id'];
+
+        $order = \app\models\Order::findOne(['id' => $id]);
+        if (!$order) {
+            return \app\components\ApiResponse::byResponseCode($this->apiCodes->NOT_FOUND, ['message' => 'Order not found']);
+        }
+
+        $buyer = \app\models\User::findOne(['id' => $buyerId, 'role' => \app\models\User::ROLE_BUYER]);
+        if (!$buyer) {
+            return \app\components\ApiResponse::byResponseCode($this->apiCodes->NOT_FOUND, ['message' => 'Buyer not found']);
+        }
+
+        $order->buyer_id = $buyerId;
+        if (!$order->save()) {
+            return \app\components\ApiResponse::byResponseCode($this->apiCodes->BAD_REQUEST, [
+                'errors' => $order->errors
+            ]);
+        }
+
+        return \app\components\ApiResponse::byResponseCode($this->apiCodes->SUCCESS, [
+            'order' => $order,
+        ]);
+    }
 }
