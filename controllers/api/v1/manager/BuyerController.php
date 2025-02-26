@@ -3,7 +3,7 @@
 namespace app\controllers\api\v1\manager;
 
 use app\controllers\api\v1\ManagerController;
-
+use app\components\response\ResponseCodes;
 
 
 class BuyerController extends ManagerController
@@ -12,7 +12,7 @@ class BuyerController extends ManagerController
     public function init()
     {
         parent::init();
-        $this->apiCodes = \app\models\Order::apiCodes();
+        $this->apiCodes = ResponseCodes::getStatic();
     }
     public function behaviors()
     {
@@ -71,6 +71,7 @@ class BuyerController extends ManagerController
         }
 
         $order->buyer_id = $buyerId;
+
         if (!$order->save()) {
             return \app\components\ApiResponse::byResponseCode($this->apiCodes->BAD_REQUEST, [
                 'errors' => $order->errors

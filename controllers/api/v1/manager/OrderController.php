@@ -4,6 +4,7 @@ namespace app\controllers\api\v1\manager;
 
 use app\controllers\api\v1\ManagerController;
 use app\components\ApiResponse;
+use app\components\response\ResponseCodes;
 use app\models\Order;
 use app\models\TypeDeliveryPoint;
 use app\models\User;
@@ -15,6 +16,15 @@ use Yii;
 
 class OrderController extends ManagerController
 {
+
+    public $apiCodes;
+
+    public function init()
+    {
+        parent::init();
+        $this->apiCodes = ResponseCodes::getStatic();
+    }
+
     public function behaviors()
     {
         $behaviors = parent::behaviors();
@@ -299,6 +309,7 @@ class OrderController extends ManagerController
     public function actionUpdateOrder($id)
     {
         $post = \Yii::$app->request->post();
+
         $buyerId = $post['buyer_id'];
 
         $order = \app\models\Order::findOne(['id' => $id]);
@@ -313,7 +324,7 @@ class OrderController extends ManagerController
 
         $order->buyer_id = $buyerId;
         if (!$order->save()) {
-            return \app\components\ApiResponse::byResponseCode($this->apiCodes->BAD_REQUEST, [
+            return \app\components\ApiResponse::byResponseCode($this->apiCodes->INTERNAL_ERROR, [
                 'errors' => $order->errors
             ]);
         }
