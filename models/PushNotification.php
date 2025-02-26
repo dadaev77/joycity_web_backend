@@ -31,6 +31,20 @@ class PushNotification extends ActiveRecord
             [['client_id', 'device_id', 'push_token'], 'required'],
             [['client_id'], 'integer'],
             [['device_id', 'push_token'], 'string', 'max' => 255],
+            [['device_id'], 'unique'],
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function attributeLabels()
+    {
+        return [
+            'id' => 'Идентификатор',
+            'client_id' => 'Идентификатор клиента',
+            'device_id' => 'Идентификатор устройства',
+            'push_token' => 'Push токен',
         ];
     }
 } 
