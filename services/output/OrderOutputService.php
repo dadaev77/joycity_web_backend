@@ -119,12 +119,13 @@ class OrderOutputService extends OutputService
             };
 
 
-            $info['attachments'] = [
-                '256' => $model->attachmentsSmallSize,
-                '512' => $model->attachmentsMediumSize,
-                '1024' => $model->attachmentsLargeSize,
-                '2048' => $model->attachmentsXlargeSize,
-            ];
+            $info['attachments'] = match ($imageSize) {
+                'small' => $model->attachmentsSmallSize,
+                'medium' => $model->attachmentsMediumSize,
+                'large' => $model->attachmentsLargeSize,
+                'xlarge' => $model->attachmentsXlargeSize,
+                default => $model->attachments,
+            };
 
             if ($info['product']) {
                 $info['product']['name'] = $model->product_name_ru;

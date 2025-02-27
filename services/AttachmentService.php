@@ -20,10 +20,10 @@ class AttachmentService
     public const AllowedImageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'heic'];
     public const AllowedVideoExtensions = ['mp4', 'avi', 'mov'];
     public const IMAGE_SIZES = [
-        'sm' => 256,
-        'md' => 512,
-        'lg' => 1024,
-        'xl' => 2048,
+        'small' => 256,
+        'medium' => 512,
+        'large' => 1024,
+        'xlarge' => 2048,
     ];
 
     /**
