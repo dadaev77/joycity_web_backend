@@ -127,6 +127,13 @@ class OrderOutputService extends OutputService
                 default => $model->attachments,
             };
 
+            $info['attachments_dict'] = [
+                'small' => $model->attachmentsSmallSize,
+                'medium' => $model->attachmentsMediumSize,
+                'large' => $model->attachmentsLargeSize,
+                'xlarge' => $model->attachmentsXlargeSize,
+            ];
+
             if ($info['product']) {
                 $info['product']['name'] = $model->product_name_ru;
                 $info['product']['description'] = $model->product_description_ru;
