@@ -28,6 +28,7 @@ class PushController extends V1Controller
     public function behaviors()
     {
         $behaviors = parent::behaviors();
+        
         $behaviours['verbFilter']['actions']['send-firebase-notification'] = ['post'];
         $behaviours['verbFilter']['actions']['register-token'] = ['post'];
         $behaviours['verbFilter']['actions']['delete-token'] = ['delete'];

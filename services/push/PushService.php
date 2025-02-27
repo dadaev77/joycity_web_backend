@@ -30,7 +30,17 @@ class PushService
 
         if (!$user) throw new \Exception('User not found');
 
-    $pushNotification = new PushNotification();
+        $pushNotification = PushNotification::findOne(['push_token' => $token, 'client_id' => $user->id]);
+
+        if ($pushNotification) {
+            $pushNotification->device_id = $deviceId;
+            $pushNotification->save();
+            return ApiResponse::byResponseCode($pushService->apiCodes->SUCCESS, [
+                'token' => $token,
+            ]);
+        }
+
+        $pushNotification = new PushNotification();
         $pushNotification->push_token = $token;
         $pushNotification->client_id = $user->id;
         $pushNotification->device_id = $deviceId;
