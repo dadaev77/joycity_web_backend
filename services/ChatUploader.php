@@ -72,6 +72,7 @@ class ChatUploader
                 'file_path' => $image->tempName,
                 'file_size' => $image->size,
                 'mime_type' => $image->type,
+                'sizes' => [],
             ];
 
             $targetPath = $uploader->uploadPath . $attachment['file_name'];
@@ -81,7 +82,6 @@ class ChatUploader
                 throw new \Exception("Не удалось переместить файл: " . $image->name);
             }
 
-            // Создание изображений с разными размерами
             foreach (self::$sizes as $label => $size) {
                 $imagick = new Imagick($targetPath);
                 $imagick->resizeImage($size, $size, Imagick::FILTER_LANCZOS, 1);
@@ -89,7 +89,7 @@ class ChatUploader
                 $resizedPath = $uploader->uploadPath . $resizedFileName;
                 $imagick->writeImage($resizedPath);
                 $attachment['file_path'] = '/uploads/chats/' . $resizedFileName;
-                $attachment['size'] = $label;
+                $attachment['sizes'][$label] = $resizedPath;
                 $attachments[] = $attachment;
             }
         }
