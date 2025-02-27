@@ -120,10 +120,10 @@ class OrderOutputService extends OutputService
 
 
             $info['attachments'] = [
-                '256' => $model->attachmentsSmallSize[0]['path'],
-                '512' => $model->attachmentsMediumSize[0]['path'],
-                '1024' => $model->attachmentsLargeSize[0]['path'],
-                '2048' => $model->attachmentsXlargeSize[0]['path'],
+                '256' => $model->attachmentsSmallSize,
+                '512' => $model->attachmentsMediumSize,
+                '1024' => $model->attachmentsLargeSize,
+                '2048' => $model->attachmentsXlargeSize,
             ];
 
             if ($info['product']) {
