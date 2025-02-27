@@ -89,10 +89,9 @@ class ChatUploader
                 $resizedPath = $uploader->uploadPath . $resizedFileName;
                 $imagick->writeImage($resizedPath);
                 $attachment['file_path'] = '/uploads/chats/' . $resizedFileName;
+                $attachment['size'] = $label;
                 $attachments[] = $attachment;
             }
-
-            $attachments[] = $attachment; // Добавляем оригинал
         }
         return $attachments;
     }
