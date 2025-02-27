@@ -72,7 +72,7 @@ class ChatUploader
                 'file_path' => $image->tempName,
                 'file_size' => $image->size,
                 'mime_type' => $image->type,
-                'sizes' => [],
+                'sizes' => []
             ];
 
             $targetPath = $uploader->uploadPath . $attachment['file_name'];
@@ -90,6 +90,8 @@ class ChatUploader
                 $imagick->writeImage($resizedPath);
                 $attachment['sizes'][$size] = $resizedPath;
             }
+            $attachment['file_path'] = '/uploads/chats/' . $attachment['sizes']['256'];
+            $attachments[] = $attachment;
         }
         return $attachments;
     }
