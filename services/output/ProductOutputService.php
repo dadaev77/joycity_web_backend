@@ -74,6 +74,12 @@ class ProductOutputService extends OutputService
                 'xlarge' => $model->attachmentsXlargeSize,
                 default => $model->attachments,
             };
+            $info['attachments_dict'] = [
+                '256' => $model->attachmentsSmallSize,
+                '512' => $model->attachmentsMediumSize,
+                '1024' => $model->attachmentsLargeSize,
+                '2048' => $model->attachmentsXlargeSize,
+            ];
 
             $info['price'] = [
                 'min' => min(array_filter([
