@@ -493,15 +493,19 @@ class OrderStructure extends Base
     }
     public function getAttachmentsSmallSize()
     {
-        return $this->hasMany(Attachment::class, ['id' => 'attachment_id'])->andOnCondition(['img_size' => 'small'])->via('orderLinkAttachments');
+        return $this->hasMany(Attachment::class, ['id' => 'attachment_id'])->andOnCondition(['img_size' => 'xs'])->via('orderLinkAttachments');
     }
     public function getAttachmentsMediumSize()
     {
-        return $this->hasMany(Attachment::class, ['id' => 'attachment_id'])->andOnCondition(['img_size' => 'medium'])->via('orderLinkAttachments');
+        return $this->hasMany(Attachment::class, ['id' => 'attachment_id'])->andOnCondition(['img_size' => 'md'])->via('orderLinkAttachments');
     }
     public function getAttachmentsLargeSize()
     {
-        return $this->hasMany(Attachment::class, ['id' => 'attachment_id'])->andOnCondition(['img_size' => 'large'])->via('orderLinkAttachments');
+        return $this->hasMany(Attachment::class, ['id' => 'attachment_id'])->andOnCondition(['img_size' => 'lg'])->via('orderLinkAttachments');
+    }
+    public function getAttachmentsXlargeSize()
+    {
+        return $this->hasMany(Attachment::class, ['id' => 'attachment_id'])->andOnCondition(['img_size' => 'xl'])->via('orderLinkAttachments');
     }
 
     /**
