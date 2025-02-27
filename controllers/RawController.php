@@ -185,4 +185,18 @@ class RawController extends Controller
         }
         return $response;
     }
+
+    public function actionCategories()
+    {
+        $categories = \app\models\Category::find()->all();
+        $categoriesUpd = [];
+        foreach ($categories as $category) {
+            $category = $category->toArray();
+            $category['subcategories'] = \app\models\Category::find()->where(['parent_id' => $category['id']])->all();
+            $categoriesUpd[] = $category;
+        }
+
+        Yii::$app->response->format = Response::FORMAT_HTML;
+        return $this->renderPartial('categories', ['categories' => $categoriesUpd]);
+    }
 }
