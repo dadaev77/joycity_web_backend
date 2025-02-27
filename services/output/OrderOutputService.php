@@ -128,10 +128,10 @@ class OrderOutputService extends OutputService
             };
 
             $info['attachments_dict'] = [
-                'small' => $model->attachmentsSmallSize,
-                'medium' => $model->attachmentsMediumSize,
-                'large' => $model->attachmentsLargeSize,
-                'xlarge' => $model->attachmentsXlargeSize,
+                '256' => $model->attachmentsSmallSize,
+                '512' => $model->attachmentsMediumSize,
+                '1024' => $model->attachmentsLargeSize,
+                '2048' => $model->attachmentsXlargeSize,
             ];
 
             if ($info['product']) {
