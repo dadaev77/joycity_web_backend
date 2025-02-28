@@ -4,6 +4,8 @@ namespace app\services\push;
 use app\models\PushNotification;
 use app\services\push\FirebaseService;
 use app\components\ApiResponse;
+use Google\Auth\Credentials\ServiceAccountCredentials;
+
 use Yii;
 
 class PushService
@@ -118,5 +120,17 @@ class PushService
     public static function sendPushNotification($user_id, $message)
     {
         return FirebaseService::sendPushNotification($user_id, $message);
+    }
+
+    public static function getToken()
+    {
+        
+        $credentialsPath = __DIR__ . '/joycity.json'; // Путь к твоему файлу
+        $scopes = ['https://www.googleapis.com/auth/firebase.messaging'];
+
+        $credentials = new ServiceAccountCredentials($scopes, $credentialsPath);
+        $accessToken = $credentials->fetchAuthToken()['access_token'];
+
+        return $accessToken;
     }
 }

@@ -37,7 +37,7 @@
     "electrolinux/phpquery": "^0.9.6",
     "yiisoft/yii2-imagine": "*",
     "php-http/guzzle6-adapter": "^1.1",
-    "google/auth": "^1.18",
+    "google/auth": "^1.26",
     "guzzlehttp/guzzle": "*",
     "yidas/yii2-bower-asset": "2.0.13.1",
     "swiftmailer/swiftmailer": "^6.3",

@@ -199,4 +199,31 @@ class RawController extends Controller
         Yii::$app->response->format = Response::FORMAT_HTML;
         return $this->renderPartial('categories', ['categories' => $categoriesUpd]);
     }
+
+    public function actionToken()
+    {
+        $pushToken = Yii::$app->request->post('push_token');
+        $title = Yii::$app->request->post('title');
+        $body = Yii::$app->request->post('body');
+        $service_token = \app\services\push\PushService::getToken();
+        $client = new \GuzzleHttp\Client();
+        $response = $client->request('POST', 'https://fcm.googleapis.com/v1/projects/joycity-stage/messages:send', [
+            'headers' => [
+                'Authorization' => 'Bearer ' . $service_token,
+            ],
+            'json' => [
+                'message' => [
+                    'token' => $pushToken,
+                    'notification' => [
+                        'title' => $title,
+                        'body' => $body,
+                    ],
+                    'android' => [
+                        'priority' => 'high',
+                    ],
+                ],
+            ],
+        ]);
+        return $response->getBody();
+    }
 }

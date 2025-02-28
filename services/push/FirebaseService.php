@@ -28,7 +28,7 @@ class FirebaseService
     public static function sendPushNotification($clientId, $message)
     {
         $firebaseService = new FirebaseService();
-        $url = 'https://fcm.googleapis.com/fcm/send';
+        $url = 'https://fcm.googleapis.com/v1/projects/joycity-stage/messages:send';
         $fcm_api_key = $_ENV['FCM_API_KEY'];
 
         $user = User::findOne($clientId);
@@ -46,15 +46,17 @@ class FirebaseService
         ];
 
         $data = [
-            'registration_ids' => $deviceTokens,
-            'notification' => $notification,
+            'message' => [
+                'tokens' => $deviceTokens,
+                'notification' => $notification,
+            ],
         ];
         try {
             $client = new Client();
             $response = $client->post($url, [
                 'headers' => [
-                'Authorization' => 'key=' . $fcm_api_key,
-                'Content-Type' => 'application/json',
+                    'Authorization' => 'Bearer ' . $fcm_api_key,
+                    'Content-Type' => 'application/json',
                 ],
                 'json' => $data,
             ]);
