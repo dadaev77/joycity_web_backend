@@ -24,6 +24,9 @@ $config = [
         '@bower' => '@vendor/yidas/yii2-bower-asset/bower',
     ],
     'components' => [
+        'actionLog' => [
+            'class' => 'app\components\ActionLog',
+        ],
         'telegramLog' => [
             'class' => 'app\components\TelegramLog',
         ],
