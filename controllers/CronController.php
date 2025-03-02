@@ -32,11 +32,16 @@ class CronController extends Controller
      */
     public function actionCreate(string $taskID = null)
     {
-        if (!$taskID) return ['status' => 'error', 'message' => 'Неверный ID задачи'];
+        if (!$taskID) {
+            Yii::$app->actionLog->error('Неверный ID задачи');
+            return ['status' => 'error', 'message' => 'Неверный ID задачи'];
+        }
         $command = '* * * * * curl -X GET "' . $_ENV['APP_URL'] . '/cron/distribution?taskID=' . $taskID . '"';
         if (exec(" crontab -l | { cat; echo '$command'; } | crontab - ")) {
+            Yii::$app->actionLog->success('Задача cron создана: ' . $taskID);
             return ['status' => 'success', 'message' => 'Задача cron создана'];
         } else {
+            Yii::$app->actionLog->error('Ошибка создания задачи cron: ' . $taskID);
             return ['status' => 'error', 'message' => 'Ошибка создания задачи cron'];
         }
     }
@@ -60,6 +65,7 @@ class CronController extends Controller
         ) {
             $command = "crontab -l | grep -v 'taskID={$taskID}' | crontab -";
             exec($command);
+            Yii::$app->actionLog->error('Задача не найдена или не в работе: ' . $taskID);
             return;
         }
         $buyers = explode(',', $actualTask->buyer_ids_list);
@@ -67,8 +73,10 @@ class CronController extends Controller
         $nextBuyer = $this->getNextBuyer($buyers, $currentBuyer);
         $actualTask->current_buyer_id = $nextBuyer;
         if (!$actualTask->save()) {
+            Yii::$app->actionLog->error('Ошибка сохранения задачи: ' . $taskID);
             return;
         }
+        Yii::$app->actionLog->success('Задача распределена успешно: ' . $taskID);
     }
 
     private function getNextBuyer(array $buyers, int $currentBuyer): int
@@ -98,18 +106,17 @@ class CronController extends Controller
             $rate->USD = round($rates['data']['USD'] * 1.02, 4);
             $rate->CNY = round($rates['data']['CNY'] * 1.05, 4);
 
-            \Yii::$app->telegramLog->send('success', 'Курсы обновлены: USD - ' . $rates['data']['USD'] . ' CNY - ' . $rates['data']['CNY']);
-
             if ($rate->save()) {
                 Yii::$app->heartbeat->addHeartbeat('rates', 'success');
+                Yii::$app->actionLog->success('Курсы обновлены: USD - ' . $rates['data']['USD'] . ' CNY - ' . $rates['data']['CNY']);
                 return ['status' => 'success', 'message' => 'Курсы обновлены'];
             } else {
+                Yii::$app->actionLog->error('Ошибка сохранения курсов');
                 return ['status' => 'error', 'message' => 'Ошибка сохранения курсов'];
             }
-            Yii::$app->heartbeat->addHeartbeat('rates', 'success');
         }
 
-        Yii::$app->heartbeat->addHeartbeat('rates', 'error');
+        Yii::$app->actionLog->error('Нет данных для обновления курсов');
         return ['status' => 'error', 'message' => 'Нет данных для обновления курсов'];
     }
 
@@ -128,6 +135,9 @@ class CronController extends Controller
             foreach (array_slice($rates, 1) as $rate) {
                 $rate->delete();
             }
+            Yii::$app->actionLog->success('Старые курсы очищены');
+        } else {
+            Yii::$app->actionLog->error('Нет старых курсов для очистки');
         }
     }
     /**
@@ -162,13 +172,14 @@ class CronController extends Controller
                 return $this->services[$service] ?? $service;
             }, $uniqueServices));
             Yii::$app->telegramLog->send('error', $message);
+            Yii::$app->actionLog->error('Обнаружены ошибки в сервисах: ' . implode(', ', $uniqueServices));
         }
 
         Yii::$app->response->format = yii\web\Response::FORMAT_JSON;
+        Yii::$app->actionLog->success('Проверка сервисов завершена');
         return [
             'status' => 'success',
             'message' => 'Проверка сервисов завершена',
-            // 'errors' => $errors
         ];
     }
 }
