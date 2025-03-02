@@ -8,6 +8,7 @@ use app\models\User;
 class ActionLog
 {
     private static $controller = 'controller not defined';
+    
     public static function setController(string $controller): void
     {
         self::$controller = $controller;

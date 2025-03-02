@@ -182,4 +182,30 @@ class CronController extends Controller
             'message' => 'Проверка сервисов завершена',
         ];
     }
+
+    /**
+     * @OA\Get(
+     *     path="/cron/clear-action-logs",
+     *     summary="Очистить логи действий",
+     *     @OA\Response(response="200", description="Логи действий очищены"),
+     *     @OA\Response(response="500", description="Ошибка очистки логов действий")
+     * )
+     */
+    public function actionClearActionLogs()
+    {
+        $logFile = __DIR__ . '/../runtime/logs/action.log';
+
+        if (file_exists($logFile)) {
+            if (file_put_contents($logFile, '') !== false) {
+                Yii::$app->actionLog->success('Логи действий очищены');
+                return ['status' => 'success', 'message' => 'Логи действий очищены'];
+            } else {
+                Yii::$app->actionLog->error('Ошибка очистки логов действий');
+                return ['status' => 'error', 'message' => 'Ошибка очистки логов действий'];
+            }
+        } else {
+            Yii::$app->actionLog->error('Файл логов действий не найден');
+            return ['status' => 'error', 'message' => 'Файл логов действий не найден'];
+        }
+    }
 }
