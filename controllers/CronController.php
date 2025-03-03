@@ -108,15 +108,15 @@ class CronController extends Controller
 
             if ($rate->save()) {
                 Yii::$app->heartbeat->addHeartbeat('rates', 'success');
-                Yii::$app->actionLog->success('Курсы обновлены: USD - ' . $rates['data']['USD'] . ' CNY - ' . $rates['data']['CNY']);
+                Yii::$app->telegramLog->send('success', 'Курсы обновлены: USD - ' . $rates['data']['USD'] . ' CNY - ' . $rates['data']['CNY']);
                 return ['status' => 'success', 'message' => 'Курсы обновлены'];
             } else {
-                Yii::$app->actionLog->error('Ошибка сохранения курсов');
+                Yii::$app->telegramLog->send('error', 'Ошибка сохранения курсов');
                 return ['status' => 'error', 'message' => 'Ошибка сохранения курсов'];
             }
         }
 
-        Yii::$app->actionLog->error('Нет данных для обновления курсов');
+        Yii::$app->telegramLog->send('error', 'Нет данных для обновления курсов');
         return ['status' => 'error', 'message' => 'Нет данных для обновления курсов'];
     }
 
