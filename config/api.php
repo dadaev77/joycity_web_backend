@@ -149,6 +149,7 @@ $config = [
                         'api/v1/manager/order/marketplace-transaction',
                         'api/v1/manager/verification',
                         'api/v1/manager/buyer',
+                        'api/v1/manager/user',
                         'api/v1/service/profile',
                         'api/v1/notifications',
                         'api/v1/order-request',

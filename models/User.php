@@ -90,4 +90,24 @@ class User extends UserStructure implements IdentityInterface
     {
         return $this->hasOne(UserSettings::class, ['user_id' => 'id'])->one();
     }
+
+    public function rules()
+    {
+        return [
+            // ... existing rules ...
+            ['markup_percentage', 'number', 'min' => 0, 'max' => 100],
+            ['markup_percentage', 'default', 'value' => 5.00],
+        ];
+    }
+
+    public function beforeSave($insert)
+    {
+        if (parent::beforeSave($insert)) {
+            if ($insert && $this->role === self::ROLE_CLIENT) {
+                $this->markup_percentage = 5.00;
+            }
+            return true;
+        }
+        return false;
+    }
 }
