@@ -226,15 +226,4 @@ class RawController extends Controller
         ]);
         return $response->getBody();
     }
-
-    public function actionTelegram()
-    {
-
-        try {
-            Yii::$app->telegramLog->send('error', "Тестовое сообщение об ошибке");
-        } catch (\Exception $e) {
-            return $e->getMessage();
-        }
-
-    }
 }
