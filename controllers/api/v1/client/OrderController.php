@@ -251,7 +251,7 @@ class OrderController extends ClientController
                     }
 
                     PushService::sendPushNotification(
-                        $buyerId,
+                        $order->created_by,
                         [
                             'title' => 'Новый заказ',
                             'body' => 'Вы получили новый заказ ' . $order->id,
@@ -268,7 +268,7 @@ class OrderController extends ClientController
                             'group_name' => 'client_buyer_manager',
                         ]
                     );
-                    
+
                 } else {
                     $distributionStatus = OrderDistributionService::createDistributionTask($order->id);
                     if (!$distributionStatus->success) {
