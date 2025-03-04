@@ -95,16 +95,31 @@ class User extends UserStructure implements IdentityInterface
     {
         return [
             // ... existing rules ...
-            ['markup_percentage', 'number', 'min' => 0, 'max' => 100],
-            ['markup_percentage', 'default', 'value' => 5.00],
+            ['markup', 'integer', 'min' => 0, 'max' => 100],
+            ['markup', 'default', 'value' => null],
+            ['markup', 'validateMarkup'],
         ];
+    }
+
+    public function validateMarkup($attribute, $params)
+    {
+        if ($this->role === self::ROLE_CLIENT) {
+            if ($this->$attribute === null) {
+                $this->$attribute = 5;
+            }
+        } else {
+            $this->$attribute = null;
+        }
     }
 
     public function beforeSave($insert)
     {
         if (parent::beforeSave($insert)) {
-            if ($insert && $this->role === self::ROLE_CLIENT) {
-                $this->markup_percentage = 5.00;
+            if ($insert && $this->role === self::ROLE_CLIENT && $this->markup === null) {
+                $this->markup = 5;
+            }
+            if ($this->role !== self::ROLE_CLIENT) {
+                $this->markup = null;
             }
             return true;
         }

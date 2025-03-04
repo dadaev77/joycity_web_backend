@@ -33,7 +33,6 @@ class UserController extends ManagerController
 
     public function actionIndex(string $role, int $limit = 10, int $page = 1)
     {
-
         if (!in_array($role, $this->allowedRoles)) {
             return ApiResponse::code(
                 $this->responseCodes->BAD_REQUEST,
@@ -45,7 +44,7 @@ class UserController extends ManagerController
         }
         
         $query = User::find()->where(['role' => $role, 'is_deleted' => 0]);
-        $query->select(['id', 'name', 'surname', 'uuid', 'role', 'email']);
+        $query->select(['id', 'name', 'surname', 'uuid', 'role', 'email', 'markup']);
         $totalUsers = $query->count(); 
         $pages = ceil($totalUsers / $limit);
         
@@ -84,7 +83,7 @@ class UserController extends ManagerController
     )
     {
         $queryBuilder = User::find()
-            ->select(['id', 'name', 'surname', 'uuid', 'role', 'email'])
+            ->select(['id', 'name', 'surname', 'uuid', 'role', 'email', 'markup'])
             ->where(['or',
                 ['like', 'email', $query],
                 ['like', 'surname', $query],
@@ -115,6 +114,65 @@ class UserController extends ManagerController
         );
     }
 
+    /**
+     * @param int $id
+     * @return array
+     */
+    public function actionUpdateMarkup($id)
+    {
+        $user = User::findOne($id);
+        if (!$user) {
+            return ApiResponse::code(
+                $this->responseCodes->NOT_FOUND,
+                [
+                    'message' => 'User not found.'
+                ],
+                404
+            );
+        }
+
+        if ($user->role !== User::ROLE_CLIENT) {
+            return ApiResponse::code(
+                $this->responseCodes->BAD_REQUEST,
+                [
+                    'message' => 'Markup can only be set for clients.'
+                ],
+                422
+            );
+        }
+
+        $markup = Yii::$app->request->post('markup');
+        if (!is_numeric($markup) || $markup < 0 || $markup > 100) {
+            return ApiResponse::code(
+                $this->responseCodes->BAD_REQUEST,
+                [
+                    'message' => 'Markup must be between 0 and 100.'
+                ],
+                422
+            );
+        }
+
+        $user->markup = (int)$markup;
+        if (!$user->save()) {
+            return ApiResponse::code(
+                $this->responseCodes->ERROR_SAVE,
+                [
+                    'errors' => $user->errors
+                ],
+                422
+            );
+        }
+
+        return ApiResponse::code(
+            $this->responseCodes->SUCCESS,
+            [
+                'user' => [
+                    'id' => $user->id,
+                    'markup' => $user->markup
+                ]
+            ]
+        );
+    }
 
 }
 
