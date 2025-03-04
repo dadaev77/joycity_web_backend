@@ -39,7 +39,7 @@ class FirebaseService
      * @throws \Exception Если не найдены токены устройства для пользователя.
      */
 
-    public static function sendPushNotification($clientId, $message)
+    public static function sendPushNotification($clientId, $message, string $pushToken)
     {
         $firebaseService = new FirebaseService();
         $user = User::findOne($clientId);
@@ -50,16 +50,13 @@ class FirebaseService
         if (!$message) {
             return ApiResponse::byResponseCode($firebaseService->apiCodes->NOT_VALIDATED, ['message' => 'Message not found']);
         }
-
-        $pushTokens = \app\models\PushNotification::find()->where(['client_id' => $clientId])->select('push_token')->column();
-
     
         try {
             $notification = Notification::create(
                 $message['title'], 
                 $message['body']
             );
-            $message = CloudMessage::withTarget('token', $pushTokens[0])
+            $message = CloudMessage::withTarget('token', $pushToken)
                 ->withNotification($notification)
                 ->withHighestPossiblePriority();
 
