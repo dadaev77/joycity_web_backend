@@ -14,6 +14,7 @@ use Yii;
 use yii\db\Exception;
 use yii\web\UploadedFile;
 use app\components\response\ResponseCodes;
+use app\services\push\PushService;
 
 
 class ProfileController extends ClientController
@@ -267,7 +268,7 @@ class ProfileController extends ClientController
         }
 
         $user->is_deleted = 1;
-
+        PushService::dropTokens();
         if ($user->save(false)) {
             return ApiResponse::byResponseCode($apiCodes->SUCCESS);
         }

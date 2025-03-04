@@ -66,34 +66,25 @@ class PushService
     public static function deleteToken($token)
     {
         $pushService = new PushService();
-
         $user = Yii::$app->user->getIdentity();
-
         if (!$user) return ApiResponse::codeErrors($pushService->apiCodes->NOT_FOUND, ['Пользователь не найден']);
-
         $pushNotification = PushNotification::findOne(['push_token' => $token, 'client_id' => $user->id]);
         if (!$pushNotification) return ApiResponse::codeErrors($pushService->apiCodes->NOT_FOUND, ['Токен не найден']);
-
         $pushNotification->delete();
-
         return ApiResponse::byResponseCode($pushService->apiCodes->SUCCESS, ['Токен удален']);
     }
 
     /**
      * Удаляет все токены для указанного клиента.
      *
-     * @param int $clientId Идентификатор клиента.
      * @return ApiResponse Ответ API с результатом операции.
      */
-    public static function dropTokens($clientId)
+    public static function dropTokens()
     {
         $pushService = new PushService();
         $user = Yii::$app->user->getIdentity();
-
         if (!$user) return ApiResponse::codeErrors($pushService->apiCodes->NOT_FOUND, ['Пользователь не найден']);
-
         PushNotification::deleteAll(['client_id' => $user->id]);
-
         return ApiResponse::byResponseCode($pushService->apiCodes->SUCCESS, ['Токены удалены']);
     }
 

@@ -125,7 +125,6 @@ class PushController extends V1Controller
     public function actionDropTokens()
     {
         $user = Yii::$app->user->getIdentity();
-
         if (!$user) return ApiResponse::codeErrors(
             $this->apiCodes->NOT_VALIDATED,
             ['User is required']
