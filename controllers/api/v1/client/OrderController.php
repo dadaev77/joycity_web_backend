@@ -230,6 +230,14 @@ class OrderController extends ClientController
                     ]
                 );
 
+                PushService::sendPushNotification(
+                    $order->created_by,
+                    [
+                        'title' => 'Новый заказ',
+                        'body' => 'Вы получили новый заказ ' . $order->id,
+                    ]
+                );
+
                 if ($order->product_id) {
                     $withProduct = true;
                     $buyerId = $order->product->buyer_id;
@@ -249,14 +257,6 @@ class OrderController extends ClientController
                     if (!$orderChangeStatus->success) {
                         throw new Exception($orderChangeStatus->reason);
                     }
-
-                    PushService::sendPushNotification(
-                        $order->created_by,
-                        [
-                            'title' => 'Новый заказ',
-                            'body' => 'Вы получили новый заказ ' . $order->id,
-                        ]
-                    );
 
                     ChatService::createGroupChat(
                         'Order ' . $order->id,
