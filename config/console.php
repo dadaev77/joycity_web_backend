@@ -14,6 +14,12 @@ $config = \yii\helpers\ArrayHelper::merge($common, [
     'controllerNamespace' => 'app\commands',
     'language' => 'ru-RU',
     'components' => [
+        'queue' => [
+            'class' => \yii\queue\db\Queue::class,
+            'db' => 'db',
+            'tableName' => '{{%queue}}',
+            'channel' => 'default',
+        ],
         'i18n' => [
             'translations' => [
                 'app*' => [
