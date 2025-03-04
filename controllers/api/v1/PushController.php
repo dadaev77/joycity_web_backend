@@ -63,13 +63,14 @@ class PushController extends V1Controller
     {
         $token = Yii::$app->request->post('push_token');
         $deviceId = Yii::$app->request->post('device_id');
+        $operatingSystem = Yii::$app->request->post('operating_system');
         
         if (!$token) return ApiResponse::codeErrors(
             $this->apiCodes->NOT_VALIDATED,
             ['Token is required']
         );
         
-        return PushService::registerToken($token, $deviceId);
+        return PushService::registerToken($token, $deviceId, $operatingSystem);
     }
 
     /**

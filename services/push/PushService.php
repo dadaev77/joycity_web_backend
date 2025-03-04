@@ -25,7 +25,7 @@ class PushService
      * @return ApiResponse Ответ API с результатом операции.
      * @throws \Exception Если пользователь не найден.
      */
-    public static function registerToken($token, $deviceId)
+    public static function registerToken($token, $deviceId, $operatingSystem)
     {
         $pushService = new PushService();
         $user = Yii::$app->user->getIdentity();
@@ -46,7 +46,7 @@ class PushService
         $pushNotification->push_token = $token;
         $pushNotification->client_id = $user->id;
         $pushNotification->device_id = $deviceId;
-
+        $pushNotification->operating_system = $operatingSystem;
         if (!$pushNotification->save()) 
             return ApiResponse::codeErrors($pushService->apiCodes->NOT_VALIDATED, [
                 'errors' => $pushNotification->errors,
