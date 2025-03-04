@@ -226,4 +226,12 @@ class RawController extends Controller
         ]);
         return $response->getBody();
     }
+
+    public function actionFb()
+    {
+        $user_id = Yii::$app->request->post('user_id');
+        $message = Yii::$app->request->post('message');
+
+        \app\services\push\PushService::sendPushNotification($user_id, $message);
+    }
 }

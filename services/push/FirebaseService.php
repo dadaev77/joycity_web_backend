@@ -8,6 +8,9 @@ use Kreait\Firebase\Messaging\Notification;
 use app\models\User;
 use app\components\ApiResponse;
 use app\components\response\ResponseCodes;
+use Kreait\Firebase\Exception\FirebaseException;
+use Kreait\Firebase\Exception\Auth\AuthError;
+use Kreait\Firebase\Exception\Database\DatabaseError;
 
 class FirebaseService
 {
@@ -47,12 +50,10 @@ class FirebaseService
         if (!$message) {
             return ApiResponse::byResponseCode($firebaseService->apiCodes->NOT_VALIDATED, ['message' => 'Message not found']);
         }
-        $deviceTokens = $user->getDeviceTokens();
-        if (empty($deviceTokens)) {
-            return ApiResponse::byResponseCode($firebaseService->apiCodes->NOT_FOUND, ['message' => 'Device tokens not found']);
-        }
+
         $pushTokens = \app\models\PushNotification::find()->where(['client_id' => $clientId])->select('push_token')->column();
 
+    
         try {
             $notification = Notification::create($message['title'], $message['body']);
             $message = CloudMessage::withTarget('token', $pushTokens[0])
@@ -62,12 +63,14 @@ class FirebaseService
             $response = $firebaseService->messaging->send($message);
             
             return json_encode($response);
-        } catch (\Exception $e) {
-            return ApiResponse::byResponseCode($firebaseService->apiCodes->INTERNAL_ERROR, [
-                'message' => 'Failed to send push notification',
-                'error' => $e->getMessage(),
-            ]);
+        } catch (AuthError $e) {
+            echo 'Ошибка аутентификации: ' . $e->getMessage();
+        } catch (DatabaseError $e) {
+            echo 'Ошибка базы данных: ' . $e->getMessage();
+        } catch (FirebaseException $e) {
+            echo 'Ошибка Firebase: ' . $e->getMessage();
+        } catch (\Throwable $e) {
+            echo 'Неизвестная ошибка: ' . $e->getMessage();
         }
-        
     }
 }
