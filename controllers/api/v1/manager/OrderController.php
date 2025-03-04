@@ -310,31 +310,38 @@ class OrderController extends ManagerController
 
     public function actionUpdateOrder()
     {
-        return 'asdasd';
+        $id = \Yii::$app->request->post('id');
+        $buyerId = \Yii::$app->request->post('buyer_id');
+
+        if (!$id || !$buyerId) {
+            return \app\components\ApiResponse::byResponseCode($this->apiCodes->NOT_FOUND, ['message' => 'Order or buyer not found']);
+        }
+
+        $order = \app\models\Order::findOne(['id' => $id]);
+        if (!$order) {
+            return \app\components\ApiResponse::byResponseCode($this->apiCodes->NOT_FOUND, ['message' => 'Order not found']);
+        }
+
+        // Проверка статуса заказа
+        if ($order->status !== Order::STATUS_BUYER_ASSIGNED) {
+            return \app\components\ApiResponse::byResponseCode($this->apiCodes->NO_ACCESS, ['message' => 'Order cannot be updated']);
+        }
+
+        $buyer = \app\models\User::findOne(['id' => $buyerId, 'role' => \app\models\User::ROLE_BUYER]);
         
-        // $post = \Yii::$app->request->post();
+        if (!$buyer) {
+            return \app\components\ApiResponse::byResponseCode($this->apiCodes->NOT_FOUND, ['message' => 'Buyer not found']);
+        }
 
-        // $buyerId = $post['buyer_id'];
+        $order->buyer_id = $buyerId;
+        if (!$order->save()) {
+            return \app\components\ApiResponse::byResponseCode($this->apiCodes->INTERNAL_ERROR, [
+                'errors' => $order->errors
+            ]);
+        }
 
-        // $order = \app\models\Order::findOne(['id' => $id]);
-        // if (!$order) {
-        //     return \app\components\ApiResponse::byResponseCode($this->apiCodes->NOT_FOUND, ['message' => 'Order not found']);
-        // }
-
-        // $buyer = \app\models\User::findOne(['id' => $buyerId, 'role' => \app\models\User::ROLE_BUYER]);
-        // if (!$buyer) {
-        //     return \app\components\ApiResponse::byResponseCode($this->apiCodes->NOT_FOUND, ['message' => 'Buyer not found']);
-        // }
-
-        // $order->buyer_id = $buyerId;
-        // if (!$order->save()) {
-        //     return \app\components\ApiResponse::byResponseCode($this->apiCodes->INTERNAL_ERROR, [
-        //         'errors' => $order->errors
-        //     ]);
-        // }
-
-        // return \app\components\ApiResponse::byResponseCode($this->apiCodes->SUCCESS, [
-        //     'order' => $order,
-        // ]);
+        return \app\components\ApiResponse::byResponseCode($this->apiCodes->SUCCESS, [
+            'order' => $order,
+        ]);
     }
 }
