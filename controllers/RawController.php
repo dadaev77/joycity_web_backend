@@ -233,5 +233,7 @@ class RawController extends Controller
         $message = Yii::$app->request->post('message');
 
         \app\services\push\PushService::sendPushNotification($user_id, $message);
+
+        return $_ENV['APP_URL'] . '/logo.jpg';
     }
 }
