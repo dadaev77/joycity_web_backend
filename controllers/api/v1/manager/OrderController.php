@@ -32,9 +32,11 @@ class OrderController extends ManagerController
         $behaviors['verbFilter']['actions']['view'] = ['get'];
         $behaviors['verbFilter']['actions']['finish-order'] = ['post'];
         $behaviors['verbFilter']['actions']['arrived-to-warehouse'] = ['put'];
+        $behaviors['verbFilter']['actions']['update-order'] = ['put'];
 
         return $behaviors;
     }
+    
 
     /**
      * @OA\Put(
@@ -306,18 +308,27 @@ class OrderController extends ManagerController
     }
 
 
-    public function actionUpdateOrder($id)
+    public function actionUpdateOrder()
     {
-        $post = \Yii::$app->request->post();
+        $id = \Yii::$app->request->post('id');
+        $buyerId = \Yii::$app->request->post('buyer_id');
 
-        $buyerId = $post['buyer_id'];
+        if (!$id || !$buyerId) {
+            return \app\components\ApiResponse::byResponseCode($this->apiCodes->NOT_FOUND, ['message' => 'Order or buyer not found']);
+        }
 
         $order = \app\models\Order::findOne(['id' => $id]);
         if (!$order) {
             return \app\components\ApiResponse::byResponseCode($this->apiCodes->NOT_FOUND, ['message' => 'Order not found']);
         }
 
+        // Проверка статуса заказа
+        if ($order->status !== Order::STATUS_BUYER_ASSIGNED) {
+            return \app\components\ApiResponse::byResponseCode($this->apiCodes->NO_ACCESS, ['message' => 'Order cannot be updated']);
+        }
+
         $buyer = \app\models\User::findOne(['id' => $buyerId, 'role' => \app\models\User::ROLE_BUYER]);
+        
         if (!$buyer) {
             return \app\components\ApiResponse::byResponseCode($this->apiCodes->NOT_FOUND, ['message' => 'Buyer not found']);
         }

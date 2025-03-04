@@ -159,6 +159,8 @@ class VerificationController extends ManagerController
 
             $verifiedUser = $request->createdBy;
             $verifiedUser->is_verified = 1;
+            $verifiedUser->markup = 5;
+
 
             if (!$verifiedUser->save(true, ['is_verified'])) {
                 $transaction?->rollBack();
