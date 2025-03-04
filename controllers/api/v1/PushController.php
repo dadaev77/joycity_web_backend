@@ -68,8 +68,10 @@ class PushController extends V1Controller
             $this->apiCodes->NOT_VALIDATED,
             ['Token is required']
         );
-
+        
+        throw new \Exception('test');
         return PushService::registerToken($token, $deviceId);
+
     }
 
     /**
