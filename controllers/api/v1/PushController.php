@@ -69,9 +69,7 @@ class PushController extends V1Controller
             ['Token is required']
         );
         
-        throw new \Exception('test');
         return PushService::registerToken($token, $deviceId);
-
     }
 
     /**
