@@ -630,13 +630,4 @@ class UserStructure extends Base
             'manager_id' => 'id',
         ]);
     }
-    /**
-     * Gets query for [[DeviceTokens]].
-     *
-     * @return ActiveQuery
-     */
-    public function getDeviceTokens()
-    {
-        return $this->hasMany(PushNotification::class, ['client_id' => 'id'])->select('push_token')->column();
-    }
 }

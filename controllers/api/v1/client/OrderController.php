@@ -250,13 +250,13 @@ class OrderController extends ClientController
                         throw new Exception($orderChangeStatus->reason);
                     }
 
-                    // PushService::sendPushNotification(
-                    //     $buyerId,
-                    //     [
-                    //         'title' => 'Новый заказ',
-                    //         'body' => 'Вы получили новый заказ ' . $order->id,
-                    //     ]
-                    // );
+                    PushService::sendPushNotification(
+                        $buyerId,
+                        [
+                            'title' => 'Новый заказ',
+                            'body' => 'Вы получили новый заказ ' . $order->id,
+                        ]
+                    );
 
                     ChatService::createGroupChat(
                         'Order ' . $order->id,
@@ -268,6 +268,7 @@ class OrderController extends ClientController
                             'group_name' => 'client_buyer_manager',
                         ]
                     );
+                    
                 } else {
                     $distributionStatus = OrderDistributionService::createDistributionTask($order->id);
                     if (!$distributionStatus->success) {

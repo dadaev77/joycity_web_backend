@@ -1,17 +1,28 @@
 <?php
 
 namespace app\services\push;
-use GuzzleHttp\Client;
+
+use Kreait\Firebase\Factory;
+use Kreait\Firebase\Messaging\CloudMessage;
+use Kreait\Firebase\Messaging\Notification;
 use app\models\User;
 use app\components\ApiResponse;
 use app\components\response\ResponseCodes;
 
 class FirebaseService
 {
+    protected $messaging;
     protected $apiCodes;
+
     public function __construct()
     {
         $this->apiCodes = ResponseCodes::getStatic();
+        
+        $factory = (new Factory)
+            ->withServiceAccount(__DIR__ . '/joycity.json')
+            ->withProjectId('joycity-stage');
+            
+        $this->messaging = $factory->createMessaging();
     }
 
     /**
@@ -28,45 +39,35 @@ class FirebaseService
     public static function sendPushNotification($clientId, $message)
     {
         $firebaseService = new FirebaseService();
-        $url = 'https://fcm.googleapis.com/v1/projects/joycity-stage/messages:send';
-        $fcm_api_key = $_ENV['FCM_API_KEY'];
-
         $user = User::findOne($clientId);
         
-        if (!$user) return ApiResponse::byResponseCode($firebaseService->apiCodes->NOT_VALIDATED, ['message' => 'User not found']);
-        if (!$message) return ApiResponse::byResponseCode($firebaseService->apiCodes->NOT_VALIDATED, ['message' => 'Message not found']);
-        
+        if (!$user) {
+            return ApiResponse::byResponseCode($firebaseService->apiCodes->NOT_VALIDATED, ['message' => 'User not found']);
+        }
+        if (!$message) {
+            return ApiResponse::byResponseCode($firebaseService->apiCodes->NOT_VALIDATED, ['message' => 'Message not found']);
+        }
         $deviceTokens = $user->getDeviceTokens();
-        
-        if (empty($deviceTokens)) return ApiResponse::byResponseCode($firebaseService->apiCodes->NOT_FOUND, ['message' => 'Device tokens not found']);
+        if (empty($deviceTokens)) {
+            return ApiResponse::byResponseCode($firebaseService->apiCodes->NOT_FOUND, ['message' => 'Device tokens not found']);
+        }
+        $pushTokens = \app\models\PushNotification::find()->where(['client_id' => $clientId])->select('push_token')->column();
 
-        $notification = [
-            'title' => $message['title'],
-            'body' => $message['body'],
-        ];
-
-        $data = [
-            'message' => [
-                'tokens' => $deviceTokens,
-                'notification' => $notification,
-            ],
-        ];
         try {
-            $client = new Client();
-            $response = $client->post($url, [
-                'headers' => [
-                    'Authorization' => 'Bearer ' . $fcm_api_key,
-                    'Content-Type' => 'application/json',
-                ],
-                'json' => $data,
-            ]);
+            $notification = Notification::create($message['title'], $message['body']);
+            $message = CloudMessage::withTarget('token', $pushTokens[0])
+                ->withNotification($notification)
+                ->withHighestPossiblePriority();
 
-            return $response->getBody()->getContents();
+            $response = $firebaseService->messaging->send($message);
+            
+            return json_encode($response);
         } catch (\Exception $e) {
             return ApiResponse::byResponseCode($firebaseService->apiCodes->INTERNAL_ERROR, [
                 'message' => 'Failed to send push notification',
                 'error' => $e->getMessage(),
             ]);
         }
+        
     }
 }
