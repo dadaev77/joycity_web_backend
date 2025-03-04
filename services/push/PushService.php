@@ -111,7 +111,7 @@ class PushService
     public static function sendPushNotification($user_id, $message)
     {
         $pushTokens = PushNotification::find()->where(['client_id' => $user_id])->select('push_token')->column();
-        return $pushTokens;
+        
         foreach ($pushTokens as $pushToken) {
             FirebaseService::sendPushNotification($user_id, $message, $pushToken);
         }
