@@ -8,9 +8,11 @@ use Kreait\Firebase\Messaging\Notification;
 use app\models\User;
 use app\components\ApiResponse;
 use app\components\response\ResponseCodes;
+use app\models\PushNotification;
 use Kreait\Firebase\Exception\FirebaseException;
 use Kreait\Firebase\Exception\Auth\AuthError;
 use Kreait\Firebase\Exception\Database\DatabaseError;
+use Yii;
 
 class FirebaseService
 {
@@ -68,7 +70,8 @@ class FirebaseService
         } catch (DatabaseError $e) {
             echo 'Ошибка базы данных: ' . $e->getMessage();
         } catch (FirebaseException $e) {
-            echo 'Ошибка Firebase: ' . $e->getMessage();
+            Yii::$app->actionLog->error('Ошибка Firebase: ' . $e->getMessage());
+            PushNotification::findOne(['push_token' => $pushToken])->delete();
         } catch (\Throwable $e) {
             echo 'Неизвестная ошибка: ' . $e->getMessage();
         }
