@@ -119,6 +119,7 @@ class UserStructure extends Base
                 'required',
             ],
             [['rating'], 'number'],
+            ['markup', 'number', 'min' => 0, 'max' => 100],
             [
                 [
                     'feedback_count',
