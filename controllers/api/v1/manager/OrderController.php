@@ -32,9 +32,11 @@ class OrderController extends ManagerController
         $behaviors['verbFilter']['actions']['view'] = ['get'];
         $behaviors['verbFilter']['actions']['finish-order'] = ['post'];
         $behaviors['verbFilter']['actions']['arrived-to-warehouse'] = ['put'];
+        $behaviors['verbFilter']['actions']['update-order'] = ['put'];
 
         return $behaviors;
     }
+    
 
     /**
      * @OA\Put(
@@ -306,31 +308,33 @@ class OrderController extends ManagerController
     }
 
 
-    public function actionUpdateOrder($id)
+    public function actionUpdateOrder()
     {
-        $post = \Yii::$app->request->post();
+        return 'asdasd';
+        
+        // $post = \Yii::$app->request->post();
 
-        $buyerId = $post['buyer_id'];
+        // $buyerId = $post['buyer_id'];
 
-        $order = \app\models\Order::findOne(['id' => $id]);
-        if (!$order) {
-            return \app\components\ApiResponse::byResponseCode($this->apiCodes->NOT_FOUND, ['message' => 'Order not found']);
-        }
+        // $order = \app\models\Order::findOne(['id' => $id]);
+        // if (!$order) {
+        //     return \app\components\ApiResponse::byResponseCode($this->apiCodes->NOT_FOUND, ['message' => 'Order not found']);
+        // }
 
-        $buyer = \app\models\User::findOne(['id' => $buyerId, 'role' => \app\models\User::ROLE_BUYER]);
-        if (!$buyer) {
-            return \app\components\ApiResponse::byResponseCode($this->apiCodes->NOT_FOUND, ['message' => 'Buyer not found']);
-        }
+        // $buyer = \app\models\User::findOne(['id' => $buyerId, 'role' => \app\models\User::ROLE_BUYER]);
+        // if (!$buyer) {
+        //     return \app\components\ApiResponse::byResponseCode($this->apiCodes->NOT_FOUND, ['message' => 'Buyer not found']);
+        // }
 
-        $order->buyer_id = $buyerId;
-        if (!$order->save()) {
-            return \app\components\ApiResponse::byResponseCode($this->apiCodes->INTERNAL_ERROR, [
-                'errors' => $order->errors
-            ]);
-        }
+        // $order->buyer_id = $buyerId;
+        // if (!$order->save()) {
+        //     return \app\components\ApiResponse::byResponseCode($this->apiCodes->INTERNAL_ERROR, [
+        //         'errors' => $order->errors
+        //     ]);
+        // }
 
-        return \app\components\ApiResponse::byResponseCode($this->apiCodes->SUCCESS, [
-            'order' => $order,
-        ]);
+        // return \app\components\ApiResponse::byResponseCode($this->apiCodes->SUCCESS, [
+        //     'order' => $order,
+        // ]);
     }
 }
