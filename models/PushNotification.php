@@ -31,7 +31,7 @@ class PushNotification extends ActiveRecord
             [['client_id', 'device_id', 'push_token'], 'required'],
             [['client_id'], 'integer'],
             [['device_id', 'push_token'], 'string', 'max' => 255],
-            [['device_id'], 'unique'],
+            [['device_id']],
         ];
     }
 
