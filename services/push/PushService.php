@@ -112,8 +112,13 @@ class PushService
     {
         $pushTokens = PushNotification::find()->where(['client_id' => $user_id])->select('push_token')->column();
         
-        foreach ($pushTokens as $pushToken) {
-            FirebaseService::sendPushNotification($user_id, $message, $pushToken);
+        try{
+            foreach ($pushTokens as $pushToken) {
+                FirebaseService::sendPushNotification($user_id, $message, $pushToken);
+            }
+        } catch (\Exception $e) {
+            Yii::$app->actionLog->error('Ошибка отправки push-уведомления: ' . $e->getMessage());
+            return false;
         }
 
         return true;
