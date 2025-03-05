@@ -118,7 +118,7 @@ class PushService
                     $pushToken->badge_count++;
                     $pushToken->save();
                 }
-                FirebaseService::sendPushNotification($user_id, $message, $pushToken);
+                FirebaseService::sendPushNotification($user_id, $message, $pushToken, $pushToken->operating_system);
             }
         } catch (\Exception $e) {
             Yii::$app->actionLog->error('Ошибка отправки push-уведомления: ' . $e->getMessage());
