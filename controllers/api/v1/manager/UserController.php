@@ -22,7 +22,11 @@ class UserController extends ManagerController
 
     public function behaviors()
     {
-        return parent::behaviors();
+        $behaviours = parent::behaviors();
+        $behaviours['verbFilter']['actions']['index'] = ['get'];
+        $behaviours['verbFilter']['actions']['search'] = ['get'];
+        $behaviours['verbFilter']['actions']['update-markup'] = ['patch'];
+        return $behaviours;
     }
     /**
      * @param string $role
@@ -31,7 +35,7 @@ class UserController extends ManagerController
      * @return array
      */
 
-    public function actionIndex(string $role, int $limit = 10, int $page = 1)
+    public function actionIndex(string $role, int $limit = 10, int $page = 1, int $id = null)
     {
         if (!in_array($role, $this->allowedRoles)) {
             return ApiResponse::code(
@@ -53,6 +57,11 @@ class UserController extends ManagerController
             ->limit($limit)
             ->all();
 
+        if ($id) {
+            $user = User::findOne($id);
+            if (!$user) return ApiResponse::code($this->responseCodes->NOT_FOUND, ['message' => 'User not found.']);
+        }
+
         if (count($users) < 1) {
             return ApiResponse::code(
                 $this->responseCodes->NOT_FOUND,
@@ -60,6 +69,15 @@ class UserController extends ManagerController
                     'message' => 'No users found for the specified role.'
                 ],
                 404
+            );
+        }
+
+        if ($id) {
+            return ApiResponse::code(
+                $this->responseCodes->SUCCESS,
+                [
+                    'info' => $user
+                ]
             );
         }
 
@@ -116,62 +134,23 @@ class UserController extends ManagerController
 
     /**
      * @param int $id
+     * @param int $markup
      * @return array
      */
-    public function actionUpdateMarkup($id)
+    public function actionUpdateMarkup()
     {
-        $user = User::findOne($id);
-        if (!$user) {
-            return ApiResponse::code(
-                $this->responseCodes->NOT_FOUND,
-                [
-                    'message' => 'User not found.'
-                ],
-                404
-            );
-        }
-
-        if ($user->role !== User::ROLE_CLIENT) {
-            return ApiResponse::code(
-                $this->responseCodes->BAD_REQUEST,
-                [
-                    'message' => 'Markup can only be set for clients.'
-                ],
-                422
-            );
-        }
-
+        $user = User::findOne(Yii::$app->request->post('user_id'));
         $markup = Yii::$app->request->post('markup');
-        if (!is_numeric($markup) || $markup < 0 || $markup > 100) {
-            return ApiResponse::code(
-                $this->responseCodes->BAD_REQUEST,
-                [
-                    'message' => 'Markup must be between 0 and 100.'
-                ],
-                422
-            );
-        }
 
+        if (!$user) return ApiResponse::code($this->responseCodes->NOT_FOUND, ['message' => 'User not found.']);        
+        if ($user->role !== User::ROLE_CLIENT) return ApiResponse::code($this->responseCodes->BAD_REQUEST, ['message' => 'Markup can only be set for clients.']);
+        
+        if (!is_numeric($markup) || $markup < 0 || $markup > 100) return ApiResponse::code($this->responseCodes->BAD_REQUEST, ['message' => 'Markup must be between 0 and 100.']);
+        
         $user->markup = (int)$markup;
-        if (!$user->save()) {
-            return ApiResponse::code(
-                $this->responseCodes->ERROR_SAVE,
-                [
-                    'errors' => $user->errors
-                ],
-                422
-            );
-        }
+        if (!$user->save()) return ApiResponse::code($this->responseCodes->ERROR_SAVE, ['errors' => $user->errors], 422);
 
-        return ApiResponse::code(
-            $this->responseCodes->SUCCESS,
-            [
-                'user' => [
-                    'id' => $user->id,
-                    'markup' => $user->markup
-                ]
-            ]
-        );
+        return ApiResponse::code($this->responseCodes->SUCCESS,['markup' => $user->markup]);
     }
 
 }
