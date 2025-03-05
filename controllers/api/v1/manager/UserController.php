@@ -207,8 +207,10 @@ class UserController extends ManagerController
      */
     public function actionUpdateMarkup()
     {
-        $user = User::findOne(Yii::$app->request->post('user_id'));
+        $user_id = Yii::$app->request->post('user_id');
         $markup = Yii::$app->request->post('markup');
+        
+        $user = User::findOne($user_id);
 
         if (!$user) return ApiResponse::code($this->responseCodes->NOT_FOUND, ['message' => 'User not found.']);        
         if ($user->role !== User::ROLE_CLIENT) return ApiResponse::code($this->responseCodes->BAD_REQUEST, ['message' => 'Markup can only be set for clients.']);
