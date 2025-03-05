@@ -133,4 +133,18 @@ class PushController extends V1Controller
 
         return PushService::dropTokens($user->id);
     }
+
+    public function actionResetBadge()
+    {
+        $token = Yii::$app->request->post('push_token');
+
+        if (!$token) return ApiResponse::codeErrors(
+            $this->apiCodes->NOT_VALIDATED,
+            ['Token is required']
+        );
+
+        return PushService::resetBadge($token);
+    }
+    
+    
 } 

@@ -139,4 +139,14 @@ class PushService
 
         return $accessToken;
     }
+
+    public static function resetBadge($token)
+    {
+        $pushService = new PushService();
+        $pushToken = PushNotification::findOne(['push_token' => $token]);
+        if (!$pushToken) return ApiResponse::codeErrors($pushService->apiCodes->NOT_FOUND, ['Токен не найден']);
+        $pushToken->badge_count = 0;
+        $pushToken->save();
+        return ApiResponse::byResponseCode($pushService->apiCodes->SUCCESS, ['Бейдж сброшен']);
+    }
 }
