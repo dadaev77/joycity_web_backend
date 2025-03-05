@@ -110,7 +110,7 @@ class PushService
      */
     public static function sendPushNotification($user_id, $message)
     {
-        $pushTokens = PushNotification::find()->where(['client_id' => $user_id])->select('push_token')->column();
+        $pushTokens = PushNotification::find()->where(['client_id' => $user_id])->all();
         
         try{
             foreach ($pushTokens as $pushToken) {
@@ -118,7 +118,7 @@ class PushService
                     $pushToken->badge_count++;
                     $pushToken->save();
                 }
-                FirebaseService::sendPushNotification($user_id, $message, $pushToken, $pushToken->operating_system);
+                FirebaseService::sendPushNotification($user_id, $message, $pushToken->push_token, $pushToken->operating_system);
             }
         } catch (\Exception $e) {
             Yii::$app->actionLog->error('Ошибка отправки push-уведомления: ' . $e->getMessage());
