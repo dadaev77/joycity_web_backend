@@ -219,7 +219,7 @@ class UserController extends ManagerController
         if (!is_numeric($markup) || $markup < 0 || $markup > 100) return ApiResponse::code($this->responseCodes->BAD_REQUEST, ['message' => 'Markup must be between 0 and 100.']);
         
         $user->markup = (int)$markup;
-        if (!$user->save()) return ApiResponse::code($this->responseCodes->INTERNAL_ERROR, ['errors' => $user->errors], 422);
+        if (!$user->save(true, ['markup'])) return ApiResponse::code($this->responseCodes->INTERNAL_ERROR, ['errors' => $user->errors], 422);
 
         return ApiResponse::code($this->responseCodes->SUCCESS,['markup' => $user->markup]);
     }
