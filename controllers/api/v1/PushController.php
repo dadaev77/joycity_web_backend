@@ -33,7 +33,7 @@ class PushController extends V1Controller
         $behaviours['verbFilter']['actions']['register-token'] = ['post'];
         $behaviours['verbFilter']['actions']['delete-token'] = ['delete'];
         $behaviours['verbFilter']['actions']['drop-tokens'] = ['delete'];
-        
+        $behaviours['verbFilter']['actions']['reset-badge'] = ['post'];
         return $behaviors; 
     }
 
