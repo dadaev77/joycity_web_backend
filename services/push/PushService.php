@@ -114,6 +114,10 @@ class PushService
         
         try{
             foreach ($pushTokens as $pushToken) {
+                if ($pushToken->operating_system === 'ios') {
+                    $pushToken->badge_count++;
+                    $pushToken->save();
+                }
                 FirebaseService::sendPushNotification($user_id, $message, $pushToken);
             }
         } catch (\Exception $e) {
