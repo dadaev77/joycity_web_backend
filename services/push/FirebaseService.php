@@ -12,6 +12,7 @@ use app\models\PushNotification;
 use Kreait\Firebase\Exception\FirebaseException;
 use Kreait\Firebase\Exception\Auth\AuthError;
 use Kreait\Firebase\Exception\Database\DatabaseError;
+use Kreait\Firebase\Messaging\ApnsConfig;
 use Yii;
 
 class FirebaseService
@@ -35,13 +36,14 @@ class FirebaseService
      *
      * @param int $clientId Идентификатор клиента (пользователя), которому будет отправлено уведомление.
      * @param array $message Массив, содержащий заголовок и текст сообщения.
+     * @param string $os Операционная система устройства (android или ios).
      * 
      * @return string Содержимое ответа от FCM.
      * 
      * @throws \Exception Если не найдены токены устройства для пользователя.
      */
 
-    public static function sendPushNotification($clientId, $message, string $pushToken)
+    public static function sendPushNotification($clientId, $message, string $pushToken, string $os)
     {
         $firebaseService = new FirebaseService();
         $user = User::findOne($clientId);
@@ -52,23 +54,65 @@ class FirebaseService
         if (!$message) {
             return ApiResponse::byResponseCode($firebaseService->apiCodes->NOT_VALIDATED, ['message' => 'Message not found']);
         }
-    
+
+        if ($os === 'android') {
+            return $firebaseService->sendAndroidNotification($message, $pushToken);
+        } elseif ($os === 'ios') {
+            return $firebaseService->sendIosNotification($message, $pushToken);
+        } else {
+            return ApiResponse::byResponseCode($firebaseService->apiCodes->NOT_VALIDATED, ['message' => 'Unsupported OS']);
+        }
+    }
+
+    protected function sendAndroidNotification($message, string $pushToken)
+    {
         try {
             $notification = Notification::create(
                 $message['title'], 
                 $message['body'],
             );
-            $message = CloudMessage::withTarget('token', $pushToken)
+            $cloudMessage = CloudMessage::withTarget('token', $pushToken)
                 ->withNotification($notification)
                 ->withHighestPossiblePriority();
 
-            $response = $firebaseService->messaging->send($message);
-            
+            $response = $this->messaging->send($cloudMessage);
             return json_encode($response);
-        } catch (AuthError $e) {
-            echo 'Ошибка аутентификации: ' . $e->getMessage();
-        } catch (DatabaseError $e) {
-            echo 'Ошибка базы данных: ' . $e->getMessage();
+        } catch (FirebaseException $e) {
+            Yii::$app->actionLog->error('Ошибка Firebase: ' . $e->getMessage());
+            PushNotification::findOne(['push_token' => $pushToken])->delete();
+        } catch (\Throwable $e) {
+            echo 'Неизвестная ошибка: ' . $e->getMessage();
+        }
+    }
+
+    protected function sendIosNotification($message, string $pushToken)
+    {
+        try {
+            $notification = Notification::create(
+                $message['title'], 
+                $message['body'],
+            );
+            $cloudMessage = CloudMessage::withTarget('token', $pushToken)
+                ->withNotification($notification)
+                ->withApnsConfig(ApnsConfig::fromArray([
+                    'payload' => [
+                        'headers' => [
+                            'apns-priority' => '10',
+                        ],                
+                        'aps' => [
+                            'badge' => PushNotification::find()->where(['push_token' => $pushToken])->one()->badge_count ?? 0,
+                            'alert' => [
+                                'title' => $message['title'],
+                                'body' => $message['body'],
+                            ],
+                            'sound' => 'default',
+                        ],
+                    ],
+                ]))
+                ->withHighestPossiblePriority();
+
+            $response = $this->messaging->send($cloudMessage);
+            return json_encode($response);
         } catch (FirebaseException $e) {
             Yii::$app->actionLog->error('Ошибка Firebase: ' . $e->getMessage());
             PushNotification::findOne(['push_token' => $pushToken])->delete();
