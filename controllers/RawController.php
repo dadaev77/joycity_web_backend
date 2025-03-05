@@ -206,7 +206,8 @@ class RawController extends Controller
         $title = Yii::$app->request->post('title');
         $body = Yii::$app->request->post('body');
         $service_token = \app\services\push\PushService::getToken();
-        $client = new \GuzzleHttp\Client();
+        try {
+            $client = new \GuzzleHttp\Client();
         $response = $client->request('POST', 'https://fcm.googleapis.com/v1/projects/joycity-stage/messages:send', [
             'headers' => [
                 'Authorization' => 'Bearer ' . $service_token,
@@ -225,6 +226,9 @@ class RawController extends Controller
             ],
         ]);
         return $response->getBody();
+        } catch (\Exception $e) {
+            return $e->getMessage();
+        }
     }
 
     public function actionFb()

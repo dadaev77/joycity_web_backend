@@ -125,45 +125,12 @@ class PushController extends V1Controller
     public function actionDropTokens()
     {
         $user = Yii::$app->user->getIdentity();
+
         if (!$user) return ApiResponse::codeErrors(
             $this->apiCodes->NOT_VALIDATED,
             ['User is required']
         );
+
         return PushService::dropTokens($user->id);
-    }
-
-    /**
-     * @OA\Post(
-     *     path="/api/v1/push/send-firebase-notification",
-     *     tags={"Push"},
-     *     summary="Отправить уведомление Firebase",
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             @OA\Property(property="token", type="string", example="ваш_push_токен"),
-     *             @OA\Property(property="message", type="string", example="Ваше сообщение здесь")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Уведомление успешно отправлено"
-     *     ),
-     *     @OA\Response(
-     *         response=400,
-     *         description="Недействительный токен или сообщение"
-     *     )
-     * )
-     */
-    public function actionPushTest()
-    {
-        $user_id = Yii::$app->request->post('user_id');
-        $message = Yii::$app->request->post('message');
-
-        if (!$user_id) return ApiResponse::codeErrors(
-            $this->apiCodes->NOT_VALIDATED,
-            ['User is required']
-        );
-        
-        return PushService::sendPushNotification($user_id, $message);
     }
 } 
