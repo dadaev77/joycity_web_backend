@@ -415,12 +415,12 @@ class OrderController extends ManagerController
             $request = Yii::$app->request;
             $data = $request->getBodyParams();
 
-            // Проверяем наличие buyer_id в запросе
+
             if (!isset($data['buyer_id'])) {
                 return ApiResponse::code($apiCodes->NOT_VALID);
             }
 
-            // Проверяем существование покупателя
+
             $buyer = User::findOne([
                 'id' => $data['buyer_id'], 
                 'role' => User::ROLE_BUYER
