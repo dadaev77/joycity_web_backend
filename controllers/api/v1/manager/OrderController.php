@@ -33,6 +33,7 @@ class OrderController extends ManagerController
         $behaviors['verbFilter']['actions']['finish-order'] = ['post'];
         $behaviors['verbFilter']['actions']['arrived-to-warehouse'] = ['put'];
         $behaviors['verbFilter']['actions']['update-order'] = ['put'];
+        $behaviors['verbFilter']['actions']['update'] = ['put'];
 
         return $behaviors;
     }
@@ -343,5 +344,92 @@ class OrderController extends ManagerController
         return \app\components\ApiResponse::byResponseCode($this->apiCodes->SUCCESS, [
             'order' => $order,
         ]);
+    }
+
+    /**
+     * @OA\Put(
+     *     path="/api/v1/manager/order/{id}",
+     *     security={{"Bearer": {}}},
+     *     summary="Изменить данные заказа",
+     *     tags={"Order"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID заказа",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="new"),
+     *             @OA\Property(property="buyer_id", type="integer", example=12),
+     *             @OA\Property(property="manager_id", type="integer", example=2)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Заказ успешно обновлен"
+     *     )
+     * )
+     */
+    public function actionUpdate($id)
+    {
+        try {
+            $apiCodes = Order::apiCodes();
+            $user = User::getIdentity();
+            $order = Order::findOne(['id' => $id]);
+
+            if (!$order) {
+                return ApiResponse::code($apiCodes->NOT_FOUND);
+            }
+
+            if ($order->manager_id !== $user->id) {
+                return ApiResponse::code($apiCodes->NO_ACCESS);
+            }
+
+            $request = Yii::$app->request;
+            $data = $request->getBodyParams();
+
+
+
+            // Если меняется buyer_id, проверяем существование покупателя
+            if (isset($data['buyer_id'])) {
+                $buyer = User::findOne([
+                    'id' => $data['buyer_id'], 
+                    'role' => User::ROLE_BUYER
+                ]);
+                if (!$buyer) {
+                    return ApiResponse::codeErrors(
+                        $apiCodes->NOT_FOUND,
+                        ['buyer_id' => 'Buyer not found']
+                    );
+                }
+            }
+
+
+
+
+            
+            if (!$order->save()) {
+                return ApiResponse::codeErrors(
+                    $apiCodes->ERROR_SAVE,
+                    $order->errors
+                );
+            }
+
+            return ApiResponse::codeInfo(
+                $apiCodes->SUCCESS,
+                [
+                    'id' => $order->id,
+                    'created_at' => $order->created_at,
+                    'status' => $order->status,
+                    'buyer_id' => $order->buyer_id,
+                    'manager_id' => $order->manager_id
+                ]
+            );
+        } catch (Throwable $e) {
+            return ApiResponse::internalError($e->getMessage());
+        }
     }
 }
