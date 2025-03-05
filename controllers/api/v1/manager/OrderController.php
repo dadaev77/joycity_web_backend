@@ -347,7 +347,7 @@ class OrderController extends ManagerController
     }
 
     /**
-     * @OA\Put(
+     * @OA\Post(
      *     path="/api/v1/manager/order/{id}",
      *     security={{"Bearer": {}}},
      *     summary="Изменить данные заказа клиента",
