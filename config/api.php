@@ -24,6 +24,13 @@ $config = [
         '@bower' => '@vendor/yidas/yii2-bower-asset/bower',
     ],
     'components' => [
+        'queue' => [
+            'class' => \yii\queue\db\Queue::class,
+            'db' => 'db',
+            'tableName' => '{{%queue}}',
+            'channel' => 'default',
+            'mutex' => \yii\mutex\MysqlMutex::class,
+        ],
         'actionLog' => [
             'class' => 'app\components\ActionLog',
         ],

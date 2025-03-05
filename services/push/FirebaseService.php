@@ -57,7 +57,6 @@ class FirebaseService
             $notification = Notification::create(
                 $message['title'], 
                 $message['body'],
-                $_ENV['APP_URL'] . '/logo.jpg'
             );
             $message = CloudMessage::withTarget('token', $pushToken)
                 ->withNotification($notification)

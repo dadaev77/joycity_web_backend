@@ -234,4 +234,10 @@ class RawController extends Controller
 
         return \app\services\push\PushService::sendPushNotification($user_id, $message);
     }
+
+    public function actionTest()
+    {
+        Yii::$app->queue->push(new \app\jobs\TestJob());
+        return 'Test job pushed to queue';
+    }
 }
