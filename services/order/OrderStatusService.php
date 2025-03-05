@@ -10,6 +10,7 @@ use app\models\Order;
 use app\services\chats\ChatService;
 use app\services\notification\NotificationConstructor;
 use app\services\notification\NotificationManagementService;
+use app\services\push\PushService;
 use Throwable;
 use Yii;
 
@@ -298,6 +299,14 @@ class OrderStatusService
             if (!$order->save(true, ['status'])) {
                 return Result::error(['errors' => $order->getFirstErrors()]);
             }
+
+            PushService::sendPushNotification(
+                $order->created_by,
+                [
+                    'title' => 'Смена статуса заказа',
+                    'body' => 'Заказ ' . $order->id . ' получил новый статус: ' . $orderStatus,
+                ]
+            );
 
             if (
                 $order->status !== Order::STATUS_COMPLETED &&

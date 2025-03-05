@@ -11,6 +11,7 @@ use app\services\chats\ChatService;
 use app\services\output\UserVerificationRequestOutputService;
 use Throwable;
 use Yii;
+use app\services\push\PushService;
 use yii\base\Exception;
 
 class VerificationController extends ManagerController
@@ -170,6 +171,14 @@ class VerificationController extends ManagerController
                     $verifiedUser->getFirstErrors(),
                 );
             }
+
+            PushService::sendPushNotification(
+                $request->created_by_id,
+                [
+                    'title' => 'Верификация пройдена',
+                    'body' => 'Ваш запрос на верификацию одобрен',
+                ]
+            );
 
             $transaction?->commit();
             $verificationChat = Chat::findOne(['verification_id' => $request->id]);

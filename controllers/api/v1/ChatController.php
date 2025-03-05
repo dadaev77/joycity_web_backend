@@ -372,13 +372,13 @@ class ChatController extends V1Controller
             $chat->last_message_id = $message->id;
             $chat->save();
 
-            // PushService::sendPushNotification(
-            //     array_diff($participants, [$userId]),
-            //     [
-            //         'title' => 'Новое сообщение',
-            //         'body' => 'Вы получили новое сообщение в чате ' . $chat->id,
-            //     ]
-            // );
+            PushService::sendPushNotification(
+                array_diff($participants, [$userId]),
+                [
+                    'title' => 'Новое сообщение',
+                    'body' => 'Вы получили новое сообщение в чате ' . $chat->id,
+                ]
+            );
 
             self::socketHandler(
                 array_diff($participants, [$userId]),

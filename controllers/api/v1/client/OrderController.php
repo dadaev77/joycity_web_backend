@@ -230,14 +230,6 @@ class OrderController extends ClientController
                     ]
                 );
 
-                PushService::sendPushNotification(
-                    $order->created_by,
-                    [
-                        'title' => 'Новый заказ',
-                        'body' => 'Вы получили новый заказ ' . $order->id,
-                    ]
-                );
-
                 if ($order->product_id) {
                     $withProduct = true;
                     $buyerId = $order->product->buyer_id;
@@ -266,6 +258,14 @@ class OrderController extends ClientController
                             'deal_type' => 'order',
                             'participants' => [$user->id, $order->manager_id, $buyerId],
                             'group_name' => 'client_buyer_manager',
+                        ]
+                    );
+
+                    PushService::sendPushNotification(
+                        $order->buyer_id,
+                        [
+                            'title' => 'Новый заказ',
+                            'body' => 'Вы получили новый заказ ' . $order->id,
                         ]
                     );
 
