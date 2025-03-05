@@ -397,47 +397,24 @@ class OrderController extends ManagerController
      *     )
      * )
      */
-    public function actionUpdate($id)
+    public function actionUpdate()
     {
+        $id = Yii::$app->request->post('id');
+        $buyerId = Yii::$app->request->post('buyer_id');
+
+        $apiCodes = Order::apiCodes();
+        $user = Yii::$app->user->getIdentity();
+        $order = Order::findOne(['id' => $id]);
+        $buyer = User::findOne(['id' => $buyerId, 'role' => User::ROLE_BUYER]);
+
+        if (!$id || !$buyerId) return ApiResponse::code($this->apiCodes->NOT_FOUND, ['message' => 'Order or buyer not provided']);
+        if (!$order || !$buyer) return ApiResponse::code($this->apiCodes->NOT_FOUND, ['message' => 'Order or buyer not exists']);
+        if ($order->manager_id !== $user->id) return ApiResponse::code($apiCodes->NO_ACCESS, ['message' => 'You have no access to this order']);
+        
         try {
-            $apiCodes = Order::apiCodes();
-            $user = User::getIdentity();
-            $order = Order::findOne(['id' => $id]);
-
-            if (!$order) {
-                return ApiResponse::code($apiCodes->NOT_FOUND);
-            }
-
-            if ($order->manager_id !== $user->id) {
-                return ApiResponse::code($apiCodes->NO_ACCESS);
-            }
-
-            $request = Yii::$app->request;
-            $data = $request->getBodyParams();
-
-
-            if (!isset($data['buyer_id'])) {
-                return ApiResponse::code($apiCodes->NOT_VALID);
-            }
-
-
-            $buyer = User::findOne([
-                'id' => $data['buyer_id'], 
-                'role' => User::ROLE_BUYER
-            ]);
-            
-            if (!$buyer) {
-                return ApiResponse::code($apiCodes->NOT_FOUND);
-            }
-
-            $order->buyer_id = $data['buyer_id'];
-            
-            if (!$order->save()) {
-                return ApiResponse::codeErrors(
-                    $apiCodes->ERROR_SAVE,
-                    $order->errors
-                );
-            }
+            $order->buyer_id = $buyerId;
+            $save = $order->save();
+            if (!$save) return ApiResponse::codeErrors( $apiCodes->ERROR_SAVE, $order->errors );
 
             return ApiResponse::codeInfo(
                 $apiCodes->SUCCESS,
@@ -449,6 +426,7 @@ class OrderController extends ManagerController
                     'manager_id' => $order->manager_id
                 ]
             );
+
         } catch (Throwable $e) {
             return ApiResponse::internalError($e->getMessage());
         }
