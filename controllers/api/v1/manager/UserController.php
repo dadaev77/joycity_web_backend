@@ -25,7 +25,7 @@ class UserController extends ManagerController
         $behaviours = parent::behaviors();
         $behaviours['verbFilter']['actions']['index'] = ['get'];
         $behaviours['verbFilter']['actions']['search'] = ['get'];
-        $behaviours['verbFilter']['actions']['update-markup'] = ['patch'];
+        $behaviours['verbFilter']['actions']['update-markup'] = ['post'];
         return $behaviours;
     }
     /**
