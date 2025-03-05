@@ -28,9 +28,10 @@ class PushNotification extends ActiveRecord
     public function rules()
     {
         return [
-            [['client_id', 'device_id', 'push_token'], 'required'],
+            [['client_id', 'device_id', 'push_token', 'operating_system'], 'required'],
             [['client_id'], 'integer'],
             [['device_id', 'push_token'], 'string', 'max' => 255],
+            [['operating_system'], 'string', 'max' => 255],
         ];
     }
 
@@ -44,6 +45,7 @@ class PushNotification extends ActiveRecord
             'client_id' => 'Идентификатор клиента',
             'device_id' => 'Идентификатор устройства',
             'push_token' => 'Push токен',
+            'operating_system' => 'Операционная система',
         ];
     }
 } 

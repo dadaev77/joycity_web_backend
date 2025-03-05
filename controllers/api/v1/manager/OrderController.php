@@ -33,6 +33,7 @@ class OrderController extends ManagerController
         $behaviors['verbFilter']['actions']['finish-order'] = ['post'];
         $behaviors['verbFilter']['actions']['arrived-to-warehouse'] = ['put'];
         $behaviors['verbFilter']['actions']['update-order'] = ['put'];
+        $behaviors['verbFilter']['actions']['update'] = ['put'];
 
         return $behaviors;
     }
@@ -343,5 +344,91 @@ class OrderController extends ManagerController
         return \app\components\ApiResponse::byResponseCode($this->apiCodes->SUCCESS, [
             'order' => $order,
         ]);
+    }
+
+    /**
+     * @OA\Put(
+     *     path="/api/v1/manager/order/{id}",
+     *     security={{"Bearer": {}}},
+     *     summary="Изменить данные заказа клиента",
+     *     tags={"Order"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID заказа",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="buyer_id", type="integer", example=12)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Заказ успешно обновлен",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="statusCode", type="integer", example=200),
+     *             @OA\Property(property="response", type="object",
+     *                 @OA\Property(property="id", type="integer", example=3),
+     *                 @OA\Property(property="created_at", type="string", example="15/01/25"),
+     *                 @OA\Property(property="status", type="string", example="status"),
+     *                 @OA\Property(property="buyer_id", type="integer", example=12),
+     *                 @OA\Property(property="manager_id", type="integer", example=2)
+     *             ),
+     *             @OA\Property(property="code", type="integer", example=1000),
+     *             @OA\Property(property="codeKey", type="string", example="SUCCESS"),
+     *             @OA\Property(property="message", type="string", example=""),
+     *             @OA\Property(property="success", type="boolean", example=true)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Заказ не найден",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="statusCode", type="integer", example=404),
+     *             @OA\Property(property="response", type="null"),
+     *             @OA\Property(property="code", type="integer", example=2004),
+     *             @OA\Property(property="codeKey", type="string", example="NOT_FOUND"),
+     *             @OA\Property(property="message", type="string", example="NOT_FOUND"),
+     *             @OA\Property(property="success", type="boolean", example=false)
+     *         )
+     *     )
+     * )
+     */
+    public function actionUpdate()
+    {
+        $id = Yii::$app->request->post('id');
+        $buyerId = Yii::$app->request->post('buyer_id');
+
+        $apiCodes = Order::apiCodes();
+        $user = Yii::$app->user->getIdentity();
+        $order = Order::findOne(['id' => $id]);
+        $buyer = User::findOne(['id' => $buyerId, 'role' => User::ROLE_BUYER]);
+
+        if (!$id || !$buyerId) return ApiResponse::code($this->apiCodes->NOT_FOUND, ['message' => 'Order or buyer not provided']);
+        if (!$order || !$buyer) return ApiResponse::code($this->apiCodes->NOT_FOUND, ['message' => 'Order or buyer not exists']);
+        if ($order->manager_id !== $user->id) return ApiResponse::code($apiCodes->NO_ACCESS, ['message' => 'You have no access to this order']);
+        
+        try {
+            $order->buyer_id = $buyerId;
+            $save = $order->save();
+            if (!$save) return ApiResponse::codeErrors( $apiCodes->ERROR_SAVE, $order->errors );
+
+            return ApiResponse::codeInfo(
+                $apiCodes->SUCCESS,
+                [
+                    'id' => $order->id,
+                    'created_at' => $order->created_at,
+                    'status' => $order->status,
+                    'buyer_id' => $order->buyer_id,
+                    'manager_id' => $order->manager_id
+                ]
+            );
+
+        } catch (Throwable $e) {
+            return ApiResponse::internalError($e->getMessage());
+        }
     }
 }
