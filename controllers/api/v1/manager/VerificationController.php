@@ -163,7 +163,7 @@ class VerificationController extends ManagerController
             $verifiedUser->markup = 5;
 
 
-            if (!$verifiedUser->save(true, ['is_verified'])) {
+            if (!$verifiedUser->save(true, ['is_verified', 'markup'])) {
                 $transaction?->rollBack();
 
                 return ApiResponse::codeErrors(
