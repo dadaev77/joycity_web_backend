@@ -29,55 +29,123 @@ class UserController extends ManagerController
         return $behaviours;
     }
     /**
-     * @param string $role
-     * @param int $limit
-     * @param int $page
-     * @return array
+     * @OA\Get(
+     *     path="/api/v1/manager/user",
+     *     summary="Получить список пользователей с сортировкой",
+     *     tags={"Manager - Users"},
+     *     @OA\Parameter(
+     *         name="role",
+     *         in="query",
+     *         required=true,
+     *         description="Роль пользователя (client, buyer, manager, fulfillment)",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="limit",
+     *         in="query",
+     *         description="Количество записей на странице",
+     *         @OA\Schema(type="integer", default=10)
+     *     ),
+     *     @OA\Parameter(
+     *         name="page",
+     *         in="query",
+     *         description="Номер страницы",
+     *         @OA\Schema(type="integer", default=1)
+     *     ),
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="query",
+     *         description="ID пользователя для получения информации о конкретном пользователе",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Parameter(
+     *         name="sort",
+     *         in="query",
+     *         description="Поле для сортировки (name,surname или markup)",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="order",
+     *         in="query",
+     *         description="Порядок сортировки (asc или desc)",
+     *         @OA\Schema(type="string", default="asc")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="items", type="array", @OA\Items(type="object")),
+     *             @OA\Property(property="total_count", type="integer"),
+     *             @OA\Property(property="total_pages", type="integer"),
+     *             @OA\Property(property="current_page", type="integer"),
+     *             @OA\Property(property="limit", type="integer")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Пользователи не найдены"
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Неверная роль"
+     *     )
+     * )
      */
-
     public function actionIndex(string $role, int $limit = 10, int $page = 1, int $id = null)
     {
         if (!in_array($role, $this->allowedRoles)) {
             return ApiResponse::code(
                 $this->responseCodes->BAD_REQUEST,
-                [
-                    'message' => 'Invalid role.'
-                ],
+                ['message' => 'Invalid role.'],
                 422
             );
         }
         
         $query = User::find()->where(['role' => $role, 'is_deleted' => 0]);
         $query->select(['id', 'name', 'surname', 'uuid', 'role', 'email', 'markup']);
+
+        // Получаем параметры сортировки
+        $sort = Yii::$app->request->get('sort');
+        $order = Yii::$app->request->get('order', 'asc');
+        
+        // Применяем сортировку
+        if ($sort) {
+            if ($sort === 'markup') {
+                $query->orderBy(['markup' => $order === 'desc' ? SORT_DESC : SORT_ASC]);
+            } elseif ($sort === 'name,surname') {
+                $query->orderBy([
+                    'name' => $order === 'desc' ? SORT_DESC : SORT_ASC,
+                    'surname' => $order === 'desc' ? SORT_DESC : SORT_ASC
+                ]);
+            }
+        } else {
+            $query->orderBy(['id' => SORT_DESC]); // Дефолтная сортировка
+        }
+
         $totalUsers = $query->count(); 
         $pages = ceil($totalUsers / $limit);
         
-        $users = $query->orderBy(['id' => 'DESC'])
+        $users = $query
             ->offset(($page - 1) * $limit)
             ->limit($limit)
             ->all();
 
         if ($id) {
             $user = User::findOne($id);
-            if (!$user) return ApiResponse::code($this->responseCodes->NOT_FOUND, ['message' => 'User not found.']);
+            if (!$user) {
+                return ApiResponse::code($this->responseCodes->NOT_FOUND, ['message' => 'User not found.']);
+            }
+            return ApiResponse::code(
+                $this->responseCodes->SUCCESS,
+                ['info' => $user]
+            );
         }
 
         if (count($users) < 1) {
             return ApiResponse::code(
                 $this->responseCodes->NOT_FOUND,
-                [
-                    'message' => 'No users found for the specified role.'
-                ],
+                ['message' => 'No users found for the specified role.'],
                 404
-            );
-        }
-
-        if ($id) {
-            return ApiResponse::code(
-                $this->responseCodes->SUCCESS,
-                [
-                    'info' => $user
-                ]
             );
         }
 
