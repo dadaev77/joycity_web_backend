@@ -350,7 +350,7 @@ class OrderController extends ManagerController
      * @OA\Put(
      *     path="/api/v1/manager/order/{id}",
      *     security={{"Bearer": {}}},
-     *     summary="Изменить данные заказа",
+     *     summary="Изменить данные заказа клиента",
      *     tags={"Order"},
      *     @OA\Parameter(
      *         name="id",
@@ -362,14 +362,38 @@ class OrderController extends ManagerController
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="new"),
-     *             @OA\Property(property="buyer_id", type="integer", example=12),
-     *             @OA\Property(property="manager_id", type="integer", example=2)
+     *             @OA\Property(property="buyer_id", type="integer", example=12)
      *         )
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Заказ успешно обновлен"
+     *         description="Заказ успешно обновлен",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="statusCode", type="integer", example=200),
+     *             @OA\Property(property="response", type="object",
+     *                 @OA\Property(property="id", type="integer", example=3),
+     *                 @OA\Property(property="created_at", type="string", example="15/01/25"),
+     *                 @OA\Property(property="status", type="string", example="status"),
+     *                 @OA\Property(property="buyer_id", type="integer", example=12),
+     *                 @OA\Property(property="manager_id", type="integer", example=2)
+     *             ),
+     *             @OA\Property(property="code", type="integer", example=1000),
+     *             @OA\Property(property="codeKey", type="string", example="SUCCESS"),
+     *             @OA\Property(property="message", type="string", example=""),
+     *             @OA\Property(property="success", type="boolean", example=true)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Заказ не найден",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="statusCode", type="integer", example=404),
+     *             @OA\Property(property="response", type="null"),
+     *             @OA\Property(property="code", type="integer", example=2004),
+     *             @OA\Property(property="codeKey", type="string", example="NOT_FOUND"),
+     *             @OA\Property(property="message", type="string", example="NOT_FOUND"),
+     *             @OA\Property(property="success", type="boolean", example=false)
+     *         )
      *     )
      * )
      */
@@ -391,25 +415,22 @@ class OrderController extends ManagerController
             $request = Yii::$app->request;
             $data = $request->getBodyParams();
 
-
-
-            // Если меняется buyer_id, проверяем существование покупателя
-            if (isset($data['buyer_id'])) {
-                $buyer = User::findOne([
-                    'id' => $data['buyer_id'], 
-                    'role' => User::ROLE_BUYER
-                ]);
-                if (!$buyer) {
-                    return ApiResponse::codeErrors(
-                        $apiCodes->NOT_FOUND,
-                        ['buyer_id' => 'Buyer not found']
-                    );
-                }
+            // Проверяем наличие buyer_id в запросе
+            if (!isset($data['buyer_id'])) {
+                return ApiResponse::code($apiCodes->NOT_VALID);
             }
 
+            // Проверяем существование покупателя
+            $buyer = User::findOne([
+                'id' => $data['buyer_id'], 
+                'role' => User::ROLE_BUYER
+            ]);
+            
+            if (!$buyer) {
+                return ApiResponse::code($apiCodes->NOT_FOUND);
+            }
 
-
-
+            $order->buyer_id = $data['buyer_id'];
             
             if (!$order->save()) {
                 return ApiResponse::codeErrors(
