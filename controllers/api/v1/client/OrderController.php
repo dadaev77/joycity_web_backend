@@ -11,19 +11,15 @@ use app\models\Order;
 use app\models\TypeDeliveryPoint;
 use app\models\User;
 use app\services\AttachmentService;
-use app\services\CronService;
 use app\services\notification\NotificationConstructor;
 use app\services\order\OrderDistributionService;
 use app\services\order\OrderStatusService;
 use app\services\output\OrderOutputService;
-use app\services\SaveModelService;
 use app\services\TypeDeliveryService;
 use Throwable;
 use Yii;
 use yii\base\Exception;
 use yii\web\UploadedFile;
-
-use app\controllers\CronController;
 use app\models\OrderDistribution;
 use app\services\modificators\price\OrderPrice;
 use app\services\TranslationService;
@@ -231,6 +227,7 @@ class OrderController extends ClientController
                 );
 
                 if ($order->product_id) {
+                    Yii::$app->actionLog->info('order', 'Заказ создан с товаром: ' . $order->product_id);
                     $withProduct = true;
                     $buyerId = $order->product->buyer_id;
                     $product = \app\models\Product::findOne(['id' => $order->product_id]);
