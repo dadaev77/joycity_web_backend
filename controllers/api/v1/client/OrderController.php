@@ -230,6 +230,7 @@ class OrderController extends ClientController
                         'buyer_id1' => $buyerId,
                         'buyer_id2' => $product->buyer_id,
                         'product_id' => $product_id,
+                        'buyer_from_product' => \app\models\Product::findOne(['id' => $product_id])->buyer_id,
                     ]));
                     $order->product_id = $product_id;
 
