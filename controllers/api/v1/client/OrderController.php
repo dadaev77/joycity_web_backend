@@ -114,6 +114,8 @@ class OrderController extends ClientController
         $withProduct = false;
         $currency = $user->settings->currency;
         $successTranslate = false;
+        $product_id = $request->post('product_id') ?? null;
+        $product = \app\models\Product::find(['id' => $product_id])->one();
 
         try {
             $randomManager = User::find()
@@ -226,10 +228,12 @@ class OrderController extends ClientController
                     ]
                 );
 
-                if ($order->product_id) {
-                    Yii::$app->actionLog->success('метка перед проверкой на товар: ' . $order->id);
+                if ($product && $product_id) {
                     $withProduct = true;
-                    $buyerId = $order->product->buyer_id;
+                    $buyerId = $product->buyer_id;
+
+                    var_dump($buyerId);
+                    exit;
                     $distributionStatus = OrderDistributionService::createDistributionTask($order->id, $buyerId);
 
                     if (!$distributionStatus->success) {
@@ -255,6 +259,13 @@ class OrderController extends ClientController
                             'deal_type' => 'order',
                             'participants' => [$user->id, $order->manager_id, $buyerId],
                             'group_name' => 'client_buyer_manager',
+                        ]
+                    );
+                    PushService::sendPushNotification(
+                        $buyerId,
+                        [
+                            'title' => 'You have a new order',
+                            'body' => 'Order ID: ' . $order->id,
                         ]
                     );
                 } else {
@@ -316,7 +327,10 @@ class OrderController extends ClientController
             } catch (Throwable $e) {
                 $transaction?->rollBack();
                 Yii::$app->telegramLog->send('error', 'Ошибка при сохранении заказа: ' . $e->getMessage());
-                return ApiResponse::codeErrors($apiCodes->ERROR_SAVE, $e->getMessage());
+                return ApiResponse::codeErrors($apiCodes->ERROR_SAVE, [
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                ]);
             }
 
         } catch (Throwable $e) {
