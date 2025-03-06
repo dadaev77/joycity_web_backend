@@ -118,7 +118,7 @@ class OrderController extends ClientController
         $typeDeliveryPointId = $request->post('type_delivery_point_id');
         (bool) $withProduct = false;
         $currency = $user->settings->currency;
-
+        Yii::$app->actionLog->info(json_encode($request->post()));
         try {
             $randomManager = User::find()
                 ->select(['id'])
