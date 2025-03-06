@@ -186,6 +186,6 @@ class RawController extends Controller
     }
     public function actionTest()
     {
-        return Yii::t('push', 'order');
+        return Yii::t('order', 'new');
     }
 }

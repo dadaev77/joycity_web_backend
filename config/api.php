@@ -49,7 +49,11 @@ $config = [
                     'basePath' => '@app/lang',
                     'class' => 'yii\i18n\PhpMessageSource',
                 ],
-                'push*' => [
+                'order*' => [
+                    'basePath' => '@app/lang',
+                    'class' => 'yii\i18n\PhpMessageSource',
+                ],
+                'chat*' => [
                     'basePath' => '@app/lang',
                     'class' => 'yii\i18n\PhpMessageSource',
                 ],

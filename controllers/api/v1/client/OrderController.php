@@ -264,8 +264,8 @@ class OrderController extends ClientController
                     PushService::sendPushNotification(
                         $order->buyer_id,
                         [
-                            'title' => 'Новый заказ',
-                            'body' => 'Вы получили новый заказ ' . $order->id,
+                            'title' => \Yii::t('order', 'new_order_for_buyer'),
+                            'body' => \Yii::t('order', 'new_order_for_buyer_text') . $order->id,
                         ]
                     );
 

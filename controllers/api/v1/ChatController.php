@@ -375,8 +375,8 @@ class ChatController extends V1Controller
             PushService::sendPushNotification(
                 array_diff($participants, [$userId]),
                 [
-                    'title' => 'Новое сообщение',
-                    'body' => 'Вы получили новое сообщение в чате ' . $chat->id,
+                    'title' => \Yii::t  ('chat', 'new_message'),
+                    'body' => \Yii::t('chat', 'new_message_text') . $chat->order_id,
                 ]
             );
 

@@ -303,8 +303,8 @@ class OrderStatusService
             PushService::sendPushNotification(
                 $order->created_by,
                 [
-                    'title' => 'Смена статуса заказа',
-                    'body' => 'Заказ ' . $order->id . ' получил новый статус: ' . $orderStatus,
+                    'title' => Yii::t('order', 'update_status') . $order->id,
+                    'body' => Yii::t('order', $orderStatus),
                 ]
             );
 
