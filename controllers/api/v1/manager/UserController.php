@@ -113,9 +113,11 @@ class UserController extends ManagerController
             if ($sort === 'markup') {
                 $query->orderBy(['markup' => $order === 'desc' ? SORT_DESC : SORT_ASC]);
             } elseif ($sort === 'name,surname') {
+                // Сначала сортируем по имени, затем по фамилии
+                $direction = $order === 'desc' ? SORT_DESC : SORT_ASC;
                 $query->orderBy([
-                    'name' => $order === 'desc' ? SORT_DESC : SORT_ASC,
-                    'surname' => $order === 'desc' ? SORT_DESC : SORT_ASC
+                    'name' => $direction,
+                    'surname' => SORT_ASC // Всегда сортируем фамилии по возрастанию для лучшей читаемости
                 ]);
             }
         } else {
