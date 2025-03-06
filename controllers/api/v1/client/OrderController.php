@@ -225,12 +225,10 @@ class OrderController extends ClientController
                         'group_name' => 'client_manager',
                     ]
                 );
-                Yii::$app->actionLog->success('метка перед проверкой на товар: ' . $order->id);
+
                 if ($order->product_id) {
-                    Yii::$app->actionLog->info('order', 'Заказ создан с товаром: ' . $order->product_id);
                     $withProduct = true;
                     $buyerId = $order->product->buyer_id;
-                    $product = \app\models\Product::findOne(['id' => $order->product_id]);
                     $distributionStatus = OrderDistributionService::createDistributionTask($order->id, $buyerId);
 
                     if (!$distributionStatus->success) {
@@ -258,28 +256,12 @@ class OrderController extends ClientController
                             'group_name' => 'client_buyer_manager',
                         ]
                     );
-                    try{
-                        Yii::$app->telegramLog->send('success', 'Отправлено push-уведомление: ' . $product->buyer_id);
-                        PushService::sendPushNotification(
-                            $product->buyer_id,
-                            [
-                                'title' => \Yii::t('order', 'new_order_for_buyer'),
-                                'body' => \Yii::t('order', 'new_order_for_buyer_text') . $order->id,
-                            ]
-                        );
-
-                    } catch (Throwable $e) {
-                        Yii::$app->telegramLog->send('error', 'Ошибка при отправке push-уведомления: ' . $e->getMessage());
-                    }
-
                 } else {
                     $distributionStatus = OrderDistributionService::createDistributionTask($order->id);
-                    Yii::$app->actionLog->success('Создана задача на распределение: ' . $order->id);
                     if (!$distributionStatus->success) {
                         throw new Exception($distributionStatus->reason);
                     }
                 }
-                Yii::$app->actionLog->success('метка после проверки на товар: ' . $order->id);
 
                 $attachmentsToLink = [];
 
