@@ -90,8 +90,4 @@ class User extends UserStructure implements IdentityInterface
     {
         return $this->hasOne(UserSettings::class, ['user_id' => 'id'])->one();
     }
-
-
-
-
 }

@@ -38,4 +38,9 @@ class ApiController extends ActiveController
         $behaviors['authenticator'] = ['class' => HttpBearerAuthCustom::class];
         return $behaviors;
     }
+
+    public function beforeAction($action)
+    {
+        return parent::beforeAction($action);
+    }
 }

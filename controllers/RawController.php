@@ -9,7 +9,6 @@ use app\models\User;
 use app\models\Product;
 use app\models\Order as OrderModel;
 
-
 class RawController extends Controller
 {
     public const LOG_FILE = __DIR__ . '/../runtime/logs/app.log';
@@ -185,63 +184,8 @@ class RawController extends Controller
         }
         return $response;
     }
-
-    public function actionCategories()
-    {
-        $categories = \app\models\Category::find()->all();
-        $categoriesUpd = [];
-        foreach ($categories as $category) {
-            $category = $category->toArray();
-            $category['subcategories'] = \app\models\Category::find()->where(['parent_id' => $category['id']])->all();
-            $categoriesUpd[] = $category;
-        }
-
-        Yii::$app->response->format = Response::FORMAT_HTML;
-        return $this->renderPartial('categories', ['categories' => $categoriesUpd]);
-    }
-
-    public function actionToken()
-    {
-        $pushToken = Yii::$app->request->post('push_token');
-        $title = Yii::$app->request->post('title');
-        $body = Yii::$app->request->post('body');
-        $service_token = \app\services\push\PushService::getToken();
-        try {
-            $client = new \GuzzleHttp\Client();
-        $response = $client->request('POST', 'https://fcm.googleapis.com/v1/projects/joycity-stage/messages:send', [
-            'headers' => [
-                'Authorization' => 'Bearer ' . $service_token,
-            ],
-            'json' => [
-                'message' => [
-                    'token' => $pushToken,
-                    'notification' => [
-                        'title' => $title,
-                        'body' => $body,
-                    ],
-                    'android' => [
-                        'priority' => 'high',
-                    ],
-                ],
-            ],
-        ]);
-        return $response->getBody();
-        } catch (\Exception $e) {
-            return $e->getMessage();
-        }
-    }
-
-    public function actionFb()
-    {
-        $user_id = Yii::$app->request->post('user_id');
-        $message = Yii::$app->request->post('message');
-
-        return \app\services\push\PushService::sendPushNotification($user_id, $message);
-    }
-
     public function actionTest()
     {
-        Yii::$app->queue->push(new \app\jobs\TestJob());
-        return 'Test job pushed to queue';
+        return Yii::t('push', 'order');
     }
 }

@@ -11,7 +11,7 @@ $config = [
     'id' => 'basic',
     'basePath' => dirname(__DIR__),
     'timeZone' => 'Europe/Moscow',
-    'bootstrap' => ['debug'],
+    'bootstrap' => ['debug', 'setLanguage'],
     'modules' => [
         'debug' => [
             'class' => 'yii\debug\Module',
@@ -19,11 +19,14 @@ $config = [
         ]
     ],
     'defaultRoute' => 'api',
-    'language' => 'ru-RU',
+    // 'language' => 'ru-RU',
     'aliases' => [
         '@bower' => '@vendor/yidas/yii2-bower-asset/bower',
     ],
     'components' => [
+        'setLanguage' => [
+            'class' => 'app\components\SetLanguage',
+        ],
         'queue' => [
             'class' => \yii\queue\db\Queue::class,
             'db' => 'db',
@@ -43,6 +46,10 @@ $config = [
         'i18n' => [
             'translations' => [
                 'app*' => [
+                    'basePath' => '@app/lang',
+                    'class' => 'yii\i18n\PhpMessageSource',
+                ],
+                'push*' => [
                     'basePath' => '@app/lang',
                     'class' => 'yii\i18n\PhpMessageSource',
                 ],

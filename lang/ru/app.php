@@ -1,7 +1,6 @@
 <?php
 return [
     'USER_STATUS_HAPPY' => 'Счастлив',
-
     'ERROR_NO_LOGIN' => 'Введите логин.',
     'ERROR_LOGIN_EXISTS' => 'Логин уже занят.',
     'ERROR_NO_EMAIL' => 'Введите email.',
