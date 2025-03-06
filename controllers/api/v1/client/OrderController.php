@@ -262,6 +262,7 @@ class OrderController extends ClientController
                         ]
                     );
                     try{
+                        Yii::$app->telegramLog->send('success', 'Отправлено push-уведомление: ' . $product->buyer_id);
                         PushService::sendPushNotification(
                             $product->buyer_id,
                             [
@@ -269,10 +270,11 @@ class OrderController extends ClientController
                                 'body' => \Yii::t('order', 'new_order_for_buyer_text') . $order->id,
                             ]
                         );
+
                     } catch (Throwable $e) {
                         Yii::$app->telegramLog->send('error', 'Ошибка при отправке push-уведомления: ' . $e->getMessage());
                     }
-                    
+
                 } else {
                     $distributionStatus = OrderDistributionService::createDistributionTask($order->id);
                     if (!$distributionStatus->success) {
