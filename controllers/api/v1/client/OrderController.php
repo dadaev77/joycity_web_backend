@@ -226,7 +226,11 @@ class OrderController extends ClientController
                 if ($product && $product_id) {
                     $withProduct = true;
                     $buyerId = $product->buyer_id;
-                    Yii::$app->telegramLog->send('success', 'buyer id is set to ' . $buyerId);
+                    Yii::$app->telegramLog->send('success', json_encode([
+                        'buyer_id1' => $buyerId,
+                        'buyer_id2' => $product->buyer_id,
+                        'product_id' => $product_id,
+                    ]));
                     $order->product_id = $product_id;
 
                     // $distributionStatus = OrderDistributionService::createDistributionTask($order->id, $buyerId);
