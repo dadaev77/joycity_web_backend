@@ -231,6 +231,7 @@ class OrderController extends ClientController
                 if ($product && $product_id) {
                     $withProduct = true;
                     $buyerId = $product->buyer_id;
+                    $order->product_id = $product_id;
                     $distributionStatus = OrderDistributionService::createDistributionTask($order->id, $buyerId);
 
                     if (!$distributionStatus->success) {
