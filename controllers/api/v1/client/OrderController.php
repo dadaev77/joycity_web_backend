@@ -262,10 +262,10 @@ class OrderController extends ClientController
                     );
 
                     PushService::sendPushNotification(
-                        $order->buyer_id,
+                        $order->product->buyer_id,
                         [
-                            'title' => 'New order',
-                            'body' => 'New order for buyer with id' . $order->id,
+                            'title' => \Yii::t('order', 'new_order_for_buyer'),
+                            'body' => \Yii::t('order', 'new_order_for_buyer_text') . $order->id,
                         ]
                     );
 
