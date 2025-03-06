@@ -225,7 +225,7 @@ class OrderController extends ClientController
                         'group_name' => 'client_manager',
                     ]
                 );
-
+                Yii::$app->actionLog->success('метка перед проверкой на товар: ' . $order->id);
                 if ($order->product_id) {
                     Yii::$app->actionLog->info('order', 'Заказ создан с товаром: ' . $order->product_id);
                     $withProduct = true;
@@ -274,10 +274,12 @@ class OrderController extends ClientController
 
                 } else {
                     $distributionStatus = OrderDistributionService::createDistributionTask($order->id);
+                    Yii::$app->actionLog->success('Создана задача на распределение: ' . $order->id);
                     if (!$distributionStatus->success) {
                         throw new Exception($distributionStatus->reason);
                     }
                 }
+                Yii::$app->actionLog->success('метка после проверки на товар: ' . $order->id);
 
                 $attachmentsToLink = [];
 
