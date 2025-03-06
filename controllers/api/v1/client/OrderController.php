@@ -261,15 +261,18 @@ class OrderController extends ClientController
                             'group_name' => 'client_buyer_manager',
                         ]
                     );
-
-                    PushService::sendPushNotification(
-                        $product->buyer_id,
-                        [
-                            'title' => \Yii::t('order', 'new_order_for_buyer'),
-                            'body' => \Yii::t('order', 'new_order_for_buyer_text') . $order->id,
-                        ]
-                    );
-
+                    try{
+                        PushService::sendPushNotification(
+                            $product->buyer_id,
+                            [
+                                'title' => \Yii::t('order', 'new_order_for_buyer'),
+                                'body' => \Yii::t('order', 'new_order_for_buyer_text') . $order->id,
+                            ]
+                        );
+                    } catch (Throwable $e) {
+                        Yii::$app->telegramLog->send('error', 'Ошибка при отправке push-уведомления: ' . $e->getMessage());
+                    }
+                    
                 } else {
                     $distributionStatus = OrderDistributionService::createDistributionTask($order->id);
                     if (!$distributionStatus->success) {
