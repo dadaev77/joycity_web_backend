@@ -233,6 +233,7 @@ class OrderController extends ClientController
                 if ($order->product_id) {
                     $withProduct = true;
                     $buyerId = $order->product->buyer_id;
+                    $product = \app\models\Product::findOne(['id' => $order->product_id]);
                     $distributionStatus = OrderDistributionService::createDistributionTask($order->id, $buyerId);
 
                     if (!$distributionStatus->success) {
@@ -262,7 +263,7 @@ class OrderController extends ClientController
                     );
 
                     PushService::sendPushNotification(
-                        $order->product->buyer_id,
+                        $product->buyer_id,
                         [
                             'title' => \Yii::t('order', 'new_order_for_buyer'),
                             'body' => \Yii::t('order', 'new_order_for_buyer_text') . $order->id,
