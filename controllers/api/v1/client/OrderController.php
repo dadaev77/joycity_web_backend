@@ -115,7 +115,7 @@ class OrderController extends ClientController
         $currency = $user->settings->currency;
         $successTranslate = false;
         $product_id = $request->post('product_id') ?? null;
-        $product = \app\models\Product::find(['id' => $product_id])->one();
+        
 
         try {
             $randomManager = User::find()
@@ -158,7 +158,9 @@ class OrderController extends ClientController
             $order->currency = $currency;
             $order->type_delivery_point_id = $typeDeliveryPointId;
             $order->expected_price_per_item = $expected_price_per_item;
-            $order->buyer_id = ($product_id && $product) ? $product->buyer_id : null;
+            if ($product_id) {
+                $order->buyer_id = \app\models\Product::findOne(['id' => $product_id])->buyer_id;
+            }
 
             
             foreach ($translations as $key => $value) {
@@ -223,12 +225,11 @@ class OrderController extends ClientController
                     ]
                 );
 
-                if ($product && $product_id) {
+                if ($product_id) {
                     $withProduct = true;
-                    $buyerId = $product->buyer_id;
+                    $buyerId = $order->buyer_id;
                     Yii::$app->telegramLog->send('success', json_encode([
-                        'buyer_id1' => $buyerId,
-                        'buyer_id2' => $product->buyer_id,
+                        'buyer_id' => $order->buyer_id,
                         'product_id' => $product_id,
                         'buyer_from_product' => \app\models\Product::findOne(['id' => $product_id])->buyer_id,
                     ]));
