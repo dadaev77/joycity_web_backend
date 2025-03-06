@@ -158,6 +158,7 @@ class OrderController extends ClientController
             $order->currency = $currency;
             $order->type_delivery_point_id = $typeDeliveryPointId;
             $order->expected_price_per_item = $expected_price_per_item;
+            $order->buyer_id = ($product_id && $product) ? $product->buyer_id : null;
 
             
             foreach ($translations as $key => $value) {
@@ -226,7 +227,6 @@ class OrderController extends ClientController
                     $withProduct = true;
                     $buyerId = $product->buyer_id;
                     $order->product_id = $product_id;
-                    $order->buyer_id = $buyerId;
 
                     // $distributionStatus = OrderDistributionService::createDistributionTask($order->id, $buyerId);
 
