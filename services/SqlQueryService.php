@@ -49,6 +49,7 @@ class SqlQueryService
             'description',
             'phone_country_code',
             'personal_id',
+            'markup',
         ];
     }
 }
