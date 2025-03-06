@@ -126,7 +126,6 @@ class OrderController extends ClientController
 
             $order = new Order();
             
-            // Переводим название и описание продукта
             $translation = TranslationService::translateProductAttributes(
                 $request->post()['product_name'],
                 $request->post()['product_description'],
@@ -152,7 +151,6 @@ class OrderController extends ClientController
                 ];
             }
             
-            // Заполняем базовые поля
             $order->created_by = $user->id;
             $order->created_at = date('Y-m-d H:i:s');
             $order->status = Order::STATUS_CREATED;
@@ -161,7 +159,7 @@ class OrderController extends ClientController
             $order->type_delivery_point_id = $typeDeliveryPointId;
             $order->expected_price_per_item = $expected_price_per_item;
 
-            // Заполняем переводы
+            
             foreach ($translations as $key => $value) {
                 $order->{'product_name_' . $key} = $value['name'];
                 $order->{'product_description_' . $key} = $value['description'];
@@ -187,10 +185,6 @@ class OrderController extends ClientController
             $transaction = Yii::$app->db->beginTransaction();
 
             try {
-                if (!$order->save()) {
-                    Yii::$app->telegramLog->send('error', 'Не удалось создать заявку: ' . print_r($order->getErrors(), true));
-                    throw new Exception('Ошибка сохранения заказа: ' . print_r($order->getErrors(), true));
-                }
 
                 if ((int) $typeDeliveryPointId === TypeDeliveryPoint::TYPE_FULFILLMENT) {
                     $fulfillmentUser = User::find()
@@ -232,22 +226,24 @@ class OrderController extends ClientController
                     $withProduct = true;
                     $buyerId = $product->buyer_id;
                     $order->product_id = $product_id;
-                    $distributionStatus = OrderDistributionService::createDistributionTask($order->id, $buyerId);
+                    $order->buyer_id = $buyerId;
 
-                    if (!$distributionStatus->success) {
-                        Yii::$app->telegramLog->send('error', 'Не удалось создать заявку на существующий товар: ' . $distributionStatus->reason . '. Заявка номер: ' . $order->id);
-                        throw new Exception($distributionStatus->reason);
-                    }
+                    // $distributionStatus = OrderDistributionService::createDistributionTask($order->id, $buyerId);
 
-                    $buyerAcceptStatus = OrderDistributionService::buyerAccept($distributionStatus->result, $buyerId);
-                    if (!$buyerAcceptStatus->success) {
-                        throw new Exception($buyerAcceptStatus->reason);
-                    }
+                    // if (!$distributionStatus->success) {
+                    //     Yii::$app->telegramLog->send('error', 'Не удалось создать заявку на существующий товар: ' . $distributionStatus->reason . '. Заявка номер: ' . $order->id);
+                    //     throw new Exception($distributionStatus->reason);
+                    // }
 
-                    $orderChangeStatus = OrderStatusService::buyerAssigned($order->id);
-                    if (!$orderChangeStatus->success) {
-                        throw new Exception($orderChangeStatus->reason);
-                    }
+                    // $buyerAcceptStatus = OrderDistributionService::buyerAccept($distributionStatus->result, $buyerId);
+                    // if (!$buyerAcceptStatus->success) {
+                    //     throw new Exception($buyerAcceptStatus->reason);
+                    // }
+
+                    // $orderChangeStatus = OrderStatusService::buyerAssigned($order->id);
+                    // if (!$orderChangeStatus->success) {
+                    //     throw new Exception($orderChangeStatus->reason);
+                    // }
 
                     ChatService::createGroupChat(
                         'Order ' . $order->id,
@@ -321,6 +317,11 @@ class OrderController extends ClientController
                     'info' => OrderOutputService::getEntity($order->id),
                     'message' => 'Order created successfully',
                 ]);
+
+                if (!$order->save()) {
+                    Yii::$app->telegramLog->send('error', 'Не удалось создать заявку: ' . print_r($order->getErrors(), true));
+                    throw new Exception('Ошибка сохранения заказа: ' . print_r($order->getErrors(), true));
+                }
 
             } catch (Throwable $e) {
                 $transaction?->rollBack();
