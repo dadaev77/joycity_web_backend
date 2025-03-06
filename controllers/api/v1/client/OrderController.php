@@ -227,6 +227,7 @@ class OrderController extends ClientController
                 );
 
                 if ($order->product_id) {
+                    Yii::$app->actionLog->success('метка перед проверкой на товар: ' . $order->id);
                     $withProduct = true;
                     $buyerId = $order->product->buyer_id;
                     $distributionStatus = OrderDistributionService::createDistributionTask($order->id, $buyerId);
