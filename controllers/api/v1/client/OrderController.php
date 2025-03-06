@@ -193,7 +193,6 @@ class OrderController extends ClientController
             }
 
             try {
-
                 if ((int) $typeDeliveryPointId === TypeDeliveryPoint::TYPE_FULFILLMENT) {
                     $fulfillmentUser = User::find()
                         ->where([
@@ -314,6 +313,8 @@ class OrderController extends ClientController
                 NotificationConstructor::orderOrderCreated($order->manager_id, $order->id);
 
                 $transaction->commit();
+
+                $order->save();
 
                 if (!$withProduct) {
                     $distTaskID = OrderDistribution::find()->where(['order_id' => $order->id])->one();
