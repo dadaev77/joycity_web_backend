@@ -187,6 +187,11 @@ class OrderController extends ClientController
 
             $transaction = Yii::$app->db->beginTransaction();
 
+            if (!$order->save()) {
+                Yii::$app->telegramLog->send('error', 'Не удалось создать заявку: ' . print_r($order->getErrors(), true));
+                throw new Exception('Ошибка сохранения заказа: ' . print_r($order->getErrors(), true));
+            }
+
             try {
 
                 if ((int) $typeDeliveryPointId === TypeDeliveryPoint::TYPE_FULFILLMENT) {
@@ -305,11 +310,6 @@ class OrderController extends ClientController
                     $order->linkAll('attachments', $attachmentsToLink);
                 }
 
-
-                if (!$order->save()) {
-                    Yii::$app->telegramLog->send('error', 'Не удалось создать заявку: ' . print_r($order->getErrors(), true));
-                    throw new Exception('Ошибка сохранения заказа: ' . print_r($order->getErrors(), true));
-                }
 
                 NotificationConstructor::orderOrderCreated($order->manager_id, $order->id);
 
