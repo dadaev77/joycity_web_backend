@@ -116,6 +116,17 @@ class OrderController extends ClientController
             'currency' => $user->settings->currency,
             'type_delivery_point_id' => $request->post('type_delivery_point_id'),
             'expected_price_per_item' => $request->post('expected_price_per_item') ?? 0,
+            'expected_quantity' => $request->post('expected_quantity') ?? 0,
+            'expected_packaging_quantity' => $request->post('expected_packaging_quantity') ?? 0,
+            'type_packaging_id' => $request->post('type_packaging_id') ?? null,
+            'type_delivery_id' => $request->post('type_delivery_id') ?? null,
+            'delivery_point_address_id' => $request->post('delivery_point_address_id') ?? null,
+            'subcategory_id' => $request->post('subcategory_id') ?? null,
+            'is_need_deep_inspection' => $request->post('is_need_deep_inspection') ?? 0,
+            'repeat_order_id' => $request->post('repeat_order_id') ?? null,
+            'repeat_images_to_keep' => $request->post('repeat_images_to_keep') ?? null,
+            'fulfillment_id' => $request->post('fulfillment_id') ?? null,
+
         ]);
 
         if ($product_id) {
