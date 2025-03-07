@@ -187,9 +187,10 @@ class OrderController extends ClientController
                     'participants' => [$user->id, $order->manager_id, $product->buyer_id],
                     'group_name' => 'client_buyer_manager',
                 ]);
+
                 PushService::sendPushNotification($product->buyer_id, [
-                    'title' => Yii::t('order', 'new_order_for_buyer'),
-                    'body' => Yii::t('order', 'new_order_for_buyer_text', ['order_id' => $order->id]),
+                    'title' => Yii::t('order', 'new_order_for_buyer', [], User::findOne($product->buyer_id)->settings->application_language),
+                    'body' => Yii::t('order', 'new_order_for_buyer_text', ['order_id' => $order->id], User::findOne($product->buyer_id)->settings->application_language),
                 ]);
             } else {
                 $distribution = OrderDistributionService::createDistributionTask($order->id);
