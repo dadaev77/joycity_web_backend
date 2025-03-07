@@ -4,7 +4,7 @@ return [
     'new' => '创建了一个新订单',
     'new_order_for_buyer' => '您收到了一个新订单',
     'new_order_for_buyer_text' => '新订单 №{order_id}',
-    'update_status' => '订单状态已更新: ',
+    'update_status' => '订单状态已更新 №{order_id}',
 
     // 状态
     'created' => '订单已成功创建',

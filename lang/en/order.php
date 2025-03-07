@@ -4,7 +4,7 @@ return [
     'new' => 'A new order has been created',
     'new_order_for_buyer' => 'You have received a new order',
     'new_order_for_buyer_text' => 'New order №{order_id}',
-    'update_status' => 'Order status updated: ',
+    'update_status' => 'Order status updated №{order_id}',
 
     // statuses
     'created' => 'The order has been successfully created',

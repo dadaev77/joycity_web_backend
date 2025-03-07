@@ -4,7 +4,7 @@ return [
     'new' => 'Создан новый заказ',
     'new_order_for_buyer' => 'Вы получили новый заказ',
     'new_order_for_buyer_text' => 'Новый заказ №{order_id}',
-    'update_status' => 'Обновлен статус заказа: ',
+    'update_status' => 'Обновлен статус заказа №{order_id}',
 
     // статусы
     'created' => 'Заказ был успешно создан',
