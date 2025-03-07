@@ -176,12 +176,13 @@ $config = [
                         'api/v1/manager/waybill',
                         'api/v1/client/waybill',
                         'api/v1/push',
+                        'api/v1/spreadsheet',
                     ],
                     'pluralize' => false,
                 ],
                 'swagger' => '/swagger',
                 'sign-up' => 'api/v1/auth/register',
-                
+
                 'api/v1/<controller>/<id:\d+>/<action>' =>
                 'api/v1/<controller>/<action>',
                 'api/v1/<group>/<controller>/<action>' =>
