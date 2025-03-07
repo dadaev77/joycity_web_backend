@@ -162,7 +162,6 @@ class OrderController extends ClientController
                 $order->buyer_id = \app\models\Product::findOne(['id' => $product_id])->buyer_id;
             }
 
-            
             foreach ($translations as $key => $value) {
                 $order->{'product_name_' . $key} = $value['name'];
                 $order->{'product_description_' . $key} = $value['description'];
@@ -232,11 +231,6 @@ class OrderController extends ClientController
                 if ($product_id) {
                     $withProduct = true;
                     $buyerId = $order->buyer_id;
-                    Yii::$app->telegramLog->send('success', json_encode([
-                        'buyer_id' => $order->buyer_id,
-                        'product_id' => $product_id,
-                        'buyer_from_product' => \app\models\Product::findOne(['id' => $product_id])->buyer_id,
-                    ]));
                     $order->product_id = $product_id;
 
                     // $distributionStatus = OrderDistributionService::createDistributionTask($order->id, $buyerId);
