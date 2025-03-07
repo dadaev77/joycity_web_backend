@@ -129,6 +129,8 @@ class OrderController extends ClientController
 
         ]);
 
+        $order->manager_id = User::find()->select(['id'])->where(['role' => User::ROLE_MANAGER])->orderBy('RAND()')->one();
+
         if ($product_id) {
             $product = \app\models\Product::findOne($product_id);
             if (!$product) return ApiResponse::code($apiCodes->NOT_FOUND, ['error' => 'Product not found']);
