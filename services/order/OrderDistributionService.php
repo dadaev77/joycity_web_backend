@@ -46,6 +46,9 @@ class OrderDistributionService
         if ($task->save()) {
             return Result::success($task);
         }
+
+        exec('curl -X GET "' . $_ENV['APP_URL'] . '/cron/create?taskID=' . $task->id . '"');
+
         return Result::errors($task->getFirstErrors());
     }
 
