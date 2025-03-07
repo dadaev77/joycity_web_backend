@@ -106,6 +106,11 @@ class OrderController extends ClientController
         $apiCodes = Order::apiCodes();
         $images = UploadedFile::getInstancesByName('images');
         $product_id = $request->post('product_id') ?? null;
+        $randomManager = User::find()
+            ->select(['id'])
+            ->where(['role' => User::ROLE_MANAGER])
+            ->orderBy('RAND()')
+            ->one();
 
         $order = new Order();
         $order->loadDefaultValues();
@@ -126,7 +131,7 @@ class OrderController extends ClientController
             'repeat_order_id' => $request->post('repeat_order_id') ?? null,
             'repeat_images_to_keep' => $request->post('repeat_images_to_keep') ?? null,
             'fulfillment_id' => $request->post('fulfillment_id') ?? null,
-            'manager_id' => intval(User::find()->select(['id'])->where(['role' => User::ROLE_MANAGER])->orderBy('RAND()')->one()),
+            'manager_id' => $randomManager->id,
 
         ]);
 
