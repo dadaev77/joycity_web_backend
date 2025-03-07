@@ -174,23 +174,23 @@ class OrderController extends ClientController
 
             if ($product_id) {
 
+                $buyer = User::findOne($product->buyer_id);
+                $language = $buyer->getSettings()->application_language;
+
                 $distributionStatus = OrderDistributionService::createDistributionTask($order->id, $product->buyer_id);
                 if (!$distributionStatus->success) {
                     throw new Exception('Distribution error: ' . $distributionStatus->reason);
                 }
                 OrderDistributionService::buyerAccept($distributionStatus->result, $product->buyer_id);
-
                 OrderStatusService::buyerAssigned($order->id);
-
                 ChatService::CreateGroupChat('Order ' . $order->id, $user->id, $order->id, [
                     'deal_type' => 'order',
                     'participants' => [$user->id, $order->manager_id, $product->buyer_id],
                     'group_name' => 'client_buyer_manager',
                 ]);
-
                 PushService::sendPushNotification($product->buyer_id, [
-                    'title' => Yii::t('order', 'new_order_for_buyer', [], 'ru'),
-                    'body' => Yii::t('order', 'new_order_for_buyer_text', ['order_id' => $order->id], 'ru'),
+                    'title' => Yii::t('order', 'new_order_for_buyer', [], $language),
+                    'body' => Yii::t('order', 'new_order_for_buyer_text', ['order_id' => $order->id], $language),
                 ]);
             } else {
                 $distribution = OrderDistributionService::createDistributionTask($order->id);
