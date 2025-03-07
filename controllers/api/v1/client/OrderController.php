@@ -119,10 +119,8 @@ class OrderController extends ClientController
         ]);
 
         if ($product_id) {
-            $product = Product::findOne($product_id);
-            if (!$product) {
-                return ApiResponse::code($apiCodes->NOT_FOUND, ['error' => 'Product not found']);
-            }
+            $product = \app\models\Product::findOne($product_id);
+            if (!$product) return ApiResponse::code($apiCodes->NOT_FOUND, ['error' => 'Product not found']);
             $order->buyer_id = $product->buyer_id;
             $order->product_id = $product_id;
         }
@@ -159,7 +157,13 @@ class OrderController extends ClientController
 
             if ($product_id) {
 
+                $distributionStatus = OrderDistributionService::createDistributionTask($order->id, $product->buyer_id);
+                if (!$distributionStatus->success) {
+                    throw new Exception('Distribution error: ' . $distributionStatus->reason);
+                }
+                OrderDistributionService::buyerAccept($distributionStatus->result, $product->buyer_id);
 
+                OrderStatusService::buyerAssigned($order->id);
 
                 ChatService::CreateGroupChat('Order ' . $order->id, $user->id, $order->id, [
                     'deal_type' => 'order',
@@ -167,8 +171,8 @@ class OrderController extends ClientController
                     'group_name' => 'client_buyer_manager',
                 ]);
                 PushService::sendPushNotification($product->buyer_id, [
-                    'title' => 'New order',
-                    'body' => 'Order ID: ' . $order->id,
+                    'title' => Yii::t('order', 'new_order_for_buyer'),
+                    'body' => Yii::t('order', 'new_order_for_buyer_text', ['order_id' => $order->id]),
                 ]);
             } else {
                 $distribution = OrderDistributionService::createDistributionTask($order->id);

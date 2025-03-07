@@ -3,6 +3,7 @@
 return [
     'new' => 'A new order has been created',
     'new_order_for_buyer' => 'You have received a new order',
+    'new_order_for_buyer_text' => 'New order №{order_id}',
     'update_status' => 'Order status updated: ',
 
     // statuses
