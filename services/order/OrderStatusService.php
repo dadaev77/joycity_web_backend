@@ -299,7 +299,7 @@ class OrderStatusService
             if (!$order->save(true, ['status'])) {
                 return Result::error(['errors' => $order->getFirstErrors()]);
             }
-            $receiver = User::findOne($order->created_by);
+            $receiver = \app\models\User::findOne($order->created_by);
             $language = $receiver->getSettings()->application_language;
             PushService::sendPushNotification(
                 $order->created_by,
