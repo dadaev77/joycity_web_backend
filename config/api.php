@@ -176,7 +176,7 @@ $config = [
                         'api/v1/manager/waybill',
                         'api/v1/client/waybill',
                         'api/v1/push',
-                        'api/v1/spreadsheet',
+                        'api/v1/spread-sheet',
                     ],
                     'pluralize' => false,
                 ],
