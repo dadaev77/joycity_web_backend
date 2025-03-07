@@ -126,10 +126,9 @@ class OrderController extends ClientController
             'repeat_order_id' => $request->post('repeat_order_id') ?? null,
             'repeat_images_to_keep' => $request->post('repeat_images_to_keep') ?? null,
             'fulfillment_id' => $request->post('fulfillment_id') ?? null,
+            'manager_id' => User::find()->select(['id'])->where(['role' => User::ROLE_MANAGER])->orderBy('RAND()')->one(),
 
         ]);
-
-        $order->manager_id = User::find()->select(['id'])->where(['role' => User::ROLE_MANAGER])->orderBy('RAND()')->one();
 
         if ($product_id) {
             $product = \app\models\Product::findOne($product_id);
