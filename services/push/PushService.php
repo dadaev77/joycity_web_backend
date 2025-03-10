@@ -120,7 +120,6 @@ class PushService
         $pushTokens = PushNotification::find()->where(['client_id' => $user_id])->all();
         try {
             foreach ($pushTokens as $pushToken) {
-                \Yii::$app->telegramLog->send('success', 'Отправка push-уведомления: ' . $pushToken->push_token);
                 if ($pushToken->operating_system === 'ios') {
                     $pushToken->badge_count++;
                     $pushToken->save();
@@ -139,10 +138,8 @@ class PushService
 
         $credentialsPath = __DIR__ . '/../../joycity.json';
         $scopes = ['https://www.googleapis.com/auth/firebase.messaging'];
-
         $credentials = new ServiceAccountCredentials($scopes, $credentialsPath);
         $accessToken = $credentials->fetchAuthToken()['access_token'];
-
         return $accessToken;
     }
 
