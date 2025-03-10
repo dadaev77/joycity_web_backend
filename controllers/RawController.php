@@ -192,8 +192,6 @@ class RawController extends Controller
 
         \app\services\push\PushService::sendPushNotification($user_id, $message);
 
-        \app\services\push\PushService::sendPushNotification($user_id, $message, $token->push_token);
-
         $tokens = \app\models\PushNotification::find()->where(['client_id' => $user_id])->select('push_token')->all();
 
         return $tokens;
