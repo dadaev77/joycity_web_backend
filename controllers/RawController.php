@@ -206,7 +206,9 @@ class RawController extends Controller
 
         $command = "$schedule curl -X GET \"" . $_ENV['APP_URL'] . "/cron/distribution?taskID={$taskID}\"";
         try {
-            if (exec("crontab -l | { cat; echo '$command'; } | crontab - ")) {
+            exec("crontab -l | { cat; echo '$command'; } | crontab - ", $output, $returnVar);
+
+            if ($returnVar === 0) {
                 return true;
             } else {
                 return false;
