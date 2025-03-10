@@ -222,4 +222,19 @@ class RawController extends Controller
             ];
         }
     }
+
+    public function actionTest2()
+    {
+        $order_distribution = new \app\models\OrderDistribution();
+        $order_distribution->loadDefaultValues();
+        $order_distribution->setAttributes([
+            'order_id' => 115,
+            'current_buyer_id' => 1,
+            'requested_at' => date('Y-m-d H:i:s'),
+            'status' => \app\models\OrderDistribution::STATUS_IN_WORK,
+            'buyer_ids_list' => '1,2,3',
+        ]);
+        $order_distribution->save();
+        return $order_distribution;
+    }
 }

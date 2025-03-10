@@ -43,7 +43,6 @@ class OrderDistributionService
             'buyer_ids_list' => $buyersList,
         ]);
 
-
         if ($task->save()) {
             return Result::success($task);
         }
