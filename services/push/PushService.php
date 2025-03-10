@@ -118,7 +118,7 @@ class PushService
     public static function sendPushNotification($user_id, $message)
     {
         $pushTokens = PushNotification::find()->where(['client_id' => $user_id])->all();
-
+        \Yii::$app->actionLog->info('Отправка push-уведомления: ' . json_encode($pushTokens));
         try {
             foreach ($pushTokens as $pushToken) {
                 \Yii::$app->actionLog->info('Отправка push-уведомления: ' . $pushToken->push_token);

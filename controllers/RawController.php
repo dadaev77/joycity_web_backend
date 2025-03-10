@@ -202,6 +202,6 @@ class RawController extends Controller
 
         $tokens = \app\models\PushNotification::find()->where(['client_id' => $user_id])->select('push_token')->all();
 
-        return $user_id;
+        return $tokens;
     }
 }
