@@ -26,19 +26,28 @@ class CronController extends Controller
      *     path="/cron/create",
      *     summary="Создать задачу cron",
      *     @OA\Parameter(name="taskID", in="query", required=true, description="ID задачи"),
+     *     @OA\Parameter(name="schedule", in="query", required=false, description="Расписание задачи (например, '* * * * *')"),
      *     @OA\Response(response="200", description="Задача cron создана"),
-     *     @OA\Response(response="400", description="Неверный ID задачи")
+     *     @OA\Response(response="400", description="Неверный ID задачи или задача уже существует")
      * )
      */
-    public static function actionCreate($taskID = null)
+    public static function actionCreate($taskID = null, $schedule = '* * * * *')
     {
         $task = OrderDistribution::find()->where(['id' => $taskID])->one();
-        $command = '* * * * * curl -X GET "' . $_ENV['APP_URL'] . '/cron/distribution?taskID=' . $taskID . '"';
 
         if (!$task) {
             Yii::$app->actionLog->error('Несуществующий ID задачи: ' . $taskID);
             return false;
         }
+
+        $existingTasks = shell_exec("crontab -l | grep 'taskID={$taskID}'");
+        if (!empty($existingTasks)) {
+            Yii::$app->actionLog->error('Задача с таким ID уже существует: ' . $taskID);
+            return false;
+        }
+
+        $command = "$schedule curl -X GET \"" . $_ENV['APP_URL'] . "/cron/distribution?taskID={$taskID}\"";
+
         try {
             if (exec(" crontab -l | { cat; echo '$command'; } | crontab - ")) {
                 Yii::$app->actionLog->success('Задача cron создана: ' . $taskID);
@@ -48,9 +57,13 @@ class CronController extends Controller
                 return false;
             }
         } catch (\Exception $e) {
-            Yii::$app->actionLog->error('Ошибка создания задачи cron: ' . $taskID);
-            Yii::$app->telegramLog->send('error', 'Ошибка создания задачи cron: ' . $taskID);
-            return false;
+            Yii::$app->actionLog->error('Ошибка создания задачи cron: ' . $taskID . ' - ' . $e->getMessage());
+            Yii::$app->telegramLog->send('error', 'Ошибка создания задачи cron: ' . $taskID . ' - ' . $e->getMessage());
+
+            return [
+                'status' => 'error',
+                'message' => 'Ошибка создания задачи cron: ' . $taskID . ' - ' . $e->getMessage(),
+            ];
         }
     }
 
