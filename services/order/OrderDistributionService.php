@@ -44,12 +44,14 @@ class OrderDistributionService
             'buyer_ids_list' => $buyersList,
         ]);
 
-        if (!CronController::actionCreate($task->id)) {
-            \Yii::$app->telegramLog->send('error', 'Не удалось создать задачу cron для распределения заказа ' . $orderId);
-            return Result::errors(['base' => 'Failed to create cron task']);
-        }
 
         if ($task->save()) {
+
+            if (!CronController::actionCreate($task->id)) {
+                \Yii::$app->telegramLog->send('error', 'Не удалось создать задачу cron для распределения заказа ' . $orderId);
+                return Result::errors(['base' => 'Failed to create cron task']);
+            }
+
             return Result::success($task);
         }
 
