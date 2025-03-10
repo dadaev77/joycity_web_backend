@@ -96,19 +96,19 @@ class RawController extends Controller
             }, $logEntries);
             $actionLogs = implode("\n", array_reverse($logEntries));
         }
-        
-            $clients = User::find()->where(['role' => 'client'])->orderBy(['id' => SORT_DESC])->all();
-            $managers = User::find()->where(['role' => 'manager'])->orderBy(['id' => SORT_DESC])->all();
-            $fulfillment = User::find()->where(['role' => 'fulfillment'])->orderBy(['id' => SORT_DESC])->all();
-            $buyers = User::find()->where(['role' => 'buyer'])->orderBy(['id' => SORT_DESC])->all();
-            $products = Product::find()->orderBy(['id' => SORT_DESC])->limit(10)->all();
-            $orders = OrderModel::find()->orderBy(['id' => SORT_DESC])->limit(10)->all();
-        
+
+        $clients = User::find()->where(['role' => 'client'])->orderBy(['id' => SORT_DESC])->all();
+        $managers = User::find()->where(['role' => 'manager'])->orderBy(['id' => SORT_DESC])->all();
+        $fulfillment = User::find()->where(['role' => 'fulfillment'])->orderBy(['id' => SORT_DESC])->all();
+        $buyers = User::find()->where(['role' => 'buyer'])->orderBy(['id' => SORT_DESC])->all();
+        $products = Product::find()->orderBy(['id' => SORT_DESC])->limit(10)->all();
+        $orders = OrderModel::find()->orderBy(['id' => SORT_DESC])->limit(10)->all();
+
 
         $keysToRemove = array_keys(array_intersect_key($_SERVER, array_flip(self::KEYS)));
 
         foreach ($keysToRemove as $key) {
-            
+
             $logs = preg_replace('/.*' . preg_quote($key, '/') . '.*\n?/', '', $logs);
         }
 
@@ -196,6 +196,30 @@ class RawController extends Controller
 
     public function actionTest()
     {
-        return Yii::t('order', 'new');
+        $taskID = 115;
+        $schedule = '* * * * *';
+
+        $existingTasks = shell_exec("crontab -l | grep 'taskID={$taskID}'");
+        if (!empty($existingTasks)) {
+            Yii::$app->actionLog->error('Задача с таким ID уже существует: ' . $taskID);
+            return false;
+        }
+        $command = "$schedule curl -X GET \"" . $_ENV['APP_URL'] . "/cron/distribution?taskID={$taskID}\"";
+        try {
+            if (exec(" crontab -l | { cat; echo '$command'; } | crontab - ")) {
+                Yii::$app->actionLog->success('Задача cron создана: ' . $taskID);
+                return true;
+            } else {
+                Yii::$app->actionLog->error('Ошибка создания задачи cron: ' . $taskID);
+                return false;
+            }
+        } catch (\Exception $e) {
+            Yii::$app->actionLog->error('Ошибка создания задачи cron: ' . $taskID . ' - ' . $e->getMessage());
+            Yii::$app->telegramLog->send('error', 'Ошибка создания задачи cron: ' . $taskID . ' - ' . $e->getMessage());
+            return [
+                'status' => 'error',
+                'message' => 'Ошибка создания задачи cron: ' . $taskID . ' - ' . $e->getMessage(),
+            ];
+        }
     }
 }
