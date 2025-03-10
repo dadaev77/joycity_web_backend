@@ -130,6 +130,7 @@ class BuyerOfferController extends ManagerController
                 NotificationConstructor::orderOrderCreated(
                     $order->fulfillment_id,
                     $order->id,
+
                 );
 
 

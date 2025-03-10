@@ -140,7 +140,7 @@ class OrderController extends ClientController
                     'role' => User::ROLE_FULFILLMENT,
                 ])->one();
             if ($fulfillmentUser) {
-                $order->fulfillment_id = $order->fulfillment_id;
+                $order->fulfillment_id = Yii::$app->request->post('fulfillment_id');
             } else {
                 return ApiResponse::code($apiCodes->NOT_FOUND, [
                     'error' => 'Fulfillment user not found',

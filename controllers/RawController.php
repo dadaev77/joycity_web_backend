@@ -192,11 +192,4 @@ class RawController extends Controller
 
         return \app\services\push\PushService::sendPushNotification($user_id, $message);
     }
-
-
-    public function actionTest()
-    {
-        $taskID = 115;
-        $schedule = '* * * * *';
-    }
 }
