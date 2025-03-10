@@ -9,15 +9,22 @@ use app\models\Attachment;
 use app\models\Product;
 use app\models\ProductLinkAttachment;
 use app\models\User;
+use app\models\Order;
+use app\models\TypeDelivery;
 use app\services\AttachmentService;
 use app\services\output\ProductOutputService;
 use app\services\RateService;
 use app\services\SaveModelService;
 use Throwable;
 use Yii;
-use yii\web\UploadedFile;
 use linslin\yii2\curl\Curl;
 use app\services\TranslationService;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class ProductController extends BuyerController
 {
@@ -29,6 +36,8 @@ class ProductController extends BuyerController
         $behaviors['verbFilter']['actions']['update'] = ['put'];
         $behaviors['verbFilter']['actions']['delete'] = ['delete'];
         $behaviors['verbFilter']['actions']['my'] = ['get'];
+        $behaviors['verbFilter']['actions']['download-excel'] = ['get'];
+        $behaviors['verbFilter']['actions']['upload-excel'] = ['post'];
         array_unshift($behaviors['access']['rules'], [
             'actions' => ['create', 'update', 'delete'],
             'allow' => false,
@@ -41,6 +50,13 @@ class ProductController extends BuyerController
                 ApiResponse::code(ResponseCodes::getStatic()->NO_ACCESS);
             Yii::$app->response->data = $response;
         };
+
+        // Добавляем оба действия в список разрешенных
+        $behaviors['access']['rules'][] = [
+            'actions' => ['download-excel', 'upload-excel'],
+            'allow' => true,
+            'roles' => ['@'],
+        ];
 
         return $behaviors;
     }
@@ -449,5 +465,231 @@ class ProductController extends BuyerController
                 'small'
             ),
         ]);
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/v1/buyer/product/download-excel",
+     *     summary="Скачать шаблон Excel для загрузки заявок",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Файл шаблона Excel"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Ошибка сервера"
+     *     )
+     * )
+     */
+    public function actionDownloadExcel()
+    {
+        $templatePath = Yii::getAlias('@app/data/templates/product_template.xlsx');
+        
+        if (!file_exists($templatePath)) {
+            return $this->asJson([
+                'success' => false,
+                'message' => 'Шаблон не найден'
+            ]);
+        }
+
+        return Yii::$app->response->sendFile(
+            $templatePath,
+            'product_template.xlsx',
+            [
+                'mimeType' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'inline' => false
+            ]
+        );
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/v1/buyer/product/upload-excel",
+     *     summary="Загрузить Excel файл с заявками",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *             @OA\Schema(
+     *                 @OA\Property(
+     *                     property="file",
+     *                     type="string",
+     *                     format="binary",
+     *                     description="Excel файл с заявками"
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Файл успешно обработан"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Ошибка в данных"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Ошибка сервера"
+     *     )
+     * )
+     */
+    public function actionUploadExcel()
+    {
+        try {
+            set_time_limit(300);
+            ini_set('memory_limit', '256M');
+
+            if (empty($_FILES['file'])) {
+                return $this->asJson([
+                    'success' => false,
+                    'message' => 'Файл не был загружен'
+                ]);
+            }
+
+            $uploadedFile = $_FILES['file'];
+            
+            try {
+                // Создаем читателя Excel
+                $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReaderForFile($uploadedFile['tmp_name']);
+                $reader->setReadDataOnly(false); // Читаем все данные, включая форматирование
+                
+                $spreadsheet = $reader->load($uploadedFile['tmp_name']);
+                $worksheet = $spreadsheet->getActiveSheet();
+                
+                // Получаем заголовки (первая строка)
+                $headers = [];
+                foreach ($worksheet->getRowIterator(1, 1) as $row) {
+                    $cellIterator = $row->getCellIterator();
+                    $cellIterator->setIterateOnlyExistingCells(false);
+                    foreach ($cellIterator as $cell) {
+                        $value = $cell->getValue();
+                        $headers[] = $value !== null ? trim($value) : '';
+                    }
+                }
+
+                // Читаем описания (вторая строка)
+                $descriptions = [];
+                foreach ($worksheet->getRowIterator(2, 2) as $row) {
+                    $cellIterator = $row->getCellIterator();
+                    $cellIterator->setIterateOnlyExistingCells(false);
+                    foreach ($cellIterator as $cell) {
+                        $value = $cell->getValue();
+                        $descriptions[] = $value !== null ? trim($value) : '';
+                    }
+                }
+
+                // Читаем примеры (третья строка)
+                $examples = [];
+                foreach ($worksheet->getRowIterator(3, 3) as $row) {
+                    $cellIterator = $row->getCellIterator();
+                    $cellIterator->setIterateOnlyExistingCells(false);
+                    foreach ($cellIterator as $cell) {
+                        $value = $cell->getValue();
+                        $examples[] = $value !== null ? trim($value) : '';
+                    }
+                }
+
+                // Читаем данные начиная с 4-й строки
+                $data = [];
+                for ($rowIndex = 4; $rowIndex <= $worksheet->getHighestRow(); $rowIndex++) {
+                    $rowData = [];
+                    $hasData = false;
+                    
+                    foreach ($worksheet->getRowIterator($rowIndex, $rowIndex) as $row) {
+                        $cellIterator = $row->getCellIterator();
+                        $cellIterator->setIterateOnlyExistingCells(false);
+                        
+                        foreach ($cellIterator as $cell) {
+                            $column = $cell->getColumn();
+                            $headerIndex = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString($column) - 1;
+                            $header = isset($headers[$headerIndex]) ? $headers[$headerIndex] : '';
+                            
+                            $value = $cell->getValue();
+                            $calculatedValue = $cell->getCalculatedValue();
+                            
+                            if ($value !== null || $calculatedValue !== null) {
+                                $hasData = true;
+                            }
+                            
+                            $rowData[$header] = [
+                                'raw_value' => $value,
+                                'calculated_value' => $calculatedValue,
+                                'type' => gettype($calculatedValue),
+                                'data_type' => $cell->getDataType(),
+                                'coordinate' => $cell->getCoordinate(),
+                                'formula' => $cell->getDataType() === 'f' ? $cell->getValue() : null
+                            ];
+                        }
+                    }
+                    
+                    if ($hasData) {
+                        $data[$rowIndex] = $rowData;
+                    }
+                }
+
+                // Возвращаем подробную информацию о структуре файла
+                return $this->asJson([
+                    'success' => true,
+                    'message' => 'Данные файла прочитаны для отладки',
+                    'debug_data' => [
+                        'file_info' => [
+                            'name' => $uploadedFile['name'],
+                            'type' => $uploadedFile['type'],
+                            'size' => $uploadedFile['size']
+                        ],
+                        'structure' => [
+                            'headers' => array_combine(range('A', $worksheet->getHighestColumn()), $headers),
+                            'descriptions' => array_combine(range('A', $worksheet->getHighestColumn()), $descriptions),
+                            'examples' => array_combine(range('A', $worksheet->getHighestColumn()), $examples)
+                        ],
+                        'data_rows' => $data,
+                        'row_count' => $worksheet->getHighestRow(),
+                        'column_count' => $worksheet->getHighestColumn()
+                    ]
+                ]);
+
+            } catch (\Throwable $e) {
+                \Yii::error('Excel reading error: ' . $e->getMessage());
+                \Yii::error('Stack trace: ' . $e->getTraceAsString());
+                
+                return $this->asJson([
+                    'success' => false,
+                    'message' => 'Ошибка при чтении Excel файла',
+                    'error' => $e->getMessage(),
+                    'error_line' => $e->getLine(),
+                    'error_file' => $e->getFile()
+                ]);
+            }
+        } catch (\Throwable $e) {
+            \Yii::error('Fatal error: ' . $e->getMessage());
+            return $this->asJson([
+                'success' => false,
+                'message' => 'Внутренняя ошибка сервера',
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+    private function getUploadErrorMessage($errorCode)
+    {
+        switch ($errorCode) {
+            case UPLOAD_ERR_INI_SIZE:
+                return 'Размер файла превышает upload_max_filesize';
+            case UPLOAD_ERR_FORM_SIZE:
+                return 'Размер файла превышает MAX_FILE_SIZE';
+            case UPLOAD_ERR_PARTIAL:
+                return 'Файл был загружен частично';
+            case UPLOAD_ERR_NO_FILE:
+                return 'Файл не был загружен';
+            case UPLOAD_ERR_NO_TMP_DIR:
+                return 'Отсутствует временная папка';
+            case UPLOAD_ERR_CANT_WRITE:
+                return 'Не удалось записать файл на диск';
+            case UPLOAD_ERR_EXTENSION:
+                return 'PHP-расширение остановило загрузку файла';
+            default:
+                return 'Неизвестная ошибка при загрузке файла';
+        }
     }
 }
