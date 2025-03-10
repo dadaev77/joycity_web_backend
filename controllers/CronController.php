@@ -30,15 +30,26 @@ class CronController extends Controller
      *     @OA\Response(response="400", description="Неверный ID задачи")
      * )
      */
-    public static function actionCreate(string $taskID = null)
+    public static function actionCreate($taskID = null)
     {
+        $task = OrderDistribution::find()->where(['id' => $taskID])->one();
         $command = '* * * * * curl -X GET "' . $_ENV['APP_URL'] . '/cron/distribution?taskID=' . $taskID . '"';
 
-        if (exec(" crontab -l | { cat; echo '$command'; } | crontab - ")) {
-            Yii::$app->actionLog->success('Задача cron создана: ' . $taskID);
-            return true;
-        } else {
+        if (!$task) {
+            Yii::$app->actionLog->error('Несуществующий ID задачи: ' . $taskID);
+            return false;
+        }
+        try {
+            if (exec(" crontab -l | { cat; echo '$command'; } | crontab - ")) {
+                Yii::$app->actionLog->success('Задача cron создана: ' . $taskID);
+                return true;
+            } else {
+                Yii::$app->actionLog->error('Ошибка создания задачи cron: ' . $taskID);
+                return false;
+            }
+        } catch (\Exception $e) {
             Yii::$app->actionLog->error('Ошибка создания задачи cron: ' . $taskID);
+            Yii::$app->telegramLog->send('error', 'Ошибка создания задачи cron: ' . $taskID);
             return false;
         }
     }
