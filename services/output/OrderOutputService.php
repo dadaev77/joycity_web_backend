@@ -126,9 +126,7 @@ class OrderOutputService extends OutputService
                 $info['product']['description'] = $model->product_description_ru;
                 unset($info['product']['name_ru']);
                 unset($info['product']['description_ru']);
-                $info['attachments'] = array_merge(
-                    $info['attachments']
-                );
+                $info['attachments'] = $info['product']['attachments'];
             } else {
                 $info['attachments'] = match ($imageSize) {
                     'small' => $model->attachmentsSmallSize,
