@@ -139,12 +139,12 @@ class OrderController extends ClientController
                     'id' => Yii::$app->request->post('fulfillment_id'),
                     'role' => User::ROLE_FULFILLMENT,
                 ])->one();
-            \Yii::$app->telegramLog->send('error', 'fulfillmentUser: ' . json_encode($fulfillmentUser));
             if ($fulfillmentUser) {
                 $order->fulfillment_id = $order->fulfillment_id;
             } else {
                 return ApiResponse::code($apiCodes->NOT_FOUND, [
                     'error' => 'Fulfillment user not found',
+                    'fulfillment_id' => Yii::$app->request->post('fulfillment_id'),
                 ]);
             }
         }
