@@ -379,7 +379,7 @@ class ChatController extends V1Controller
                     $reciever,
                     [
                         'title' => \Yii::t('chat', 'new_message', [], $language),
-                        'body' => \Yii::t('chat', 'new_message_text', ['chat_id' => $chat->id], $language),
+                        'body' => \Yii::t('chat', 'new_message_text', ['chat_id' => $chat->order_id], $language),
                     ]
                 );
             }
