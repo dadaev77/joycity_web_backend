@@ -5,6 +5,7 @@ namespace app\services\output;
 use app\helpers\ModelTypeHelper;
 use app\models\User;
 use app\services\SqlQueryService;
+use Yii;
 
 class ProfileOutputService extends OutputService
 {
@@ -33,6 +34,7 @@ class ProfileOutputService extends OutputService
 
             $info['telegram'] = $user->telegram;
             $info['uuid'] = $user->uuid;
+            $info['markup'] = $user->markup;
 
             unset($info['avatar_id']);
 

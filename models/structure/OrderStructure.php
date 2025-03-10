@@ -503,6 +503,10 @@ class OrderStructure extends Base
     {
         return $this->hasMany(Attachment::class, ['id' => 'attachment_id'])->andOnCondition(['img_size' => 'large'])->via('orderLinkAttachments');
     }
+    public function getAttachmentsXlargeSize()
+    {
+        return $this->hasMany(Attachment::class, ['id' => 'attachment_id'])->andOnCondition(['img_size' => 'xlarge'])->via('orderLinkAttachments');
+    }
 
     /**
      * Gets query for [[OrderRate]].

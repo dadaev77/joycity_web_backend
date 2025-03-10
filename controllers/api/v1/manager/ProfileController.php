@@ -13,6 +13,7 @@ use Throwable;
 use Yii;
 use yii\db\Exception;
 use yii\web\UploadedFile;
+use app\services\push\PushService;
 
 class ProfileController extends ManagerController
 {
@@ -24,6 +25,7 @@ class ProfileController extends ManagerController
         $behaviours['verbFilter']['actions']['upload-avatar'] = ['post'];
         $behaviours['verbFilter']['actions']['self'] = ['get'];
         $behaviours['verbFilter']['actions']['delete'] = ['delete'];
+
         // array_unshift($behaviours['access']['rules'], [
         //     'actions' => ['update', 'delete'],
         //     'allow' => false,
@@ -263,7 +265,7 @@ class ProfileController extends ManagerController
         }
 
         $user->is_deleted = 1;
-
+        PushService::dropTokens();
         if ($user->save(false)) {
             return ApiResponse::byResponseCode($apiCodes->SUCCESS);
         }

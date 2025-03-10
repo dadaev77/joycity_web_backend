@@ -11,6 +11,7 @@ use app\services\chats\ChatService;
 use app\services\output\UserVerificationRequestOutputService;
 use Throwable;
 use Yii;
+use app\services\push\PushService;
 use yii\base\Exception;
 
 class VerificationController extends ManagerController
@@ -136,10 +137,12 @@ class VerificationController extends ManagerController
             $request = UserVerificationRequest::findOne(['id' => $id]);
 
             if (!$request) {
+                \Yii::$app->telegramLog->send('error', 'Запрос на верификацию не найден');
                 return ApiResponse::code($apiCodes->NOT_FOUND);
             }
 
             if ($request->status === UserVerificationRequest::STATUS_APPROVED) {
+                \Yii::$app->telegramLog->send('error', 'Запрос на верификацию уже одобрен');
                 return ApiResponse::code($apiCodes->ALREADY_APPROVED);
             }
 
@@ -150,7 +153,7 @@ class VerificationController extends ManagerController
 
             if (!$request->save()) {
                 $transaction?->rollBack();
-
+                \Yii::$app->telegramLog->send('error', $request->getFirstErrors());
                 return ApiResponse::codeErrors(
                     $apiCodes->ERROR_SAVE,
                     $request->getFirstErrors(),
@@ -159,15 +162,24 @@ class VerificationController extends ManagerController
 
             $verifiedUser = $request->createdBy;
             $verifiedUser->is_verified = 1;
+            $verifiedUser->markup = 5;
 
-            if (!$verifiedUser->save(true, ['is_verified'])) {
+            if (!$verifiedUser->save(true, ['is_verified', 'markup'])) {
                 $transaction?->rollBack();
-
+                \Yii::$app->telegramLog->send('error', 'Не удалось подтвердить аккаунт пользователя');
                 return ApiResponse::codeErrors(
                     $apiCodes->ERROR_SAVE,
                     $verifiedUser->getFirstErrors(),
                 );
             }
+
+            PushService::sendPushNotification(
+                $request->created_by_id,
+                [
+                    'title' => 'Верификация пройдена',
+                    'body' => 'Ваш запрос на верификацию одобрен',
+                ]
+            );
 
             $transaction?->commit();
             $verificationChat = Chat::findOne(['verification_id' => $request->id]);

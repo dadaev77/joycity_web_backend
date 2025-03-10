@@ -13,9 +13,6 @@ use Imagick;
 use Yii;
 use yii\web\HttpException;
 use yii\web\UploadedFile;
-// intervention image
-use Intervention\Image\ImageManager;
-use Intervention\Image\Drivers\Gd\Driver as GdDriver;
 
 class AttachmentService
 {
@@ -23,9 +20,10 @@ class AttachmentService
     public const AllowedImageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'heic'];
     public const AllowedVideoExtensions = ['mp4', 'avi', 'mov'];
     public const IMAGE_SIZES = [
-        ['width' => 256, 'height' => 256, 'name' => 'small'],
-        ['width' => 512, 'height' => 512, 'name' => 'medium'],
-        ['width' => 1024, 'height' => 1024, 'name' => 'large'],
+        'small' => 256,
+        'medium' => 512,
+        'large' => 1024,
+        'xlarge' => 2048,
     ];
 
     /**
@@ -207,9 +205,9 @@ class AttachmentService
         $out = [];
 
         foreach ($files as $file) {
-            // create images for all sizes
-            foreach (self::IMAGE_SIZES as $size) {
-                $fileModelResponse = self::writeFileWithModel($file, $size['width'], $size['height'], $size['name']);
+            // создаем изображения для всех размеров
+            foreach (self::IMAGE_SIZES as $label => $size) {
+                $fileModelResponse = self::writeFileWithModel($file, $size, $label);
                 if (!$fileModelResponse->success) {
                     $transaction?->rollBack();
                     return Result::error([
@@ -226,59 +224,49 @@ class AttachmentService
         return Result::success($out);
     }
 
-    public static function writeFileWithModel(UploadedFile $file, int $width = 1024, int $height = 1024, string $name = 'large'): ResultAnswer
+    public static function writeFileWithModel(UploadedFile $file, int $size = 1024, string $name = 'large'): ResultAnswer
     {
         try {
             $extension = pathinfo($file->name, PATHINFO_EXTENSION);
             $mimeType = $file->type;
-            $pathName = Yii::$app->security->generateRandomString(16);
+            $pathName = Yii::$app->security->generateRandomString(16) . '_' . $name;
             $path = '/' . self::PUBLIC_PATH . "/$pathName.$extension";
             $fullPath = self::getFilesPath() . "/$pathName.$extension";
-            $size = $file->size;
 
             if (in_array($extension, self::AllowedImageExtensions, true)) {
                 $image = new Imagick($file->tempName);
-                // Применяем автоматическую ориентацию на основе EXIF-данных
                 $image->autoOrient();
-                // Получаем исходные размеры изображения
                 $originalWidth = $image->getImageWidth();
                 $originalHeight = $image->getImageHeight();
-                // Вычисляем коэффициент масштабирования
-                $scale = min($width / $originalWidth, $height / $originalHeight);
+                $scale = min($size / $originalWidth, $size / $originalHeight);
                 $newWidth = (int)($originalWidth * $scale);
                 $newHeight = (int)($originalHeight * $scale);
-                // Создаем холст нужного размера
                 $canvas = new Imagick();
-                $canvas->newImage($width, $height, new \ImagickPixel('white'));
+                $canvas->newImage($size, $size, new \ImagickPixel('white'));
                 $canvas->setImageFormat('webp');
-                // Изменяем размер изображения без учета ориентации
                 $image->resizeImage($newWidth, $newHeight, Imagick::FILTER_LANCZOS, 1);
-                // Вписываем изображение в холст
-                $canvas->compositeImage($image, Imagick::COMPOSITE_OVER, (int)(($width - $newWidth) / 2), (int)(($height - $newHeight) / 2));
-                // Сохраняем итоговое изображение
+                $canvas->compositeImage($image, Imagick::COMPOSITE_OVER, (int)(($size - $newWidth) / 2), (int)(($size - $newHeight) / 2));
                 $canvas->writeImage($fullPath);
-                // Очищаем ресурсы
                 $image->destroy();
                 $canvas->destroy();
-
-                $mimeType = mime_content_type($fullPath);
-                $size = filesize($fullPath);
+                $fileSize = filesize($fullPath);
             } else {
                 $status = rename($file->tempName, $fullPath);
                 if (!$status) {
                     return Result::error(['errors' => ['Error save file']]);
                 }
+                $fileSize = filesize($fullPath); 
             }
             chmod($fullPath, 0666);
 
-            // Debugging: Check if the file exists
+            // Проверяем, существует ли файл
             if (!file_exists($fullPath)) {
                 return Result::error(['errors' => ['File does not exist after saving']]);
             }
 
             $attachment = new Attachment([
                 'path' => $path,
-                'size' => $size,
+                'size' => $fileSize,
                 'extension' => $extension,
                 'mime_type' => $mimeType,
                 'img_size' => $name,

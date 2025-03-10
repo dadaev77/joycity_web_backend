@@ -11,7 +11,7 @@ $config = [
     'id' => 'basic',
     'basePath' => dirname(__DIR__),
     'timeZone' => 'Europe/Moscow',
-    'bootstrap' => ['debug'],
+    'bootstrap' => ['debug', 'setLanguage'],
     'modules' => [
         'debug' => [
             'class' => 'yii\debug\Module',
@@ -19,11 +19,24 @@ $config = [
         ]
     ],
     'defaultRoute' => 'api',
-    'language' => 'ru-RU',
+    // 'language' => 'ru-RU',
     'aliases' => [
         '@bower' => '@vendor/yidas/yii2-bower-asset/bower',
     ],
     'components' => [
+        'setLanguage' => [
+            'class' => 'app\components\SetLanguage',
+        ],
+        'queue' => [
+            'class' => \yii\queue\db\Queue::class,
+            'db' => 'db',
+            'tableName' => '{{%queue}}',
+            'channel' => 'default',
+            'mutex' => \yii\mutex\MysqlMutex::class,
+        ],
+        'actionLog' => [
+            'class' => 'app\components\ActionLog',
+        ],
         'telegramLog' => [
             'class' => 'app\components\TelegramLog',
         ],
@@ -33,6 +46,14 @@ $config = [
         'i18n' => [
             'translations' => [
                 'app*' => [
+                    'basePath' => '@app/lang',
+                    'class' => 'yii\i18n\PhpMessageSource',
+                ],
+                'order*' => [
+                    'basePath' => '@app/lang',
+                    'class' => 'yii\i18n\PhpMessageSource',
+                ],
+                'chat*' => [
                     'basePath' => '@app/lang',
                     'class' => 'yii\i18n\PhpMessageSource',
                 ],
@@ -146,6 +167,7 @@ $config = [
                         'api/v1/manager/order/marketplace-transaction',
                         'api/v1/manager/verification',
                         'api/v1/manager/buyer',
+                        'api/v1/manager/user',
                         'api/v1/service/profile',
                         'api/v1/notifications',
                         'api/v1/order-request',
@@ -153,14 +175,14 @@ $config = [
                         'api/v1/translate',
                         'api/v1/manager/waybill',
                         'api/v1/client/waybill',
+                        'api/v1/push',
+                        'api/v1/spreadsheet',
                     ],
                     'pluralize' => false,
                 ],
                 'swagger' => '/swagger',
                 'sign-up' => 'api/v1/auth/register',
 
-                // Правило для update-order
-                'api/v1/manager/buyer/update-order/<orderId>' => 'api/v1/manager/buyer/update-order',
                 'api/v1/<controller>/<id:\d+>/<action>' =>
                 'api/v1/<controller>/<action>',
                 'api/v1/<group>/<controller>/<action>' =>

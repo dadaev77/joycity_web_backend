@@ -6,7 +6,6 @@ use app\controllers\api\V1Controller;
 use app\models\User;
 use app\models\Chat;
 use app\models\Message;
-use app\services\chats\ChatService;
 use app\services\chats\MessageService;
 use Yii;
 use yii\data\Pagination;
@@ -14,8 +13,7 @@ use yii\filters\AccessControl;
 use yii\web\BadRequestHttpException;
 use yii\web\UploadedFile;
 use app\services\ChatUploader;
-use React\Http\Browser;
-use React\EventLoop\Factory;
+use app\services\push\PushService;
 
 
 class ChatController extends V1Controller
@@ -32,6 +30,8 @@ class ChatController extends V1Controller
         $behaviours['verbFilter']['actions']['mark-as-read'] = ['put'];
         $behaviours['verbFilter']['actions']['get-unread-messages'] = ['get'];
         $behaviours['verbFilter']['actions']['get-order-chats'] = ['get'];
+        $behaviours['verbFilter']['actions']['delete-chat'] = ['delete'];
+        $behaviours['verbFilter']['actions']['delete-message'] = ['delete'];
         $behaviours['access'] = [
             'class' => AccessControl::class,
             'rules' => [
@@ -84,7 +84,7 @@ class ChatController extends V1Controller
         }
 
         $unreadMessages = 0;
-        
+
         foreach ($userChats as $chat) {
             $unreadMessages += $this->calculateUnreadMessages($chat, $userId);
         }
@@ -101,7 +101,8 @@ class ChatController extends V1Controller
     {
         $userId = User::getIdentity()->id;
         $filteredChats = [];
-        $chats = Chat::find()->where(['status' => 'active'])->orderBy(['updated_at' => SORT_DESC])->all();
+        $chats = Chat::find()->where(['status' => 'active', 'is_deleted' => false])
+            ->orderBy(['updated_at' => SORT_DESC])->all();
 
         foreach ($chats as $chat) {
             $metadata = $chat->metadata ?? [];
@@ -109,13 +110,12 @@ class ChatController extends V1Controller
             $metadata['last_message'] = $this->getLastMessage($chat);
             $metadata['unread_messages'] = $this->calculateUnreadMessages($chat, $userId);
             $chat->metadata = $metadata;
-            
+
             if (in_array($userId, $participants)) {
                 $filteredChats[] = $chat;
             }
-
         }
-        
+
         foreach ($filteredChats as $chat) {
             $metadata = $chat->metadata ?? [];
             $participants = $metadata['participants'] ?? [];
@@ -124,15 +124,20 @@ class ChatController extends V1Controller
             foreach ($participants as $participant) {
                 $user = User::findOne($participant);
                 if ($user) {
-                $metadata['participants'][] = [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'avatar' => $user->avatar ? $user->avatar->path : null,
-                    'role' => $user->role,
-                    'email' => $user->email,
-                    'phone_number' => $user->phone_number,
-                    'telegram' => $user->telegram,
-                    'uuid' => $user->uuid,
+                    $organizationName = null;
+                    if ($user->role === User::ROLE_BUYER) {
+                        $organizationName = $user->organization_name;
+                    }
+                    $metadata['participants'][] = [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'avatar' => $user->avatar ? $user->avatar->path : null,
+                        'role' => $user->role,
+                        'email' => $user->email,
+                        'phone_number' => $user->phone_number,
+                        'telegram' => $user->telegram,
+                        'uuid' => $user->uuid,
+                        'organization_name' => $organizationName,
                     ];
                 }
             }
@@ -153,7 +158,7 @@ class ChatController extends V1Controller
     {
         $userId = User::getIdentity()->id;
         $data = [];
-        
+
         if (empty($query)) return ['chats' => []];
 
         $orders = \app\models\Order::find()
@@ -172,6 +177,10 @@ class ChatController extends V1Controller
                 foreach ($participants as $participant) {
                     $user = User::findOne($participant);
                     if ($user) {
+                        $organizationName = null;
+                        if ($user->role === User::ROLE_BUYER) {
+                            $organizationName = $user->organization_name;
+                        }
                         $metadata['participants'][] = [
                             'id' => $user->id,
                             'name' => $user->name,
@@ -181,6 +190,7 @@ class ChatController extends V1Controller
                             'phone_number' => $user->phone_number,
                             'telegram' => $user->telegram,
                             'uuid' => $user->uuid,
+                            'organization_name' => $organizationName,
                         ];
                     }
                 }
@@ -208,7 +218,7 @@ class ChatController extends V1Controller
      */
     public function actionGetMessages($chatId, $perPage = 100, $page = 1)
     {
-        $chat = Chat::findOne($chatId);
+        $chat = Chat::find()->where(['id' => $chatId, 'is_deleted' => false])->one();
         if (!$chat) {
             throw new BadRequestHttpException('Чат не найден');
         }
@@ -223,11 +233,11 @@ class ChatController extends V1Controller
         }
 
         $query = Message::find()
-            ->where(['chat_id' => $chatId])
+            ->where(['chat_id' => $chatId, 'is_deleted' => false])
             ->orderBy(['created_at' => SORT_DESC]);
 
         $countQuery = clone $query;
-        
+
         $pages = new Pagination([
             'totalCount' => $countQuery->count(),
             'pageSize' => $perPage,
@@ -254,7 +264,7 @@ class ChatController extends V1Controller
     }
     public function actionGetOrderChats($orderId)
     {
-        $chats = Chat::find()->where(['order_id' => $orderId, 'status' => 'active'])->all();
+        $chats = Chat::find()->where(['order_id' => $orderId, 'status' => 'active', 'is_deleted' => false])->all();
         $userId = User::getIdentity()->id;
         $filteredChats = [];
 
@@ -274,6 +284,10 @@ class ChatController extends V1Controller
             $metadata['participants'] = [];
             foreach ($participants as $participant) {
                 $user = User::findOne($participant);
+                $organizationName = null;
+                if ($user->role === User::ROLE_BUYER) {
+                    $organizationName = $user->organization_name;
+                }
                 $metadata['participants'][] = [
                     'id' => $user->id,
                     'name' => $user->name,
@@ -283,6 +297,7 @@ class ChatController extends V1Controller
                     'phone_number' => $user->phone_number,
                     'telegram' => $user->telegram,
                     'uuid' => $user->uuid,
+                    'organization_name' => $organizationName,
                 ];
             }
             $metadata['last_message'] = $this->getLastMessage($chat);
@@ -338,7 +353,7 @@ class ChatController extends V1Controller
         $userId = User::getIdentity()->id;
         $metadata = $chat->metadata ?? [];
         $participants = $metadata['participants'] ?? [];
-        
+
         if (!in_array($userId, $participants)) {
             throw new BadRequestHttpException('У вас нет доступа к этому чату');
         }
@@ -357,6 +372,18 @@ class ChatController extends V1Controller
             $chat->last_message_id = $message->id;
             $chat->save();
 
+            $recievers = array_diff($participants, [$userId]);
+            foreach ($recievers as $reciever) {
+                $language = User::findOne($reciever)->getSettings()->application_language;
+                PushService::sendPushNotification(
+                    $reciever,
+                    [
+                        'title' => \Yii::t('chat', 'new_message', [], $language),
+                        'body' => \Yii::t('chat', 'new_message_text', ['chat_id' => $chat->order_id], $language),
+                    ]
+                );
+            }
+
             self::socketHandler(
                 array_diff($participants, [$userId]),
                 Message::findOne($message->id)->toArray()
@@ -366,7 +393,6 @@ class ChatController extends V1Controller
                 'status' => 'success',
                 'data' => Message::findOne($message->id)
             ];
-
         } catch (\Exception $e) {
             Yii::$app->telegramLog->send('error', 'Не удалось отправить сообщение: ' . json_encode($e->getMessage()));
             throw new BadRequestHttpException($e->getMessage());
@@ -394,7 +420,7 @@ class ChatController extends V1Controller
         }
 
         $messages = $chat->messages;
-        foreach ($messages as $message) {            
+        foreach ($messages as $message) {
             $messageMetadata = $message->metadata ?? [];
             if (!in_array($userId, $messageMetadata['read_by'])) {
                 $messageMetadata['read_by'][] = $userId;
@@ -407,7 +433,6 @@ class ChatController extends V1Controller
             'status' => 'success',
             'message' => 'all messages in chat ' . $chat->id . ' marked as read'
         ];
-
     }
 
     private static function socketHandler(array $participants, $message)
@@ -447,5 +472,53 @@ class ChatController extends V1Controller
         }
 
         curl_multi_close($multiHandle);
+    }
+
+    /**
+     * Удаление чата
+     * Устанавливает флаг is_deleted в true и устанавливает deleted_at на текущее время.
+     * @return array Статус операции.
+     */
+    public function actionDeleteChat()
+    {
+        $chatId = Yii::$app->request->post('chat_id');
+        $chat = Chat::findOne($chatId);
+        if (!$chat) {
+            throw new BadRequestHttpException('Чат не найден');
+        }
+
+        $chat->is_deleted = true;
+        $chat->deleted_at = date('Y-m-d H:i:s');
+        $chat->save();
+
+        return [
+            'status' => 'success',
+            'message' => 'Чат успешно удален'
+        ];
+    }
+
+    /**
+     * Удаление сообщения в чате
+     * Устанавливает флаг is_deleted в true и устанавливает deleted_at на текущее время.
+     * @return array Статус операции.
+     */
+    public function actionDeleteMessage()
+    {
+        $chatId = Yii::$app->request->post('chat_id');
+        $messageId = Yii::$app->request->post('message_id');
+
+        $message = Message::findOne($messageId);
+        if (!$message || $message->chat_id !== $chatId) {
+            throw new BadRequestHttpException('Сообщение не найдено или не принадлежит чату');
+        }
+
+        $message->is_deleted = true;
+        $message->deleted_at = date('Y-m-d H:i:s');
+        $message->save();
+
+        return [
+            'status' => 'success',
+            'message' => 'Сообщение успешно удалено'
+        ];
     }
 }

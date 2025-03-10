@@ -12,6 +12,7 @@ use app\services\output\ProfileOutputService;
 use Throwable;
 use Yii;
 use yii\web\UploadedFile;
+use app\services\push\PushService;
 
 class ProfileController extends FulfillmentController
 {
@@ -248,7 +249,7 @@ class ProfileController extends FulfillmentController
             $transaction = Yii::$app->db->beginTransaction();
 
             $user->is_deleted = 1;
-
+            PushService::dropTokens();
             if (!$user->save(false)) {
                 return ApiResponse::transactionCodeErrors(
                     $transaction,

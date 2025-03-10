@@ -3,16 +3,16 @@
 use yii\db\Migration;
 
 /**
- * Class m250120_105406_add_markup_field_to_user_table
+ * Class m250305_103548_add_badge_count_to_push_tokens
  */
-class m250120_105406_add_markup_field_to_user_table extends Migration
+class m250305_103548_add_badge_count_to_push_tokens extends Migration
 {
     /**
      * {@inheritdoc}
      */
     public function safeUp()
     {
-        $this->addColumn('{{%user}}', 'markup', $this->integer()->defaultValue(null));
+        $this->addColumn('push_notification', 'badge_count', $this->integer()->defaultValue(0));
     }
 
     /**
@@ -20,7 +20,7 @@ class m250120_105406_add_markup_field_to_user_table extends Migration
      */
     public function safeDown()
     {
-        echo "m250120_105406_add_markup_field_to_user_table cannot be reverted.\n";
+        echo "m250305_103548_add_badge_count_to_push_tokens cannot be reverted.\n";
 
         return false;
     }
@@ -34,7 +34,7 @@ class m250120_105406_add_markup_field_to_user_table extends Migration
 
     public function down()
     {
-        echo "m250120_105406_add_markup_field_to_user_table cannot be reverted.\n";
+        echo "m250305_103548_add_badge_count_to_push_tokens cannot be reverted.\n";
 
         return false;
     }

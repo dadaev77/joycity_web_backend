@@ -4,8 +4,9 @@ Yii::setAlias('@tests', dirname(__DIR__) . '/tests/codeception');
 
 $params = require __DIR__ . '/params.php';
 $db = require __DIR__ . '/db.php';
+$common = require __DIR__ . '/common.php';
 
-$config = [
+$config = \yii\helpers\ArrayHelper::merge($common, [
     'id' => 'basic-console',
     'basePath' => dirname(__DIR__),
     'timeZone' => 'Europe/Moscow',
@@ -13,6 +14,12 @@ $config = [
     'controllerNamespace' => 'app\commands',
     'language' => 'ru-RU',
     'components' => [
+        'queue' => [
+            'class' => \yii\queue\db\Queue::class,
+            'db' => 'db',
+            'tableName' => '{{%queue}}',
+            'channel' => 'default',
+        ],
         'i18n' => [
             'translations' => [
                 'app*' => [
@@ -80,7 +87,7 @@ $config = [
         ],
     ],
     */
-];
+]);
 
 if (YII_ENV_DEV) {
     // configuration adjustments for 'dev' environment

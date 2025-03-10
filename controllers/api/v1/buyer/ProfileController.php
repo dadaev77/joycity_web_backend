@@ -14,7 +14,7 @@ use Yii;
 use app\components\response\ResponseCodes;
 use yii\db\Exception;
 use yii\web\UploadedFile;
-
+use app\services\push\PushService;
 class ProfileController extends BuyerController
 {
     public function behaviors()
@@ -207,7 +207,7 @@ class ProfileController extends BuyerController
         }
 
         $user->is_deleted = 1;
-
+        PushService::dropTokens();
         foreach ($user->products as $product) {
             $product->is_deleted = 1;
             $product->save(false);

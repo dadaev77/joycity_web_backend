@@ -11,6 +11,7 @@ use app\services\chats\ChatService;
 use app\services\notification\NotificationConstructor;
 use app\services\output\UserVerificationRequestOutputService;
 use app\services\RateService;
+use app\services\push\PushService;
 use Throwable;
 use Yii;
 
@@ -121,6 +122,14 @@ class VerificationController extends ClientController
                     'verification_request_id' => $newRequest->id,
                     'participants' => [$user->id, $newRequest->manager_id],
                     'group_name' => 'client_manager',
+                ]
+            );
+
+            PushService::sendPushNotification(
+                $newRequest->manager_id,
+                [
+                    'title' => 'Новый запрос на верификацию',
+                    'body' => 'Новый запрос на верификацию от пользователя ' . $user->id,
                 ]
             );
 

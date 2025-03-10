@@ -281,6 +281,7 @@ class OrderPrice extends OrderPriceService
             ],
             'fulfillment' => 0,
             'overall' => 0,
+            'overall_overhead' => 0,
             'product_overall' => 0
         ];
     }

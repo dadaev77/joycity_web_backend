@@ -29,6 +29,7 @@ use app\models\UserLinkTypeDelivery;
 use app\models\UserLinkTypePackaging;
 use app\models\UserSettings;
 use app\models\UserVerificationRequest;
+use app\models\PushNotification;
 use yii\db\ActiveQuery;
 
 /**
@@ -118,6 +119,7 @@ class UserStructure extends Base
                 'required',
             ],
             [['rating'], 'number'],
+            ['markup', 'number', 'min' => 0, 'max' => 100],
             [
                 [
                     'feedback_count',

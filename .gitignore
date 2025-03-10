@@ -62,5 +62,6 @@ vendor
 /entrypoint/api/attachments/
 /entrypoint/api/uploads/
 /entrypoint/api/admin/
+/joycity.json
 
 # components/docker/cron_tasks.txt

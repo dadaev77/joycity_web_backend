@@ -10,6 +10,7 @@ use app\models\Order;
 use app\services\chats\ChatService;
 use app\services\notification\NotificationConstructor;
 use app\services\notification\NotificationManagementService;
+use app\services\push\PushService;
 use Throwable;
 use Yii;
 
@@ -298,6 +299,15 @@ class OrderStatusService
             if (!$order->save(true, ['status'])) {
                 return Result::error(['errors' => $order->getFirstErrors()]);
             }
+            $receiver = \app\models\User::findOne($order->created_by);
+            $language = $receiver->getSettings()->application_language;
+            PushService::sendPushNotification(
+                $order->created_by,
+                [
+                    'title' => Yii::t('order', 'update_status', ['order_id' => $order->id], $language),
+                    'body' => Yii::t('order', $orderStatus, [], $language),
+                ]
+            );
 
             if (
                 $order->status !== Order::STATUS_COMPLETED &&
@@ -381,7 +391,6 @@ class OrderStatusService
                     $order->created_by,
                     $orderId,
                 );
-                
             }
 
             return Result::success();

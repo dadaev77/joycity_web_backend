@@ -1,0 +1,32 @@
+<?php
+
+return [
+    'new' => 'A new order has been created',
+    'new_order_for_buyer' => 'You have received a new order',
+    'new_order_for_buyer_text' => 'New order №{order_id}',
+    'update_status' => 'Order status updated №{order_id}',
+
+    // statuses
+    'created' => 'The order has been successfully created',
+    'buyer_assigned' => 'The seller has been assigned to process the order',
+    'buyer_offer_created' => 'The seller has created an offer for the order',
+    'buyer_offer_accepted' => 'The seller\'s offer has been accepted',
+    'paid' => 'The order has been successfully paid',
+    'transferring_to_buyer' => 'The order is being transferred to the seller',
+    'arrived_to_buyer' => 'The order has been delivered to the seller',
+    'buyer_inspection_complete' => 'The seller has completed the order inspection',
+    'transferring_to_warehouse' => 'The order is being transferred to the warehouse',
+    'arrived_to_warehouse' => 'The order has been delivered to the warehouse',
+    'transferring_to_fulfillment' => 'The order is being transferred to fulfillment',
+    'arrived_to_fulfillment' => 'The order has been delivered to fulfillment',
+    'fulfillment_inspection_complete' => 'The order inspection in fulfillment is complete',
+    'fulfillment_package_labeling_complete' => 'Labeling for packaging in fulfillment is complete',
+    'ready_transferring_to_marketplace' => 'The order is ready to be sent to the marketplace',
+    'partially_delivered_to_marketplace' => 'The order has been partially delivered to the marketplace',
+    'fully_delivered_to_marketplace' => 'The order has been fully delivered to the marketplace',
+    'partially_paid' => 'The order has been partially paid',
+    'fully_paid' => 'The order has been fully paid',
+    'cancelled_request' => 'The order has been cancelled at the customer\'s request',
+    'cancelled_order' => 'The order has been cancelled at the seller\'s initiative',
+    'completed' => 'The order has been successfully completed',
+];

@@ -236,6 +236,11 @@ class Product extends Base
         return $this->hasMany(Attachment::class, ['id' => 'attachment_id'])->andOnCondition(['img_size' => 'large'])->via('productLinkAttachments');
     }
 
+    public function getAttachmentsXlargeSize()
+    {
+        return $this->hasMany(Attachment::class, ['id' => 'attachment_id'])->andOnCondition(['img_size' => 'xlarge'])->via('productLinkAttachments');
+    }
+
     /**
      * Gets query for [[Subcategory]].
      *

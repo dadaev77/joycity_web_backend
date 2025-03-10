@@ -29,7 +29,7 @@
   "minimum-stability": "stable",
   "prefer-stable": true,
   "require": {
-    "php": ">=8.1",
+    "php": ">=8.1.0",
     "yiisoft/yii2": "2.0.45",
     "yiisoft/yii2-bootstrap": "^2.0",
     "yiisoft/yii2-swiftmailer": "*",
@@ -37,7 +37,7 @@
     "electrolinux/phpquery": "^0.9.6",
     "yiisoft/yii2-imagine": "*",
     "php-http/guzzle6-adapter": "^1.1",
-    "google/auth": "^1.18",
+    "google/auth": "^1.26",
     "guzzlehttp/guzzle": "*",
     "yidas/yii2-bower-asset": "2.0.13.1",
     "swiftmailer/swiftmailer": "^6.3",
@@ -51,7 +51,10 @@
     "doctrine/annotations": "^2.0",
     "react/http": "^1.11",
     "react/event-loop": "^1.5",
-    "react/promise": "^3.2"
+    "react/promise": "^3.2",
+    "kreait/firebase-php": "^5.26",
+    "yiisoft/yii2-queue": "^2.3",
+    "phpoffice/phpspreadsheet": "^4.1"
   },
   "require-dev": {
     
