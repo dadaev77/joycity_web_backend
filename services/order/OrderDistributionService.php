@@ -7,6 +7,7 @@ use app\components\responseFunction\ResultAnswer;
 use app\models\Order;
 use app\models\OrderDistribution;
 use app\models\User;
+use app\controllers\CronController;
 use Yii;
 
 class OrderDistributionService
@@ -43,8 +44,10 @@ class OrderDistributionService
             'buyer_ids_list' => $buyersList,
         ]);
 
-        \Yii::$app->telegramLog->send('error', 'Запрос на распределение заказа ' . $orderId . ' отправлен на распределение');
-        exec('curl -X GET "' . $_ENV['APP_URL'] . '/cron/create?taskID=' . $task->id . '"');
+        if (!CronController::actionCreate($task->id)) {
+            \Yii::$app->telegramLog->send('error', 'Не удалось создать задачу cron для распределения заказа ' . $orderId);
+            return Result::errors(['base' => 'Failed to create cron task']);
+        }
 
         if ($task->save()) {
             return Result::success($task);

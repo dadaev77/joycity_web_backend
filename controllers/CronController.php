@@ -30,19 +30,16 @@ class CronController extends Controller
      *     @OA\Response(response="400", description="Неверный ID задачи")
      * )
      */
-    public function actionCreate(string $taskID = null)
+    public static function actionCreate(string $taskID = null)
     {
-        if (!$taskID) {
-            Yii::$app->actionLog->error('Неверный ID задачи');
-            return ['status' => 'error', 'message' => 'Неверный ID задачи'];
-        }
         $command = '* * * * * curl -X GET "' . $_ENV['APP_URL'] . '/cron/distribution?taskID=' . $taskID . '"';
+
         if (exec(" crontab -l | { cat; echo '$command'; } | crontab - ")) {
             Yii::$app->actionLog->success('Задача cron создана: ' . $taskID);
-            return ['status' => 'success', 'message' => 'Задача cron создана'];
+            return true;
         } else {
             Yii::$app->actionLog->error('Ошибка создания задачи cron: ' . $taskID);
-            return ['status' => 'error', 'message' => 'Ошибка создания задачи cron'];
+            return false;
         }
     }
 
@@ -99,7 +96,7 @@ class CronController extends Controller
     public function actionUpdateRates()
     {
         $rates = ExchangeRateService::getRate(['cny', 'usd']);
-        
+
         if (!empty($rates['data'])) {
             $rate = new \app\models\Rate();
             $rate->RUB = 1;
