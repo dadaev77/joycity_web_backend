@@ -23,11 +23,11 @@ class FirebaseService
     public function __construct()
     {
         $this->apiCodes = ResponseCodes::getStatic();
-        
+
         $factory = (new Factory)
-            ->withServiceAccount(__DIR__ . '/joycity.json')
+            ->withServiceAccount(__DIR__ . '../../joycity.json')
             ->withProjectId('joycity-stage');
-            
+
         $this->messaging = $factory->createMessaging();
     }
 
@@ -47,7 +47,7 @@ class FirebaseService
     {
         $firebaseService = new FirebaseService();
         $user = User::findOne($clientId);
-        
+
         if (!$user) {
             return ApiResponse::byResponseCode($firebaseService->apiCodes->NOT_VALIDATED, ['message' => 'User not found']);
         }
@@ -68,7 +68,7 @@ class FirebaseService
     {
         try {
             $notification = Notification::create(
-                $message['title'], 
+                $message['title'],
                 $message['body'],
             );
             $cloudMessage = CloudMessage::withTarget('token', $pushToken)
@@ -89,7 +89,7 @@ class FirebaseService
     {
         try {
             $notification = Notification::create(
-                $message['title'], 
+                $message['title'],
                 $message['body'],
             );
             $cloudMessage = CloudMessage::withTarget('token', $pushToken)
@@ -98,7 +98,7 @@ class FirebaseService
                     'payload' => [
                         'headers' => [
                             'apns-priority' => '10',
-                        ],                
+                        ],
                         'aps' => [
                             'badge' => PushNotification::find()->where(['push_token' => $pushToken])->one()->badge_count ?? 0,
                             'alert' => [
