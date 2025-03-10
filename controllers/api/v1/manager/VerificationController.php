@@ -165,6 +165,11 @@ class VerificationController extends ManagerController
             $verifiedUser->markup = 5;
 
 
+            if (true) {
+                \Yii::$app->telegramLog->send('error', 'Не удалось подтвердить аккаунт пользователя');
+                return ApiResponse::code($apiCodes->INTERNAL_ERROR);
+            }
+
             if (!$verifiedUser->save(true, ['is_verified', 'markup'])) {
                 $transaction?->rollBack();
                 \Yii::$app->telegramLog->send('error', 'Не удалось подтвердить аккаунт пользователя');
