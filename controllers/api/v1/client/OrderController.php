@@ -136,14 +136,16 @@ class OrderController extends ClientController
         if ((int) $order->type_delivery_point_id === TypeDeliveryPoint::TYPE_FULFILLMENT) {
             $fulfillmentUser = User::find()
                 ->where([
-                    'id' => $order->fulfillment_id,
+                    'id' => Yii::$app->request->post('fulfillment_id'),
                     'role' => User::ROLE_FULFILLMENT,
-                ])
-                ->one();
+                ])->one();
+            \Yii::$app->telegramLog->send('error', 'fulfillmentUser: ' . json_encode($fulfillmentUser));
             if ($fulfillmentUser) {
                 $order->fulfillment_id = $order->fulfillment_id;
             } else {
-                return ApiResponse::code($apiCodes->NOT_FOUND);
+                return ApiResponse::code($apiCodes->NOT_FOUND, [
+                    'error' => 'Fulfillment user not found',
+                ]);
             }
         }
 
