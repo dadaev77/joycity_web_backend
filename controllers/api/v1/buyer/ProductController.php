@@ -11,12 +11,10 @@ use app\models\ProductLinkAttachment;
 use app\models\User;
 use app\services\AttachmentService;
 use app\services\output\ProductOutputService;
-use app\services\RateService;
 use app\services\SaveModelService;
 use Throwable;
 use Yii;
 use yii\web\UploadedFile;
-use linslin\yii2\curl\Curl;
 use app\services\TranslationService;
 
 class ProductController extends BuyerController
@@ -83,16 +81,10 @@ class ProductController extends BuyerController
 
             $images = UploadedFile::getInstancesByName('images');
 
-            if (!$images) {
-                return ApiResponse::codeErrors($apiCodes->NOT_VALID, [
-                    'images' => 'Param `images` is empty',
-                ]);
-            }
+            if (!$images) return ApiResponse::codeErrors($apiCodes->NOT_VALID, ['images' => 'Param `images` is empty',]);
 
             $transaction = Yii::$app->db->beginTransaction();
-
             $product = new Product();
-
             $product->load(
                 array_diff_key(
                     $request->post(),
@@ -114,11 +106,9 @@ class ProductController extends BuyerController
                 $product->{"name_$key"} = $value['name'];
                 $product->{"description_$key"} = $value['description'];
             }
-            // set buyer id
+
             $product->buyer_id = $user->id;
-            // set currency from user settings
             $product->currency = $user->settings->currency;
-            // assign prices as is, without conversion
             $product->range_1_price = $request->post('range_1_price') ?? 0;
             $product->range_2_price = $request->post('range_2_price') ?? 0;
             $product->range_3_price = $request->post('range_3_price') ?? 0;
@@ -146,8 +136,6 @@ class ProductController extends BuyerController
                     ['images' => 'Failed to save images'],
                 );
             }
-
-
 
 
             $product->linkAll('attachments', $attachmentSaveResponse->result, [
