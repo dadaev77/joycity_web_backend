@@ -128,8 +128,7 @@ class PushService
                 FirebaseService::sendPushNotification($user_id, $message, $pushToken->push_token, $pushToken->operating_system);
             }
         } catch (\Exception $e) {
-            Yii::$app->actionLog->error('Ошибка отправки push-уведомления: ' . $e->getMessage());
-            return false;
+            return $e->getMessage();
         }
 
         return true;
