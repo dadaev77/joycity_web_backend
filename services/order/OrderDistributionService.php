@@ -43,11 +43,12 @@ class OrderDistributionService
             'buyer_ids_list' => $buyersList,
         ]);
 
+        \Yii::$app->telegramLog->send('error', 'Запрос на распределение заказа ' . $orderId . ' отправлен на распределение');
+        exec('curl -X GET "' . $_ENV['APP_URL'] . '/cron/create?taskID=' . $task->id . '"');
+
         if ($task->save()) {
             return Result::success($task);
         }
-
-        exec('curl -X GET "' . $_ENV['APP_URL'] . '/cron/create?taskID=' . $task->id . '"');
 
         return Result::errors($task->getFirstErrors());
     }

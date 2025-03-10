@@ -169,12 +169,14 @@ class OrderController extends ClientController
         }
 
         if (!$order->validate()) {
+            \Yii::$app->telegramLog->send('error', 'Некорректные данные для создания заказа');
             return ApiResponse::codeErrors($apiCodes->NOT_VALID, $order->getErrors());
         }
 
         $transaction = Yii::$app->db->beginTransaction();
         try {
             if (!$order->save()) {
+                \Yii::$app->telegramLog->send('error', 'Не удалось создать заказ');
                 throw new Exception('Order save error: ' . json_encode($order->getErrors()));
             }
 
@@ -185,12 +187,12 @@ class OrderController extends ClientController
             ]);
 
             if ($product_id) {
-
                 $buyer = User::findOne($product->buyer_id);
                 $language = $buyer->getSettings()->application_language;
 
                 $distributionStatus = OrderDistributionService::createDistributionTask($order->id, $product->buyer_id);
                 if (!$distributionStatus->success) {
+                    \Yii::$app->telegramLog->send('error', 'Не удалось создать задачу на распределение');
                     throw new Exception('Distribution error: ' . $distributionStatus->reason);
                 }
                 OrderDistributionService::buyerAccept($distributionStatus->result, $product->buyer_id);
@@ -207,6 +209,7 @@ class OrderController extends ClientController
             } else {
                 $distribution = OrderDistributionService::createDistributionTask($order->id);
                 if (!$distribution->success) {
+                    \Yii::$app->telegramLog->send('error', 'Не удалось создать задачу на распределение');
                     throw new Exception('Distribution error: ' . $distribution->reason);
                 }
             }
@@ -214,6 +217,7 @@ class OrderController extends ClientController
             if ($images) {
                 $attachmentResponse = AttachmentService::writeFilesCollection($images);
                 if (!$attachmentResponse->success) {
+                    \Yii::$app->telegramLog->send('error', 'Не удалось загрузить изображения');
                     throw new Exception('Image upload error: ' . json_encode($attachmentResponse->reason));
                 }
                 $order->linkAll('attachments', $attachmentResponse->result);
