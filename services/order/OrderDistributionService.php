@@ -7,7 +7,6 @@ use app\components\responseFunction\ResultAnswer;
 use app\models\Order;
 use app\models\OrderDistribution;
 use app\models\User;
-use app\controllers\CronController;
 use Yii;
 
 class OrderDistributionService
@@ -46,12 +45,6 @@ class OrderDistributionService
 
 
         if ($task->save()) {
-
-            if (!CronController::actionCreate($task->id)) {
-                \Yii::$app->telegramLog->send('error', 'Не удалось создать задачу cron для распределения заказа ' . $orderId);
-                return Result::errors(['base' => 'Failed to create cron task']);
-            }
-
             return Result::success($task);
         }
 

@@ -212,6 +212,10 @@ class OrderController extends ClientController
                     \Yii::$app->telegramLog->send('error', 'Не удалось создать задачу на распределение');
                     throw new Exception('Distribution error: ' . $distribution->reason);
                 }
+                if (!\app\controllers\CronController::actionCreate($distribution->result->id)) {
+                    \Yii::$app->telegramLog->send('error', 'Не удалось создать задачу cron для распределения заказа ' . $order->id);
+                    throw new Exception('Cron task creation error: ' . $distribution->result->id);
+                }
             }
 
             if ($images) {
