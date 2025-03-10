@@ -137,7 +137,7 @@ class PushService
     public static function getToken()
     {
 
-        $credentialsPath = __DIR__ . './joycity.json';
+        $credentialsPath = __DIR__ . '/../../joycity.json';
         $scopes = ['https://www.googleapis.com/auth/firebase.messaging'];
 
         $credentials = new ServiceAccountCredentials($scopes, $credentialsPath);
