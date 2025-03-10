@@ -79,9 +79,11 @@ class FirebaseService
             return json_encode($response);
         } catch (FirebaseException $e) {
             Yii::$app->actionLog->error('Ошибка Firebase: ' . $e->getMessage());
+            Yii::$app->telegramLog->send('error', 'Ошибка Firebase: ' . $e->getMessage(), 'dev');
             PushNotification::findOne(['push_token' => $pushToken])->delete();
         } catch (\Throwable $e) {
             echo 'Неизвестная ошибка: ' . $e->getMessage();
+            Yii::$app->telegramLog->send('error', 'Неизвестная ошибка: ' . $e->getMessage(), 'dev');
         }
     }
 
@@ -115,9 +117,11 @@ class FirebaseService
             return json_encode($response);
         } catch (FirebaseException $e) {
             Yii::$app->actionLog->error('Ошибка Firebase: ' . $e->getMessage());
+            Yii::$app->telegramLog->send('error', 'Ошибка Firebase: ' . $e->getMessage(), 'dev');
             PushNotification::findOne(['push_token' => $pushToken])->delete();
         } catch (\Throwable $e) {
             echo 'Неизвестная ошибка: ' . $e->getMessage();
+            Yii::$app->telegramLog->send('error', 'Неизвестная ошибка: ' . $e->getMessage(), 'dev');
         }
     }
 }
