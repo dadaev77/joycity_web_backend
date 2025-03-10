@@ -130,10 +130,23 @@ class OrderController extends ClientController
             'is_need_deep_inspection' => $request->post('is_need_deep_inspection') ?? 0,
             'repeat_order_id' => $request->post('repeat_order_id') ?? null,
             'repeat_images_to_keep' => $request->post('repeat_images_to_keep') ?? null,
-            'fulfillment_id' => $request->post('fulfillment_id'),
+            'fulfillment_id' => $request->post('fulfillment_id') ?? null,
             'manager_id' => $randomManager->id,
-
         ]);
+
+        if ((int) $order->type_delivery_point_id === TypeDeliveryPoint::TYPE_FULFILLMENT) {
+            $fulfillmentUser = User::find()
+                ->where([
+                    'id' => $order->fulfillment_id,
+                    'role' => User::ROLE_FULFILLMENT,
+                ])
+                ->one();
+            if ($fulfillmentUser) {
+                $order->fulfillment_id = $order->fulfillment_id;
+            } else {
+                return ApiResponse::code($apiCodes->NOT_FOUND);
+            }
+        }
 
         if ($product_id) {
             $product = \app\models\Product::findOne($product_id);
