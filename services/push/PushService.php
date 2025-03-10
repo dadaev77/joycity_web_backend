@@ -121,6 +121,7 @@ class PushService
 
         try {
             foreach ($pushTokens as $pushToken) {
+                \Yii::$app->actionLog->info('Отправка push-уведомления: ' . $pushToken->push_token);
                 if ($pushToken->operating_system === 'ios') {
                     $pushToken->badge_count++;
                     $pushToken->save();
