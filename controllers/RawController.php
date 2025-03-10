@@ -190,18 +190,18 @@ class RawController extends Controller
         $user_id = Yii::$app->request->post('user_id');
         $message = Yii::$app->request->post('message');
 
-        try {
-            \app\services\push\PushService::sendPushNotification($user_id, $message);
-        } catch (\Exception $e) {
-            return [
-                'status' => 'error',
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ];
-        }
+        // try {
+        //     \app\services\push\PushService::sendPushNotification($user_id, $message);
+        // } catch (\Exception $e) {
+        //     return [
+        //         'status' => 'error',
+        //         'message' => $e->getMessage(),
+        //         'trace' => $e->getTraceAsString(),
+        //     ];
+        // }
 
-        $tokens = \app\models\PushNotification::find()->where(['client_id' => $user_id])->select('push_token')->all();
+        // $tokens = \app\models\PushNotification::find()->where(['client_id' => $user_id])->select('push_token')->all();
 
-        return $tokens;
+        return $user_id;
     }
 }
