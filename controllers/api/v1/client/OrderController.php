@@ -130,7 +130,6 @@ class OrderController extends ClientController
             'is_need_deep_inspection' => $request->post('is_need_deep_inspection') ?? 0,
             'repeat_order_id' => $request->post('repeat_order_id') ?? null,
             'repeat_images_to_keep' => $request->post('repeat_images_to_keep') ?? null,
-            'fulfillment_id' => $request->post('fulfillment_id') ?? null,
             'manager_id' => $randomManager->id,
         ]);
 
