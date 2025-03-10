@@ -1,6 +1,7 @@
 <?php
 
 namespace app\services\push;
+
 use app\models\PushNotification;
 use app\services\push\FirebaseService;
 use app\components\ApiResponse;
@@ -16,7 +17,7 @@ class PushService
     {
         $this->apiCodes = \app\components\response\ResponseCodes::getStatic();
     }
-    
+
     /**
      * Регистрирует токен для push-уведомлений.
      *
@@ -34,6 +35,14 @@ class PushService
 
         $pushNotification = PushNotification::findOne(['push_token' => $token, 'client_id' => $user->id]);
 
+        $existingRecord = PushNotification::findOne(['device_id' => $deviceId, 'push_token' => $token, 'client_id' => $user->id]);
+        if ($existingRecord) {
+            return ApiResponse::byResponseCode($pushService->apiCodes->SUCCESS, [
+                'token' => $token,
+                'message' => 'Token already registered for this device.',
+            ]);
+        }
+
         if ($pushNotification) {
             $pushNotification->device_id = $deviceId;
             $pushNotification->save();
@@ -47,7 +56,7 @@ class PushService
         $pushNotification->client_id = $user->id;
         $pushNotification->device_id = $deviceId;
         $pushNotification->operating_system = $operatingSystem;
-        if (!$pushNotification->save()) 
+        if (!$pushNotification->save())
             return ApiResponse::codeErrors($pushService->apiCodes->NOT_VALIDATED, [
                 'errors' => $pushNotification->errors,
             ]);
@@ -111,8 +120,8 @@ class PushService
     public static function sendPushNotification($user_id, $message)
     {
         $pushTokens = PushNotification::find()->where(['client_id' => $user_id])->all();
-        
-        try{
+
+        try {
             foreach ($pushTokens as $pushToken) {
                 if ($pushToken->operating_system === 'ios') {
                     $pushToken->badge_count++;
@@ -130,7 +139,7 @@ class PushService
 
     public static function getToken()
     {
-        
+
         $credentialsPath = __DIR__ . '/joycity.json'; // Путь к твоему файлу
         $scopes = ['https://www.googleapis.com/auth/firebase.messaging'];
 
