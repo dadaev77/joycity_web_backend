@@ -25,8 +25,8 @@ class FirebaseService
         $this->apiCodes = ResponseCodes::getStatic();
 
         $factory = (new Factory)
-            ->withServiceAccount(__DIR__ . '../../joycity.json')
-            ->withProjectId('joycity-stage');
+            ->withServiceAccount(__DIR__ . '/../../joycity.json')
+            ->withProjectId($_ENV['FCM_PROJECT_ID']);
 
         $this->messaging = $factory->createMessaging();
     }
