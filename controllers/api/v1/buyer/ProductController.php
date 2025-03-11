@@ -9,22 +9,13 @@ use app\models\Attachment;
 use app\models\Product;
 use app\models\ProductLinkAttachment;
 use app\models\User;
-use app\models\Order;
-use app\models\TypeDelivery;
 use app\services\AttachmentService;
 use app\services\output\ProductOutputService;
-use app\services\RateService;
 use app\services\SaveModelService;
 use Throwable;
 use Yii;
-use linslin\yii2\curl\Curl;
 use app\services\TranslationService;
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-use PhpOffice\PhpSpreadsheet\Style\Fill;
-use PhpOffice\PhpSpreadsheet\Style\Alignment;
-use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
-use PhpOffice\PhpSpreadsheet\IOFactory;
+
 
 class ProductController extends BuyerController
 {
@@ -521,27 +512,5 @@ class ProductController extends BuyerController
     public function actionUploadExcel()
     {
         return Yii::$app->runAction('api/v1/spread-sheet/upload-excel');
-    }
-
-    private function getUploadErrorMessage($errorCode)
-    {
-        switch ($errorCode) {
-            case UPLOAD_ERR_INI_SIZE:
-                return 'Размер файла превышает upload_max_filesize';
-            case UPLOAD_ERR_FORM_SIZE:
-                return 'Размер файла превышает MAX_FILE_SIZE';
-            case UPLOAD_ERR_PARTIAL:
-                return 'Файл был загружен частично';
-            case UPLOAD_ERR_NO_FILE:
-                return 'Файл не был загружен';
-            case UPLOAD_ERR_NO_TMP_DIR:
-                return 'Отсутствует временная папка';
-            case UPLOAD_ERR_CANT_WRITE:
-                return 'Не удалось записать файл на диск';
-            case UPLOAD_ERR_EXTENSION:
-                return 'PHP-расширение остановило загрузку файла';
-            default:
-                return 'Неизвестная ошибка при загрузке файла';
-        }
     }
 }
