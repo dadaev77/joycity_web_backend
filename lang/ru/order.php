@@ -29,4 +29,5 @@ return [
     'cancelled_request' => 'Заказ отменен по запросу клиента',
     'cancelled_order' => 'Заказ отменен по инициативе продавца',
     'completed' => 'Заказ выполнен успешно',
+    'waiting_for_buyer_offer' => 'Заказ №{order_id} ожидает предложения от байера',
 ];

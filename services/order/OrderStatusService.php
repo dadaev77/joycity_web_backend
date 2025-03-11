@@ -21,6 +21,12 @@ class OrderStatusService
         //
     }
 
+
+    public static function waitingForBuyerOffer(int $orderId): ResultAnswer
+    {
+        return self::changeOrderStatus(Order::STATUS_WAITING_FOR_BUYER_OFFER, $orderId);
+    }
+
     public static function created(int $orderId): ResultAnswer
     {
         return self::changeOrderStatus(Order::STATUS_CREATED, $orderId);
