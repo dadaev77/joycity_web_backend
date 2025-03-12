@@ -127,7 +127,6 @@ class SpreadSheetController extends V1Controller
             }
 
             $uploadedFile = $_FILES['file'];
-            $user = User::getIdentity();
 
             try {
                 $reader = IOFactory::createReaderForFile($uploadedFile['tmp_name']);
@@ -146,12 +145,27 @@ class SpreadSheetController extends V1Controller
                     }
                 }
 
-                $createdOrders = [];
-                $errors = [];
-                $modelFields = require Yii::getAlias('@app/config/modelFields.php');
-                $orderFields = $modelFields['Order']['fields'];
+                $descriptions = [];
+                foreach ($worksheet->getRowIterator(2, 2) as $row) {
+                    $cellIterator = $row->getCellIterator();
+                    $cellIterator->setIterateOnlyExistingCells(false);
+                    foreach ($cellIterator as $cell) {
+                        $value = $cell->getValue();
+                        $descriptions[] = $value !== null ? trim($value) : '';
+                    }
+                }
 
-                // Начинаем с 4-й строки, так как первые три - заголовки, описания и примеры
+                $examples = [];
+                foreach ($worksheet->getRowIterator(3, 3) as $row) {
+                    $cellIterator = $row->getCellIterator();
+                    $cellIterator->setIterateOnlyExistingCells(false);
+                    foreach ($cellIterator as $cell) {
+                        $value = $cell->getValue();
+                        $examples[] = $value !== null ? trim($value) : '';
+                    }
+                }
+
+                $data = [];
                 for ($rowIndex = 4; $rowIndex <= $worksheet->getHighestRow(); $rowIndex++) {
                     $rowData = [];
                     $hasData = false;
@@ -165,94 +179,47 @@ class SpreadSheetController extends V1Controller
                             $headerIndex = Coordinate::columnIndexFromString($column) - 1;
                             $header = isset($headers[$headerIndex]) ? $headers[$headerIndex] : '';
 
-                            $value = $cell->getCalculatedValue();
-                            if ($value !== null) {
+                            $value = $cell->getValue();
+                            $calculatedValue = $cell->getCalculatedValue();
+
+                            if ($value !== null || $calculatedValue !== null) {
                                 $hasData = true;
-                                $rowData[$header] = $value;
                             }
+
+                            $rowData[$header] = [
+                                'raw_value' => $value,
+                                'calculated_value' => $calculatedValue,
+                                'type' => gettype($calculatedValue),
+                                'data_type' => $cell->getDataType(),
+                                'coordinate' => $cell->getCoordinate(),
+                                'formula' => $cell->getDataType() === 'f' ? $cell->getValue() : null
+                            ];
                         }
                     }
 
                     if ($hasData) {
-                        // Создаем новую заявку
-                        $order = new Order();
-                        $order->status = Order::STATUS_CREATED;
-                        $order->created_by = $user->id;
-                        $order->created_at = date('Y-m-d H:i:s');
-
-                        // Получаем конфигурацию полей из modelFields.php
-                        $modelFields = require Yii::getAlias('@app/config/modelFields.php');
-                        $orderFields = $modelFields['Order']['fields'];
-
-                        // Проходим по каждому полю из конфигурации
-                        foreach ($orderFields as $field => $config) {
-                            // Проверяем все возможные алиасы поля
-                            foreach ($config['aliases'] as $alias) {
-                                if (isset($rowData[$alias])) {
-                                    $value = $rowData[$alias];
-                                    
-                                    // Валидация значения если есть валидатор
-                                    if (isset($config['validate'])) {
-                                        $error = $config['validate']($value, $config);
-                                        if ($error !== null) {
-                                            $errors[] = "Строка {$rowIndex}: {$error}";
-                                            continue 2;
-                                        }
-                                    }
-
-                                    $order->$field = $value;
-                                    break;
-                                }
-                            }
-                        }
-
-                        // Добавляем переводы через сервис
-                        if (isset($rowData['name']) && isset($rowData['description'])) {
-                            $translation = TranslationService::translateProductAttributes(
-                                $rowData['name'], 
-                                $rowData['description']
-                            );
-                            
-                            if ($translation && isset($translation->result)) {
-                                foreach ($translation->result as $lang => $values) {
-                                    $order->{"product_name_$lang"} = $values['name'];
-                                    $order->{"product_description_$lang"} = $values['description'];
-                                }
-                            }
-                        }
-
-                        // Устанавливаем значения по умолчанию
-                        $order->currency = 'RUB';
-                        $order->is_deleted = 0;
-                        $order->total_quantity = 0;
-                        $order->waybill_isset = 0;
-                        $order->client_waybill_isset = 0;
-                        $order->delivery_days_expected = 0;
-                        $order->delivery_delay_days = 0;
-
-                        // Добавим отладочную информацию
-                        Yii::debug([
-                            'row_data' => $rowData,
-                            'order_data' => $order->attributes,
-                            'headers' => $headers
-                        ], 'excel_import');
-
-                        // Сохраняем заявку
-                        if ($order->save()) {
-                            $createdOrders[] = $order->id;
-                        } else {
-                            $errors[] = "Строка {$rowIndex}: " . json_encode($order->getErrors());
-                        }
+                        $data[$rowIndex] = $rowData;
                     }
                 }
 
                 return $this->asJson([
                     'success' => true,
-                    'message' => 'Файл успешно обработан',
-                    'created_orders' => $createdOrders,
-                    'errors' => $errors,
-                    'total_created' => count($createdOrders),
-                    'total_errors' => count($errors)
+                    'message' => 'Данные файла прочитаны для отладки',
+                    'debug_data' => [
+                        'file_info' => [
+                            'name' => $uploadedFile['name'],
+                            'type' => $uploadedFile['type'],
+                            'size' => $uploadedFile['size']
+                        ],
+                        'structure' => [
+                            'headers' => array_combine(range('A', $worksheet->getHighestColumn()), $headers),
+                            'descriptions' => array_combine(range('A', $worksheet->getHighestColumn()), $descriptions),
+                            'examples' => array_combine(range('A', $worksheet->getHighestColumn()), $examples)
+                        ],
+                        'data_rows' => $data,
+                        'row_count' => $worksheet->getHighestRow(),
+                        'column_count' => $worksheet->getHighestColumn()
+                    ]
                 ]);
 
             } catch (\Throwable $e) {
