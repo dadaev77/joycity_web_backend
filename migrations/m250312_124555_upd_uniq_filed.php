@@ -13,7 +13,7 @@ class m250312_124555_upd_uniq_filed extends Migration
     public function safeUp()
     {
         // Удаляем уникальный индекс с поля order_id
-        $this->dropIndex('order_id_UNIQUE', 'order_distribution');
+        $this->dropIndex('order_id', 'order_distribution');
     }
 
     /**
@@ -21,9 +21,8 @@ class m250312_124555_upd_uniq_filed extends Migration
      */
     public function safeDown()
     {
-        echo "m250312_124555_upd_uniq_filed cannot be reverted.\n";
-
-        return false;
+        // Восстанавливаем уникальный индекс с поля order_id
+        $this->createIndex('order_id', 'order_distribution', 'order_id', true);
     }
 
     /*
