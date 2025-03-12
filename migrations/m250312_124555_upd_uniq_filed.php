@@ -16,6 +16,7 @@ class m250312_124555_upd_uniq_filed extends Migration
         $this->dropIndex('order_id', 'order_distribution');
         $this->dropIndex('order_id_2', 'order_distribution');
         $this->dropIndex('order_id_3', 'order_distribution');
+        $this->dropIndex('fk_order_distribution_order_id', 'order_distribution');
     }
 
     /**
