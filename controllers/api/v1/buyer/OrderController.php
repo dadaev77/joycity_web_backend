@@ -255,7 +255,7 @@ class OrderController extends BuyerController
 
                 if (!$distribution->success) {
                     \Yii::$app->telegramLog->send('error', 'Не удалось создать задачу на распределение при отклонении заказа: ' . $order->id);
-                    throw new Exception('Distribution error: ' . $distribution->reason);
+                    Yii::$app->actionLog->error('Ошибка при создании задачи на распределение: ' . json_encode($distribution->reason));
                 }
                 if ($task) {
                     CronController::actionCreate($task->id);
