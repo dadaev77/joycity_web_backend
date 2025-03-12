@@ -46,6 +46,7 @@ class OrderDistributionService
         if ($task->save()) {
             return Result::success($task);
         }
+
         return Result::errors($task->getFirstErrors());
     }
 

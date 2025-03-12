@@ -96,19 +96,19 @@ class RawController extends Controller
             }, $logEntries);
             $actionLogs = implode("\n", array_reverse($logEntries));
         }
-        
-            $clients = User::find()->where(['role' => 'client'])->orderBy(['id' => SORT_DESC])->all();
-            $managers = User::find()->where(['role' => 'manager'])->orderBy(['id' => SORT_DESC])->all();
-            $fulfillment = User::find()->where(['role' => 'fulfillment'])->orderBy(['id' => SORT_DESC])->all();
-            $buyers = User::find()->where(['role' => 'buyer'])->orderBy(['id' => SORT_DESC])->all();
-            $products = Product::find()->orderBy(['id' => SORT_DESC])->limit(10)->all();
-            $orders = OrderModel::find()->orderBy(['id' => SORT_DESC])->limit(10)->all();
-        
+
+        $clients = User::find()->where(['role' => 'client'])->orderBy(['id' => SORT_DESC])->all();
+        $managers = User::find()->where(['role' => 'manager'])->orderBy(['id' => SORT_DESC])->all();
+        $fulfillment = User::find()->where(['role' => 'fulfillment'])->orderBy(['id' => SORT_DESC])->all();
+        $buyers = User::find()->where(['role' => 'buyer'])->orderBy(['id' => SORT_DESC])->all();
+        $products = Product::find()->orderBy(['id' => SORT_DESC])->limit(10)->all();
+        $orders = OrderModel::find()->orderBy(['id' => SORT_DESC])->limit(10)->all();
+
 
         $keysToRemove = array_keys(array_intersect_key($_SERVER, array_flip(self::KEYS)));
 
         foreach ($keysToRemove as $key) {
-            
+
             $logs = preg_replace('/.*' . preg_quote($key, '/') . '.*\n?/', '', $logs);
         }
 
@@ -191,11 +191,5 @@ class RawController extends Controller
         $message = Yii::$app->request->post('message');
 
         return \app\services\push\PushService::sendPushNotification($user_id, $message);
-    }
-
-
-    public function actionTest()
-    {
-        return Yii::t('order', 'new');
     }
 }

@@ -3,7 +3,8 @@
 return [
     'new' => 'A new order has been created',
     'new_order_for_buyer' => 'You have received a new order',
-    'update_status' => 'Order status updated: ',
+    'new_order_for_buyer_text' => 'New order №{order_id}',
+    'update_status' => 'Order status updated №{order_id}',
 
     // statuses
     'created' => 'The order has been successfully created',
@@ -28,4 +29,5 @@ return [
     'cancelled_request' => 'The order has been cancelled at the customer\'s request',
     'cancelled_order' => 'The order has been cancelled at the seller\'s initiative',
     'completed' => 'The order has been successfully completed',
+    'waiting_for_buyer_offer' => 'Order №{order_id} is waiting for a buyer\'s offer',
 ];

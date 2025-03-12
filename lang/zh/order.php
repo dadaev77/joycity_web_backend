@@ -3,7 +3,8 @@
 return [
     'new' => '创建了一个新订单',
     'new_order_for_buyer' => '您收到了一个新订单',
-    'update_status' => '订单状态已更新: ',
+    'new_order_for_buyer_text' => '新订单 №{order_id}',
+    'update_status' => '订单状态已更新 №{order_id}',
 
     // 状态
     'created' => '订单已成功创建',
@@ -28,4 +29,5 @@ return [
     'cancelled_request' => '订单已根据客户请求取消',
     'cancelled_order' => '订单已由卖家主动取消',
     'completed' => '订单已成功完成',
+    'waiting_for_buyer_offer' => '订单 №{order_id} 等待买家报价',
 ];

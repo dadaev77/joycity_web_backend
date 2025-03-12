@@ -23,11 +23,11 @@ class FirebaseService
     public function __construct()
     {
         $this->apiCodes = ResponseCodes::getStatic();
-        
+
         $factory = (new Factory)
-            ->withServiceAccount(__DIR__ . '/joycity.json')
-            ->withProjectId('joycity-stage');
-            
+            ->withServiceAccount(__DIR__ . '/../../joycity.json')
+            ->withProjectId($_ENV['FCM_PROJECT_ID']);
+
         $this->messaging = $factory->createMessaging();
     }
 
@@ -47,7 +47,7 @@ class FirebaseService
     {
         $firebaseService = new FirebaseService();
         $user = User::findOne($clientId);
-        
+
         if (!$user) {
             return ApiResponse::byResponseCode($firebaseService->apiCodes->NOT_VALIDATED, ['message' => 'User not found']);
         }
@@ -68,7 +68,7 @@ class FirebaseService
     {
         try {
             $notification = Notification::create(
-                $message['title'], 
+                $message['title'],
                 $message['body'],
             );
             $cloudMessage = CloudMessage::withTarget('token', $pushToken)
@@ -79,9 +79,17 @@ class FirebaseService
             return json_encode($response);
         } catch (FirebaseException $e) {
             Yii::$app->actionLog->error('Ошибка Firebase: ' . $e->getMessage());
+            Yii::$app->telegramLog->send('error', 'Ошибка Firebase: ' . $e->getMessage(), 'dev');
             PushNotification::findOne(['push_token' => $pushToken])->delete();
+        } catch (AuthError $e) {
+            Yii::$app->actionLog->error('Ошибка Firebase: ' . $e->getMessage());
+            Yii::$app->telegramLog->send('error', 'Ошибка Firebase: ' . $e->getMessage(), 'dev');
+        } catch (DatabaseError $e) {
+            Yii::$app->actionLog->error('Ошибка Firebase: ' . $e->getMessage());
+            Yii::$app->telegramLog->send('error', 'Ошибка Firebase: ' . $e->getMessage(), 'dev');
         } catch (\Throwable $e) {
             echo 'Неизвестная ошибка: ' . $e->getMessage();
+            Yii::$app->telegramLog->send('error', 'Неизвестная ошибка: ' . $e->getMessage(), 'dev');
         }
     }
 
@@ -89,7 +97,7 @@ class FirebaseService
     {
         try {
             $notification = Notification::create(
-                $message['title'], 
+                $message['title'],
                 $message['body'],
             );
             $cloudMessage = CloudMessage::withTarget('token', $pushToken)
@@ -98,7 +106,7 @@ class FirebaseService
                     'payload' => [
                         'headers' => [
                             'apns-priority' => '10',
-                        ],                
+                        ],
                         'aps' => [
                             'badge' => PushNotification::find()->where(['push_token' => $pushToken])->one()->badge_count ?? 0,
                             'alert' => [
@@ -115,9 +123,17 @@ class FirebaseService
             return json_encode($response);
         } catch (FirebaseException $e) {
             Yii::$app->actionLog->error('Ошибка Firebase: ' . $e->getMessage());
+            Yii::$app->telegramLog->send('error', 'Ошибка Firebase: ' . $e->getMessage(), 'dev');
             PushNotification::findOne(['push_token' => $pushToken])->delete();
+        } catch (AuthError $e) {
+            Yii::$app->actionLog->error('Ошибка Firebase: ' . $e->getMessage());
+            Yii::$app->telegramLog->send('error', 'Ошибка Firebase: ' . $e->getMessage(), 'dev');
+        } catch (DatabaseError $e) {
+            Yii::$app->actionLog->error('Ошибка Firebase: ' . $e->getMessage());
+            Yii::$app->telegramLog->send('error', 'Ошибка Firebase: ' . $e->getMessage(), 'dev');
         } catch (\Throwable $e) {
             echo 'Неизвестная ошибка: ' . $e->getMessage();
+            Yii::$app->telegramLog->send('error', 'Неизвестная ошибка: ' . $e->getMessage(), 'dev');
         }
     }
 }

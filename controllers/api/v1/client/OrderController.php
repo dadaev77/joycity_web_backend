@@ -105,244 +105,139 @@ class OrderController extends ClientController
         $request = Yii::$app->request;
         $apiCodes = Order::apiCodes();
         $images = UploadedFile::getInstancesByName('images');
-        $repeatOrderId = $request->post('repeat_order_id');
-        $repeatImagesToKeep = $request->post('repeat_images_to_keep');
-        $fulfillmentId = $request->post('fulfillment_id');
-        $expected_price_per_item = $request->post('expected_price_per_item') ?? 0;
-        $transaction = null;
-        $typeDeliveryPointId = $request->post('type_delivery_point_id');
-        $withProduct = false;
-        $currency = $user->settings->currency;
-        $successTranslate = false;
-        $product_id = $request->post('product_id') ?? null;
-        
+        $product_id = $request->post('product_id');
+        $randomManager = User::find()
+            ->select(['id'])
+            ->where(['role' => User::ROLE_MANAGER])
+            ->orderBy('RAND()')
+            ->one();
 
-        try {
-            $randomManager = User::find()
-                ->select(['id'])
-                ->where(['role' => User::ROLE_MANAGER])
-                ->orderBy('RAND()')
-                ->one();
+        $order = new Order();
+        $order->loadDefaultValues();
+        $order->setAttributes([
+            'created_by' => $user->id,
+            'created_at' => date('Y-m-d H:i:s'),
+            'status' => Order::STATUS_CREATED,
+            'currency' => $user->settings->currency,
+            'type_delivery_point_id' => $request->post('type_delivery_point_id'),
+            'expected_price_per_item' => $request->post('expected_price_per_item') ?? 0,
+            'expected_quantity' => $request->post('expected_quantity') ?? 0,
+            'expected_packaging_quantity' => $request->post('expected_packaging_quantity') ?? 0,
+            'type_packaging_id' => $request->post('type_packaging_id') ?? null,
+            'type_delivery_id' => $request->post('type_delivery_id') ?? null,
+            'delivery_point_address_id' => $request->post('delivery_point_address_id') ?? null,
+            'subcategory_id' => $request->post('subcategory_id') ?? null,
+            'is_need_deep_inspection' => $request->post('is_need_deep_inspection') ?? 0,
+            'repeat_order_id' => $request->post('repeat_order_id') ?? null,
+            'repeat_images_to_keep' => $request->post('repeat_images_to_keep') ?? null,
+            'manager_id' => $randomManager->id,
+        ]);
 
-            $order = new Order();
-            
-            $translation = TranslationService::translateProductAttributes(
-                $request->post()['product_name'],
-                $request->post()['product_description'],
-            );
-            
-            if (isset($translation->result)) {
-                $translations = $translation->result;
-                $successTranslate = true;
+        if ((int) $order->type_delivery_point_id === TypeDeliveryPoint::TYPE_FULFILLMENT) {
+            $fulfillmentUser = User::find()
+                ->where([
+                    'id' => Yii::$app->request->post('fulfillment_id'),
+                    'role' => User::ROLE_FULFILLMENT,
+                ])->one();
+            if ($fulfillmentUser) {
+                $order->fulfillment_id = Yii::$app->request->post('fulfillment_id');
             } else {
-                $translations = [
-                    'ru' => [
-                        'name' => $request->post()['product_name'],
-                        'description' => $request->post()['product_description'],
-                    ],
-                    'en' => [
-                        'name' => $request->post()['product_name'],
-                        'description' => $request->post()['product_description'],
-                    ],
-                    'zh' => [
-                        'name' => $request->post()['product_name'],
-                        'description' => $request->post()['product_description'],
-                    ],
-                ];
+                return ApiResponse::code($apiCodes->NOT_FOUND, [
+                    'error' => 'Fulfillment user not found',
+                    'fulfillment_id' => Yii::$app->request->post('fulfillment_id'),
+                ]);
             }
-            
-            $order->created_by = $user->id;
-            $order->created_at = date('Y-m-d H:i:s');
-            $order->status = Order::STATUS_CREATED;
-            $order->manager_id = $randomManager->id;
-            $order->currency = $currency;
-            $order->type_delivery_point_id = $typeDeliveryPointId;
-            $order->expected_price_per_item = $expected_price_per_item;
-            if ($product_id) {
-                $order->buyer_id = \app\models\Product::findOne(['id' => $product_id])->buyer_id;
-            }
+        }
 
-            foreach ($translations as $key => $value) {
-                $order->{'product_name_' . $key} = $value['name'];
-                $order->{'product_description_' . $key} = $value['description'];
-            }
+        if ($product_id) {
+            $product = \app\models\Product::findOne($product_id);
+            if (!$product) return ApiResponse::code($apiCodes->NOT_FOUND, ['error' => 'Product not found']);
+            $order->buyer_id = $product->buyer_id;
+            $order->product_id = $product_id;
+        }
 
-            // Загружаем остальные поля из POST
-            $order->load([
-                'expected_quantity' => $request->post('expected_quantity'),
-                'expected_packaging_quantity' => $request->post('expected_packaging_quantity'),
-                'subcategory_id' => $request->post('subcategory_id'),
-                'type_packaging_id' => $request->post('type_packaging_id'),
-                'type_delivery_id' => $request->post('type_delivery_id'),
-                'delivery_point_address_id' => $request->post('delivery_point_address_id'),
-                'is_need_deep_inspection' => $request->post('is_need_deep_inspection'),
-            ], '');
+        $translations = TranslationService::translateProductAttributes(
+            $request->post('product_name'),
+            $request->post('product_description')
+        )->result ?? [
+            'ru' => ['name' => $request->post('product_name'), 'description' => $request->post('product_description')],
+            'en' => ['name' => $request->post('product_name'), 'description' => $request->post('product_description')],
+            'zh' => ['name' => $request->post('product_name'), 'description' => $request->post('product_description')],
+        ];
 
-            // Проверяем валидацию
-            if (!$order->validate()) {
-                Yii::$app->telegramLog->send('error', 'Ошибка валидации заказа: ' . print_r($order->getErrors(), true));
-                return ApiResponse::codeErrors($apiCodes->NOT_VALID, $order->getErrors());
-            }
+        foreach ($translations as $lang => $values) {
+            $order->{'product_name_' . $lang} = $values['name'];
+            $order->{'product_description_' . $lang} = $values['description'];
+        }
 
-            $transaction = Yii::$app->db->beginTransaction();
+        if (!$order->validate()) {
+            \Yii::$app->telegramLog->send('error', 'Некорректные данные для создания заказа');
+            return ApiResponse::codeErrors($apiCodes->NOT_VALID, $order->getErrors());
+        }
 
+        $transaction = Yii::$app->db->beginTransaction();
+        try {
             if (!$order->save()) {
-                Yii::$app->telegramLog->send('error', 'Не удалось создать заявку: ' . print_r($order->getErrors(), true));
-                throw new Exception('Ошибка сохранения заказа: ' . print_r($order->getErrors(), true));
+                \Yii::$app->telegramLog->send('error', 'Не удалось создать заказ');
+                throw new Exception('Order save error: ' . json_encode($order->getErrors()));
             }
 
-            try {
-                if ((int) $typeDeliveryPointId === TypeDeliveryPoint::TYPE_FULFILLMENT) {
-                    $fulfillmentUser = User::find()
-                        ->where([
-                            'id' => $fulfillmentId,
-                            'role' => User::ROLE_FULFILLMENT,
-                        ])
-                        ->one();
-                    if ($fulfillmentUser) {
-                        $order->fulfillment_id = $fulfillmentId;
-                        if (!$order->save()) {
-                            throw new Exception('Ошибка сохранения fulfillment_id: ' . print_r($order->getErrors(), true));
-                        }
-                    } else {
-                        return ApiResponse::code($apiCodes->NOT_FOUND);
-                    }
+            ChatService::CreateGroupChat('Order ' . $order->id, $user->id, $order->id, [
+                'deal_type' => 'order',
+                'participants' => [$user->id, $order->manager_id],
+                'group_name' => 'client_manager',
+            ]);
+
+            if ($product_id) {
+                $buyer = User::findOne($product->buyer_id);
+                $language = $buyer->getSettings()->application_language;
+
+                $distributionStatus = OrderDistributionService::createDistributionTask($order->id, $product->buyer_id);
+                if (!$distributionStatus->success) {
+                    \Yii::$app->telegramLog->send('error', 'Не удалось создать задачу на распределение');
+                    throw new Exception('Distribution error: ' . $distributionStatus->reason);
                 }
-
-                $availableTypeIdsDeliveries = TypeDeliveryService::getTypeDeliveryIdsBySubcategory($request->post('subcategory_id'));
-
-                if (!in_array((int) $request->post('type_delivery_id'), $availableTypeIdsDeliveries, true)) {
-                    return ApiResponse::code($apiCodes->BAD_REQUEST, [
-                        'type_delivery_id' => 'Type delivery is not available for this subcategory',
-                    ]);
-                }
-
-                ChatService::CreateGroupChat(
-                    'Order ' . $order->id,
-                    $user->id,
-                    $order->id,
-                    [
-                        'deal_type' => 'order',
-                        'participants' => [$user->id, $order->manager_id],
-                        'group_name' => 'client_manager',
-                    ]
-                );
-
-                if ($product_id) {
-                    $withProduct = true;
-                    $buyerId = $order->buyer_id;
-                    $order->product_id = $product_id;
-
-                    // $distributionStatus = OrderDistributionService::createDistributionTask($order->id, $buyerId);
-
-                    // if (!$distributionStatus->success) {
-                    //     Yii::$app->telegramLog->send('error', 'Не удалось создать заявку на существующий товар: ' . $distributionStatus->reason . '. Заявка номер: ' . $order->id);
-                    //     throw new Exception($distributionStatus->reason);
-                    // }
-
-                    // $buyerAcceptStatus = OrderDistributionService::buyerAccept($distributionStatus->result, $buyerId);
-                    // if (!$buyerAcceptStatus->success) {
-                    //     throw new Exception($buyerAcceptStatus->reason);
-                    // }
-
-                    // $orderChangeStatus = OrderStatusService::buyerAssigned($order->id);
-                    // if (!$orderChangeStatus->success) {
-                    //     throw new Exception($orderChangeStatus->reason);
-                    // }
-
-                    ChatService::createGroupChat(
-                        'Order ' . $order->id,
-                        $user->id,
-                        $order->id,
-                        [
-                            'deal_type' => 'order',
-                            'participants' => [$user->id, $order->manager_id, $buyerId],
-                            'group_name' => 'client_buyer_manager',
-                        ]
-                    );
-                    PushService::sendPushNotification(
-                        $buyerId,
-                        [
-                            'title' => 'You have a new order',
-                            'body' => 'Order ID: ' . $order->id,
-                        ]
-                    );
-                } else {
-                    $distributionStatus = OrderDistributionService::createDistributionTask($order->id);
-                    if (!$distributionStatus->success) {
-                        throw new Exception($distributionStatus->reason);
-                    }
-                }
-
-                $attachmentsToLink = [];
-
-                if ($images) {
-                    $attachmentSaveResponse = AttachmentService::writeFilesCollection($images);
-                    if (!$attachmentSaveResponse->success) {
-                        Yii::$app->telegramLog->send('error', 'Не удалось сохранить изображения при создании заявки: ' . json_encode($attachmentSaveResponse->reason));
-                        throw new Exception('Failed to save images');
-                    }
-                    $attachmentsToLink = array_merge($attachmentsToLink, $attachmentSaveResponse->result);
-                }
-
-                if ($repeatOrderId && $repeatImagesToKeep) {
-                    $repeatOrder = Order::findOne(['id' => $repeatOrderId]);
-                    if ($repeatOrder && $repeatOrder->created_by === $user->id) {
-                        $attachmentsToKeep = Attachment::find()
-                            ->joinWith([
-                                'orderLinkAttachments' => fn($q) => $q->where(['order_id' => $repeatOrder->id]),
-                            ])
-                            ->where(['attachment.id' => $repeatImagesToKeep])
-                            ->all();
-
-                        $attachmentsToLink = array_merge($attachmentsToLink, $attachmentsToKeep);
-                    }
-                }
-
-                if ($attachmentsToLink) {
-                    $order->linkAll('attachments', $attachmentsToLink);
-                }
-
-
-                NotificationConstructor::orderOrderCreated($order->manager_id, $order->id);
-
-                $transaction->commit();
-
-                $order->save();
-
-                if (!$withProduct) {
-                    $distTaskID = OrderDistribution::find()->where(['order_id' => $order->id])->one();
-                    if ($distTaskID) {
-                        exec('curl -X GET "' . $_ENV['APP_URL'] . '/cron/create?taskID=' . $distTaskID->id . '"');
-                    }
-                }
-
-                if (!$successTranslate) {
-                    Yii::$app->telegramLog->send('error', 'Перевод не получен, используется язык приложения. Заявка номер: ' . $order->id);
-                }
-
-                return ApiResponse::byResponseCode(null, [
-                    'info' => OrderOutputService::getEntity($order->id),
-                    'message' => 'Order created successfully',
+                OrderDistributionService::buyerAccept($distributionStatus->result, $product->buyer_id);
+                OrderStatusService::buyerAssigned($order->id);
+                ChatService::CreateGroupChat('Order ' . $order->id, $user->id, $order->id, [
+                    'deal_type' => 'order',
+                    'participants' => [$user->id, $order->manager_id, $product->buyer_id],
+                    'group_name' => 'client_buyer_manager',
                 ]);
-
-                
-
-            } catch (Throwable $e) {
-                $transaction?->rollBack();
-                Yii::$app->telegramLog->send('error', 'Ошибка при сохранении заказа: ' . $e->getMessage());
-                return ApiResponse::codeErrors($apiCodes->ERROR_SAVE, [
-                    'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString(),
+                PushService::sendPushNotification($product->buyer_id, [
+                    'title' => Yii::t('order', 'new_order_for_buyer', [], $language),
+                    'body' => Yii::t('order', 'new_order_for_buyer_text', ['order_id' => $order->id], $language),
                 ]);
+            } else {
+                $distribution = OrderDistributionService::createDistributionTask($order->id);
+                if (!$distribution->success) {
+                    \Yii::$app->telegramLog->send('error', 'Не удалось создать задачу на распределение');
+                    throw new Exception('Distribution error: ' . $distribution->reason);
+                }
+                if (!\app\controllers\CronController::actionCreate($distribution->result->id)) {
+                    \Yii::$app->telegramLog->send('error', 'Не удалось создать задачу cron для распределения заказа ' . $order->id);
+                    throw new Exception('Cron task creation error: ' . $distribution->result->id);
+                }
             }
 
+            if ($images) {
+                $attachmentResponse = AttachmentService::writeFilesCollection($images);
+                if (!$attachmentResponse->success) {
+                    \Yii::$app->telegramLog->send('error', 'Не удалось загрузить изображения');
+                    throw new Exception('Image upload error: ' . json_encode($attachmentResponse->reason));
+                }
+                $order->linkAll('attachments', $attachmentResponse->result);
+            }
+
+            NotificationConstructor::orderOrderCreated($order->manager_id, $order->id);
+            $transaction->commit();
+            return ApiResponse::byResponseCode(null, ['info' => OrderOutputService::getEntity($order->id)]);
         } catch (Throwable $e) {
-            $transaction?->rollBack();
-            Yii::$app->telegramLog->send('error', 'Общая ошибка при создании заказа: ' . $e->getMessage());
+            $transaction->rollBack();
             return ApiResponse::internalError($e);
         }
     }
+
 
     /**
      * @OA\Put(

@@ -5,12 +5,14 @@ namespace app\controllers\api\v1\buyer;
 use app\components\ApiResponse;
 use app\components\response\ResponseCodes;
 use app\controllers\api\v1\BuyerController;
+use app\controllers\CronController;
 use app\models\Order;
 use app\models\OrderDistribution;
 use app\models\User;
 use app\services\order\OrderDistributionService;
 use app\services\order\OrderStatusService;
 use app\services\output\OrderOutputService;
+use yii\base\Exception;
 use Throwable;
 use Yii;
 
@@ -238,7 +240,26 @@ class OrderController extends BuyerController
                         $order->getFirstErrors(),
                     );
                 }
-                $orderStatus = OrderStatusService::created($order->id);
+
+                $orderStatus = OrderStatusService::waitingForBuyerOffer($order->id);
+                if (!$orderStatus->success) {
+                    Yii::$app->telegramLog->send('error', 'Ошибка при установке статуса заказа на ожидание предложения от байера: ' . $orderStatus->reason);
+                    return ApiResponse::transactionCodeErrors(
+                        $transaction,
+                        $apiCodes->ERROR_SAVE,
+                        $orderStatus->reason,
+                    );
+                }
+
+                $distribution = OrderDistributionService::createDistributionTask($order->id);
+
+                if (!$distribution->success) {
+                    \Yii::$app->telegramLog->send('error', 'Не удалось создать задачу на распределение при отклонении заказа: ' . $order->id);
+                    throw new Exception('Distribution error: ' . $distribution->reason);
+                }
+                if ($task) {
+                    CronController::actionCreate($task->id);
+                }
             } else {
                 $orderDistribution = $order->orderDistribution;
 

@@ -9,10 +9,12 @@ class Order extends OrderStructure
 {
     // Статусы заявки
     public const STATUS_CREATED = 'created';
+    public const STATUS_WAITING_FOR_BUYER_OFFER = 'waiting_for_buyer_offer';
     public const STATUS_BUYER_ASSIGNED = 'buyer_assigned';
     public const STATUS_BUYER_OFFER_CREATED = 'buyer_offer_created';
     public const STATUS_BUYER_OFFER_ACCEPTED = 'buyer_offer_accepted';
     public const STATUS_PAID = 'paid';
+
 
     // Статусы сделки
     public const STATUS_TRANSFERRING_TO_BUYER = 'transferring_to_buyer';

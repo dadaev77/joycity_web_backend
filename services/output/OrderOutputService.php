@@ -119,30 +119,43 @@ class OrderOutputService extends OutputService
             };
 
 
-            $info['attachments'] = match ($imageSize) {
-                'small' => $model->attachmentsSmallSize,
-                'medium' => $model->attachmentsMediumSize,
-                'large' => $model->attachmentsLargeSize,
-                'xlarge' => $model->attachmentsXlargeSize,
-                default => $model->attachments,
-            };
 
-            $info['attachments_dict'] = [
-                '256' => $model->attachmentsSmallSize,
-                '512' => $model->attachmentsMediumSize,
-                '1024' => $model->attachmentsLargeSize,
-                '2048' => $model->attachmentsXlargeSize,
-            ];
 
             if ($info['product']) {
+                $product = \app\models\Product::findOne($info['product']['id']);
                 $info['product']['name'] = $model->product_name_ru;
                 $info['product']['description'] = $model->product_description_ru;
                 unset($info['product']['name_ru']);
                 unset($info['product']['description_ru']);
-                $info['attachments'] = array_merge(
-                    $info['attachments'],
-                    $info['product']['attachments'],
-                );
+                $info['attachments'] = match ($imageSize) {
+                    'small' => $product->attachmentsSmallSize,
+                    'medium' => $product->attachmentsMediumSize,
+                    'large' => $product->attachmentsLargeSize,
+                    'xlarge' => $product->attachmentsXlargeSize,
+                    default => $product->attachments,
+                };
+
+                $info['attachments_dict'] = [
+                    '256' => $product->attachmentsSmallSize,
+                    '512' => $product->attachmentsMediumSize,
+                    '1024' => $product->attachmentsLargeSize,
+                    '2048' => $product->attachmentsXlargeSize,
+                ];
+            } else {
+                $info['attachments'] = match ($imageSize) {
+                    'small' => $model->attachmentsSmallSize,
+                    'medium' => $model->attachmentsMediumSize,
+                    'large' => $model->attachmentsLargeSize,
+                    'xlarge' => $model->attachmentsXlargeSize,
+                    default => $model->attachments,
+                };
+
+                $info['attachments_dict'] = [
+                    '256' => $model->attachmentsSmallSize,
+                    '512' => $model->attachmentsMediumSize,
+                    '1024' => $model->attachmentsLargeSize,
+                    '2048' => $model->attachmentsXlargeSize,
+                ];
             }
 
             if ($info['fulfillmentOffer'] !== null) {
@@ -158,7 +171,7 @@ class OrderOutputService extends OutputService
                 $info['buyerDeliveryOffer']['price_product'] = RateService::convertValue($info['buyerDeliveryOffer']['price_product'], $info['buyerDeliveryOffer']['currency'], $userCurrency);
             }
             $info['type'] = in_array($info['status'], Order::STATUS_GROUP_ORDER, true) ? 'order' : 'request';
-            
+
             $info['price'] = OrderPrice::calculateOrderPrices($info['id'], $userCurrency);
 
             if ($info['buyerOffer']) {

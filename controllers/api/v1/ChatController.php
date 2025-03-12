@@ -84,7 +84,7 @@ class ChatController extends V1Controller
         }
 
         $unreadMessages = 0;
-        
+
         foreach ($userChats as $chat) {
             $unreadMessages += $this->calculateUnreadMessages($chat, $userId);
         }
@@ -110,12 +110,12 @@ class ChatController extends V1Controller
             $metadata['last_message'] = $this->getLastMessage($chat);
             $metadata['unread_messages'] = $this->calculateUnreadMessages($chat, $userId);
             $chat->metadata = $metadata;
-            
+
             if (in_array($userId, $participants)) {
                 $filteredChats[] = $chat;
             }
         }
-        
+
         foreach ($filteredChats as $chat) {
             $metadata = $chat->metadata ?? [];
             $participants = $metadata['participants'] ?? [];
@@ -128,16 +128,16 @@ class ChatController extends V1Controller
                     if ($user->role === User::ROLE_BUYER) {
                         $organizationName = $user->organization_name;
                     }
-                $metadata['participants'][] = [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'avatar' => $user->avatar ? $user->avatar->path : null,
-                    'role' => $user->role,
-                    'email' => $user->email,
-                    'phone_number' => $user->phone_number,
-                    'telegram' => $user->telegram,
-                    'uuid' => $user->uuid,
-                    'organization_name' => $organizationName,
+                    $metadata['participants'][] = [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'avatar' => $user->avatar ? $user->avatar->path : null,
+                        'role' => $user->role,
+                        'email' => $user->email,
+                        'phone_number' => $user->phone_number,
+                        'telegram' => $user->telegram,
+                        'uuid' => $user->uuid,
+                        'organization_name' => $organizationName,
                     ];
                 }
             }
@@ -158,7 +158,7 @@ class ChatController extends V1Controller
     {
         $userId = User::getIdentity()->id;
         $data = [];
-        
+
         if (empty($query)) return ['chats' => []];
 
         $orders = \app\models\Order::find()
@@ -237,7 +237,7 @@ class ChatController extends V1Controller
             ->orderBy(['created_at' => SORT_DESC]);
 
         $countQuery = clone $query;
-        
+
         $pages = new Pagination([
             'totalCount' => $countQuery->count(),
             'pageSize' => $perPage,
@@ -353,7 +353,7 @@ class ChatController extends V1Controller
         $userId = User::getIdentity()->id;
         $metadata = $chat->metadata ?? [];
         $participants = $metadata['participants'] ?? [];
-        
+
         if (!in_array($userId, $participants)) {
             throw new BadRequestHttpException('У вас нет доступа к этому чату');
         }
@@ -372,13 +372,17 @@ class ChatController extends V1Controller
             $chat->last_message_id = $message->id;
             $chat->save();
 
-            PushService::sendPushNotification(
-                array_diff($participants, [$userId]),
-                [
-                    'title' => \Yii::t  ('chat', 'new_message'),
-                    'body' => \Yii::t('chat', 'new_message_text') . $chat->order_id,
-                ]
-            );
+            $recievers = array_diff($participants, [$userId]);
+            foreach ($recievers as $reciever) {
+                $language = User::findOne($reciever)->getSettings()->application_language;
+                PushService::sendPushNotification(
+                    $reciever,
+                    [
+                        'title' => \Yii::t('chat', 'new_message', [], $language),
+                        'body' => \Yii::t('chat', 'new_message_text', ['chat_id' => $chat->order_id], $language),
+                    ]
+                );
+            }
 
             self::socketHandler(
                 array_diff($participants, [$userId]),
@@ -389,7 +393,6 @@ class ChatController extends V1Controller
                 'status' => 'success',
                 'data' => Message::findOne($message->id)
             ];
-
         } catch (\Exception $e) {
             Yii::$app->telegramLog->send('error', 'Не удалось отправить сообщение: ' . json_encode($e->getMessage()));
             throw new BadRequestHttpException($e->getMessage());
@@ -417,7 +420,7 @@ class ChatController extends V1Controller
         }
 
         $messages = $chat->messages;
-        foreach ($messages as $message) {            
+        foreach ($messages as $message) {
             $messageMetadata = $message->metadata ?? [];
             if (!in_array($userId, $messageMetadata['read_by'])) {
                 $messageMetadata['read_by'][] = $userId;
@@ -430,7 +433,6 @@ class ChatController extends V1Controller
             'status' => 'success',
             'message' => 'all messages in chat ' . $chat->id . ' marked as read'
         ];
-
     }
 
     private static function socketHandler(array $participants, $message)

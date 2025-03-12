@@ -74,6 +74,7 @@ class ProductOutputService extends OutputService
                 'xlarge' => $model->attachmentsXlargeSize,
                 default => $model->attachments,
             };
+
             $info['attachments_dict'] = [
                 '256' => $model->attachmentsSmallSize,
                 '512' => $model->attachmentsMediumSize,
