@@ -167,6 +167,7 @@ class Order extends OrderStructure
     {
         $keys = [
             self::STATUS_CREATED => 'Принята',
+            self::STATUS_WAITING_FOR_BUYER_OFFER => 'В ожидании предложения',
             self::STATUS_BUYER_ASSIGNED => 'В ожидании предложения',
             self::STATUS_BUYER_OFFER_CREATED => 'Сделано предложение',
             self::STATUS_BUYER_OFFER_ACCEPTED => 'Ожидает оплаты',
