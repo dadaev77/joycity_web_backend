@@ -13,7 +13,7 @@ class m250312_124555_upd_uniq_filed extends Migration
     public function safeUp()
     {
         // Удаляем уникальный индекс с поля order_id
-        $this->dropIndex('order_id', 'order_distribution');
+
         $this->dropIndex('fk_order_distribution_order_id', 'order_distribution');
     }
 
