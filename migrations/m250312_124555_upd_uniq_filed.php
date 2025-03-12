@@ -12,8 +12,8 @@ class m250312_124555_upd_uniq_filed extends Migration
      */
     public function safeUp()
     {
-        $this->dropIndex('order_id', 'order_distribution');
-        $this->createIndex('order_id', 'order_distribution', 'order_id', true);
+        $this->dropIndex('fk_order_distribution_order_id', 'order_distribution');
+        $this->alterColumn('order_distribution', 'order_id', $this->integer()->notNull());
     }
 
     /**
