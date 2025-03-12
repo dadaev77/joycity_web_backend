@@ -12,7 +12,7 @@ class m250312_123935_not_uniq_order_id_in_order_distribution extends Migration
      */
     public function safeUp()
     {
-        $this->alterColumn('order_distribution', 'order_id', $this->integer()->notNull()->unique(false));
+        $this->alterColumn('order_distribution', 'order_id', $this->integer()->notNull());
     }
 
     /**
@@ -20,9 +20,7 @@ class m250312_123935_not_uniq_order_id_in_order_distribution extends Migration
      */
     public function safeDown()
     {
-        echo "m250312_123935_not_uniq_order_id_in_order_distribution cannot be reverted.\n";
-
-        return false;
+        $this->alterColumn('order_distribution', 'order_id', $this->integer()->notNull()->unique());
     }
 
     /*
