@@ -254,17 +254,14 @@ class OrderController extends BuyerController
                 $distribution = OrderDistributionService::createDistributionTask($order->id);
 
                 if (!$distribution->success) {
-                    \Yii::$app->telegramLog->send('error', 'Не удалось создать задачу на распределение при отклонении заказа: ' . $order->id);
+                    Yii::$app->telegramLog->send('error', 'Не удалось создать задачу на распределение при отклонении заказа: ' . $order->id);
                     Yii::$app->actionLog->error('Ошибка при создании задачи на распределение: ' . json_encode($distribution->reason));
-                }
-                if ($task) {
-                    CronController::actionCreate($task->id);
+                } else {
+                    CronController::actionCreate($distribution->result->id);
                 }
             } else {
                 $orderDistribution = $order->orderDistribution;
-
                 $orderDistribution->status = OrderDistribution::STATUS_CLOSED;
-
                 if (!$orderDistribution->save()) {
                     return ApiResponse::transactionCodeErrors(
                         $transaction,
@@ -272,7 +269,6 @@ class OrderController extends BuyerController
                         $orderDistribution->reason,
                     );
                 }
-
                 $orderStatus = OrderStatusService::cancelled($order->id);
             }
 
