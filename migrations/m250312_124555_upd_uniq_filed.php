@@ -12,9 +12,9 @@ class m250312_124555_upd_uniq_filed extends Migration
      */
     public function safeUp()
     {
-        // Удаляем уникальный индекс с поля order_id
-
-        $this->dropIndex('fk_order_distribution_order_id', 'order_distribution');
+        // Удаляем внешнее ограничение, использующее индекс
+        $this->dropForeignKey('fk_order_distribution_order_id', 'order_distribution');
+        $this->dropIndex('order_id', 'order_distribution');
     }
 
     /**
@@ -24,6 +24,9 @@ class m250312_124555_upd_uniq_filed extends Migration
     {
         // Восстанавливаем уникальный индекс с поля order_id
         $this->createIndex('order_id', 'order_distribution', 'order_id', true);
+
+        // Восстанавливаем внешнее ограничение
+        $this->addForeignKey('fk_order_distribution_order_id', 'order_distribution', 'order_id', 'order', 'id', 'CASCADE', 'CASCADE');
     }
 
     /*
