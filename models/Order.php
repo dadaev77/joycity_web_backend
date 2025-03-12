@@ -126,6 +126,7 @@ class Order extends OrderStructure
 
     public const STATUS_GROUP_ALL = [
         self::STATUS_CREATED,
+        self::STATUS_WAITING_FOR_BUYER_OFFER,
         self::STATUS_BUYER_ASSIGNED,
         self::STATUS_BUYER_OFFER_CREATED,
         self::STATUS_BUYER_OFFER_ACCEPTED,
