@@ -243,7 +243,7 @@ class OrderController extends BuyerController
 
                 $orderStatus = OrderStatusService::waitingForBuyerOffer($order->id);
                 if (!$orderStatus->success) {
-                    Yii::$app->telegramLog->send('error', 'Ошибка при установке статуса заказа на ожидание предложения от байера: ' . $orderStatus->reason);
+                    Yii::$app->telegramLog->send('error', 'Ошибка при установке статуса заказа на ожидание предложения от байера: ' . json_encode($orderStatus->reason));
                     return ApiResponse::transactionCodeErrors(
                         $transaction,
                         $apiCodes->ERROR_SAVE,
