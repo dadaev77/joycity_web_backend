@@ -1,0 +1,43 @@
+<?php
+
+use yii\db\Migration;
+
+/**
+ * Class m250312_124555_upd_uniq_filed
+ */
+class m250312_124555_upd_uniq_filed extends Migration
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function safeUp()
+    {
+        // Удаляем уникальный индекс с поля order_id
+        $this->dropIndex('order_id_UNIQUE', 'order_distribution');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function safeDown()
+    {
+        echo "m250312_124555_upd_uniq_filed cannot be reverted.\n";
+
+        return false;
+    }
+
+    /*
+    // Use up()/down() to run migration code without a transaction.
+    public function up()
+    {
+
+    }
+
+    public function down()
+    {
+        echo "m250312_124555_upd_uniq_filed cannot be reverted.\n";
+
+        return false;
+    }
+    */
+}
