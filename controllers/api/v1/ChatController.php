@@ -419,43 +419,84 @@ class ChatController extends V1Controller
             throw new BadRequestHttpException('У вас нет доступа к этому чату');
         }
 
+        $readMessages = [];
         $messages = $chat->messages;
+        
         foreach ($messages as $message) {
             $messageMetadata = $message->metadata ?? [];
             if (!in_array($userId, $messageMetadata['read_by'])) {
                 $messageMetadata['read_by'][] = $userId;
                 $message->metadata = $messageMetadata;
-                $message->save();
+                if ($message->save()) {
+                    $readMessages[] = [
+                        'id' => $message->id,
+                        'chat_id' => $message->chat_id,
+                        'read_by' => $messageMetadata['read_by'],
+                        'sender_id' => $message->sender_id,
+                        'created_at' => $message->created_at
+                    ];
+                }
+            }
+        }
+
+        if (!empty($readMessages)) {
+            $notificationData = [
+                'type' => 'messages_read',
+                'chat_id' => $chat->id,
+                'reader_id' => $userId,
+                'reader_name' => User::getIdentity()->name,
+                'messages' => $readMessages,
+                'timestamp' => date('Y-m-d H:i:s')
+            ];
+
+            try {
+                self::socketHandler(
+                    array_diff($participants, [$userId]),
+                    $notificationData
+                );
+            } catch (\Exception $e) {
+                Yii::error("Socket notification error: " . $e->getMessage(), 'socket');
             }
         }
 
         return [
             'status' => 'success',
-            'message' => 'all messages in chat ' . $chat->id . ' marked as read'
+            'message' => 'all messages in chat ' . $chat->id . ' marked as read',
+            'read_messages' => $readMessages
         ];
     }
 
-    private static function socketHandler(array $participants, $message)
+    private static function socketHandler(array $participants, $data)
     {
-        $urls = [$_ENV['APP_URL_NOTIFICATIONS'] . '/notification/send'];
+        $urls = ['http://joycityrussia.friflex.com:8081/notification/send'];
         $multiHandle = curl_multi_init();
         $curlHandles = [];
 
         foreach ($participants as $participant) {
             $ch = curl_init();
-            $data = json_encode([
+            $notificationData = json_encode([
                 'notification' => [
-                    'type' => 'new_message',
+                    'type' => $data['type'] ?? 'new_message',
                     'user_id' => $participant,
-                    'message' => $message,
+                    'data' => $data,
                 ],
             ]);
+
+            Yii::debug("Sending notification: " . $notificationData, 'socket');
 
             curl_setopt($ch, CURLOPT_URL, $urls[0]);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $notificationData);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                'Content-Type: application/json',
+                'Content-Length: ' . strlen($notificationData)
+            ]);
+            
+            // Добавляем отладочную информацию
+            curl_setopt($ch, CURLOPT_VERBOSE, true);
+            $verbose = fopen('php://temp', 'w+');
+            curl_setopt($ch, CURLOPT_STDERR, $verbose);
 
             curl_multi_add_handle($multiHandle, $ch);
             $curlHandles[] = $ch;
@@ -463,12 +504,29 @@ class ChatController extends V1Controller
 
         $running = null;
         do {
-            curl_multi_exec($multiHandle, $running);
-        } while ($running > 0);
+            $status = curl_multi_exec($multiHandle, $running);
+            if ($running) {
+                curl_multi_select($multiHandle);
+            }
+        } while ($running > 0 && $status == CURLM_OK);
 
+        // Обработка результатов
         foreach ($curlHandles as $ch) {
             $response = curl_multi_getcontent($ch);
+            
+            // Получаем отладочную информацию
+            rewind($verbose);
+            $verboseLog = stream_get_contents($verbose);
+            
+            Yii::debug("Curl response: " . $response, 'socket');
+            Yii::debug("Verbose info: " . $verboseLog, 'socket');
+
+            if ($response === false) {
+                Yii::error("Curl error: " . curl_error($ch), 'socket');
+            }
+            
             curl_multi_remove_handle($multiHandle, $ch);
+            curl_close($ch);
         }
 
         curl_multi_close($multiHandle);
