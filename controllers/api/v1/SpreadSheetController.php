@@ -129,139 +129,88 @@ class SpreadSheetController extends V1Controller
 
             try {
                 $reader = IOFactory::createReaderForFile($uploadedFile['tmp_name']);
-                $reader->setReadDataOnly(false);
+                $reader->setReadDataOnly(true);
 
                 $spreadsheet = $reader->load($uploadedFile['tmp_name']);
                 $worksheet = $spreadsheet->getActiveSheet();
 
-                $headers = [];
-                foreach ($worksheet->getRowIterator(1, 1) as $row) {
-                    $cellIterator = $row->getCellIterator();
-                    $cellIterator->setIterateOnlyExistingCells(false);
-                    foreach ($cellIterator as $cell) {
-                        $value = $cell->getValue();
-                        $headers[] = $value !== null ? trim($value) : '';
+                // Начинаем транзакцию
+                $transaction = Yii::$app->db->beginTransaction();
+
+                $successCount = 0;
+                $errors = [];
+
+                // Начинаем с 4-й строки (пропускаем заголовки, описания и примеры)
+                for ($row = 4; $row <= $worksheet->getHighestRow(); $row++) {
+                    // Получаем значения ячеек
+                    $productName = $worksheet->getCell('A' . $row)->getValue();
+
+                    // Проверяем, не пустая ли строка
+                    if (empty($productName)) {
+                        continue;
                     }
+
+                    // Создаем новый заказ
+                    $order = new Order();
+                    $order->buyer_id = Yii::$app->user->id;
+                    $order->status = Order::STATUS_CREATED;
+                    $order->created_at = time();
+
+                    // Читаем данные из Excel
+                    $order->product_name = $productName;
+                    $order->quantity = (int)$worksheet->getCell('B' . $row)->getValue();
+                    $order->price = (float)$worksheet->getCell('C' . $row)->getValue();
+                    $order->description = $worksheet->getCell('D' . $row)->getValue();
+
+                    // Дополнительные поля
+                    $order->type_delivery = TypeDelivery::TYPE_DEFAULT;
+                    $order->currency = User::getIdentity()->settings->currency;
+
+                    if (!$order->save()) {
+                        $errors[] = [
+                            'row' => $row,
+                            'errors' => $order->getFirstErrors()
+                        ];
+                        continue;
+                    }
+
+                    $successCount++;
                 }
 
-                $descriptions = [];
-                foreach ($worksheet->getRowIterator(2, 2) as $row) {
-                    $cellIterator = $row->getCellIterator();
-                    $cellIterator->setIterateOnlyExistingCells(false);
-                    foreach ($cellIterator as $cell) {
-                        $value = $cell->getValue();
-                        $descriptions[] = $value !== null ? trim($value) : '';
-                    }
+                if (empty($errors)) {
+                    $transaction->commit();
+                    return $this->asJson([
+                        'success' => true,
+                        'message' => "Успешно создано заказов: {$successCount}",
+                    ]);
+                } else {
+                    $transaction->rollBack();
+                    return $this->asJson([
+                        'success' => false,
+                        'message' => 'Обнаружены ошибки при создании заказов',
+                        'errors' => $errors
+                    ]);
                 }
-
-                $examples = [];
-                foreach ($worksheet->getRowIterator(3, 3) as $row) {
-                    $cellIterator = $row->getCellIterator();
-                    $cellIterator->setIterateOnlyExistingCells(false);
-                    foreach ($cellIterator as $cell) {
-                        $value = $cell->getValue();
-                        $examples[] = $value !== null ? trim($value) : '';
-                    }
-                }
-
-                $data = [];
-                for ($rowIndex = 4; $rowIndex <= $worksheet->getHighestRow(); $rowIndex++) {
-                    $rowData = [];
-                    $hasData = false;
-
-                    foreach ($worksheet->getRowIterator($rowIndex, $rowIndex) as $row) {
-                        $cellIterator = $row->getCellIterator();
-                        $cellIterator->setIterateOnlyExistingCells(false);
-
-                        foreach ($cellIterator as $cell) {
-                            $column = $cell->getColumn();
-                            $headerIndex = Coordinate::columnIndexFromString($column) - 1;
-                            $header = isset($headers[$headerIndex]) ? $headers[$headerIndex] : '';
-
-                            $value = $cell->getValue();
-                            $calculatedValue = $cell->getCalculatedValue();
-
-                            if ($value !== null || $calculatedValue !== null) {
-                                $hasData = true;
-                            }
-
-                            $rowData[$header] = [
-                                'raw_value' => $value,
-                                'calculated_value' => $calculatedValue,
-                                'type' => gettype($calculatedValue),
-                                'data_type' => $cell->getDataType(),
-                                'coordinate' => $cell->getCoordinate(),
-                                'formula' => $cell->getDataType() === 'f' ? $cell->getValue() : null
-                            ];
-                        }
-                    }
-
-                    if ($hasData) {
-                        $data[$rowIndex] = $rowData;
-                    }
-                }
-
-                return $this->asJson([
-                    'success' => true,
-                    'message' => 'Данные файла прочитаны для отладки',
-                    'debug_data' => [
-                        'file_info' => [
-                            'name' => $uploadedFile['name'],
-                            'type' => $uploadedFile['type'],
-                            'size' => $uploadedFile['size']
-                        ],
-                        'structure' => [
-                            'headers' => array_combine(range('A', $worksheet->getHighestColumn()), $headers),
-                            'descriptions' => array_combine(range('A', $worksheet->getHighestColumn()), $descriptions),
-                            'examples' => array_combine(range('A', $worksheet->getHighestColumn()), $examples)
-                        ],
-                        'data_rows' => $data,
-                        'row_count' => $worksheet->getHighestRow(),
-                        'column_count' => $worksheet->getHighestColumn()
-                    ]
-                ]);
 
             } catch (\Throwable $e) {
-                \Yii::error('Excel reading error: ' . $e->getMessage());
-                \Yii::error('Stack trace: ' . $e->getTraceAsString());
+                if (isset($transaction)) {
+                    $transaction->rollBack();
+                }
+                Yii::error('Excel reading error: ' . $e->getMessage());
 
                 return $this->asJson([
                     'success' => false,
-                    'message' => 'Ошибка при чтении Excel файла',
-                    'error' => $e->getMessage(),
-                    'error_line' => $e->getLine(),
-                    'error_file' => $e->getFile()
+                    'message' => 'Ошибка при обработке Excel файла',
+                    'error' => $e->getMessage()
                 ]);
             }
         } catch (\Throwable $e) {
-            \Yii::error('Fatal error: ' . $e->getMessage());
+            Yii::error('Fatal error: ' . $e->getMessage());
             return $this->asJson([
                 'success' => false,
                 'message' => 'Внутренняя ошибка сервера',
                 'error' => $e->getMessage()
             ]);
-        }
-    }
-
-    private function getUploadErrorMessage($errorCode)
-    {
-        switch ($errorCode) {
-            case UPLOAD_ERR_INI_SIZE:
-                return 'Размер файла превышает upload_max_filesize';
-            case UPLOAD_ERR_FORM_SIZE:
-                return 'Размер файла превышает MAX_FILE_SIZE';
-            case UPLOAD_ERR_PARTIAL:
-                return 'Файл был загружен частично';
-            case UPLOAD_ERR_NO_FILE:
-                return 'Файл не был загружен';
-            case UPLOAD_ERR_NO_TMP_DIR:
-                return 'Отсутствует временная папка';
-            case UPLOAD_ERR_CANT_WRITE:
-                return 'Не удалось записать файл на диск';
-            case UPLOAD_ERR_EXTENSION:
-                return 'PHP-расширение остановило загрузку файла';
-            default:
-                return 'Неизвестная ошибка при загрузке файла';
         }
     }
 }
