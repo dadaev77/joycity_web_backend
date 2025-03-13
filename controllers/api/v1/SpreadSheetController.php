@@ -63,14 +63,13 @@ class SpreadSheetController extends V1Controller
                 ]);
             }
 
-            return Yii::$app->response->sendFile(
-                $templatePath,
-                'order_template.xlsx',
-                [
-                    'mimeType' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                    'inline' => false
-                ]
-            );
+            $response = Yii::$app->response;
+            $response->headers->set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            $response->headers->set('Content-Disposition', 'attachment; filename="order_template.xlsx"');
+            $response->headers->set('X-Success', 'true');
+            $response->headers->set('X-Message', 'Excel successfully uploaded');
+
+            return $response->sendFile($templatePath);
 
         } catch (\Exception $e) {
             Yii::error("Ошибка при передаче файла: " . $e->getMessage());
