@@ -79,7 +79,7 @@ class BuyerOfferController extends BuyerController
             $postData = Yii::$app->request->post();
             $user = User::getIdentity();
             $order = Order::findOne(['id' => $postData['order_id']]) ?? null;
-
+            throw new \Exception('Не может сделать предложение');
             if (!$order) {
                 return ApiResponse::code($apiCodes->NOT_FOUND);
             }
