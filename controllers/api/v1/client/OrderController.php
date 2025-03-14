@@ -234,6 +234,7 @@ class OrderController extends ClientController
             return ApiResponse::byResponseCode(null, ['info' => OrderOutputService::getEntity($order->id)]);
         } catch (Throwable $e) {
             $transaction->rollBack();
+            \Yii::$app->telegramLog->send('error', 'Не удалось создать заказ(общая ошибка): ' . $e->getMessage());
             return ApiResponse::internalError($e);
         }
     }
