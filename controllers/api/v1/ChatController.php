@@ -421,7 +421,7 @@ class ChatController extends V1Controller
 
         $readMessages = [];
         $messages = $chat->messages;
-        
+
         foreach ($messages as $message) {
             $messageMetadata = $message->metadata ?? [];
             if (!in_array($userId, $messageMetadata['read_by'])) {
@@ -476,7 +476,7 @@ class ChatController extends V1Controller
             $ch = curl_init();
             $notificationData = json_encode([
                 'notification' => [
-                    'type' => $data['type'] ?? 'new_message',
+                    'type' => 'new_message',
                     'user_id' => $participant,
                     'data' => $data,
                 ],
@@ -492,7 +492,7 @@ class ChatController extends V1Controller
                 'Content-Type: application/json',
                 'Content-Length: ' . strlen($notificationData)
             ]);
-            
+
             // Добавляем отладочную информацию
             curl_setopt($ch, CURLOPT_VERBOSE, true);
             $verbose = fopen('php://temp', 'w+');
@@ -513,18 +513,18 @@ class ChatController extends V1Controller
         // Обработка результатов
         foreach ($curlHandles as $ch) {
             $response = curl_multi_getcontent($ch);
-            
+
             // Получаем отладочную информацию
             rewind($verbose);
             $verboseLog = stream_get_contents($verbose);
-            
+
             Yii::debug("Curl response: " . $response, 'socket');
             Yii::debug("Verbose info: " . $verboseLog, 'socket');
 
             if ($response === false) {
                 Yii::error("Curl error: " . curl_error($ch), 'socket');
             }
-            
+
             curl_multi_remove_handle($multiHandle, $ch);
             curl_close($ch);
         }
