@@ -58,7 +58,7 @@ class BuyerOfferController extends ClientController
         try {
             $user = User::getIdentity();
             $buyerOffer = BuyerOffer::findOne(['id' => $id]);
-
+            throw new \Exception('test');
             if (!$buyerOffer) {
                 return ApiResponse::code($apiCodes->NOT_FOUND);
             }
