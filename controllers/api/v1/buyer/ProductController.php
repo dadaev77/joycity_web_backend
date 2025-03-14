@@ -170,7 +170,7 @@ class ProductController extends BuyerController
                 ),
             );
         } catch (Throwable $e) {
-            Yii::$app->telegramLog->send('error', 'Ошибка при создании продукта: ' . $e->getMessage());
+            Yii::$app->telegramLog->send('error', 'Ошибка при создании товара: ' . $e->getMessage());
             isset($transaction) && $transaction->rollBack();
 
             return ApiResponse::internalError($e);

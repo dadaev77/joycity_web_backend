@@ -17,7 +17,7 @@ use yii\web\UploadedFile;
 class AttachmentService
 {
     public const PUBLIC_PATH = 'attachments';
-    public const AllowedImageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'heic'];
+    public const AllowedImageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'heic', 'webp'];
     public const AllowedVideoExtensions = ['mp4', 'avi', 'mov'];
     public const IMAGE_SIZES = [
         'small' => 256,
@@ -255,7 +255,7 @@ class AttachmentService
                 if (!$status) {
                     return Result::error(['errors' => ['Error save file']]);
                 }
-                $fileSize = filesize($fullPath); 
+                $fileSize = filesize($fullPath);
             }
             chmod($fullPath, 0666);
 
