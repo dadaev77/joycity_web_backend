@@ -782,19 +782,45 @@ class SpreadSheetController extends V1Controller
                 $sheet2->setCellValue('S' . ($index + 2), $subcategory);
             }
             
+            // Подкатегории для Автотовары
+            $sheet2->setCellValue('T1', 'Подкатегории_Автотовары');
+            $subcategoriesAuto = [
+                'Шины и диски колесные', 
+                'Запчасти на легковые автомобили', 
+                'Масла и жидкости', 
+                'Автокосметика и автохимия', 
+                'Краски и грунтовки', 
+                'Автоэлектроника и навигация', 
+                'Аккумуляторы и сопутствующие товары', 
+                'Аксессуары в салон и багажник', 
+                'Коврики', 
+                'Внешний тюнинг', 
+                'Другие аксессуары и доп. оборудование', 
+                'Инструменты', 
+                'Мойки высокого давления и аксессуары', 
+                'Мототовары', 
+                'OFFroad', 
+                'Запчасти на силовую технику', 
+                'Запчасти для лодок и катеров'
+            ];
+            
+            foreach ($subcategoriesAuto as $index => $subcategory) {
+                $sheet2->setCellValue('T' . ($index + 2), $subcategory);
+            }
+            
             // Форматирование первого листа
             foreach (range('A', 'M') as $column) {
                 $sheet1->getColumnDimension($column)->setAutoSize(true);
             }
             
             // Форматирование второго листа
-            foreach (range('A', 'S') as $column) {
+            foreach (range('A', 'T') as $column) {
                 $sheet2->getColumnDimension($column)->setAutoSize(true);
             }
             
             // Выделяем заголовки жирным
             $sheet1->getStyle('A1:M1')->getFont()->setBold(true);
-            $sheet2->getStyle('A1:S1')->getFont()->setBold(true);
+            $sheet2->getStyle('A1:T1')->getFont()->setBold(true);
             
             // Добавляем прямые выпадающие списки (без именованных диапазонов)
             
@@ -816,6 +842,7 @@ class SpreadSheetController extends V1Controller
             $subcategoriesFurnitureRange = 'Справочники!$P$2:$P$19'; // Диапазон для мебели
             $subcategoriesAppliancesRange = 'Справочники!$Q$2:$Q$7'; // Диапазон для бытовой техники
             $subcategoriesPetsRange = 'Справочники!$R$2:$R$20'; // Диапазон для зоотоваров
+            $subcategoriesAutoRange = 'Справочники!$T$2:$T$18'; // Диапазон для автотоваров
             
             for ($row = 2; $row <= 100; $row++) {
                 $validation = $sheet1->getCell('D' . $row)->getDataValidation();
@@ -840,7 +867,8 @@ class SpreadSheetController extends V1Controller
                           ',IF(C' . $row . '="Бытовая техника",' . $subcategoriesAppliancesRange . 
                           ',IF(C' . $row . '="Зоотовары",' . $subcategoriesPetsRange . 
                           ',IF(C' . $row . '="Спорт",' . 'Справочники!$S$2:$S$28' . 
-                          ',"Выберите категорию")))))))))))))';
+                          ',IF(C' . $row . '="Автотовары",' . 'Справочники!$T$2:$T$18' . 
+                          ',"Выберите категорию"))))))))))))))';
                 $validation->setFormula1($formula);
             }
             
