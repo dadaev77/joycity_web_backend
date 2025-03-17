@@ -746,6 +746,42 @@ class SpreadSheetController extends V1Controller
                 $sheet2->setCellValue('I' . ($index + 2), $option);
             }
             
+            // Подкатегории для Спорт
+            $sheet2->setCellValue('S1', 'Подкатегории_Спорт');
+            $subcategoriesSport = [
+                'Фитнес и тренажеры',
+                'Велоспорт',
+                'Йога и Пилатес',
+                'Охота и рыбалка',
+                'Самокаты, Ролики, Скейтборды',
+                'Туризм, Походы',
+                'Бег, Ходьба',
+                'Командные виды спорта',
+                'Водные виды спорта',
+                'Зимние виды спорта',
+                'Поддержка и восстановление',
+                'Спортивное питание и косметика',
+                'Бадминтон и Теннис',
+                'Бильярд, Гольф, Дартс, Метание ножей',
+                'Единоборства',
+                'Конный спорт', 
+                'Мотоспорт', 
+                'Оборудование для сдачи нормативов',
+                'Парусный спорт',
+                'Скалолазание и Альпинизм',
+                'Страйкбол и пейнтбол',
+                'Танцы и Гимнастика',
+                'Для детей',
+                'Для женщин',
+                'Для мужчин',
+                'Спортивная обувь',
+                'Товары для самообороны'
+            ];
+            
+            foreach ($subcategoriesSport as $index => $subcategory) {
+                $sheet2->setCellValue('S' . ($index + 2), $subcategory);
+            }
+            
             // Форматирование первого листа
             foreach (range('A', 'M') as $column) {
                 $sheet1->getColumnDimension($column)->setAutoSize(true);
@@ -803,7 +839,8 @@ class SpreadSheetController extends V1Controller
                           ',IF(C' . $row . '="Мебель",' . $subcategoriesFurnitureRange . 
                           ',IF(C' . $row . '="Бытовая техника",' . $subcategoriesAppliancesRange . 
                           ',IF(C' . $row . '="Зоотовары",' . $subcategoriesPetsRange . 
-                          ',"Выберите категорию"))))))))))))';
+                          ',IF(C' . $row . '="Спорт",' . 'Справочники!$S$2:$S$28' . 
+                          ',"Выберите категорию")))))))))))))';
                 $validation->setFormula1($formula);
             }
             
