@@ -845,19 +845,44 @@ class SpreadSheetController extends V1Controller
                 $sheet2->setCellValue('U' . ($index + 2), $subcategory);
             }
             
+            // Подкатегории для Ювелирные изделия
+            $sheet2->setCellValue('V1', 'Подкатегории_Ювелирные_изделия');
+            $subcategoriesJewelry = [
+                'Кольца',
+                'Серьги',
+                'Браслеты',
+                'Подвески и шармы',
+                'Комплекты',
+                'Колье, цепи, шнурки',
+                'Броши',
+                'Пирсинг',
+                'Часы',
+                'Зажимы, запонки, ремни',
+                'Четки',
+                'Сувениры и столовое серебро',
+                'Украшения из золота',
+                'Украшения из серебра',
+                'Украшения из керамики',
+                'Аксессуары для украшений'
+            ];
+            
+            foreach ($subcategoriesJewelry as $index => $subcategory) {
+                $sheet2->setCellValue('V' . ($index + 2), $subcategory);
+            }
+            
             // Форматирование первого листа
             foreach (range('A', 'M') as $column) {
                 $sheet1->getColumnDimension($column)->setAutoSize(true);
             }
             
             // Форматирование второго листа
-            foreach (range('A', 'U') as $column) {
+            foreach (range('A', 'V') as $column) {
                 $sheet2->getColumnDimension($column)->setAutoSize(true);
             }
             
             // Выделяем заголовки жирным
             $sheet1->getStyle('A1:M1')->getFont()->setBold(true);
-            $sheet2->getStyle('A1:U1')->getFont()->setBold(true);
+            $sheet2->getStyle('A1:V1')->getFont()->setBold(true);
             
             // Добавляем прямые выпадающие списки (без именованных диапазонов)
             
@@ -906,7 +931,8 @@ class SpreadSheetController extends V1Controller
                           ',IF(C' . $row . '="Спорт",' . 'Справочники!$S$2:$S$28' . 
                           ',IF(C' . $row . '="Автотовары",' . 'Справочники!$T$2:$T$18' . 
                           ',IF(C' . $row . '="Книги",' . 'Справочники!$U$2:$U$29' . 
-                          ',"Выберите категорию")))))))))))))))';
+                          ',IF(C' . $row . '="Ювелирные изделия",' . 'Справочники!$V$2:$V$17' . 
+                          ',"Выберите категорию"))))))))))))))))';
                 $validation->setFormula1($formula);
             }
             
