@@ -667,6 +667,34 @@ class SpreadSheetController extends V1Controller
                 $sheet2->setCellValue('Q' . ($index + 2), $subcategory);
             }
             
+            // Подкатегории для Зоотовары
+            $sheet2->setCellValue('R1', 'Подкатегории_Зоотовары');
+            $subcategoriesPets = [
+                'Для кошек',
+                'Для собак',
+                'Для птиц',
+                'Для грызунов и хорьков',
+                'Для лошадей',
+                'Аквариумистика',
+                'Террариумистика',
+                'Фермерство',
+                'Корм и лакомства',
+                'Аксессуары для кормления',
+                'Лотки и наполнители',
+                'Когтеточки и домики',
+                'Транспортировка',
+                'Амуниция и дрессировка',
+                'Игрушки',
+                'Груминг и уход',
+                'Одежда',
+                'Ветаптека',
+                'Лекарственные препараты для животных'
+            ];
+            
+            foreach ($subcategoriesPets as $index => $subcategory) {
+                $sheet2->setCellValue('R' . ($index + 2), $subcategory);
+            }
+            
             // Типы доставки
             $sheet2->setCellValue('E1', 'Типы_доставки');
             $deliveryTypes = [
@@ -751,6 +779,7 @@ class SpreadSheetController extends V1Controller
             $subcategoriesToysRange = 'Справочники!$O$2:$O$23'; // Диапазон для игрушек
             $subcategoriesFurnitureRange = 'Справочники!$P$2:$P$19'; // Диапазон для мебели
             $subcategoriesAppliancesRange = 'Справочники!$Q$2:$Q$7'; // Диапазон для бытовой техники
+            $subcategoriesPetsRange = 'Справочники!$R$2:$R$20'; // Диапазон для зоотоваров
             
             for ($row = 2; $row <= 100; $row++) {
                 $validation = $sheet1->getCell('D' . $row)->getDataValidation();
@@ -773,7 +802,8 @@ class SpreadSheetController extends V1Controller
                           ',IF(C' . $row . '="Игрушки",' . $subcategoriesToysRange . 
                           ',IF(C' . $row . '="Мебель",' . $subcategoriesFurnitureRange . 
                           ',IF(C' . $row . '="Бытовая техника",' . $subcategoriesAppliancesRange . 
-                          ',"Выберите категорию")))))))))))';
+                          ',IF(C' . $row . '="Зоотовары",' . $subcategoriesPetsRange . 
+                          ',"Выберите категорию"))))))))))))';
                 $validation->setFormula1($formula);
             }
             
