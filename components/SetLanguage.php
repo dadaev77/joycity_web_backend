@@ -23,7 +23,7 @@ class SetLanguage extends \yii\base\Component
             $token = $matches[1];
             $identity = Yii::$app->user->identityClass::findIdentityByAccessToken($token);
             if ($identity !== null) {
-                Yii::$app->language = $identity->getSettings()->application_language ?? 'en-US';
+                Yii::$app->language = $identity->settings['application_language'] ?? 'en-US';
             }
         }
         parent::init();
