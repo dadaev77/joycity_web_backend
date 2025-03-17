@@ -35,6 +35,7 @@ class SpreadSheetController extends V1Controller
         $behaviors['verbFilter']['actions']['download-excel'] = ['get'];
         $behaviors['verbFilter']['actions']['upload-excel'] = ['post'];
         $behaviors['verbFilter']['actions']['generate-test-excel'] = ['get'];
+        $behaviors['verbFilter']['actions']['download-test-excel'] = ['get'];
         return $behaviors;
     }
 
@@ -337,124 +338,136 @@ class SpreadSheetController extends V1Controller
     }
 
     /**
-     * Временный метод для генерации тестового Excel файла
-     * @return \yii\web\Response
+     * @OA\Get(
+     *     path="/api/v1/spread-sheet/download-test-excel",
+     *     summary="Скачать тестовый Excel файл для загрузки заказов",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Тестовый файл Excel"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Ошибка сервера"
+     *     )
+     * )
      */
-    public function actionGenerateTestExcel()
+    public function actionDownloadTestExcel()
     {
         try {
+            // Создаем новый Excel-файл
             $spreadsheet = new Spreadsheet();
-            $sheet = $spreadsheet->getActiveSheet();
+
+            // Заполняем первый лист данными заказов
+            $sheet1 = $spreadsheet->setActiveSheetIndex(0);
+            $sheet1->setTitle('Лист1');
+            $sheet1->fromArray([
+                ['Фото', 'Название товара', 'Категория товара', 'Подкатегория', 'Описание товара', 'Желаемое количество товара, шт',
+                 'Желаемая стоимость за единицу товара, Р', 'Тип доставки', 'Тип пункта доставки', 'Адрес пункта доставки',
+                 'Тип упаковки', 'Количество упаковок, шт', 'Глубокая инспекция'],
+                ['https://goods-photos.static1-sima-land.com/items/4043645/0/1600.jpg?v=1573812851', 'Блузка', 'Женщинам',
+                 'Блузки и рубашки', 'красивая', 5, 500, 'Медленное авто', 'Фулфилмент', 'Апаринки вл9', 'Мешок + скотч', 1, 'да']
+            ], null, 'A1');
+
+            // Создаем второй лист с категориями товаров
+            $sheet2 = $spreadsheet->createSheet();
+            $sheet2->setTitle('Категории');
+            $sheet2->fromArray([
+                ['Женщинам', 'Обувь', 'Детям', 'Мужчинам', 'Дом', 'Красота', 'Аксессуары', 'Электроника', 'Игрушки', 'Мебель',
+                 'Бытовая техника', 'Зоотовары', 'Спорт', 'Автотовары', 'Книги', 'Ювелирные изделия', 'Для ремонта', 'Сад и дача',
+                 'Здоровье', 'Канцтовары']
+            ], null, 'A1');
             
-            // Заголовки
-            $headers = [
-                'Фото',
-                'Название товара',
-                'Категория товара',
-                'Подкатегория',
-                'Описание товара',
-                'Желаемое количество товара, шт',
-                'Желаемая стоимость за единицу товара, Р',
-                'Тип доставки',
-                'Тип пункта доставки',
-                'Адрес пункта доставки',
-                'Тип упаковки',
-                'Количество упаковок, шт',
-                'Глубокая инспекция'
-            ];
+            // Создаем третий лист с подкатегориями
+            $sheet3 = $spreadsheet->createSheet();
+            $sheet3->setTitle('Подкатегории');
+            $sheet3->fromArray([
+                ['Блузки и рубашки', 'Детская', 'Для девочек', 'Брюки', 'Ванная', 'Аксессуары', 'Аксессуары для одежды',
+                 'Автоэлектроника и навигация', 'Электротранспорт и аксессуары', 'Бескаркасная мебель', 'Климатическая техника',
+                 'Для кошек', 'Фитнес и тренажеры', 'Шины и диски колесные', 'Художественная литература', 'Кольца',
+                 'Колеровка краски', 'Растения, семена и грунты', 'Бассейны', 'Анатомические модели']
+            ], null, 'A1');
             
-            // Подсказки
-            $hints = [
-                '(Добавьте сюда фотографии вашего товара)',
-                '(Например Брюки женские)',
-                'Выберите из списка',
-                'Выберите из списка',
-                '(Добавьте описание товара минимум 20 символов)',
-                '(от 1 до 100 000)',
-                '(от 1 до 1 000 000)',
-                'Выберите из списка',
-                'Выберите из списка',
-                'Выберите из списка',
-                'Выберите из списка',
-                '(от 1 до 100 000)',
-                'Выберите из списка'
-            ];
+            // Создаем четвертый лист с типами доставки
+            $sheet4 = $spreadsheet->createSheet();
+            $sheet4->setTitle('Типы доставки');
+            $sheet4->fromArray([
+                ['Медленное авто', 'Быстрое авто', 'Авиа', 'Морем', 'Железная дорога']
+            ], null, 'A1');
             
-            // Примеры данных для тестирования
-            $testData = [
-                [
-                    '', // Фото (пустое для тестирования)
-                    'Футболка мужская хлопковая', // Название товара
-                    '1', // Категория товара (ID)
-                    '2', // Подкатегория (ID)
-                    'Качественная хлопковая футболка для мужчин. Подходит для повседневной носки. Материал: 100% хлопок.', // Описание
-                    '500', // Количество
-                    '800', // Цена за единицу
-                    '1', // Тип доставки (ID)
-                    '1', // Тип пункта доставки (ID)
-                    '1', // Адрес пункта доставки (ID)
-                    '1', // Тип упаковки (ID)
-                    '50', // Количество упаковок
-                    '0' // Глубокая инспекция (0 - нет, 1 - да)
-                ],
-                [
-                    '', 
-                    'Джинсы женские', 
-                    '1', 
-                    '3', 
-                    'Стильные джинсы для женщин. Удобный крой, высокое качество пошива. Состав: 95% хлопок, 5% эластан.', 
-                    '300', 
-                    '1500', 
-                    '2', 
-                    '2', 
-                    '2', 
-                    '2', 
-                    '30', 
-                    '1'
-                ],
-                [
-                    '', 
-                    'Куртка зимняя детская', 
-                    '2', 
-                    '4', 
-                    'Теплая зимняя куртка для детей. Водонепроницаемый материал, утеплитель высокого качества. Подходит для температуры до -30°C.', 
-                    '200', 
-                    '3000', 
-                    '1', 
-                    '1', 
-                    '3', 
-                    '3', 
-                    '20', 
-                    '1'
-                ]
-            ];
+            // Создаем пятый лист с типами пунктов доставки
+            $sheet5 = $spreadsheet->createSheet();
+            $sheet5->setTitle('Пункты доставки');
+            $sheet5->fromArray([
+                ['Фулфилмент', 'Склад', 'Магазин', 'Пункт выдачи']
+            ], null, 'A1');
             
-            // Устанавливаем заголовки
-            foreach ($headers as $index => $header) {
-                $column = chr(65 + $index);
-                $sheet->setCellValue($column . '1', $header);
-                $sheet->getStyle($column . '1')->getFont()->setBold(true);
+            // Создаем шестой лист с адресами пунктов доставки
+            $sheet6 = $spreadsheet->createSheet();
+            $sheet6->setTitle('Адреса');
+            $sheet6->fromArray([
+                ['Апаринки вл9', 'Москва, ул. Ленина 10', 'Санкт-Петербург, пр. Невский 20', 'Екатеринбург, ул. Мира 15']
+            ], null, 'A1');
+            
+            // Создаем седьмой лист с типами упаковки
+            $sheet7 = $spreadsheet->createSheet();
+            $sheet7->setTitle('Типы упаковки');
+            $sheet7->fromArray([
+                ['Мешок + скотч', 'Коробка', 'Пакет', 'Пленка']
+            ], null, 'A1');
+            
+            // Создаем восьмой лист с вариантами глубокой инспекции
+            $sheet8 = $spreadsheet->createSheet();
+            $sheet8->setTitle('Инспекция');
+            $sheet8->fromArray([
+                ['да', 'нет']
+            ], null, 'A1');
+            
+            // Добавляем еще несколько примеров заказов на первый лист
+            $sheet1->fromArray([
+                ['https://example.com/image1.jpg', 'Футболка мужская', 'Мужчинам', 'Футболки', 
+                 'Качественная хлопковая футболка для мужчин. Подходит для повседневной носки.', 
+                 500, 800, 'Быстрое авто', 'Склад', 'Москва, ул. Ленина 10', 'Коробка', 50, 'нет'],
+                ['https://example.com/image2.jpg', 'Джинсы женские', 'Женщинам', 'Джинсы', 
+                 'Стильные джинсы для женщин. Удобный крой, высокое качество пошива.', 
+                 300, 1500, 'Медленное авто', 'Фулфилмент', 'Санкт-Петербург, пр. Невский 20', 'Пакет', 30, 'да'],
+                ['https://example.com/image3.jpg', 'Куртка зимняя детская', 'Детям', 'Верхняя одежда', 
+                 'Теплая зимняя куртка для детей. Водонепроницаемый материал, утеплитель высокого качества.', 
+                 200, 3000, 'Быстрое авто', 'Склад', 'Екатеринбург, ул. Мира 15', 'Коробка', 20, 'да']
+            ], null, 'A3');
+            
+            // Форматирование первого листа
+            foreach (range('A', 'M') as $column) {
+                $sheet1->getColumnDimension($column)->setAutoSize(true);
             }
             
-            // Устанавливаем подсказки
-            foreach ($hints as $index => $hint) {
-                $column = chr(65 + $index);
-                $sheet->setCellValue($column . '2', $hint);
-                $sheet->getStyle($column . '2')->getFont()->setItalic(true);
-            }
+            // Выделяем заголовки жирным
+            $sheet1->getStyle('A1:M1')->getFont()->setBold(true);
             
-            // Добавляем тестовые данные
-            foreach ($testData as $rowIndex => $rowData) {
-                foreach ($rowData as $colIndex => $value) {
-                    $column = chr(65 + $colIndex);
-                    $sheet->setCellValue($column . ($rowIndex + 4), $value); // Начинаем с 4-й строки
-                }
-            }
+            // Добавляем выпадающие списки для соответствующих столбцов
             
-            // Форматирование
-            foreach (range('A', chr(65 + count($headers) - 1)) as $column) {
-                $sheet->getColumnDimension($column)->setAutoSize(true);
-            }
+            // Категория товара (столбец C)
+            $this->addDropdownList($sheet1, 'C', 2, 100, '=Категории!$A$1:$T$1');
+            
+            // Подкатегория (столбец D)
+            $this->addDropdownList($sheet1, 'D', 2, 100, '=Подкатегории!$A$1:$T$1');
+            
+            // Тип доставки (столбец H)
+            $this->addDropdownList($sheet1, 'H', 2, 100, '=\'Типы доставки\'!$A$1:$E$1');
+            
+            // Тип пункта доставки (столбец I)
+            $this->addDropdownList($sheet1, 'I', 2, 100, '=\'Пункты доставки\'!$A$1:$D$1');
+            
+            // Адрес пункта доставки (столбец J)
+            $this->addDropdownList($sheet1, 'J', 2, 100, '=Адреса!$A$1:$D$1');
+            
+            // Тип упаковки (столбец K)
+            $this->addDropdownList($sheet1, 'K', 2, 100, '=\'Типы упаковки\'!$A$1:$D$1');
+            
+            // Глубокая инспекция (столбец M)
+            $this->addDropdownList($sheet1, 'M', 2, 100, '=Инспекция!$A$1:$B$1');
+            
+            // Возвращаемся к первому листу
+            $spreadsheet->setActiveSheetIndex(0);
             
             // Создаем временный файл
             $tempFile = tempnam(sys_get_temp_dir(), 'test_order_data_');
@@ -464,22 +477,41 @@ class SpreadSheetController extends V1Controller
             $response = Yii::$app->response;
             $response->headers->set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
             $response->headers->set('Content-Disposition', 'attachment; filename="test_order_data.xlsx"');
-            $response->sendFile($tempFile);
             
-            // Удаляем временный файл после отправки
-            register_shutdown_function(function() use ($tempFile) {
-                if (file_exists($tempFile)) {
-                    unlink($tempFile);
-                }
-            });
+            return $response->sendFile($tempFile, 'test_order_data.xlsx', ['inline' => false]);
             
-            return $response;
         } catch (\Exception $e) {
-            Yii::error("Ошибка при создании тестового Excel файла: " . $e->getMessage());
+            Yii::error("Ошибка при создании тестового Excel файла: " . $e->getMessage() . "\n" . $e->getTraceAsString());
             return $this->asJson([
                 'success' => false,
                 'message' => 'Внутренняя ошибка сервера: ' . $e->getMessage()
             ]);
+        }
+    }
+
+    /**
+     * Добавляет выпадающий список в указанный столбец
+     * 
+     * @param \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet Лист Excel
+     * @param string $column Буква столбца
+     * @param int $startRow Начальная строка
+     * @param int $endRow Конечная строка
+     * @param string $formula Формула для списка
+     */
+    private function addDropdownList($sheet, $column, $startRow, $endRow, $formula)
+    {
+        $validation = $sheet->getCell($column . $startRow)->getDataValidation();
+        $validation->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST);
+        $validation->setErrorStyle(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::STYLE_INFORMATION);
+        $validation->setAllowBlank(false);
+        $validation->setShowInputMessage(true);
+        $validation->setShowErrorMessage(true);
+        $validation->setShowDropDown(true);
+        $validation->setFormula1($formula);
+        
+        // Копируем валидацию на все ячейки в столбце
+        for ($i = $startRow; $i <= $endRow; $i++) {
+            $sheet->getCell($column . $i)->setDataValidation(clone $validation);
         }
     }
 }
