@@ -808,19 +808,56 @@ class SpreadSheetController extends V1Controller
                 $sheet2->setCellValue('T' . ($index + 2), $subcategory);
             }
             
+            // Подкатегории для Книги
+            $sheet2->setCellValue('U1', 'Подкатегории_Книги');
+            $subcategoriesBooks = [
+                'Художественная литература',
+                'Комиксы и манга',
+                'Книги для детей',
+                'Воспитание и развитие ребенка',
+                'Образование',
+                'Самообразование и развитие',
+                'Бизнес и менеджмент',
+                'Хобби и досуг',
+                'Астрология и эзотерика',
+                'Дом, сад и огород',
+                'Красота, здоровье и спорт',
+                'Научно-популярная литература',
+                'Интернет и технологии',
+                'Литературоведение и публицистика',
+                'Историческая и военная литература',
+                'Философия',
+                'Религия',
+                'Политика и право',
+                'Букинистика',
+                'Книги на иностранных языках',
+                'Плакаты',
+                'Календари',
+                'Коллекционные издания',
+                'Репринтные издания',
+                'Мультимедиа',
+                'Аудиокниги',
+                'Цифровые книги',
+                'Цифровые аудиокниги'
+            ];
+            
+            foreach ($subcategoriesBooks as $index => $subcategory) {
+                $sheet2->setCellValue('U' . ($index + 2), $subcategory);
+            }
+            
             // Форматирование первого листа
             foreach (range('A', 'M') as $column) {
                 $sheet1->getColumnDimension($column)->setAutoSize(true);
             }
             
             // Форматирование второго листа
-            foreach (range('A', 'T') as $column) {
+            foreach (range('A', 'U') as $column) {
                 $sheet2->getColumnDimension($column)->setAutoSize(true);
             }
             
             // Выделяем заголовки жирным
             $sheet1->getStyle('A1:M1')->getFont()->setBold(true);
-            $sheet2->getStyle('A1:T1')->getFont()->setBold(true);
+            $sheet2->getStyle('A1:U1')->getFont()->setBold(true);
             
             // Добавляем прямые выпадающие списки (без именованных диапазонов)
             
@@ -868,7 +905,8 @@ class SpreadSheetController extends V1Controller
                           ',IF(C' . $row . '="Зоотовары",' . $subcategoriesPetsRange . 
                           ',IF(C' . $row . '="Спорт",' . 'Справочники!$S$2:$S$28' . 
                           ',IF(C' . $row . '="Автотовары",' . 'Справочники!$T$2:$T$18' . 
-                          ',"Выберите категорию"))))))))))))))';
+                          ',IF(C' . $row . '="Книги",' . 'Справочники!$U$2:$U$29' . 
+                          ',"Выберите категорию")))))))))))))))';
                 $validation->setFormula1($formula);
             }
             
