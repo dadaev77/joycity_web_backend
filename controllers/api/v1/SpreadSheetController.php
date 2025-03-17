@@ -359,70 +359,14 @@ class SpreadSheetController extends V1Controller
 
             // Заполняем первый лист данными заказов
             $sheet1 = $spreadsheet->setActiveSheetIndex(0);
-            $sheet1->setTitle('Лист1');
+            $sheet1->setTitle('Заказы');
             $sheet1->fromArray([
                 ['Фото', 'Название товара', 'Категория товара', 'Подкатегория', 'Описание товара', 'Желаемое количество товара, шт',
                  'Желаемая стоимость за единицу товара, Р', 'Тип доставки', 'Тип пункта доставки', 'Адрес пункта доставки',
                  'Тип упаковки', 'Количество упаковок, шт', 'Глубокая инспекция'],
-                ['https://goods-photos.static1-sima-land.com/items/4043645/0/1600.jpg?v=1573812851', 'Блузка', 'Женщинам',
-                 'Блузки и рубашки', 'красивая', 5, 500, 'Медленное авто', 'Фулфилмент', 'Апаринки вл9', 'Мешок + скотч', 1, 'да']
-            ], null, 'A1');
-
-            // Создаем второй лист с категориями товаров
-            $sheet2 = $spreadsheet->createSheet();
-            $sheet2->setTitle('Категории');
-            $sheet2->fromArray([
-                ['Женщинам', 'Обувь', 'Детям', 'Мужчинам', 'Дом', 'Красота', 'Аксессуары', 'Электроника', 'Игрушки', 'Мебель',
-                 'Бытовая техника', 'Зоотовары', 'Спорт', 'Автотовары', 'Книги', 'Ювелирные изделия', 'Для ремонта', 'Сад и дача',
-                 'Здоровье', 'Канцтовары']
             ], null, 'A1');
             
-            // Создаем третий лист с подкатегориями
-            $sheet3 = $spreadsheet->createSheet();
-            $sheet3->setTitle('Подкатегории');
-            $sheet3->fromArray([
-                ['Блузки и рубашки', 'Детская', 'Для девочек', 'Брюки', 'Ванная', 'Аксессуары', 'Аксессуары для одежды',
-                 'Автоэлектроника и навигация', 'Электротранспорт и аксессуары', 'Бескаркасная мебель', 'Климатическая техника',
-                 'Для кошек', 'Фитнес и тренажеры', 'Шины и диски колесные', 'Художественная литература', 'Кольца',
-                 'Колеровка краски', 'Растения, семена и грунты', 'Бассейны', 'Анатомические модели']
-            ], null, 'A1');
-            
-            // Создаем четвертый лист с типами доставки
-            $sheet4 = $spreadsheet->createSheet();
-            $sheet4->setTitle('Типы доставки');
-            $sheet4->fromArray([
-                ['Медленное авто', 'Быстрое авто', 'Авиа', 'Морем', 'Железная дорога']
-            ], null, 'A1');
-            
-            // Создаем пятый лист с типами пунктов доставки
-            $sheet5 = $spreadsheet->createSheet();
-            $sheet5->setTitle('Пункты доставки');
-            $sheet5->fromArray([
-                ['Фулфилмент', 'Склад', 'Магазин', 'Пункт выдачи']
-            ], null, 'A1');
-            
-            // Создаем шестой лист с адресами пунктов доставки
-            $sheet6 = $spreadsheet->createSheet();
-            $sheet6->setTitle('Адреса');
-            $sheet6->fromArray([
-                ['Апаринки вл9', 'Москва, ул. Ленина 10', 'Санкт-Петербург, пр. Невский 20', 'Екатеринбург, ул. Мира 15']
-            ], null, 'A1');
-            
-            // Создаем седьмой лист с типами упаковки
-            $sheet7 = $spreadsheet->createSheet();
-            $sheet7->setTitle('Типы упаковки');
-            $sheet7->fromArray([
-                ['Мешок + скотч', 'Коробка', 'Пакет', 'Пленка']
-            ], null, 'A1');
-            
-            // Создаем восьмой лист с вариантами глубокой инспекции
-            $sheet8 = $spreadsheet->createSheet();
-            $sheet8->setTitle('Инспекция');
-            $sheet8->fromArray([
-                ['да', 'нет']
-            ], null, 'A1');
-            
-            // Добавляем еще несколько примеров заказов на первый лист
+            // Добавляем примеры заказов
             $sheet1->fromArray([
                 ['https://example.com/image1.jpg', 'Футболка мужская', 'Мужчинам', 'Футболки', 
                  'Качественная хлопковая футболка для мужчин. Подходит для повседневной носки.', 
@@ -432,39 +376,421 @@ class SpreadSheetController extends V1Controller
                  300, 1500, 'Медленное авто', 'Фулфилмент', 'Санкт-Петербург, пр. Невский 20', 'Пакет', 30, 'да'],
                 ['https://example.com/image3.jpg', 'Куртка зимняя детская', 'Детям', 'Верхняя одежда', 
                  'Теплая зимняя куртка для детей. Водонепроницаемый материал, утеплитель высокого качества.', 
-                 200, 3000, 'Быстрое авто', 'Склад', 'Екатеринбург, ул. Мира 15', 'Коробка', 20, 'да']
-            ], null, 'A3');
+                 200, 3000, 'Быстрое авто', 'Склад', 'Екатеринбург, ул. Мира 15', 'Коробка', 20, 'да'],
+                ['https://example.com/image4.jpg', 'Кроссовки спортивные', 'Обувь', 'Мужская', 
+                 'Удобные спортивные кроссовки для бега и повседневной носки.', 
+                 100, 2500, 'Быстрое авто', 'Склад', 'Москва, ул. Ленина 10', 'Коробка', 10, 'нет'],
+                ['https://example.com/image5.jpg', 'Светильник настольный', 'Дом', 'Освещение', 
+                 'Современный настольный светильник с регулируемой яркостью. Идеально подходит для рабочего стола.', 
+                 50, 1200, 'Медленное авто', 'Пункт выдачи', 'Санкт-Петербург, пр. Невский 20', 'Коробка', 5, 'да'],
+                ['https://example.com/image6.jpg', 'Набор косметики', 'Красота', 'Подарочные наборы', 
+                 'Подарочный набор косметики премиум-класса. Включает средства для ухода за лицом и телом.', 
+                 30, 3500, 'Быстрое авто', 'Магазин', 'Москва, ул. Ленина 10', 'Коробка', 3, 'да'],
+                ['https://example.com/image7.jpg', 'Сумка женская', 'Аксессуары', 'Сумки и рюкзаки', 
+                 'Стильная женская сумка из натуральной кожи. Вместительная, с несколькими отделениями.', 
+                 80, 4500, 'Медленное авто', 'Фулфилмент', 'Санкт-Петербург, пр. Невский 20', 'Пакет', 8, 'да'],
+                ['https://example.com/image8.jpg', 'Смартфон', 'Электроника', 'Смартфоны и телефоны', 
+                 'Современный смартфон с мощным процессором и качественной камерой. Поддержка 5G.', 
+                 40, 25000, 'Быстрое авто', 'Магазин', 'Москва, ул. Ленина 10', 'Коробка', 4, 'да'],
+                ['https://example.com/image9.jpg', 'Конструктор LEGO', 'Игрушки', 'Конструкторы LEGO', 
+                 'Набор LEGO для детей от 6 лет. Развивает мелкую моторику и творческое мышление.', 
+                 60, 3500, 'Медленное авто', 'Пункт выдачи', 'Екатеринбург, ул. Мира 15', 'Коробка', 6, 'нет'],
+                ['https://example.com/image10.jpg', 'Диван угловой', 'Мебель', 'Диваны и кресла', 
+                 'Удобный угловой диван с механизмом трансформации. Обивка из качественной ткани.', 
+                 10, 35000, 'Медленное авто', 'Склад', 'Москва, ул. Ленина 10', 'Упаковка', 1, 'да']
+            ], null, 'A2');
+            
+            // Создаем второй лист со справочниками
+            $sheet2 = $spreadsheet->createSheet();
+            $sheet2->setTitle('Справочники');
+            
+            // Категории товаров - все указанные категории
+            $sheet2->setCellValue('A1', 'Категории');
+            $categories = [
+                'Женщинам', 'Обувь', 'Детям', 'Мужчинам', 'Дом', 
+                'Красота', 'Аксессуары', 'Электроника', 'Игрушки', 'Мебель',
+                'Бытовая техника', 'Зоотовары', 'Спорт', 'Автотовары', 'Книги', 
+                'Ювелирные изделия', 'Для ремонта', 'Сад и дача', 'Здоровье', 'Канцтовары'
+            ];
+            
+            // Добавляем категории в столбец A
+            foreach ($categories as $index => $category) {
+                $sheet2->setCellValue('A' . ($index + 2), $category);
+            }
+            
+            // Подкатегории для Женщинам
+            $sheet2->setCellValue('B1', 'Подкатегории_Женщинам');
+            $subcategoriesWomen = [
+                'Блузки и рубашки', 'Верхняя одежда', 'Джинсы', 'Костюмы',
+                'Пиджаки, жилеты и жакеты', 'Толстовки, свитшоты и худи', 'Футболки и топы',
+                'Шорты', 'Белье', 'Будущие мамы', 'Для невысоких', 'Офис',
+                'Религиозная', 'Спецодежда и СИЗы', 'Брюки', 'Джемперы, водолазки и кардиганы',
+                'Комбинезоны', 'Лонгсливы', 'Платья и сарафаны', 'Туники', 'Халаты',
+                'Юбки', 'Большие размеры', 'Для высоких', 'Одежда для дома', 'Пляжная мода',
+                'Подарки женщинам'
+            ];
+            
+            foreach ($subcategoriesWomen as $index => $subcategory) {
+                $sheet2->setCellValue('B' . ($index + 2), $subcategory);
+            }
+            
+            // Подкатегории для Мужчинам
+            $sheet2->setCellValue('C1', 'Подкатегории_Мужчинам');
+            $subcategoriesMen = [
+                'Брюки', 'Верхняя одежда', 'Джемперы, водолазки и кардиганы', 'Джинсы',
+                'Комбинезоны и полукомбинезоны', 'Костюмы', 'Лонгсливы', 'Майки',
+                'Пиджаки, жилеты и жакеты', 'Пижамы', 'Рубашки', 'Толстовки, свитшоты и худи',
+                'Футболки', 'Футболки-поло', 'Халаты', 'Шорты', 'Белье', 'Большие размеры',
+                'Для высоких', 'Для невысоких', 'Одежда для дома', 'Офис', 'Пляжная одежда',
+                'Религиозная', 'Свадьба', 'Спецодежда и СИЗы', 'Подарки мужчинам'
+            ];
+            
+            foreach ($subcategoriesMen as $index => $subcategory) {
+                $sheet2->setCellValue('C' . ($index + 2), $subcategory);
+            }
+            
+            // Подкатегории для Детям
+            $sheet2->setCellValue('D1', 'Подкатегории_Детям');
+            $subcategoriesChildren = [
+                'Для девочек', 'Для мальчиков', 'Для новорожденных', 'Верхняя одежда',
+                'Школьная форма', 'Детская', 'Брюки', 'Джинсы', 'Комбинезоны', 'Футболки',
+                'Платья и сарафаны', 'Толстовки, свитшоты и худи', 'Шорты', 'Белье',
+                'Одежда для дома', 'Конструкторы', 'Прогулки и путешествия', 'Религиозная одежда',
+                'Подгузники', 'Детская электроника', 'Детский транспорт', 'Детское питание',
+                'Товары для малыша', 'Подарки детям'
+            ];
+            
+            foreach ($subcategoriesChildren as $index => $subcategory) {
+                $sheet2->setCellValue('D' . ($index + 2), $subcategory);
+            }
+            
+            // Подкатегории для Обувь
+            $sheet2->setCellValue('J1', 'Подкатегории_Обувь');
+            $subcategoriesShoes = [
+                'Детская',
+                'Женская',
+                'Спецобувь',
+                'Для новорожденных',
+                'Мужская',
+                'Аксессуары для обуви'
+            ];
+            
+            foreach ($subcategoriesShoes as $index => $subcategory) {
+                $sheet2->setCellValue('J' . ($index + 2), $subcategory);
+            }
+            
+            // Подкатегории для Дом
+            $sheet2->setCellValue('K1', 'Подкатегории_Дом');
+            $subcategoriesHome = [
+                'Ванная',
+                'Кухня',
+                'Предметы интерьера',
+                'Спальня',
+                'Гостиная',
+                'Детская',
+                'Досуг и творчество',
+                'Все для праздника',
+                'Зеркала',
+                'Коврики',
+                'Кронштейны',
+                'Освещение',
+                'Для курения',
+                'Отдых на природе',
+                'Парфюмерия для дома',
+                'Прихожая',
+                'Религия, эзотерика',
+                'Сувенирная продукция',
+                'Хозяйственные товары',
+                'Хранение вещей',
+                'Цветы, вазы и кашпо',
+                'Шторы'
+            ];
+            
+            foreach ($subcategoriesHome as $index => $subcategory) {
+                $sheet2->setCellValue('K' . ($index + 2), $subcategory);
+            }
+            
+            // Подкатегории для Красота
+            $sheet2->setCellValue('L1', 'Подкатегории_Красота');
+            $subcategoriesBeauty = [
+                'Аксессуары',
+                'Волосы',
+                'Аптечная косметика',
+                'Детская декоративная косметика',
+                'Для загара',
+                'Для мам и малышей',
+                'Израильская косметика',
+                'Инструменты для парикмахеров',
+                'Корейские бренды',
+                'Косметические аппараты и аксессуары',
+                'Крымская косметика',
+                'Макияж',
+                'Мужская линия',
+                'Наборы для ухода',
+                'Ногти',
+                'Органическая косметика',
+                'Парфюмерия',
+                'Подарочные наборы',
+                'Профессиональная косметика',
+                'Средства личной гигиены',
+                'Гигиена полости рта'
+            ];
+            
+            foreach ($subcategoriesBeauty as $index => $subcategory) {
+                $sheet2->setCellValue('L' . ($index + 2), $subcategory);
+            }
+            
+            // Подкатегории для Аксессуары
+            $sheet2->setCellValue('M1', 'Подкатегории_Аксессуары');
+            $subcategoriesAccessories = [
+                'Аксессуары для одежды',
+                'Бижутерия',
+                'Ювелирные изделия',
+                'Веера',
+                'Галстуки и бабочки',
+                'Головные уборы',
+                'Зеркальца',
+                'Зонты',
+                'Кошельки и кредитницы',
+                'Маски для сна',
+                'Носовые платки',
+                'Очки и футляры',
+                'Перчатки и варежки',
+                'Платки и шарфы',
+                'Религиозные',
+                'Ремни и пояса',
+                'Сумки и рюкзаки',
+                'Часы и ремешки',
+                'Чемоданы и защита багажа'
+            ];
+            
+            foreach ($subcategoriesAccessories as $index => $subcategory) {
+                $sheet2->setCellValue('M' . ($index + 2), $subcategory);
+            }
+            
+            // Подкатегории для Электроника
+            $sheet2->setCellValue('N1', 'Подкатегории_Электроника');
+            $subcategoriesElectronics = [
+                'Автоэлектроника и навигация',
+                'Гарнитуры и наушники',
+                'Детская электроника',
+                'Игровые консоли и игры',
+                'Кабели и зарядные устройства',
+                'Музыка и видео',
+                'Ноутбуки и компьютеры',
+                'Офисная техника',
+                'Развлечения и гаджеты',
+                'Сетевое оборудование',
+                'Системы безопасности',
+                'Смартфоны и телефоны',
+                'Смарт-часы и браслеты',
+                'Солнечные электростанции и комплектующие',
+                'ТВ, Аудио, Фото, Видео техника',
+                'Торговое оборудование',
+                'Умный дом'
+            ];
+            
+            foreach ($subcategoriesElectronics as $index => $subcategory) {
+                $sheet2->setCellValue('N' . ($index + 2), $subcategory);
+            }
+            
+            // Подкатегории для Игрушки
+            $sheet2->setCellValue('O1', 'Подкатегории_Игрушки');
+            $subcategoriesToys = [
+                'Электротранспорт и аксессуары',
+                'Антистресс',
+                'Для малышей',
+                'Для песочницы',
+                'Игровые комплексы',
+                'Игровые наборы',
+                'Игрушечное оружие и аксессуары',
+                'Игрушечный транспорт',
+                'Игрушки для ванной',
+                'Интерактивные',
+                'Кинетический песок',
+                'Конструкторы',
+                'Конструкторы LEGO',
+                'Куклы и аксессуары',
+                'Музыкальные',
+                'Мыльные пузыри',
+                'Мягкие игрушки',
+                'Наборы для опытов',
+                'Настольные игры',
+                'Радиоуправляемые',
+                'Развивающие игрушки',
+                'Сборные модели'
+            ];
+            
+            foreach ($subcategoriesToys as $index => $subcategory) {
+                $sheet2->setCellValue('O' . ($index + 2), $subcategory);
+            }
+            
+            // Подкатегории для Мебель
+            $sheet2->setCellValue('P1', 'Подкатегории_Мебель');
+            $subcategoriesFurniture = [
+                'Бескаркасная мебель',
+                'Детская мебель',
+                'Диваны и кресла',
+                'Матрасы',
+                'Столы и стулья',
+                'Компьютерная и геймерская мебель',
+                'Мебель для гостиной',
+                'Мебель для кухни',
+                'Мебель для прихожей',
+                'Мебель для спальни',
+                'Гардеробная мебель',
+                'Офисная мебель',
+                'Садовая мебель',
+                'Торговая мебель',
+                'Торговое оборудование',
+                'Мебель для салонов красоты',
+                'Зеркала',
+                'Мебельная фурнитура'
+            ];
+            
+            foreach ($subcategoriesFurniture as $index => $subcategory) {
+                $sheet2->setCellValue('P' . ($index + 2), $subcategory);
+            }
+            
+            // Подкатегории для Бытовая техника
+            $sheet2->setCellValue('Q1', 'Подкатегории_Бытовая_техника');
+            $subcategoriesAppliances = [
+                'Климатическая техника',
+                'Красота и здоровье',
+                'Садовая техника',
+                'Техника для дома',
+                'Техника для кухни',
+                'Крупная бытовая техника'
+            ];
+            
+            foreach ($subcategoriesAppliances as $index => $subcategory) {
+                $sheet2->setCellValue('Q' . ($index + 2), $subcategory);
+            }
+            
+            // Типы доставки
+            $sheet2->setCellValue('E1', 'Типы_доставки');
+            $deliveryTypes = [
+                'Медленное авто', 'Быстрое авто', 'Авиа', 'Морем', 'Железная дорога'
+            ];
+            
+            foreach ($deliveryTypes as $index => $type) {
+                $sheet2->setCellValue('E' . ($index + 2), $type);
+            }
+            
+            // Типы пунктов доставки
+            $sheet2->setCellValue('F1', 'Пункты_доставки');
+            $deliveryPoints = [
+                'Фулфилмент', 'Склад', 'Магазин', 'Пункт выдачи'
+            ];
+            
+            foreach ($deliveryPoints as $index => $point) {
+                $sheet2->setCellValue('F' . ($index + 2), $point);
+            }
+            
+            // Адреса пунктов доставки
+            $sheet2->setCellValue('G1', 'Адреса');
+            $addresses = [
+                'Апаринки вл9', 'Москва, ул. Ленина 10', 'Санкт-Петербург, пр. Невский 20', 
+                'Екатеринбург, ул. Мира 15'
+            ];
+            
+            foreach ($addresses as $index => $address) {
+                $sheet2->setCellValue('G' . ($index + 2), $address);
+            }
+            
+            // Типы упаковки
+            $sheet2->setCellValue('H1', 'Типы_упаковки');
+            $packagingTypes = [
+                'Мешок + скотч', 'Коробка', 'Пакет', 'Пленка'
+            ];
+            
+            foreach ($packagingTypes as $index => $type) {
+                $sheet2->setCellValue('H' . ($index + 2), $type);
+            }
+            
+            // Варианты глубокой инспекции
+            $sheet2->setCellValue('I1', 'Инспекция');
+            $inspectionOptions = [
+                'да', 'нет'
+            ];
+            
+            foreach ($inspectionOptions as $index => $option) {
+                $sheet2->setCellValue('I' . ($index + 2), $option);
+            }
             
             // Форматирование первого листа
             foreach (range('A', 'M') as $column) {
                 $sheet1->getColumnDimension($column)->setAutoSize(true);
             }
             
+            // Форматирование второго листа
+            foreach (range('A', 'S') as $column) {
+                $sheet2->getColumnDimension($column)->setAutoSize(true);
+            }
+            
             // Выделяем заголовки жирным
             $sheet1->getStyle('A1:M1')->getFont()->setBold(true);
+            $sheet2->getStyle('A1:S1')->getFont()->setBold(true);
             
-            // Добавляем выпадающие списки для соответствующих столбцов
+            // Добавляем прямые выпадающие списки (без именованных диапазонов)
             
             // Категория товара (столбец C)
-            $this->addDropdownList($sheet1, 'C', 2, 100, '=Категории!$A$1:$T$1');
+            $categoriesRange = 'Справочники!$A$2:$A$21';
+            $this->addDropdownListDirect($sheet1, 'C', 2, 100, $categoriesRange);
             
-            // Подкатегория (столбец D)
-            $this->addDropdownList($sheet1, 'D', 2, 100, '=Подкатегории!$A$1:$T$1');
+            // Подкатегория (столбец D) - зависимый список
+            // Для простоты используем прямые ссылки на диапазоны
+            $subcategoriesWomenRange = 'Справочники!$B$2:$B$28';
+            $subcategoriesMenRange = 'Справочники!$C$2:$C$28';
+            $subcategoriesChildrenRange = 'Справочники!$D$2:$D$25';
+            $subcategoriesShoesRange = 'Справочники!$J$2:$J$7'; // Диапазон для обуви
+            $subcategoriesHomeRange = 'Справочники!$K$2:$K$23'; // Диапазон для дома
+            $subcategoriesBeautyRange = 'Справочники!$L$2:$L$22'; // Диапазон для красоты
+            $subcategoriesAccessoriesRange = 'Справочники!$M$2:$M$20'; // Диапазон для аксессуаров
+            $subcategoriesElectronicsRange = 'Справочники!$N$2:$N$18'; // Диапазон для электроники
+            $subcategoriesToysRange = 'Справочники!$O$2:$O$23'; // Диапазон для игрушек
+            $subcategoriesFurnitureRange = 'Справочники!$P$2:$P$19'; // Диапазон для мебели
+            $subcategoriesAppliancesRange = 'Справочники!$Q$2:$Q$7'; // Диапазон для бытовой техники
+            
+            for ($row = 2; $row <= 100; $row++) {
+                $validation = $sheet1->getCell('D' . $row)->getDataValidation();
+                $validation->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST);
+                $validation->setErrorStyle(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::STYLE_INFORMATION);
+                $validation->setAllowBlank(false);
+                $validation->setShowInputMessage(true);
+                $validation->setShowErrorMessage(true);
+                $validation->setShowDropDown(true);
+                
+                // Используем IF для выбора нужного диапазона в зависимости от категории
+                $formula = 'IF(C' . $row . '="Женщинам",' . $subcategoriesWomenRange . 
+                          ',IF(C' . $row . '="Мужчинам",' . $subcategoriesMenRange . 
+                          ',IF(C' . $row . '="Детям",' . $subcategoriesChildrenRange . 
+                          ',IF(C' . $row . '="Обувь",' . $subcategoriesShoesRange . 
+                          ',IF(C' . $row . '="Дом",' . $subcategoriesHomeRange . 
+                          ',IF(C' . $row . '="Красота",' . $subcategoriesBeautyRange . 
+                          ',IF(C' . $row . '="Аксессуары",' . $subcategoriesAccessoriesRange . 
+                          ',IF(C' . $row . '="Электроника",' . $subcategoriesElectronicsRange . 
+                          ',IF(C' . $row . '="Игрушки",' . $subcategoriesToysRange . 
+                          ',IF(C' . $row . '="Мебель",' . $subcategoriesFurnitureRange . 
+                          ',IF(C' . $row . '="Бытовая техника",' . $subcategoriesAppliancesRange . 
+                          ',"Выберите категорию")))))))))))';
+                $validation->setFormula1($formula);
+            }
             
             // Тип доставки (столбец H)
-            $this->addDropdownList($sheet1, 'H', 2, 100, '=\'Типы доставки\'!$A$1:$E$1');
+            $this->addDropdownListDirect($sheet1, 'H', 2, 100, 'Справочники!$E$2:$E$6');
             
             // Тип пункта доставки (столбец I)
-            $this->addDropdownList($sheet1, 'I', 2, 100, '=\'Пункты доставки\'!$A$1:$D$1');
+            $this->addDropdownListDirect($sheet1, 'I', 2, 100, 'Справочники!$F$2:$F$5');
             
             // Адрес пункта доставки (столбец J)
-            $this->addDropdownList($sheet1, 'J', 2, 100, '=Адреса!$A$1:$D$1');
+            $this->addDropdownListDirect($sheet1, 'J', 2, 100, 'Справочники!$G$2:$G$5');
             
             // Тип упаковки (столбец K)
-            $this->addDropdownList($sheet1, 'K', 2, 100, '=\'Типы упаковки\'!$A$1:$D$1');
+            $this->addDropdownListDirect($sheet1, 'K', 2, 100, 'Справочники!$H$2:$H$5');
             
             // Глубокая инспекция (столбец M)
-            $this->addDropdownList($sheet1, 'M', 2, 100, '=Инспекция!$A$1:$B$1');
+            $this->addDropdownListDirect($sheet1, 'M', 2, 100, 'Справочники!$I$2:$I$3');
             
             // Возвращаемся к первому листу
             $spreadsheet->setActiveSheetIndex(0);
@@ -490,28 +816,25 @@ class SpreadSheetController extends V1Controller
     }
 
     /**
-     * Добавляет выпадающий список в указанный столбец
+     * Добавляет выпадающий список в указанный столбец с прямой ссылкой на диапазон
      * 
      * @param \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet Лист Excel
      * @param string $column Буква столбца
      * @param int $startRow Начальная строка
      * @param int $endRow Конечная строка
-     * @param string $formula Формула для списка
+     * @param string $range Диапазон ячеек для списка
      */
-    private function addDropdownList($sheet, $column, $startRow, $endRow, $formula)
+    private function addDropdownListDirect($sheet, $column, $startRow, $endRow, $range)
     {
-        $validation = $sheet->getCell($column . $startRow)->getDataValidation();
-        $validation->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST);
-        $validation->setErrorStyle(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::STYLE_INFORMATION);
-        $validation->setAllowBlank(false);
-        $validation->setShowInputMessage(true);
-        $validation->setShowErrorMessage(true);
-        $validation->setShowDropDown(true);
-        $validation->setFormula1($formula);
-        
-        // Копируем валидацию на все ячейки в столбце
         for ($i = $startRow; $i <= $endRow; $i++) {
-            $sheet->getCell($column . $i)->setDataValidation(clone $validation);
+            $validation = $sheet->getCell($column . $i)->getDataValidation();
+            $validation->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST);
+            $validation->setErrorStyle(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::STYLE_INFORMATION);
+            $validation->setAllowBlank(false);
+            $validation->setShowInputMessage(true);
+            $validation->setShowErrorMessage(true);
+            $validation->setShowDropDown(true);
+            $validation->setFormula1($range);
         }
     }
 }
