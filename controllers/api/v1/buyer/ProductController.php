@@ -461,7 +461,7 @@ class ProductController extends BuyerController
     /**
      * @OA\Get(
      *     path="/api/v1/buyer/product/download-excel",
-     *     summary="Скачать шаблон Excel для загрузки заявок",
+     *     summary="Скачать шаблон Excel для загрузки товаров",
      *     @OA\Response(
      *         response=200,
      *         description="Файл шаблона Excel"
@@ -480,7 +480,7 @@ class ProductController extends BuyerController
     /**
      * @OA\Post(
      *     path="/api/v1/buyer/product/upload-excel",
-     *     summary="Загрузить Excel файл с заявками",
+     *     summary="Загрузить Excel файл с товарами",
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\MediaType(
@@ -490,7 +490,7 @@ class ProductController extends BuyerController
      *                     property="file",
      *                     type="string",
      *                     format="binary",
-     *                     description="Excel файл с заявками"
+     *                     description="Excel файл с товарами"
      *                 )
      *             )
      *         )
