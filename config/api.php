@@ -33,6 +33,7 @@ $config = [
             'tableName' => '{{%queue}}',
             'channel' => 'default',
             'mutex' => \yii\mutex\MysqlMutex::class,
+            'as log' => \yii\queue\LogBehavior::class,
         ],
         'actionLog' => [
             'class' => 'app\components\ActionLog',
@@ -178,7 +179,7 @@ $config = [
                         'api/v1/push',
                         'api/v1/spread-sheet',
 
-                        
+
                     ],
                     'pluralize' => false,
                 ],

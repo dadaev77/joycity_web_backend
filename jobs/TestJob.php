@@ -9,6 +9,6 @@ class TestJob extends BaseObject implements JobInterface
 {
     public function execute($queue)
     {
-        \Yii::$app->telegramLog->send('success', 'TestJob');
+        echo "test job a work";
     }
 }
