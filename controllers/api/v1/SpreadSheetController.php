@@ -870,19 +870,38 @@ class SpreadSheetController extends V1Controller
                 $sheet2->setCellValue('V' . ($index + 2), $subcategory);
             }
             
+            // Подкатегории для Для ремонта
+            $sheet2->setCellValue('W1', 'Подкатегории_Для_ремонта');
+            $subcategoriesRepair = [
+                'Колеровка краски',
+                'Двери, окна и фурнитура',
+                'Инструменты и оснастка',
+                'Отделочные материалы',
+                'Электрика',
+                'Лакокрасочные материалы',
+                'Сантехника, отопление и газоснабжение',
+                'Вентиляция',
+                'Крепеж',
+                'Стройматериалы'
+            ];
+            
+            foreach ($subcategoriesRepair as $index => $subcategory) {
+                $sheet2->setCellValue('W' . ($index + 2), $subcategory);
+            }
+            
             // Форматирование первого листа
             foreach (range('A', 'M') as $column) {
                 $sheet1->getColumnDimension($column)->setAutoSize(true);
             }
             
             // Форматирование второго листа
-            foreach (range('A', 'V') as $column) {
+            foreach (range('A', 'W') as $column) {
                 $sheet2->getColumnDimension($column)->setAutoSize(true);
             }
             
             // Выделяем заголовки жирным
             $sheet1->getStyle('A1:M1')->getFont()->setBold(true);
-            $sheet2->getStyle('A1:V1')->getFont()->setBold(true);
+            $sheet2->getStyle('A1:W1')->getFont()->setBold(true);
             
             // Добавляем прямые выпадающие списки (без именованных диапазонов)
             
@@ -932,7 +951,8 @@ class SpreadSheetController extends V1Controller
                           ',IF(C' . $row . '="Автотовары",' . 'Справочники!$T$2:$T$18' . 
                           ',IF(C' . $row . '="Книги",' . 'Справочники!$U$2:$U$29' . 
                           ',IF(C' . $row . '="Ювелирные изделия",' . 'Справочники!$V$2:$V$17' . 
-                          ',"Выберите категорию"))))))))))))))))';
+                          ',IF(C' . $row . '="Для ремонта",' . 'Справочники!$W$2:$W$11' . 
+                          ',"Выберите категорию")))))))))))))))))';
                 $validation->setFormula1($formula);
             }
             
