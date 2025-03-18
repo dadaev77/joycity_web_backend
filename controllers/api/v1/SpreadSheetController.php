@@ -1389,43 +1389,21 @@ class SpreadSheetController extends V1Controller
     private function validateOrderData($data)
     {
         $errors = [];
+        $config = require Yii::getAlias('@app/config/modelFields.php');
+        $orderConfig = $config['Order'];
         
         // Проверка обязательных полей
-        if (empty($data['product_name_ru'])) {
-            $errors['product_name_ru'] = 'Название товара обязательно для заполнения';
+        foreach ($orderConfig['required_fields'] as $field => $message) {
+            if (empty($data[$field])) {
+                $errors[$field] = $message;
+            }
         }
         
-        if (empty($data['expected_quantity']) || $data['expected_quantity'] < 1) {
-            $errors['expected_quantity'] = 'Количество товара должно быть больше 0';
-        }
-        
-        if (empty($data['expected_price_per_item']) || $data['expected_price_per_item'] < 0) {
-            $errors['expected_price_per_item'] = 'Цена за единицу товара должна быть больше или равна 0';
-        }
-        
-        if (empty($data['subcategory_id'])) {
-            $errors['subcategory_id'] = 'Необходимо указать подкатегорию товара';
-        }
-        
-        if (empty($data['type_delivery_id'])) {
-            $errors['type_delivery_id'] = 'Необходимо указать тип доставки';
-        }
-        
-        if (empty($data['type_delivery_point_id'])) {
-            $errors['type_delivery_point_id'] = 'Необходимо указать тип пункта доставки';
-        }
-        
-        // Временно отключаем проверку delivery_point_address_id
-        /*if (empty($data['delivery_point_address_id'])) {
-            $errors['delivery_point_address_id'] = 'Необходимо указать адрес пункта доставки';
-        }*/
-        
-        if (empty($data['type_packaging_id'])) {
-            $errors['type_packaging_id'] = 'Необходимо указать тип упаковки';
-        }
-        
-        if (empty($data['expected_packaging_quantity']) || $data['expected_packaging_quantity'] < 1) {
-            $errors['expected_packaging_quantity'] = 'Количество упаковок должно быть больше 0';
+        // Проверка числовых ограничений
+        foreach ($orderConfig['numeric_constraints'] as $field => $constraints) {
+            if (isset($data[$field]) && isset($constraints['min']) && $data[$field] < $constraints['min']) {
+                $errors[$field] = "Значение поля должно быть больше " . $constraints['min'];
+            }
         }
         
         return $errors;
