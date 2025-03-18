@@ -1071,54 +1071,35 @@ class SpreadSheetController extends V1Controller
         // Если это числовое значение
         if (is_numeric($address)) {
             $id = (int)$address;
-            if ($id === 1) {
-                Yii::debug("Numeric address (1) detected, returning 1", 'address_debug');
-                return 1;
+            if ($id === 1 || $id === 2) {
+                Yii::debug("Valid numeric ID: " . $id, 'address_debug');
+                return $id;
             }
-            Yii::debug("Invalid numeric address: " . $id, 'address_debug');
+            Yii::debug("Invalid numeric ID: " . $id, 'address_debug');
             return null;
         }
         
-        // Обновленный список адресов (все ведут к ID 1)
+        // Обновленный список адресов в соответствии с вашей базой данных
         $addresses = [
-            'апаринки вл9' => 1,
-            'Апаринки вл9' => 1,
-            'АПАРИНКИ ВЛ9' => 1,
-            'апаринки вл 9' => 1,
-            'Апаринки вл 9' => 1,
-            'АПАРИНКИ ВЛ 9' => 1,
-            // Добавляем варианты без "вл"
-            'апаринки 9' => 1,
-            'Апаринки 9' => 1,
-            'АПАРИНКИ 9' => 1,
-            // Добавляем варианты с дефисом
-            'апаринки-вл9' => 1,
-            'Апаринки-вл9' => 1,
-            'АПАРИНКИ-ВЛ9' => 1,
-            // Добавляем варианты с точкой
-            'апаринки вл.9' => 1,
-            'Апаринки вл.9' => 1,
-            'АПАРИНКИ ВЛ.9' => 1,
-            // Добавляем варианты с запятой
-            'апаринки, вл9' => 1,
-            'Апаринки, вл9' => 1,
-            'АПАРИНКИ, ВЛ9' => 1,
-            // Добавляем варианты с владением
-            'апаринки владение 9' => 1,
-            'Апаринки владение 9' => 1,
-            'АПАРИНКИ ВЛАДЕНИЕ 9' => 1,
-            // Добавляем варианты с сокращением влад.
-            'апаринки влад. 9' => 1,
-            'Апаринки влад. 9' => 1,
-            'АПАРИНКИ ВЛАД. 9' => 1,
-            // Добавляем варианты с номером
-            'апаринки №9' => 1,
-            'Апаринки №9' => 1,
-            'АПАРИНКИ №9' => 1,
-            // Добавляем варианты с д.
-            'апаринки д.9' => 1,
-            'Апаринки д.9' => 1,
-            'АПАРИНКИ, ВЛ9' => 1
+            // ID 1
+            'москва, тестовый склад' => 1,
+            'Москва, Тестовый склад' => 1,
+            'МОСКВА, ТЕСТОВЫЙ СКЛАД' => 1,
+            'москва тестовый склад' => 1,
+            'Москва Тестовый склад' => 1,
+            'тестовый склад' => 1,
+            'Тестовый склад' => 1,
+            
+            // ID 2
+            'кутузовское ш 12' => 2,
+            'Кутузовское ш 12' => 2,
+            'КУТУЗОВСКОЕ Ш 12' => 2,
+            'кутузовское шоссе 12' => 2,
+            'Кутузовское шоссе 12' => 2,
+            'кутузовское ш. 12' => 2,
+            'Кутузовское ш. 12' => 2,
+            'кутузовское' => 2,
+            'Кутузовское' => 2
         ];
         
         // Нормализуем входящий адрес
@@ -1130,16 +1111,22 @@ class SpreadSheetController extends V1Controller
         // Логируем нормализованный адрес
         Yii::debug("Normalized address: '" . $normalizedAddress . "'", 'address_debug');
         
-        // Проверяем наличие адреса в маппинге
+        // Проверяем прямое совпадение
         if (isset($addresses[$normalizedAddress])) {
-            Yii::debug("Address found in mapping, returning: 1", 'address_debug');
+            $id = $addresses[$normalizedAddress];
+            Yii::debug("Direct match found, returning: " . $id, 'address_debug');
+            return $id;
+        }
+        
+        // Проверяем частичное совпадение
+        if (strpos($normalizedAddress, 'москва') !== false && strpos($normalizedAddress, 'тестовый') !== false && strpos($normalizedAddress, 'склад') !== false) {
+            Yii::debug("Partial match for Moscow test warehouse, returning: 1", 'address_debug');
             return 1;
         }
         
-        // Дополнительная проверка: если адрес содержит "апаринки" и "9"
-        if (strpos($normalizedAddress, 'апаринки') !== false && strpos($normalizedAddress, '9') !== false) {
-            Yii::debug("Address contains 'апаринки' and '9', returning: 1", 'address_debug');
-            return 1;
+        if (strpos($normalizedAddress, 'кутузовск') !== false && (strpos($normalizedAddress, '12') !== false || strpos($normalizedAddress, 'двенадцать') !== false)) {
+            Yii::debug("Partial match for Kutuzovskoe 12, returning: 2", 'address_debug');
+            return 2;
         }
         
         // Если адрес не найден
