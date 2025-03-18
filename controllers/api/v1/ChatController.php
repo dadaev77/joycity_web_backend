@@ -562,6 +562,7 @@ class ChatController extends V1Controller
      */
     public function actionDeleteMessage()
     {
+        $userId = User::getIdentity()->id;
         $chatId = Yii::$app->request->post('chat_id');
         $messageId = Yii::$app->request->post('message_id');
 
@@ -570,9 +571,34 @@ class ChatController extends V1Controller
             throw new BadRequestHttpException('Сообщение не найдено или не принадлежит чату');
         }
 
+        $chat = Chat::findOne($chatId);
+        $metadata = $chat->metadata ?? [];
+        $participants = $metadata['participants'] ?? [];
+
         $message->is_deleted = true;
         $message->deleted_at = date('Y-m-d H:i:s');
-        $message->save();
+        
+        if ($message->save()) {
+            // Формируем данные для уведомления
+            $notificationData = [
+                'type' => 'message_deleted',
+                'chat_id' => $chatId,
+                'message_id' => $messageId,
+                'deleter_id' => $userId,
+                'deleter_name' => User::getIdentity()->name,
+                'timestamp' => date('Y-m-d H:i:s')
+            ];
+
+            try {
+                // Отправляем уведомление всем участникам чата, кроме удалившего
+                self::socketHandler(
+                    array_diff($participants, [$userId]),
+                    $notificationData
+                );
+            } catch (\Exception $e) {
+                Yii::error("Socket notification error: " . $e->getMessage(), 'socket');
+            }
+        }
 
         return [
             'status' => 'success',
