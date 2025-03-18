@@ -5,24 +5,10 @@ use app\controllers\api\V1Controller;
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\IOFactory;
-use PhpOffice\PhpSpreadsheet\Reader\Xlsx;
-use PhpOffice\PhpSpreadsheet\Reader\Xls;
-use PhpOffice\PhpSpreadsheet\Reader\Csv;
-use PhpOffice\PhpSpreadsheet\Reader\Html;
-use PhpOffice\PhpSpreadsheet\Reader\IReader;
-use PhpOffice\PhpSpreadsheet\Reader\IReadFilter;
 use PhpOffice\PhpSpreadsheet\Reader\IReadsComments;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx as WriterXlsx;
-use PhpOffice\PhpSpreadsheet\Writer\Xls as WriterXls;
-use PhpOffice\PhpSpreadsheet\Writer\Csv as WriterCsv;
-use PhpOffice\PhpSpreadsheet\Style\Alignment;
-use PhpOffice\PhpSpreadsheet\Style\Border;
-use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
-use yii\web\UploadedFile;
 use app\models\Order;
-use app\models\Product;
 use app\models\User;
-use app\models\TypeDelivery;
 use app\services\TranslationService;
 use Yii;
 
@@ -56,105 +42,18 @@ class SpreadSheetController extends V1Controller
     public function actionDownloadExcel()
     {
         try {
-            $spreadsheet = new Spreadsheet();
-            $sheet = $spreadsheet->getActiveSheet();
-            
-            // Заголовки
-            $headers = [
-                'Фото',
-                'Название товара',
-                'Категория товара',
-                'Подкатегория',
-                'Описание товара',
-                'Желаемое количество товара, шт',
-                'Желаемая стоимость за единицу товара, Р',
-                'Тип доставки',
-                'Тип пункта доставки',
-                'Адрес пункта доставки',
-                'Тип упаковки',
-                'Количество упаковок, шт',
-                'Глубокая инспекция'
-            ];
-            
-            // Подсказки
-            $hints = [
-                '(Добавьте сюда фотографии вашего товара)',
-                '(Например Брюки женские)',
-                'Выберите из списка',
-                'Выберите из списка',
-                '(Добавьте описание товара минимум 20 символов)',
-                '(от 1 до 100 000)',
-                '(от 1 до 1 000 000)',
-                'Выберите из списка',
-                'Выберите из списка',
-                'Выберите из списка',
-                'Выберите из списка',
-                '(от 1 до 100 000)',
-                'Выберите из списка'
-            ];
-            
-            // Примеры
-            $examples = [
-                '',
-                'Брюки женские',
-                '1',
-                '2',
-                'Качественные брюки из натуральных материалов. Подходят для повседневной носки.',
-                '1000',
-                '1000',
-                '1',
-                '1',
-                '1',
-                '1',
-                '100',
-                '0'
-            ];
-            
-            // Устанавливаем заголовки
-            foreach ($headers as $index => $header) {
-                $column = chr(65 + $index);
-                $sheet->setCellValue($column . '1', $header);
-                $sheet->getStyle($column . '1')->getFont()->setBold(true);
+            $filePath = Yii::getAlias('@app/data/templates/test_order_data.xlsx');
+
+            if (!file_exists($filePath)) {
+                throw new \Exception('Файл шаблона не найден');
             }
-            
-            // Устанавливаем подсказки
-            foreach ($hints as $index => $hint) {
-                $column = chr(65 + $index);
-                $sheet->setCellValue($column . '2', $hint);
-                $sheet->getStyle($column . '2')->getFont()->setItalic(true);
-            }
-            
-            // Устанавливаем примеры
-            foreach ($examples as $index => $example) {
-                $column = chr(65 + $index);
-                $sheet->setCellValue($column . '3', $example);
-            }
-            
-            // Форматирование
-            foreach (range('A', chr(65 + count($headers) - 1)) as $column) {
-                $sheet->getColumnDimension($column)->setAutoSize(true);
-            }
-            
-            // Создаем временный файл
-            $tempFile = tempnam(sys_get_temp_dir(), 'order_template_');
-            $writer = new WriterXlsx($spreadsheet);
-            $writer->save($tempFile);
-            
-            $response = Yii::$app->response;
-            $response->headers->set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-            $response->headers->set('Content-Disposition', 'attachment; filename="order_template.xlsx"');
-            $response->sendFile($tempFile);
-            
-            // Удаляем временный файл после отправки
-            register_shutdown_function(function() use ($tempFile) {
-                if (file_exists($tempFile)) {
-                    unlink($tempFile);
-                }
-            });
-            
-            return $response;
+
+            return Yii::$app->response->sendFile($filePath, 'order_template.xlsx', [
+                'mimeType' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            ]);
+
         } catch (\Exception $e) {
-            Yii::error("Ошибка при создании шаблона Excel: " . $e->getMessage());
+            Yii::error("Ошибка при отправке шаблона Excel: " . $e->getMessage());
             return $this->asJson([
                 'success' => false,
                 'message' => 'Внутренняя ошибка сервера: ' . $e->getMessage()
