@@ -539,21 +539,41 @@ class ChatController extends V1Controller
      */
     public function actionDeleteChat()
     {
+        $userId = User::getIdentity()->id;
         $chatId = Yii::$app->request->post('chat_id');
         $chat = Chat::findOne($chatId);
+        
         if (!$chat) {
             throw new BadRequestHttpException('Чат не найден');
         }
 
+        $metadata = $chat->metadata ?? [];
+        $participants = $metadata['participants'] ?? [];
+
         $chat->is_deleted = true;
         $chat->deleted_at = date('Y-m-d H:i:s');
-        $chat->save();
+        
+        if ($chat->save()) {
+            // Формируем данные для уведомления
+            $notificationData = [
+                'type' => 'chat_deleted',
+                'chat_id' => $chatId,
+                'deleter_id' => $userId,
+                'deleter_name' => User::getIdentity()->name,
+                'order_id' => $chat->order_id,
+                'timestamp' => date('Y-m-d H:i:s')
+            ];
 
-        return [
-            'status' => 'success',
-            'message' => 'Чат успешно удален'
-        ];
-    }
+            try {
+                // Отправляем уведомление всем участникам чата, кроме удалившего
+                self::socketHandler(
+                    array_diff($participants, [$userId]),
+                    $notificationData
+                );
+            } catch (\Exception $e) {
+                Yii::error("Socket notification error: " . $e->getMessage(), 'socket');
+            }
+        }
 
     /**
      * Удаление сообщения в чате
@@ -562,6 +582,7 @@ class ChatController extends V1Controller
      */
     public function actionDeleteMessage()
     {
+        $userId = User::getIdentity()->id;
         $chatId = Yii::$app->request->post('chat_id');
         $messageId = Yii::$app->request->post('message_id');
 
@@ -570,9 +591,34 @@ class ChatController extends V1Controller
             throw new BadRequestHttpException('Сообщение не найдено или не принадлежит чату');
         }
 
+        $chat = Chat::findOne($chatId);
+        $metadata = $chat->metadata ?? [];
+        $participants = $metadata['participants'] ?? [];
+
         $message->is_deleted = true;
         $message->deleted_at = date('Y-m-d H:i:s');
-        $message->save();
+        
+        if ($message->save()) {
+            // Формируем данные для уведомления
+            $notificationData = [
+                'type' => 'message_deleted',
+                'chat_id' => $chatId,
+                'message_id' => $messageId,
+                'deleter_id' => $userId,
+                'deleter_name' => User::getIdentity()->name,
+                'timestamp' => date('Y-m-d H:i:s')
+            ];
+
+            try {
+                // Отправляем уведомление всем участникам чата, кроме удалившего
+                self::socketHandler(
+                    array_diff($participants, [$userId]),
+                    $notificationData
+                );
+            } catch (\Exception $e) {
+                Yii::error("Socket notification error: " . $e->getMessage(), 'socket');
+            }
+        }
 
         return [
             'status' => 'success',
