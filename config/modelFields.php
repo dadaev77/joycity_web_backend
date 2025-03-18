@@ -5,288 +5,160 @@ use app\models\Order;
 
 // Функции валидации для разных типов данных
 $validators = [
-    'integer' => function($value, $config) {
-        if (!is_numeric($value) || !is_int($value + 0)) {
-            return "Поле '{$config['description']}' должно быть целым числом";
+    'delivery_type' => function($value) {
+        if (empty($value)) {
+            return null;
         }
-        if (isset($config['min']) && $value < $config['min']) {
-            return "Значение поля '{$config['description']}' должно быть не меньше {$config['min']}";
+        $value = trim($value);
+        if (is_numeric($value)) {
+            return (int)$value;
         }
-        if (isset($config['max']) && $value > $config['max']) {
-            return "Значение поля '{$config['description']}' должно быть не больше {$config['max']}";
+        $types = [
+            'Медленное авто' => 8,
+            'медленное авто' => 8,
+            'Быстрое авто' => 9,
+            'быстрое авто' => 9,
+            'Авиа' => 3,
+            'авиа' => 3,
+            'Морем' => 4,
+            'морем' => 4,
+            'Железная дорога' => 5,
+            'железная дорога' => 5,
+            '8' => 8,
+            '9' => 9
+        ];
+        return $types[$value] ?? null;
+    },
+    
+    'delivery_point' => function($value) {
+        if (empty($value)) {
+            return null;
         }
-        if (isset($config['values']) && !in_array($value, $config['values'])) {
-            return "Недопустимое значение для поля '{$config['description']}'";
+        $value = trim($value);
+        if (is_numeric($value)) {
+            $id = (int)$value;
+            if ($id >= 1 && $id <= 4) {
+                return $id;
+            }
+            return null;
         }
+        $types = [
+            'фулфилмент' => 1,
+            'Фулфилмент' => 1,
+            'ФУЛФИЛМЕНТ' => 1,
+            'склад' => 2,
+            'Склад' => 2,
+            'СКЛАД' => 2,
+            'магазин' => 3,
+            'Магазин' => 3,
+            'МАГАЗИН' => 3,
+            'пункт выдачи' => 4,
+            'Пункт выдачи' => 4,
+            'ПУНКТ ВЫДАЧИ' => 4,
+            '1' => 1,
+            '2' => 2,
+            '3' => 3,
+            '4' => 4
+        ];
+        return $types[mb_strtolower(trim($value), 'UTF-8')] ?? null;
+    },
+    
+    'delivery_address' => function($value) {
+        if (empty($value)) {
+            return null;
+        }
+        $value = trim($value);
+        if (is_numeric($value)) {
+            $id = (int)$value;
+            if ($id === 1 || $id === 2) {
+                return $id;
+            }
+            return null;
+        }
+        $addresses = [
+            // ID 1
+            'москва, тестовый склад' => 1,
+            'Москва, Тестовый склад' => 1,
+            'МОСКВА, ТЕСТОВЫЙ СКЛАД' => 1,
+            'москва тестовый склад' => 1,
+            'Москва Тестовый склад' => 1,
+            'тестовый склад' => 1,
+            'Тестовый склад' => 1,
+            
+            // ID 2
+            'кутузовское ш 12' => 2,
+            'Кутузовское ш 12' => 2,
+            'КУТУЗОВСКОЕ Ш 12' => 2,
+            'кутузовское шоссе 12' => 2,
+            'Кутузовское шоссе 12' => 2,
+            'кутузовское ш. 12' => 2,
+            'Кутузовское ш. 12' => 2,
+            'кутузовское' => 2,
+            'Кутузовское' => 2
+        ];
+        
+        $normalizedAddress = mb_strtolower(trim($value), 'UTF-8');
+        $normalizedAddress = preg_replace('/\s+/', ' ', $normalizedAddress);
+        
+        // Прямое совпадение
+        if (isset($addresses[$normalizedAddress])) {
+            return $addresses[$normalizedAddress];
+        }
+        
+        // Частичное совпадение
+        if (strpos($normalizedAddress, 'москва') !== false && 
+            strpos($normalizedAddress, 'тестовый') !== false && 
+            strpos($normalizedAddress, 'склад') !== false) {
+            return 1;
+        }
+        
+        if (strpos($normalizedAddress, 'кутузовск') !== false && 
+            (strpos($normalizedAddress, '12') !== false || 
+             strpos($normalizedAddress, 'двенадцать') !== false)) {
+            return 2;
+        }
+        
         return null;
     },
-    'float' => function($value, $config) {
-        if (!is_numeric($value)) {
-            return "Поле '{$config['description']}' должно быть числом";
+    
+    'packaging_type' => function($value) {
+        if (empty($value)) {
+            return null;
         }
-        if (isset($config['min']) && $value < $config['min']) {
-            return "Значение поля '{$config['description']}' должно быть не меньше {$config['min']}";
-        }
-        if (isset($config['max']) && $value > $config['max']) {
-            return "Значение поля '{$config['description']}' должно быть не больше {$config['max']}";
-        }
-        return null;
-    },
-    'string' => function($value, $config) {
-        if (isset($config['min_length']) && mb_strlen($value) < $config['min_length']) {
-            return "Длина поля '{$config['description']}' должна быть не менее {$config['min_length']} символов";
-        }
-        return null;
+        $types = [
+            'Мешок + скотч' => 1,
+            'Коробка' => 2,
+            'Пакет' => 3,
+            'Пленка' => 4,
+            'Упаковка' => 5,
+            '1' => 1,
+            '2' => 2,
+            '3' => 3,
+            '4' => 4,
+            '5' => 5
+        ];
+        return $types[trim($value)] ?? null;
     }
 ];
 
 return [
     'Order' => [
-        'fields' => [
-            'id' => [
-                'type' => 'integer',
-                'required' => true,
-                'description' => 'ID заявки',
-                'aliases' => ['id', 'order_id'],
-                'validate' => $validators['integer']
-            ],
-            'product_id' => [
-                'type' => 'integer',
-                'required' => true,
-                'description' => 'ID продукта',
-                'aliases' => ['product_id', 'товар'],
-                'validate' => $validators['integer']
-            ],
-            'client_id' => [
-                'type' => 'integer',
-                'required' => true,
-                'description' => 'ID клиента',
-                'aliases' => ['client_id', 'клиент'],
-                'validate' => $validators['integer']
-            ],
-            'status' => [
-                'type' => 'string',
-                'required' => true,
-                'description' => 'Статус заявки',
-                'aliases' => ['status', 'статус'],
-                'values' => [
-                    Order::STATUS_CREATED,
-                    Order::STATUS_BUYER_ASSIGNED,
-                    Order::STATUS_BUYER_OFFER_CREATED,
-                    Order::STATUS_BUYER_OFFER_ACCEPTED,
-                    Order::STATUS_PAID,
-                    Order::STATUS_CANCELLED_REQUEST
-                ],
-                'validate' => $validators['string']
-            ],
-            'expected_quantity' => [
-                'type' => 'integer',
-                'required' => true,
-                'description' => 'Желаемое количество товара',
-                'aliases' => ['количество', 'quantity'],
-                'help' => '(от 1 до 100 000)',
-                'min' => 1,
-                'max' => 100000,
-                'validate' => $validators['integer']
-            ],
-            'expected_price_per_item' => [
-                'type' => 'float',
-                'required' => true,
-                'description' => 'Желаемая стоимость за единицу',
-                'aliases' => ['цена', 'price'],
-                'help' => '(от 1 до 1 000 000)',
-                'min' => 1,
-                'max' => 1000000,
-                'validate' => $validators['float']
-            ],
-            'type_delivery_id' => [
-                'type' => 'integer',
-                'required' => true,
-                'description' => 'Тип доставки',
-                'aliases' => ['доставка', 'delivery'],
-                'help' => 'Выберите из списка',
-                'validate' => $validators['integer']
-            ],
-            'type_delivery_point_id' => [
-                'type' => 'integer',
-                'required' => true,
-                'description' => 'Тип пункта доставки',
-                'aliases' => ['пункт_доставки', 'delivery_point'],
-                'help' => 'Выберите из списка',
-                'validate' => $validators['integer']
-            ],
-            'delivery_point_address_id' => [
-                'type' => 'integer',
-                'required' => true,
-                'description' => 'Адрес пункта доставки',
-                'aliases' => ['адрес', 'address'],
-                'help' => 'Выберите из списка',
-                'validate' => $validators['integer']
-            ],
-            'type_packaging_id' => [
-                'type' => 'integer',
-                'required' => true,
-                'description' => 'Тип упаковки',
-                'aliases' => ['упаковка', 'packaging'],
-                'help' => 'Выберите из списка',
-                'validate' => $validators['integer']
-            ],
-            'expected_packaging_quantity' => [
-                'type' => 'integer',
-                'required' => true,
-                'description' => 'Количество упаковок',
-                'aliases' => ['количество_упаковок', 'packaging_quantity'],
-                'help' => '(от 1 до 100 000)',
-                'min' => 1,
-                'max' => 100000,
-                'validate' => $validators['integer']
-            ],
-            'is_need_deep_inspection' => [
-                'type' => 'integer',
-                'required' => true,
-                'description' => 'Глубокая инспекция',
-                'aliases' => ['инспекция', 'inspection'],
-                'help' => 'Выберите из списка',
-                'values' => [0, 1],
-                'validate' => $validators['integer']
-            ],
-            'created_at' => [
-                'type' => 'string',
-                'required' => false,
-                'description' => 'Дата создания',
-                'aliases' => ['created_at', 'дата_создания'],
-                'validate' => $validators['string']
-            ]
-        ]
-    ],
-    'Product' => [
-        'fields' => [
-            'images' => [
-                'type' => 'string',
-                'required' => false,
-                'description' => 'Фотографии товара',
-                'aliases' => ['фото', 'photos', 'images'],
-                'help' => '(Добавьте сюда фотографии вашего товара)',
-                'validate' => $validators['string']
-            ],
-            'name_ru' => [
-                'type' => 'string',
-                'required' => true,
-                'description' => 'Название товара',
-                'aliases' => ['название', 'name', 'наименование'],
-                'help' => '(Например Брюки женские)',
-                'example' => 'Брюки женские',
-                'validate' => $validators['string']
-            ],
-            'category_id' => [
-                'type' => 'integer',
-                'required' => true,
-                'description' => 'Категория товара',
-                'aliases' => ['категория', 'category'],
-                'help' => 'Выберите из списка',
-                'validate' => $validators['integer']
-            ],
-            'subcategory_id' => [
-                'type' => 'integer',
-                'required' => true,
-                'description' => 'Подкатегория',
-                'aliases' => ['подкатегория', 'subcategory'],
-                'help' => 'Выберите из списка',
-                'validate' => $validators['integer']
-            ],
-            'description_ru' => [
-                'type' => 'string',
-                'required' => true,
-                'description' => 'Описание товара',
-                'aliases' => ['описание', 'description'],
-                'help' => '(Добавьте описание товара минимум 20 символов)',
-                'min_length' => 20,
-                'validate' => $validators['string']
-            ],
-            'expected_quantity' => [
-                'type' => 'integer',
-                'required' => true,
-                'description' => 'Желаемое количество товара, шт',
-                'aliases' => ['количество', 'quantity'],
-                'help' => '(от 1 до 100 000)',
-                'min' => 1,
-                'max' => 100000,
-                'example' => '1000',
-                'validate' => $validators['integer']
-            ],
-            'expected_price_per_item' => [
-                'type' => 'float',
-                'required' => true,
-                'description' => 'Желаемая стоимость за единицу товара, Р',
-                'aliases' => ['цена', 'price'],
-                'help' => '(от 1 до 1 000 000)',
-                'min' => 1,
-                'max' => 1000000,
-                'example' => '1000',
-                'validate' => $validators['float']
-            ],
-            'type_delivery_id' => [
-                'type' => 'integer',
-                'required' => true,
-                'description' => 'Тип доставки',
-                'aliases' => ['доставка', 'delivery'],
-                'help' => 'Выберите из списка',
-                'validate' => function($value, $config) use ($validators) {
-                    $error = $validators['integer']($value, $config);
-                    if ($error !== null) {
-                        return $error;
-                    }
-                    // Проверка существования в справочнике
-                    if (!TypeDelivery::findOne($value)) {
-                        return "Выбранный тип доставки не существует";
-                    }
-                    return null;
-                }
-            ],
-            'type_delivery_point_id' => [
-                'type' => 'integer',
-                'required' => true,
-                'description' => 'Тип пункта доставки',
-                'aliases' => ['пункт_доставки', 'delivery_point'],
-                'help' => 'Выберите из списка',
-                'validate' => $validators['integer']
-            ],
-            'delivery_point_address_id' => [
-                'type' => 'integer',
-                'required' => true,
-                'description' => 'Адрес пункта доставки',
-                'aliases' => ['адрес', 'address'],
-                'help' => 'Выберите из списка',
-                'validate' => $validators['integer']
-            ],
-            'type_packaging_id' => [
-                'type' => 'integer',
-                'required' => true,
-                'description' => 'Тип упаковки',
-                'aliases' => ['упаковка', 'packaging'],
-                'help' => 'Выберите из списка',
-                'validate' => $validators['integer']
-            ],
-            'expected_packaging_quantity' => [
-                'type' => 'integer',
-                'required' => true,
-                'description' => 'Количество упаковок, шт',
-                'aliases' => ['количество_упаковок', 'packaging_quantity'],
-                'help' => '(от 1 до 100 000)',
-                'min' => 1,
-                'max' => 100000,
-                'example' => '100',
-                'validate' => $validators['integer']
-            ],
-            'is_need_deep_inspection' => [
-                'type' => 'integer',
-                'required' => true,
-                'description' => 'Глубокая инспекция',
-                'aliases' => ['инспекция', 'inspection'],
-                'help' => 'Выберите из списка',
-                'values' => [0, 1],
-                'validate' => $validators['integer']
-            ]
+        'validators' => $validators,
+        'required_fields' => [
+            'product_name_ru' => 'Название товара обязательно для заполнения',
+            'expected_quantity' => 'Количество товара должно быть больше 0',
+            'expected_price_per_item' => 'Цена за единицу товара должна быть больше или равна 0',
+            'subcategory_id' => 'Необходимо указать подкатегорию товара',
+            'type_delivery_id' => 'Необходимо указать тип доставки',
+            'type_delivery_point_id' => 'Необходимо указать тип пункта доставки',
+            'delivery_point_address_id' => 'Необходимо указать адрес пункта доставки',
+            'type_packaging_id' => 'Необходимо указать тип упаковки',
+            'expected_packaging_quantity' => 'Количество упаковок должно быть больше 0'
+        ],
+        'numeric_constraints' => [
+            'expected_quantity' => ['min' => 1],
+            'expected_price_per_item' => ['min' => 0],
+            'expected_packaging_quantity' => ['min' => 1]
         ]
     ]
 ];
