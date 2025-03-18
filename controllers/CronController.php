@@ -116,12 +116,12 @@ class CronController extends Controller
         if (!empty($rates['data'])) {
             $rate = new \app\models\Rate();
             $rate->RUB = 1;
-            $rate->USD = round($rates['data']['USD'] * 1.02, 4);
-            $rate->CNY = round($rates['data']['CNY'] * 1.05, 4);
+            $rate->USD = round($rates['data']['USD'] * 1.05, 4);
+            $rate->CNY = round($rates['data']['CNY'] * 1.07, 4);
 
             if ($rate->save()) {
                 Yii::$app->heartbeat->addHeartbeat('rates', 'success');
-                Yii::$app->telegramLog->send('success', 'Курсы обновлены: USD - ' . $rates['data']['USD'] . ' CNY - ' . $rates['data']['CNY']);
+                Yii::$app->telegramLog->send('success', 'Курсы обновлены курс/+комиссия: USD - ' . $rates['data']['USD'] . '/' . $rate->USD . ' CNY - ' . $rates['data']['CNY'] . '/' . $rate->CNY);
                 return ['status' => 'success', 'message' => 'Курсы обновлены'];
             } else {
                 Yii::$app->telegramLog->send('error', 'Ошибка сохранения курсов');
