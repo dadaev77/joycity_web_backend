@@ -1523,7 +1523,7 @@ class SpreadSheetController extends V1Controller
             'type_packaging_id' => $typePackagingId,
             'type_delivery_id' => $typeDeliveryId,
             'type_delivery_point_id' => $typeDeliveryPointId,
-            'delivery_point_address_id' => 1, // Устанавливаем фиксированное значение
+            'delivery_point_address_id' => $deliveryPointAddressId, // Используем полученный ID адреса
             'is_need_deep_inspection' => $deepInspection ? 1 : 0,
             'link_tz' => $photoUrl,
             'created_by' => Yii::$app->user->id,
