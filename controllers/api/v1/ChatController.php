@@ -30,7 +30,7 @@ class ChatController extends V1Controller
         $behaviours['verbFilter']['actions']['mark-as-read'] = ['put'];
         $behaviours['verbFilter']['actions']['get-unread-messages'] = ['get'];
         $behaviours['verbFilter']['actions']['get-order-chats'] = ['get'];
-        $behaviours['verbFilter']['actions']['delete-chat'] = ['delete'];
+        $behaviours['verbFilter']['actions']['delete-chat'] = ['delete', 'post'];
         $behaviours['verbFilter']['actions']['delete-message'] = ['delete'];
         $behaviours['access'] = [
             'class' => AccessControl::class,
@@ -51,11 +51,52 @@ class ChatController extends V1Controller
         return $behaviours;
     }
 
+    /**
+     * Получение последнего сообщения в чате
+     * 
+     * @param Chat $chat Объект чата
+     * 
+     * @return Message|null Объект последнего сообщения или null, если сообщений нет
+     * 
+     * @throws \yii\db\StaleObjectException если объект сообщения был изменен другим пользователем
+     * 
+     * @example
+     * ```php
+     * $lastMessage = $this->getLastMessage($chat);
+     * if ($lastMessage) {
+     *     echo $lastMessage->content;
+     * }
+     * ```
+     */
     private function getLastMessage($chat)
     {
         return Message::findOne($chat->last_message_id) ?? null;
     }
 
+    /**
+     * Подсчет количества непрочитанных сообщений в чате для конкретного пользователя
+     * 
+     * @param Chat $chat Объект чата
+     * @param int $userId ID пользователя, для которого подсчитываются непрочитанные сообщения
+     * 
+     * @return int Количество непрочитанных сообщений
+     * 
+     * @throws \yii\db\StaleObjectException если объект сообщения был изменен другим пользователем
+     * 
+     * @example
+     * ```php
+     * $unreadCount = $this->calculateUnreadMessages($chat, $userId);
+     * if ($unreadCount > 0) {
+     *     echo "У вас есть {$unreadCount} непрочитанных сообщений";
+     * }
+     * ```
+     * 
+     * @description
+     * Метод проверяет каждое сообщение в чате и подсчитывает количество сообщений,
+     * которые не были прочитаны указанным пользователем. Сообщение считается
+     * непрочитанным, если ID пользователя отсутствует в массиве read_by в метаданных
+     * сообщения.
+     */
     private function calculateUnreadMessages($chat, $userId)
     {
         $unreadMessages = 0;
@@ -70,6 +111,38 @@ class ChatController extends V1Controller
         return $unreadMessages;
     }
 
+    /**
+     * Получение общего количества непрочитанных сообщений для текущего пользователя
+     * 
+     * @api {get} /api/v1/chat/get-unread-messages Получение количества непрочитанных сообщений
+     * @apiName GetUnreadMessages
+     * @apiGroup Chat
+     * @apiVersion 1.0.0
+     * 
+     * @apiHeader {String} Authorization Bearer токен авторизации
+     * 
+     * @apiSuccess {String} status Статус операции (success)
+     * @apiSuccess {Number} auth_user_id ID авторизованного пользователя
+     * @apiSuccess {Number} data Общее количество непрочитанных сообщений во всех чатах пользователя
+     * 
+     * @apiSuccessExample {json} Success-Response:
+     *     HTTP/1.1 200 OK
+     *     {
+     *       "status": "success",
+     *       "auth_user_id": 1,
+     *       "data": 5
+     *     }
+     * 
+     * @description
+     * Метод подсчитывает общее количество непрочитанных сообщений для текущего пользователя
+     * во всех его активных чатах. Для этого:
+     * 1. Получает все активные чаты
+     * 2. Фильтрует чаты, оставляя только те, где пользователь является участником
+     * 3. Для каждого чата подсчитывает количество непрочитанных сообщений
+     * 4. Возвращает сумму всех непрочитанных сообщений
+     * 
+     * @return array Статус операции, ID пользователя и общее количество непрочитанных сообщений
+     */
     public function actionGetUnreadMessages()
     {
         $userId = User::getIdentity()->id;
@@ -95,9 +168,69 @@ class ChatController extends V1Controller
         ];
     }
     /**
-     * Получить список чатов текущего пользователя
+     * Получение списка чатов текущего пользователя
+     * 
+     * @api {get} /api/v1/chat/get-chats Получение списка чатов
+     * @apiName GetChats
+     * @apiGroup Chat
+     * @apiVersion 1.0.0
+     * 
+     * @apiHeader {String} Authorization Bearer токен авторизации
+     * 
+     * @apiSuccess {String} status Статус операции (success)
+     * @apiSuccess {Number} auth_user_id ID авторизованного пользователя
+     * @apiSuccess {Array} data Массив чатов с информацией о них
+     * 
+     * @apiSuccessExample {json} Success-Response:
+     *     HTTP/1.1 200 OK
+     *     {
+     *       "status": "success",
+     *       "auth_user_id": 1,
+     *       "data": [
+     *         {
+     *           "id": 1,
+     *           "order_id": 123,
+     *           "status": "active",
+     *           "metadata": {
+     *             "participants": [
+     *               {
+     *                 "id": 1,
+     *                 "name": "Иван Иванов",
+     *                 "avatar": "path/to/avatar.jpg",
+     *                 "role": "buyer",
+     *                 "email": "ivan@example.com",
+     *                 "phone_number": "+79001234567",
+     *                 "telegram": "@ivan",
+     *                 "uuid": "550e8400-e29b-41d4-a716-446655440000",
+     *                 "organization_name": "ООО Компания"
+     *               }
+     *             ],
+     *             "last_message": {
+     *               "id": 1,
+     *               "content": "Текст последнего сообщения",
+     *               "created_at": "2024-03-20 10:00:00"
+     *             },
+     *             "unread_messages": 5
+     *           }
+     *         }
+     *       ]
+     *     }
+     * 
+     * @description
+     * Метод возвращает список всех активных чатов текущего пользователя. Для каждого чата:
+     * 1. Проверяется, является ли пользователь участником чата
+     * 2. Добавляется информация о последнем сообщении
+     * 3. Подсчитывается количество непрочитанных сообщений
+     * 4. Формируется список участников с их полными данными
+     * 
+     * Чаты сортируются по дате последнего обновления (новые сверху).
+     * В список попадают только активные и неудаленные чаты.
+     * 
+     * @return array Статус операции, ID пользователя и массив чатов с информацией о них
      */
-    public function actionGetChats()
+   
+   
+     public function actionGetChats()
     {
         $userId = User::getIdentity()->id;
         $filteredChats = [];
@@ -152,8 +285,70 @@ class ChatController extends V1Controller
     }
 
     /**
-     * Поиск по чатам
+     * Поиск чатов по ID заказа
+     * 
+     * @api {get} /api/v1/chat/search-chats Поиск чатов
+     * @apiName SearchChats
+     * @apiGroup Chat
+     * @apiVersion 1.0.0
+     * 
+     * @apiHeader {String} Authorization Bearer токен авторизации
+     * 
+     * @apiParam {String} query Поисковый запрос (ID заказа)
+     * 
+     * @apiSuccess {Number} auth_user_id ID авторизованного пользователя
+     * @apiSuccess {Array} chats Массив найденных чатов, сгруппированных по заказам
+     * 
+     * @apiSuccessExample {json} Success-Response:
+     *     HTTP/1.1 200 OK
+     *     {
+     *       "auth_user_id": 1,
+     *       "chats": [
+     *         {
+     *           "order_id": 123,
+     *           "chats": [
+     *             {
+     *               "id": 1,
+     *               "order_id": 123,
+     *               "status": "active",
+     *               "metadata": {
+     *                 "participants": [
+     *                   {
+     *                     "id": 1,
+     *                     "name": "Иван Иванов",
+     *                     "avatar": "path/to/avatar.jpg",
+     *                     "role": "buyer",
+     *                     "email": "ivan@example.com",
+     *                     "phone_number": "+79001234567",
+     *                     "telegram": "@ivan",
+     *                     "uuid": "550e8400-e29b-41d4-a716-446655440000",
+     *                     "organization_name": "ООО Компания"
+     *                   }
+     *                 ],
+     *                 "last_message": {
+     *                   "id": 1,
+     *                   "content": "Текст последнего сообщения",
+     *                   "created_at": "2024-03-20 10:00:00"
+     *                 },
+     *                 "unread_messages": 5
+     *               }
+     *             }
+     *           ]
+     *         }
+     *       ]
+     *     }
+     * 
+     * @apiErrorExample {json} Error-Response:
+     *     HTTP/1.1 400 Bad Request
+     *     {
+     *       "message": "Неверный формат запроса",
+     *       "error": "BadRequestHttpException"
+     *     }
+     * 
+     * @return array ID пользователя и массив найденных чатов, сгруппированных по заказам
      */
+
+
     public function actionSearchChats($query = '')
     {
         $userId = User::getIdentity()->id;
@@ -262,6 +457,64 @@ class ChatController extends V1Controller
             ]
         ];
     }
+
+
+
+    /**
+     * Получение чатов для конкретного заказа
+     * 
+     * @api {get} /api/v1/chat/get-order-chats Получение чатов заказа
+     * @apiName GetOrderChats
+     * @apiGroup Chat
+     * @apiVersion 1.0.0
+     * 
+     * @apiHeader {String} Authorization Bearer токен авторизации
+     * 
+     * @apiParam {Number} orderId ID заказа
+     * 
+     * @apiSuccess {String} status Статус операции (success)
+     * @apiSuccess {Number} auth_user_id ID авторизованного пользователя
+     * @apiSuccess {Array} data Массив чатов с информацией о них
+     * 
+     * @apiSuccessExample {json} Success-Response:
+     *     HTTP/1.1 200 OK
+     *     {
+     *       "status": "success",
+     *       "auth_user_id": 1,
+     *       "data": [
+     *         {
+     *           "id": 1,
+     *           "order_id": 123,
+     *           "status": "active",
+     *           "metadata": {
+     *             "participants": [
+     *               {
+     *                 "id": 1,
+     *                 "name": "Иван Иванов",
+     *                 "avatar": "path/to/avatar.jpg",
+     *                 "role": "buyer",
+     *                 "email": "ivan@example.com",
+     *                 "phone_number": "+79001234567",
+     *                 "telegram": "@ivan",
+     *                 "uuid": "550e8400-e29b-41d4-a716-446655440000",
+     *                 "organization_name": "ООО Компания"
+     *               }
+     *             ],
+     *             "last_message": {
+     *               "id": 1,
+     *               "content": "Текст последнего сообщения",
+     *               "created_at": "2024-03-20 10:00:00"
+     *             },
+     *             "unread_messages": 5
+     *           }
+     *         }
+     *       ]
+     *     }
+     * 
+     * @return array Статус операции, ID пользователя и массив чатов
+     */
+
+     
     public function actionGetOrderChats($orderId)
     {
         $chats = Chat::find()->where(['order_id' => $orderId, 'status' => 'active', 'is_deleted' => false])->all();
@@ -311,8 +564,61 @@ class ChatController extends V1Controller
             'data' => $filteredChats
         ];
     }
+
+
+
+    
     /**
-     * Отправка сообщения
+     * Отправка сообщения в чат
+     * 
+     * @api {post} /api/v1/chat/send-message Отправка сообщения
+     * @apiName SendMessage
+     * @apiGroup Chat
+     * @apiVersion 1.0.0
+     * 
+     * @apiHeader {String} Authorization Bearer токен авторизации
+     * @apiHeader {String} Content-Type multipart/form-data
+     * 
+     * @apiParam {Number} chat_id ID чата
+     * @apiParam {String} content Текст сообщения
+     * @apiParam {String} [type=text] Тип сообщения (text, image, video, file, audio)
+     * @apiParam {Number} [reply_to_id] ID сообщения, на которое отвечаем
+     * @apiParam {File} [images] Изображения (можно несколько)
+     * @apiParam {File} [videos] Видео (можно несколько)
+     * @apiParam {File} [files] Файлы (можно несколько)
+     * @apiParam {File} [audios] Аудио (можно несколько)
+     * 
+     * @apiSuccess {String} status Статус операции (success)
+     * @apiSuccess {Object} data Объект созданного сообщения
+     * 
+     * @apiSuccessExample {json} Success-Response:
+     *     HTTP/1.1 200 OK
+     *     {
+     *       "status": "success",
+     *       "data": {
+     *         "id": 1,
+     *         "chat_id": 123,
+     *         "sender_id": 1,
+     *         "content": "Текст сообщения",
+     *         "type": "text",
+     *         "metadata": {
+     *           "read_by": [1]
+     *         },
+     *         "created_at": "2024-03-20 10:00:00"
+     *       }
+     *     }
+     * 
+     * @apiError {String} message Сообщение об ошибке
+     * @apiError {String} error Тип ошибки
+     * 
+     * @apiErrorExample {json} Error-Response:
+     *     HTTP/1.1 400 Bad Request
+     *     {
+     *       "message": "Необходимо указать chat_id",
+     *       "error": "BadRequestHttpException"
+     *     }
+     * 
+     * @return array Статус операции и данные созданного сообщения
      */
     public function actionSendMessage()
     {
@@ -401,6 +707,48 @@ class ChatController extends V1Controller
 
     /**
      * Отметить сообщения как прочитанные
+     * 
+     * @api {put} /api/v1/chat/mark-as-read Отметить сообщения как прочитанные
+     * @apiName MarkAsRead
+     * @apiGroup Chat
+     * @apiVersion 1.0.0
+     * 
+     * @apiHeader {String} Authorization Bearer токен авторизации
+     * @apiHeader {String} Content-Type application/json
+     * 
+     * @apiParam {Number} message_id ID сообщения, для которого нужно отметить все сообщения как прочитанные
+     * 
+     * @apiSuccess {String} status Статус операции (success)
+     * @apiSuccess {String} message Сообщение об успешном выполнении операции
+     * @apiSuccess {Array} read_messages Массив прочитанных сообщений с информацией о них
+     * 
+     * @apiSuccessExample {json} Success-Response:
+     *     HTTP/1.1 200 OK
+     *     {
+     *       "status": "success",
+     *       "message": "all messages in chat 123 marked as read",
+     *       "read_messages": [
+     *         {
+     *           "id": 1,
+     *           "chat_id": 123,
+     *           "read_by": [1, 2],
+     *           "sender_id": 2,
+     *           "created_at": "2024-03-20 10:00:00"
+     *         }
+     *       ]
+     *     }
+     * 
+     * @apiError {String} message Сообщение об ошибке
+     * @apiError {String} error Тип ошибки
+     * 
+     * @apiErrorExample {json} Error-Response:
+     *     HTTP/1.1 400 Bad Request
+     *     {
+     *       "message": "Сообщение не найдено",
+     *       "error": "BadRequestHttpException"
+     *     }
+     * 
+     * @return array Статус операции, сообщение и список прочитанных сообщений
      */
     public function actionMarkAsRead()
     {
@@ -534,15 +882,46 @@ class ChatController extends V1Controller
 
     /**
      * Удаление чата
-     * Устанавливает флаг is_deleted в true и устанавливает deleted_at на текущее время.
+     * * Устанавливает флаг is_deleted в true и устанавливает deleted_at на текущее время.
      * @return array Статус операции.
+     * @api {delete} /api/v1/chat/delete-chat Удаление чата
+     * @apiName DeleteChat
+     * @apiGroup Chat
+     * @apiVersion 1.0.0
+     * 
+     * @apiHeader {String} Authorization Bearer токен авторизации
+     * @apiHeader {String} Content-Type application/json
+     * 
+     * @apiParam {Number} chat_id ID чата для удаления
+     * 
+     * @apiSuccess {String} status Статус операции (success)
+     * @apiSuccess {String} message Сообщение об успешном удалении
+     * 
+     * @apiError {String} message Сообщение об ошибке
+     * @apiError {String} error Тип ошибки
+     * 
+     * @apiErrorExample {json} Error-Response:
+     *     HTTP/1.1 400 Bad Request
+     *     {
+     *       "message": "Чат не найден",
+     *       "error": "BadRequestHttpException"
+     *     }
+     * 
+     * @apiSuccessExample {json} Success-Response:
+     *     HTTP/1.1 200 OK
+     *     {
+     *       "status": "success",
+     *       "message": "Чат успешно удален"
+     *     }
+     * 
+     * @return array Статус операции и сообщение
      */
     public function actionDeleteChat()
     {
         $userId = User::getIdentity()->id;
         $chatId = Yii::$app->request->post('chat_id');
         $chat = Chat::findOne($chatId);
-
+        
         if (!$chat) {
             throw new BadRequestHttpException('Чат не найден');
         }
@@ -552,7 +931,7 @@ class ChatController extends V1Controller
 
         $chat->is_deleted = true;
         $chat->deleted_at = date('Y-m-d H:i:s');
-
+        
         if ($chat->save()) {
             // Формируем данные для уведомления
             $notificationData = [
@@ -583,10 +962,50 @@ class ChatController extends V1Controller
 
     /**
      * Удаление сообщения в чате
-     * Устанавливает флаг is_deleted в true и устанавливает deleted_at на текущее время.
-     * @return array Статус операции.
+     * 
+     * @api {delete} /api/v1/chat/delete-message Удаление сообщения
+     * @apiName DeleteMessage
+     * @apiGroup Chat
+     * @apiVersion 1.0.0
+     * 
+     * @apiHeader {String} Authorization Bearer токен авторизации
+     * @apiHeader {String} Content-Type application/json
+     * 
+     * @apiParam {Number} chat_id ID чата
+     * @apiParam {Number} message_id ID сообщения для удаления
+     * 
+     * @apiSuccess {String} status Статус операции (success)
+     * @apiSuccess {String} message Сообщение об успешном удалении
+     * 
+     * @apiError {String} message Сообщение об ошибке
+     * @apiError {String} error Тип ошибки
+     * 
+     * @apiErrorExample {json} Error-Response:
+     *     HTTP/1.1 400 Bad Request
+     *     {
+     *       "message": "Сообщение не найдено или не принадлежит чату",
+     *       "error": "BadRequestHttpException"
+     *     }
+     * 
+     * @apiSuccessExample {json} Success-Response:
+     *     HTTP/1.1 200 OK
+     *     {
+     *       "status": "success",
+     *       "message": "Сообщение успешно удалено"
+     *     }
+     * 
+     * @description
+     * Метод выполняет "мягкое" удаление сообщения в чате:
+     * 1. Проверяет существование сообщения и его принадлежность к указанному чату
+     * 2. Устанавливает флаг is_deleted в true
+     * 3. Записывает время удаления в поле deleted_at
+     * 4. Отправляет уведомление всем участникам чата о удалении сообщения
+     * 
+     * При успешном удалении все участники чата получают уведомление через сокеты
+     * с информацией о том, кто удалил сообщение и когда это произошло.
+     * 
+     * @return array Статус операции и сообщение об успешном удалении
      */
-
     public function actionDeleteMessage()
     {
         $userId = User::getIdentity()->id;
