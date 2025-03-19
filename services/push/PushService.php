@@ -6,6 +6,7 @@ use app\models\PushNotification;
 use app\services\push\FirebaseService;
 use app\components\ApiResponse;
 use Google\Auth\Credentials\ServiceAccountCredentials;
+use app\models\User;
 
 use Yii;
 
@@ -111,19 +112,33 @@ class PushService
     /**
      * Отправляет push-уведомление клиенту.
      *
-     * @param int $clientId Идентификатор клиента.
-     * @param string $message Сообщение для отправки.
+     * @param int $user_id Идентификатор пользователя.
+     * @param array $message Массив с заголовком и текстом сообщения.
      * @return mixed Результат отправки уведомления.
      */
     public static function sendPushNotification($user_id, $message)
     {
         $pushTokens = PushNotification::find()->where(['client_id' => $user_id])->all();
         try {
+            $user = User::findOne($user_id);
+            if (!$user) {
+                throw new \Exception('User not found');
+            }
+
+            // Получаем язык пользователя из настроек
+            $language = $user->getSettings()->application_language;
+            
+            // Определяем тип пользователя и получаем соответствующее название приложения
+            $appNameKey = 'APP_NAME_' . strtoupper($user->role);
+            $appName = Yii::t('app', $appNameKey, [], $language);
+            
             foreach ($pushTokens as $pushToken) {
                 if ($pushToken->operating_system === 'ios') {
                     $pushToken->badge_count++;
                     $pushToken->save();
                 }
+                // Добавляем название приложения к заголовку
+                $message['title'] = $appName . ' - ' . $message['title'];
                 FirebaseService::sendPushNotification($user_id, $message, $pushToken->push_token, $pushToken->operating_system);
             }
         } catch (\Exception $e) {

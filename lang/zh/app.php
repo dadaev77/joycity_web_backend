@@ -13,8 +13,9 @@ return [
     'ERROR_QUESTION_EXISTS' => 'Question already exists.',
     'INTERNAL_ERROR' => 'Internal server error',
     'FORBIDDEN' => 'Wrong reset code.',
-    'APP_NAME_CLIENT' => 'JoyCity Client',
-    'APP_NAME_BUYER' => 'JoyCity Buyer',
-    'APP_NAME_MANAGER' => 'JoyCity Manager',
-    'APP_NAME_FULFILLMENT' => 'JoyCity Fulfillment',
+    'APP_NAME_CLIENT' => 'JoyCity 客户',
+    'APP_NAME_BUYER' => 'JoyCity 买家',
+    'APP_NAME_MANAGER' => 'JoyCity 经理',
+    'APP_NAME_FULFILLMENT' => 'JoyCity 履约',
+
 ];

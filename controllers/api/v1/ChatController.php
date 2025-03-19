@@ -574,7 +574,13 @@ class ChatController extends V1Controller
                 Yii::error("Socket notification error: " . $e->getMessage(), 'socket');
             }
         }
+
+        return [
+            'status' => 'success',
+            'message' => 'Чат успешно удален'
+        ];
     }
+
     /**
      * Удаление сообщения в чате
      * Устанавливает флаг is_deleted в true и устанавливает deleted_at на текущее время.
