@@ -132,13 +132,14 @@ class PushService
             $appNameKey = 'APP_NAME_' . strtoupper($user->role);
             $appName = Yii::t('app', $appNameKey, [], $language);
             
+            // Добавляем название приложения к заголовку только один раз
+            $message['title'] = $appName . ' - ' . $message['title'];
+            
             foreach ($pushTokens as $pushToken) {
                 if ($pushToken->operating_system === 'ios') {
                     $pushToken->badge_count++;
                     $pushToken->save();
                 }
-                // Добавляем название приложения к заголовку
-                $message['title'] = $appName . ' - ' . $message['title'];
                 FirebaseService::sendPushNotification($user_id, $message, $pushToken->push_token, $pushToken->operating_system);
             }
         } catch (\Exception $e) {
