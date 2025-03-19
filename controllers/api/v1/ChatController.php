@@ -542,7 +542,7 @@ class ChatController extends V1Controller
         $userId = User::getIdentity()->id;
         $chatId = Yii::$app->request->post('chat_id');
         $chat = Chat::findOne($chatId);
-        
+
         if (!$chat) {
             throw new BadRequestHttpException('Чат не найден');
         }
@@ -552,7 +552,7 @@ class ChatController extends V1Controller
 
         $chat->is_deleted = true;
         $chat->deleted_at = date('Y-m-d H:i:s');
-        
+
         if ($chat->save()) {
             // Формируем данные для уведомления
             $notificationData = [
@@ -586,6 +586,7 @@ class ChatController extends V1Controller
      * Устанавливает флаг is_deleted в true и устанавливает deleted_at на текущее время.
      * @return array Статус операции.
      */
+
     public function actionDeleteMessage()
     {
         $userId = User::getIdentity()->id;
@@ -603,7 +604,7 @@ class ChatController extends V1Controller
 
         $message->is_deleted = true;
         $message->deleted_at = date('Y-m-d H:i:s');
-        
+
         if ($message->save()) {
             // Формируем данные для уведомления
             $notificationData = [

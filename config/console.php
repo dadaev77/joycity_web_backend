@@ -10,7 +10,7 @@ $config = \yii\helpers\ArrayHelper::merge($common, [
     'id' => 'basic-console',
     'basePath' => dirname(__DIR__),
     'timeZone' => 'Europe/Moscow',
-    'bootstrap' => ['log'],
+    'bootstrap' => ['log', 'queue'],
     'controllerNamespace' => 'app\commands',
     'language' => 'ru-RU',
     'components' => [
@@ -19,6 +19,8 @@ $config = \yii\helpers\ArrayHelper::merge($common, [
             'db' => 'db',
             'tableName' => '{{%queue}}',
             'channel' => 'default',
+            'mutex' => \yii\mutex\MysqlMutex::class,
+            'as log' => \yii\queue\LogBehavior::class,
         ],
         'i18n' => [
             'translations' => [
