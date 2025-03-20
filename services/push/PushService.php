@@ -125,24 +125,38 @@ class PushService
                 throw new \Exception('User not found');
             }
 
-            // Получаем язык пользователя из настроек
             $language = $user->getSettings()->application_language;
-            
-            // Определяем тип пользователя и получаем соответствующее название приложения
             $appNameKey = 'APP_NAME_' . strtoupper($user->role);
             $appName = Yii::t('app', $appNameKey, [], $language);
-            
-            // Добавляем название приложения к заголовку только один раз
             $message['title'] = $appName . ' - ' . $message['title'];
             
+            // Группируем токены по device_id
+            $groupedTokens = [];
             foreach ($pushTokens as $pushToken) {
+                $groupedTokens[$pushToken->device_id][] = $pushToken;
+            }
+            
+            // Отправляем уведомление только на одно устройство каждого типа
+            foreach ($groupedTokens as $deviceTokens) {
+                // Для каждого устройства берем только один токен
+                $pushToken = $deviceTokens[0];
+                
                 if ($pushToken->operating_system === 'ios') {
                     $pushToken->badge_count++;
                     $pushToken->save();
                 }
-                FirebaseService::sendPushNotification($user_id, $message, $pushToken->push_token, $pushToken->operating_system);
+                
+                FirebaseService::sendPushNotification(
+                    $user_id, 
+                    $message, 
+                    $pushToken->push_token, 
+                    $pushToken->operating_system
+                );
             }
+
+            Yii::debug("Sending push notification to user {$user_id} with " . count($groupedTokens) . " unique devices", 'push');
         } catch (\Exception $e) {
+            Yii::error("Push notification error: " . $e->getMessage(), 'push');
             return $e->getMessage();
         }
 
