@@ -4,9 +4,20 @@ namespace app\models;
 
 use app\models\responseCodes\OrderCodes;
 use app\models\structure\OrderStructure;
+use app\models\OrderTracking;
+use app\models\TypeDelivery;
+use DateTime;
 
 class Order extends OrderStructure
 {
+    // Константы для сроков доставки
+    public const DELIVERY_DAYS_FAST_AUTO = 16;
+    public const DELIVERY_DAYS_SLOW_AUTO = 25;
+
+    // ID типов доставки
+    public const DELIVERY_TYPE_SLOW_AUTO = 8;
+    public const DELIVERY_TYPE_FAST_AUTO = 9;
+
     // Статусы заявки
     public const STATUS_CREATED = 'created';
     public const STATUS_WAITING_FOR_BUYER_OFFER = 'waiting_for_buyer_offer';
@@ -235,5 +246,37 @@ class Order extends OrderStructure
             ->where(['order_link_attachment.order_id' => $this->id])
             ->orderBy(['order_link_attachment.id' => SORT_ASC])
             ->one();
+    }
+
+    public function calculateTimeDelivery(): int
+    {
+        // Получаем запись о статусе отправки товара
+        $sentTracking = OrderTracking::find()
+            ->where([
+                'order_id' => $this->id, 
+                'type' => OrderTracking::STATUS_SENT_TO_DESTINATION // статус "item_sent" - товар отправлен
+            ])
+            ->orderBy(['created_at' => SORT_DESC])
+            ->one();
+
+        // Если товар еще не отправлен, возвращаем 0
+        if (!$sentTracking) {
+            return 0;
+        }
+
+        // Определяем общий срок доставки в зависимости от типа
+        $totalDeliveryDays = $this->type_delivery_id === self::DELIVERY_TYPE_FAST_AUTO
+            ? self::DELIVERY_DAYS_FAST_AUTO  // 16 дней для быстрой доставки
+            : self::DELIVERY_DAYS_SLOW_AUTO; // 25 дней для медленной доставки
+
+        // Вычисляем прошедшие дни с момента отправки
+        $sentDate = new \DateTime($sentTracking->created_at);
+        $currentDate = new \DateTime();
+        $daysPassed = $currentDate->diff($sentDate)->days;
+
+        // Вычисляем оставшиеся дни
+        $remainingDays = $totalDeliveryDays - $daysPassed;
+
+        return max(0, $remainingDays);
     }
 }

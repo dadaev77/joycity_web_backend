@@ -177,57 +177,21 @@ class OrderOutputService extends OutputService
             if ($info['buyerOffer']) {
                 $info['price']['product_overall'] = $info['buyerOffer']['price_product'] * $info['buyerOffer']['total_quantity'];
             }
-            $info['timeDelivery'] = $info['delivery_days_expected'];
+
+            $timeDelivery = $model->calculateTimeDelivery();
+            unset($info['timeDelivery']);
+
+            $tempInfo = [];
+            foreach ($info as $key => $value) {
+                $tempInfo[$key] = $value;
+                if ($key === 'typeDeliveryPoint') {
+                    $tempInfo['timeDelivery'] = $timeDelivery;
+                }
+            }
+            $info = $tempInfo;
+
             $info['chats'] = [];
             unset(
-                // $info['created_at'],
-                // $info['status'],
-                // $info['created_by'],
-                // $info['manager_id'],
-                // $info['fulfillment_id'],
-                // $info['product_name'],
-                // $info['product_description'],
-                // $info['expected_quantity'],
-                // $info['expected_price_per_item'],
-                // $info['expected_packaging_quantity'],
-                // $info['price_product'],
-                // $info['price_inspection'],
-                // $info['price_packaging'],
-                // $info['price_fulfilment'],
-                // $info['price_delivery'],
-                // $info['total_quantity'],
-                // $info['is_need_deep_inspection'],
-                // $info['is_deleted'],
-                // $info['link_tz'],
-                // $info['fulfillmentMarketplaceTransactions'],
-                // $info['attachments'],
-                // $info['createdBy'],
-                // $info['buyer'],
-                // $info['manager'],
-                // $info['fulfillmentOffer'],
-                // $info['buyerDeliveryOffer'],
-                // $info['deliveryPointAddress'],
-                // $info['typeDelivery'],
-                // $info['typeDeliveryPoint'],
-                // $info['typePackaging'],
-                // $info['chats'],
-                // $info['subcategory'],
-                // $info['product'],
-                // $info['productInspectionReport'],
-                // $info['fulfillment'],
-                // $info['fulfillmentInspectionReport'],
-                // $info['fulfillmentStockReport'],
-                // $info['fulfillmentPackagingLabeling'],
-                // $info['productStockReports'],
-                // $info['orderTrackings'],
-                // $info['orderRate'],
-                // $info['fulfilmentMarketplaceDeliveryInfo'],
-                // $info['productStockReport'],
-                // $info['buyerOffer'],
-                // $info['productInspectionReport'],
-                // $info['orderTracking'],
-                // $info['type'],
-                // 
                 $info['delivery_start_date'],
                 $info['delivery_days_expected'],
                 $info['delivery_delay_days'],

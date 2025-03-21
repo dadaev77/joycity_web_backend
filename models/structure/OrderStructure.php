@@ -60,6 +60,7 @@ use yii\db\ActiveQuery;
  * @property int $is_need_deep_inspection
  * @property int $is_deleted
  * @property string|null $link_tz
+ * @property int $timeDelivery Оставшееся время доставки в днях
  * @property Waybill[] $waybills Накладные заказа
  *
  * @property User $buyer
@@ -253,6 +254,7 @@ class OrderStructure extends Base
             // custom
             [['created_at'], 'safe'],
             [['status'], 'in', 'range' => Order::STATUS_GROUP_ALL],
+            ['timeDelivery', 'integer', 'min' => 0],
         ];
     }
 
@@ -317,6 +319,7 @@ class OrderStructure extends Base
             'is_need_deep_inspection' => 'Is Need Deep Inspection',
             'is_deleted' => 'Is Deleted',
             'link_tz' => 'Link Tz',
+            'timeDelivery' => 'Time Delivery',
         ];
     }
 
