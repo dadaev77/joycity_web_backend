@@ -254,7 +254,7 @@ class Order extends OrderStructure
         $sentTracking = OrderTracking::find()
             ->where([
                 'order_id' => $this->id, 
-                'type' => OrderTracking::STATUS_SENT_TO_DESTINATION // статус "item_sent" - товар отправлен
+                'type' => OrderTracking::STATUS_SENT_TO_DESTINATION  // 'item_sent'
             ])
             ->orderBy(['created_at' => SORT_DESC])
             ->one();
