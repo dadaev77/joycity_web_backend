@@ -479,7 +479,7 @@ class OrderController extends ClientController
      *     )
      * )
      */
-    public function actionMy(string $type = 'request')
+    public function actionMy(?string $type = null)
     {
         $user = User::getIdentity();
         $orderIds = Order::find()
@@ -494,10 +494,13 @@ class OrderController extends ClientController
             $orderIds->andWhere([
                 'status' => Order::STATUS_GROUP_REQUEST_ACTIVE,
             ]);
-        } else {
-            // Для типа "order" показываем все активные заказы и заказы в пути
-            $orderIds->andWhere(['status' => Order::STATUS_GROUP_ORDER_ACTIVE]);
+        } elseif ($type === 'order') {
+            // Для типа "order" показываем все активные заказы
+            $orderIds->andWhere([
+                'status' => Order::STATUS_GROUP_ORDER_ACTIVE,
+            ]);
         }
+        // Если type не указан, показываем все заказы
 
         return ApiResponse::collection(
             OrderOutputService::getCollection(
