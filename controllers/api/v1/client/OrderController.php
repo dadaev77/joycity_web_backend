@@ -441,7 +441,7 @@ class OrderController extends ClientController
         $apiCodes = Order::apiCodes();
         $user = User::getIdentity();
         $order = Order::find()
-            ->select(['id', 'created_by'])
+            ->select(['id', 'created_by', 'buyer_id'])
             ->where(['id' => $id])
             ->one();
 
@@ -449,7 +449,7 @@ class OrderController extends ClientController
             return ApiResponse::byResponseCode($apiCodes->NOT_FOUND);
         }
 
-        if ($order->created_by !== $user->id) {
+        if ($order->created_by !== $user->id && $order->buyer_id !== $user->id) {
             return ApiResponse::code($apiCodes->NO_ACCESS);
         }
 
@@ -484,7 +484,10 @@ class OrderController extends ClientController
         $user = User::getIdentity();
         $orderIds = Order::find()
             ->select(['id'])
-            ->where(['created_by' => $user->id])
+            ->where(['OR',
+                ['created_by' => $user->id],
+                ['buyer_id' => $user->id]
+            ])
             ->orderBy(['id' => SORT_DESC]);
 
         if ($type === 'request') {
@@ -492,14 +495,15 @@ class OrderController extends ClientController
                 'status' => Order::STATUS_GROUP_REQUEST_ACTIVE,
             ]);
         } else {
+            // Для типа "order" показываем все активные заказы и заказы в пути
             $orderIds->andWhere(['status' => Order::STATUS_GROUP_ORDER_ACTIVE]);
         }
 
         return ApiResponse::collection(
             OrderOutputService::getCollection(
                 $orderIds->column(),
-                false, // Show deleted
-                'small', // Size of output images
+                false,
+                'small'
             ),
         );
     }

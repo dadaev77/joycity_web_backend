@@ -29,6 +29,7 @@ use app\models\User;
 use app\models\Waybill;
 use app\services\modificators\RateService;
 use yii\db\ActiveQuery;
+use DateTime;
 
 /**
  * This is the model class for table "order".
@@ -620,5 +621,58 @@ class OrderStructure extends Base
         return $this->hasOne(Waybill::class, [
             'order_id' => 'id'
         ]);
+    }
+
+    /**
+     * Вычисляет оставшееся время доставки в днях
+     * @return int
+     */
+    public function getTimeDelivery(): int
+    {
+        // Если заказ не в пути, возвращаем 0
+        if ($this->status !== Order::STATUS_TRANSFERRING_TO_BUYER) {
+            return 0;
+        }
+
+        // Ищем запись о статусе отправки товара
+        $tracking = OrderTracking::find()
+            ->where(['order_id' => $this->id])
+            ->andWhere(['type' => 'item_sent'])
+            ->orderBy(['created_at' => SORT_DESC])
+            ->one();
+
+        if (!$tracking) {
+            return 0;
+        }
+
+        // Определяем общий срок доставки по типу
+        $totalDeliveryDays = match ($this->type_delivery_id) {
+            Order::DELIVERY_TYPE_SLOW_AUTO => Order::DELIVERY_DAYS_SLOW_AUTO,
+            Order::DELIVERY_TYPE_FAST_AUTO => Order::DELIVERY_DAYS_FAST_AUTO,
+            default => 0,
+        };
+
+        // Если срок доставки не определен, возвращаем 0
+        if ($totalDeliveryDays === 0) {
+            return 0;
+        }
+
+        // Получаем дату отправки
+        $shippingDate = strtotime($tracking->created_at);
+        $currentDate = time();
+
+        // Если дата отправки в будущем, возвращаем полный срок доставки
+        if ($shippingDate > $currentDate) {
+            return $totalDeliveryDays;
+        }
+
+        // Вычисляем прошедшие дни
+        $elapsedDays = floor(($currentDate - $shippingDate) / (24 * 60 * 60));
+        
+        // Вычисляем оставшиеся дни
+        $remainingDays = $totalDeliveryDays - $elapsedDays;
+
+        // Возвращаем 0, если оставшихся дней меньше 0
+        return max(0, $remainingDays);
     }
 }
