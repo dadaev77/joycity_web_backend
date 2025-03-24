@@ -180,9 +180,19 @@ class OrderOutputService extends OutputService
             }
 
             $timeDelivery = OrderDeliveryTimeService::calculateDeliveryTime($model);
-            $info['timeDelivery'] = $timeDelivery;
+            unset($info['timeDelivery']);
+
+            $tempInfo = [];
+            foreach ($info as $key => $value) {
+                $tempInfo[$key] = $value;
+                if ($key === 'typeDeliveryPoint') {
+                    $tempInfo['timeDelivery'] = $timeDelivery;
+                }
+            }
+            $info = $tempInfo;
 
             $info['chats'] = [];
+            
             unset(
                 $info['delivery_start_date'],
                 $info['delivery_days_expected'],
