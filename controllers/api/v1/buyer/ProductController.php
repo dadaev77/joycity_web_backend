@@ -15,6 +15,7 @@ use app\services\SaveModelService;
 use Throwable;
 use Yii;
 use app\services\TranslationService;
+use yii\web\UploadedFile;
 
 
 class ProductController extends BuyerController
