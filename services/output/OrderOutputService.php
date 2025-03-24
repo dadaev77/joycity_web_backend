@@ -10,6 +10,7 @@ use app\services\modificators\price\OrderPrice;
 use app\services\RateService;
 
 use app\services\SqlQueryService;
+use app\services\order\OrderDeliveryTimeService;
 use Yii;
 
 class OrderOutputService extends OutputService
@@ -178,8 +179,7 @@ class OrderOutputService extends OutputService
                 $info['price']['product_overall'] = $info['buyerOffer']['price_product'] * $info['buyerOffer']['total_quantity'];
             }
 
-            $timeDelivery = $model->calculateTimeDelivery();
-            unset($info['timeDelivery']);
+            $timeDelivery = OrderDeliveryTimeService::calculateDeliveryTime($model);
 
             $tempInfo = [];
             foreach ($info as $key => $value) {

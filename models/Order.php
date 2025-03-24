@@ -10,13 +10,7 @@ use DateTime;
 
 class Order extends OrderStructure
 {
-    // Константы для сроков доставки:
-    public const DELIVERY_DAYS_FAST_AUTO = 16;
-    public const DELIVERY_DAYS_SLOW_AUTO = 25;
 
-    // ID типов доставки:
-    public const DELIVERY_TYPE_SLOW_AUTO = 8;
-    public const DELIVERY_TYPE_FAST_AUTO = 9;
 
     // Статусы заявки
     public const STATUS_CREATED = 'created';
@@ -248,35 +242,13 @@ class Order extends OrderStructure
             ->one();
     }
 
-    public function calculateTimeDelivery(): int
+    public function getOrderRate()
     {
-        // Получаем запись о статусе отправки товара
-        $sentTracking = OrderTracking::find()
-            ->where([
-                'order_id' => $this->id, 
-                'type' => OrderTracking::STATUS_SENT_TO_DESTINATION  // 'item_sent'
-            ])
-            ->orderBy(['created_at' => SORT_DESC])
-            ->one();
+        return $this->hasOne(OrderRate::class, ['order_id' => 'id']);
+    }
 
-        // Если товар еще не отправлен, возвращаем 0
-        if (!$sentTracking) {
-            return 0;
-        }
-
-        // Определяем общий срок доставки в зависимости от типа
-        $totalDeliveryDays = $this->type_delivery_id === self::DELIVERY_TYPE_FAST_AUTO
-            ? self::DELIVERY_DAYS_FAST_AUTO  // 16 дней для быстрой доставки
-            : self::DELIVERY_DAYS_SLOW_AUTO; // 25 дней для медленной доставки
-
-        // Вычисляем прошедшие дни с момента отправки
-        $sentDate = new \DateTime($sentTracking->created_at);
-        $currentDate = new \DateTime();
-        $daysPassed = $currentDate->diff($sentDate)->days;
-
-        // Вычисляем оставшиеся дни
-        $remainingDays = $totalDeliveryDays - $daysPassed;
-
-        return max(0, $remainingDays);
+    public function getOrderTrackings()
+    {
+        return $this->hasMany(OrderTracking::class, ['order_id' => 'id']);
     }
 }
