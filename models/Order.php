@@ -14,7 +14,7 @@ class Order extends OrderStructure
     public const DELIVERY_DAYS_FAST_AUTO = 16;
     public const DELIVERY_DAYS_SLOW_AUTO = 25;
 
-    // ID типов доставки
+    // ID типов доставки:
     public const DELIVERY_TYPE_SLOW_AUTO = 8;
     public const DELIVERY_TYPE_FAST_AUTO = 9;
 
