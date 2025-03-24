@@ -10,7 +10,7 @@ use DateTime;
 
 class Order extends OrderStructure
 {
-    // Константы для сроков доставки
+    // Константы для сроков доставки:
     public const DELIVERY_DAYS_FAST_AUTO = 16;
     public const DELIVERY_DAYS_SLOW_AUTO = 25;
 
