@@ -674,7 +674,7 @@ class ChatController extends V1Controller
                 $replyToId,
                 $uploadedAttachments,
             );
-            throw new \Exception('chat speed test');
+
             $chat->last_message_id = $message->id;
             $chat->save();
 
