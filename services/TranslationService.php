@@ -56,7 +56,6 @@ class TranslationService
             }
 
             return Result::success($responseParsed['result']);
-            
         } catch (Throwable $e) {
             return Result::error();
         }

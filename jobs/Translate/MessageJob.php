@@ -21,9 +21,10 @@ class MessageJob extends BaseObject implements JobInterface
     public function execute($queue)
     {
         $message = \app\models\Message::findOne($this->messageId);
-        $translator = new \app\services\TranslationService();
-        $result = $translator->translate($this->message);
+        echo 'message: ' . $message->id . "\n";
+        $result = \app\services\TranslationService::translate($this->message);
         $translateResult = $result->result;
+        echo 'translateResult: ' . json_encode($translateResult) . "\n";
 
         if (isset($translateResult['en']) && isset($translateResult['ru']) && isset($translateResult['zh'])) {
             $message->content = json_encode(['ru' => $translateResult['ru'], 'en' => $translateResult['en'], 'zh' => $translateResult['zh']]);
@@ -33,6 +34,9 @@ class MessageJob extends BaseObject implements JobInterface
                 'ru_translate' => $translateResult['ru'],
                 'zh_translate' => $translateResult['zh'],
             ]);
+            echo 'message translation updated' . "\n";
         }
+
+        echo 'message translation not updated' . "\n";
     }
 }
