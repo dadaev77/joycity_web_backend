@@ -2,9 +2,6 @@
 
 $params = require __DIR__ . '/params.php';
 
-var_dump($_ENV);
-exit;
-
 $config = [
     'id' => 'basic-console',
     'basePath' => dirname(__DIR__),
