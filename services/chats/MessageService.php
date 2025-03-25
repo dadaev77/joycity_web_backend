@@ -44,9 +44,9 @@ class MessageService
                 'attachments' => $attachments ? json_encode($attachments) : null,
             ]);
             $message->type = $type;
-            // if (!$message->save()) {
-            //     throw new Exception('Ошибка при создании сообщения: ' . json_encode($message->getErrors()));
-            // }
+            if (!$message->save()) {
+                throw new Exception('Ошибка при создании сообщения: ' . json_encode($message->getErrors()));
+            }
             return $message;
         } catch (\Exception $e) {
             throw new Exception('Ошибка при создании сообщения: ' . $e->getMessage());
