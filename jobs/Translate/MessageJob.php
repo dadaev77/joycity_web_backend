@@ -29,13 +29,15 @@ class MessageJob extends BaseObject implements JobInterface
 
             if (isset($translateResult['en']) && isset($translateResult['ru']) && isset($translateResult['zh'])) {
                 $message->content = json_encode(['ru' => $translateResult['ru'], 'en' => $translateResult['en'], 'zh' => $translateResult['zh']]);
-                $message->save();
+
                 var_dump([
                     'en_translate' => $translateResult['en'],
                     'ru_translate' => $translateResult['ru'],
                     'zh_translate' => $translateResult['zh'],
                 ]);
-                echo 'message translation updated' . "\n";
+                if ($message->save()) {
+                    throw new \yii\base\Exception('Остановка задания');
+                }
             } else {
                 echo 'message translation not updated' . "\n";
             }
