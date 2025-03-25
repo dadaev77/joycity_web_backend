@@ -9,6 +9,6 @@ class TestJob extends BaseObject implements JobInterface
 {
     public function execute($queue)
     {
-        echo "test job a work";
+        echo "asdasdasdasd";
     }
 }
