@@ -100,6 +100,14 @@ class Message extends ActiveRecord
             return;
         }
 
+        $content = is_array($this->content) ? $this->content : json_decode($this->content, true);
+        if (
+            isset($content['ru']) && isset($content['en']) && isset($content['zh'])
+            && empty($content['ru']) && empty($content['en']) && empty($content['zh'])
+        ) {
+            return;
+        }
+
         Yii::$app->queue->push(new \app\jobs\Translate\MessageJob([
             'messageId' => $this->id,
             'message' => $this->content
