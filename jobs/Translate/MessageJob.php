@@ -21,7 +21,6 @@ class MessageJob extends BaseObject implements JobInterface
     public function execute($queue)
     {
         $message = \app\models\Message::findOne($this->messageId);
-
         $translator = new \app\services\TranslationService();
         $result = $translator->translate($this->message);
         $translateResult = $result->result;
