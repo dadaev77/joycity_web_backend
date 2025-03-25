@@ -20,23 +20,29 @@ class MessageJob extends BaseObject implements JobInterface
 
     public function execute($queue)
     {
-        $message = \app\models\Message::findOne($this->messageId);
-        echo 'message: ' . $message->id . "\n";
-        $result = \app\services\TranslationService::translate($this->message);
-        $translateResult = $result->result;
-        echo 'translateResult: ' . json_encode($translateResult) . "\n";
+        try {
+            $message = \app\models\Message::findOne($this->messageId);
+            echo 'message: ' . $message->id . "\n";
+            $result = \app\services\TranslationService::translate($this->message);
+            $translateResult = $result->result;
+            echo 'translateResult: ' . json_encode($translateResult) . "\n";
 
-        if (isset($translateResult['en']) && isset($translateResult['ru']) && isset($translateResult['zh'])) {
-            $message->content = json_encode(['ru' => $translateResult['ru'], 'en' => $translateResult['en'], 'zh' => $translateResult['zh']]);
-            $message->save();
-            var_dump([
-                'en_translate' => $translateResult['en'],
-                'ru_translate' => $translateResult['ru'],
-                'zh_translate' => $translateResult['zh'],
-            ]);
-            echo 'message translation updated' . "\n";
+            if (isset($translateResult['en']) && isset($translateResult['ru']) && isset($translateResult['zh'])) {
+                $message->content = json_encode(['ru' => $translateResult['ru'], 'en' => $translateResult['en'], 'zh' => $translateResult['zh']]);
+                $message->save();
+                var_dump([
+                    'en_translate' => $translateResult['en'],
+                    'ru_translate' => $translateResult['ru'],
+                    'zh_translate' => $translateResult['zh'],
+                ]);
+                echo 'message translation updated' . "\n";
+            } else {
+                echo 'message translation not updated' . "\n";
+            }
+            return true;
+        } catch (\Exception $e) {
+            Yii::error("Ошибка выполнения перевода сообщения: " . $e->getMessage());
+            return false;
         }
-
-        echo 'message translation not updated' . "\n";
     }
 }
