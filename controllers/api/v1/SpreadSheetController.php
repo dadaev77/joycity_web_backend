@@ -1,11 +1,11 @@
 <?php
 
 namespace app\controllers\api\v1;
+
 use app\controllers\api\V1Controller;
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\IOFactory;
-use PhpOffice\PhpSpreadsheet\Reader\IReadsComments;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx as WriterXlsx;
 use app\models\Order;
 use app\models\User;
@@ -51,7 +51,6 @@ class SpreadSheetController extends V1Controller
             return Yii::$app->response->sendFile($filePath, 'order_template.xlsx', [
                 'mimeType' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
             ]);
-
         } catch (\Exception $e) {
             Yii::error("Ошибка при отправке шаблона Excel: " . $e->getMessage());
             return $this->asJson([
@@ -109,7 +108,7 @@ class SpreadSheetController extends V1Controller
             }
 
             $uploadedFile = $_FILES['file'];
-            
+
             // Добавляем логирование информации о файле
             Yii::debug("Uploaded file info:", 'upload');
             Yii::debug($uploadedFile, 'upload');
@@ -120,7 +119,7 @@ class SpreadSheetController extends V1Controller
                 'application/vnd.ms-excel',
                 'text/csv'
             ];
-            
+
             if (!in_array($uploadedFile['type'], $allowedTypes)) {
                 return $this->asJson([
                     'success' => false,
@@ -148,10 +147,10 @@ class SpreadSheetController extends V1Controller
             for ($row = 2; $row <= $worksheet->getHighestRow(); $row++) {
                 // Получаем название товара для проверки, не пустая ли строка
                 $productName = trim($worksheet->getCell('B' . $row)->getValue());
-                
+
                 // Логируем данные каждой строки
                 Yii::debug("Processing row $row. Product name: $productName", 'upload');
-                
+
                 if (empty($productName)) {
                     Yii::debug("Empty product name in row $row, skipping", 'upload');
                     continue;
@@ -161,11 +160,11 @@ class SpreadSheetController extends V1Controller
 
                 // Обрабатываем данные строки
                 $result = $this->processOrderData($row, $worksheet);
-                
+
                 // Логируем результат обработки
                 Yii::debug("Row $row processing result:", 'upload');
                 Yii::debug($result, 'upload');
-                
+
                 if (!$result['success']) {
                     $errors[] = [
                         'row' => $row,
@@ -185,7 +184,7 @@ class SpreadSheetController extends V1Controller
                 if (!$order->save()) {
                     Yii::error("Failed to save order in row $row:", 'upload');
                     Yii::error($order->getErrors(), 'upload');
-                    
+
                     $errors[] = [
                         'row' => $row,
                         'errors' => $order->getFirstErrors()
@@ -220,7 +219,6 @@ class SpreadSheetController extends V1Controller
                     ]
                 ]);
             }
-
         } catch (\Throwable $e) {
             if (isset($transaction)) {
                 $transaction->rollBack();
@@ -259,82 +257,180 @@ class SpreadSheetController extends V1Controller
             $sheet1 = $spreadsheet->setActiveSheetIndex(0);
             $sheet1->setTitle('Заказы');
             $sheet1->fromArray([
-                ['Фото', 'Название товара', 'Категория товара', 'Подкатегория', 'Описание товара', 'Желаемое количество товара, шт',
-                 'Желаемая стоимость за единицу товара, Р', 'Тип доставки', 'Тип пункта доставки', 'Адрес пункта доставки',
-                 'Тип упаковки', 'Количество упаковок, шт', 'Глубокая инспекция'],
+                [
+                    'Фото',
+                    'Название товара',
+                    'Категория товара',
+                    'Подкатегория',
+                    'Описание товара',
+                    'Желаемое количество товара, шт',
+                    'Желаемая стоимость за единицу товара, Р',
+                    'Тип доставки',
+                    'Тип пункта доставки',
+                    'Адрес пункта доставки',
+                    'Тип упаковки',
+                    'Количество упаковок, шт',
+                    'Глубокая инспекция'
+                ],
             ], null, 'A1');
-            
+
             // Добавляем примеры заказов
             $sheet1->fromArray([
-                ['https://example.com/image1.jpg', 'Футболка мужская', 'Мужчинам', 'Футболки', 
-                 'Качественная хлопковая футболка для мужчин. Подходит для повседневной носки.', 
-                 500, 800, 'Быстрое авто', 'Склад', 'Москва, Тестовый склад', 'Коробка', 50, 'нет'],
+                [
+                    'https://example.com/image1.jpg',
+                    'Футболка мужская',
+                    'Мужчинам',
+                    'Футболки',
+                    'Качественная хлопковая футболка для мужчин. Подходит для повседневной носки.',
+                    500,
+                    800,
+                    'Быстрое авто',
+                    'Склад',
+                    'Москва, Тестовый склад',
+                    'Коробка',
+                    50,
+                    'нет'
+                ],
             ], null, 'A2');
-            
+
             // Создаем второй лист со справочниками
             $sheet2 = $spreadsheet->createSheet();
             $sheet2->setTitle('Справочники');
-            
+
             // Категории товаров - все указанные категории
             $sheet2->setCellValue('A1', 'Категории');
             $categories = [
-                'Женщинам', 'Обувь', 'Детям', 'Мужчинам', 'Дом', 
-                'Красота', 'Аксессуары', 'Электроника', 'Игрушки', 'Мебель',
-                'Бытовая техника', 'Зоотовары', 'Спорт', 'Автотовары', 'Книги', 
-                'Ювелирные изделия', 'Для ремонта', 'Сад и дача', 'Здоровье', 'Канцтовары'
+                'Женщинам',
+                'Обувь',
+                'Детям',
+                'Мужчинам',
+                'Дом',
+                'Красота',
+                'Аксессуары',
+                'Электроника',
+                'Игрушки',
+                'Мебель',
+                'Бытовая техника',
+                'Зоотовары',
+                'Спорт',
+                'Автотовары',
+                'Книги',
+                'Ювелирные изделия',
+                'Для ремонта',
+                'Сад и дача',
+                'Здоровье',
+                'Канцтовары'
             ];
-            
+
             // Добавляем категории в столбец A
             foreach ($categories as $index => $category) {
                 $sheet2->setCellValue('A' . ($index + 2), $category);
             }
-            
+
             // Подкатегории для Женщинам
             $sheet2->setCellValue('B1', 'Подкатегории_Женщинам');
             $subcategoriesWomen = [
-                'Блузки и рубашки', 'Верхняя одежда', 'Джинсы', 'Костюмы',
-                'Пиджаки, жилеты и жакеты', 'Толстовки, свитшоты и худи', 'Футболки и топы',
-                'Шорты', 'Белье', 'Будущие мамы', 'Для невысоких', 'Офис',
-                'Религиозная', 'Спецодежда и СИЗы', 'Брюки', 'Джемперы, водолазки и кардиганы',
-                'Комбинезоны', 'Лонгсливы', 'Платья и сарафаны', 'Туники', 'Халаты',
-                'Юбки', 'Большие размеры', 'Для высоких', 'Одежда для дома', 'Пляжная мода',
+                'Блузки и рубашки',
+                'Верхняя одежда',
+                'Джинсы',
+                'Костюмы',
+                'Пиджаки, жилеты и жакеты',
+                'Толстовки, свитшоты и худи',
+                'Футболки и топы',
+                'Шорты',
+                'Белье',
+                'Будущие мамы',
+                'Для невысоких',
+                'Офис',
+                'Религиозная',
+                'Спецодежда и СИЗы',
+                'Брюки',
+                'Джемперы, водолазки и кардиганы',
+                'Комбинезоны',
+                'Лонгсливы',
+                'Платья и сарафаны',
+                'Туники',
+                'Халаты',
+                'Юбки',
+                'Большие размеры',
+                'Для высоких',
+                'Одежда для дома',
+                'Пляжная мода',
                 'Подарки женщинам'
             ];
-            
+
             foreach ($subcategoriesWomen as $index => $subcategory) {
                 $sheet2->setCellValue('B' . ($index + 2), $subcategory);
             }
-            
+
             // Подкатегории для Мужчинам
             $sheet2->setCellValue('C1', 'Подкатегории_Мужчинам');
             $subcategoriesMen = [
-                'Брюки', 'Верхняя одежда', 'Джемперы, водолазки и кардиганы', 'Джинсы',
-                'Комбинезоны и полукомбинезоны', 'Костюмы', 'Лонгсливы', 'Майки',
-                'Пиджаки, жилеты и жакеты', 'Пижамы', 'Рубашки', 'Толстовки, свитшоты и худи',
-                'Футболки', 'Футболки-поло', 'Халаты', 'Шорты', 'Белье', 'Большие размеры',
-                'Для высоких', 'Для невысоких', 'Одежда для дома', 'Офис', 'Пляжная одежда',
-                'Религиозная', 'Свадьба', 'Спецодежда и СИЗы', 'Подарки мужчинам'
+                'Брюки',
+                'Верхняя одежда',
+                'Джемперы, водолазки и кардиганы',
+                'Джинсы',
+                'Комбинезоны и полукомбинезоны',
+                'Костюмы',
+                'Лонгсливы',
+                'Майки',
+                'Пиджаки, жилеты и жакеты',
+                'Пижамы',
+                'Рубашки',
+                'Толстовки, свитшоты и худи',
+                'Футболки',
+                'Футболки-поло',
+                'Халаты',
+                'Шорты',
+                'Белье',
+                'Большие размеры',
+                'Для высоких',
+                'Для невысоких',
+                'Одежда для дома',
+                'Офис',
+                'Пляжная одежда',
+                'Религиозная',
+                'Свадьба',
+                'Спецодежда и СИЗы',
+                'Подарки мужчинам'
             ];
-            
+
             foreach ($subcategoriesMen as $index => $subcategory) {
                 $sheet2->setCellValue('C' . ($index + 2), $subcategory);
             }
-            
+
             // Подкатегории для Детям
             $sheet2->setCellValue('D1', 'Подкатегории_Детям');
             $subcategoriesChildren = [
-                'Для девочек', 'Для мальчиков', 'Для новорожденных', 'Верхняя одежда',
-                'Школьная форма', 'Детская', 'Брюки', 'Джинсы', 'Комбинезоны', 'Футболки',
-                'Платья и сарафаны', 'Толстовки, свитшоты и худи', 'Шорты', 'Белье',
-                'Одежда для дома', 'Конструкторы', 'Прогулки и путешествия', 'Религиозная одежда',
-                'Подгузники', 'Детская электроника', 'Детское питание',
-                'Товары для малыша', 'Подарки детям'
+                'Для девочек',
+                'Для мальчиков',
+                'Для новорожденных',
+                'Верхняя одежда',
+                'Школьная форма',
+                'Детская',
+                'Брюки',
+                'Джинсы',
+                'Комбинезоны',
+                'Футболки',
+                'Платья и сарафаны',
+                'Толстовки, свитшоты и худи',
+                'Шорты',
+                'Белье',
+                'Одежда для дома',
+                'Конструкторы',
+                'Прогулки и путешествия',
+                'Религиозная одежда',
+                'Подгузники',
+                'Детская электроника',
+                'Детское питание',
+                'Товары для малыша',
+                'Подарки детям'
             ];
-            
+
             foreach ($subcategoriesChildren as $index => $subcategory) {
                 $sheet2->setCellValue('D' . ($index + 2), $subcategory);
             }
-            
+
             // Подкатегории для Обувь
             $sheet2->setCellValue('J1', 'Подкатегории_Обувь');
             $subcategoriesShoes = [
@@ -345,11 +441,11 @@ class SpreadSheetController extends V1Controller
                 'Мужская',
                 'Аксессуары для обуви'
             ];
-            
+
             foreach ($subcategoriesShoes as $index => $subcategory) {
                 $sheet2->setCellValue('J' . ($index + 2), $subcategory);
             }
-            
+
             // Подкатегории для Дом
             $sheet2->setCellValue('K1', 'Подкатегории_Дом');
             $subcategoriesHome = [
@@ -376,11 +472,11 @@ class SpreadSheetController extends V1Controller
                 'Цветы, вазы и кашпо',
                 'Шторы'
             ];
-            
+
             foreach ($subcategoriesHome as $index => $subcategory) {
                 $sheet2->setCellValue('K' . ($index + 2), $subcategory);
             }
-            
+
             // Подкатегории для Красота
             $sheet2->setCellValue('L1', 'Подкатегории_Красота');
             $subcategoriesBeauty = [
@@ -406,11 +502,11 @@ class SpreadSheetController extends V1Controller
                 'Средства личной гигиены',
                 'Гигиена полости рта'
             ];
-            
+
             foreach ($subcategoriesBeauty as $index => $subcategory) {
                 $sheet2->setCellValue('L' . ($index + 2), $subcategory);
             }
-            
+
             // Подкатегории для Аксессуары
             $sheet2->setCellValue('M1', 'Подкатегории_Аксессуары');
             $subcategoriesAccessories = [
@@ -434,11 +530,11 @@ class SpreadSheetController extends V1Controller
                 'Часы и ремешки',
                 'Чемоданы и защита багажа'
             ];
-            
+
             foreach ($subcategoriesAccessories as $index => $subcategory) {
                 $sheet2->setCellValue('M' . ($index + 2), $subcategory);
             }
-            
+
             // Подкатегории для Электроника
             $sheet2->setCellValue('N1', 'Подкатегории_Электроника');
             $subcategoriesElectronics = [
@@ -460,11 +556,11 @@ class SpreadSheetController extends V1Controller
                 'Торговое оборудование',
                 'Умный дом'
             ];
-            
+
             foreach ($subcategoriesElectronics as $index => $subcategory) {
                 $sheet2->setCellValue('N' . ($index + 2), $subcategory);
             }
-            
+
             // Подкатегории для Игрушки
             $sheet2->setCellValue('O1', 'Подкатегории_Игрушки');
             $subcategoriesToys = [
@@ -491,11 +587,11 @@ class SpreadSheetController extends V1Controller
                 'Развивающие игрушки',
                 'Сборные модели'
             ];
-            
+
             foreach ($subcategoriesToys as $index => $subcategory) {
                 $sheet2->setCellValue('O' . ($index + 2), $subcategory);
             }
-            
+
             // Подкатегории для Мебель
             $sheet2->setCellValue('P1', 'Подкатегории_Мебель');
             $subcategoriesFurniture = [
@@ -518,11 +614,11 @@ class SpreadSheetController extends V1Controller
                 'Зеркала',
                 'Мебельная фурнитура'
             ];
-            
+
             foreach ($subcategoriesFurniture as $index => $subcategory) {
                 $sheet2->setCellValue('P' . ($index + 2), $subcategory);
             }
-            
+
             // Подкатегории для Бытовая техника
             $sheet2->setCellValue('Q1', 'Подкатегории_Бытовая_техника');
             $subcategoriesAppliances = [
@@ -533,11 +629,11 @@ class SpreadSheetController extends V1Controller
                 'Техника для кухни',
                 'Крупная бытовая техника'
             ];
-            
+
             foreach ($subcategoriesAppliances as $index => $subcategory) {
                 $sheet2->setCellValue('Q' . ($index + 2), $subcategory);
             }
-            
+
             // Подкатегории для Зоотовары
             $sheet2->setCellValue('R1', 'Подкатегории_Зоотовары');
             $subcategoriesPets = [
@@ -561,62 +657,73 @@ class SpreadSheetController extends V1Controller
                 'Ветаптека',
                 'Лекарственные препараты для животных'
             ];
-            
+
             foreach ($subcategoriesPets as $index => $subcategory) {
                 $sheet2->setCellValue('R' . ($index + 2), $subcategory);
             }
-            
+
             // Типы доставки
             $sheet2->setCellValue('E1', 'Типы_доставки');
             $deliveryTypes = [
-                'Медленное авто', 'Быстрое авто', 'Авиа', 'Морем', 'Железная дорога'
+                'Медленное авто',
+                'Быстрое авто',
+                'Авиа',
+                'Морем',
+                'Железная дорога'
             ];
-            
+
             foreach ($deliveryTypes as $index => $type) {
                 $sheet2->setCellValue('E' . ($index + 2), $type);
             }
-            
+
             // Типы пунктов доставки
             $sheet2->setCellValue('F1', 'Пункты_доставки');
             $deliveryPoints = [
-                'Фулфилмент', 'Склад', 'Магазин', 'Пункт выдачи'
+                'Фулфилмент',
+                'Склад',
+                'Магазин',
+                'Пункт выдачи'
             ];
-            
+
             foreach ($deliveryPoints as $index => $point) {
                 $sheet2->setCellValue('F' . ($index + 2), $point);
             }
-            
+
             // Адреса пунктов доставки
             $sheet2->setCellValue('G1', 'Адреса');
             $addresses = [
                 'Москва, Тестовый склад',
                 'кутузовское ш 12'
             ];
-            
+
             foreach ($addresses as $index => $address) {
                 $sheet2->setCellValue('G' . ($index + 2), $address);
             }
-            
+
             // Типы упаковки
             $sheet2->setCellValue('H1', 'Типы_упаковки');
             $packagingTypes = [
-                'Мешок + скотч', 'Коробка', 'Пакет', 'Пленка'
+                'Мешок + скотч',
+                'Коробка',
+                'Пакет',
+                'Пленка'
             ];
-            
+
             foreach ($packagingTypes as $index => $type) {
                 $sheet2->setCellValue('H' . ($index + 2), $type);
             }
-            
+
             // Варианты глубокой инспекции
             $sheet2->setCellValue('I1', 'Инспекция');
             $inspectionOptions = [
-                'да', 'нет'
+                'да',
+                'нет'
             ];
-            
+
             foreach ($inspectionOptions as $index => $option) {
                 $sheet2->setCellValue('I' . ($index + 2), $option);
             }
-            
+
             // Подкатегории для Спорт
             $sheet2->setCellValue('S1', 'Подкатегории_Спорт');
             $subcategoriesSport = [
@@ -635,8 +742,8 @@ class SpreadSheetController extends V1Controller
                 'Бадминтон и Теннис',
                 'Бильярд, Гольф, Дартс, Метание ножей',
                 'Единоборства',
-                'Конный спорт', 
-                'Мотоспорт', 
+                'Конный спорт',
+                'Мотоспорт',
                 'Оборудование для сдачи нормативов',
                 'Парусный спорт',
                 'Скалолазание и Альпинизм',
@@ -648,37 +755,37 @@ class SpreadSheetController extends V1Controller
                 'Спортивная обувь',
                 'Товары для самообороны'
             ];
-            
+
             foreach ($subcategoriesSport as $index => $subcategory) {
                 $sheet2->setCellValue('S' . ($index + 2), $subcategory);
             }
-            
+
             // Подкатегории для Автотовары
             $sheet2->setCellValue('T1', 'Подкатегории_Автотовары');
             $subcategoriesAuto = [
-                'Шины и диски колесные', 
-                'Запчасти на легковые автомобили', 
-                'Масла и жидкости', 
-                'Автокосметика и автохимия', 
-                'Краски и грунтовки', 
-                'Автоэлектроника и навигация', 
-                'Аккумуляторы и сопутствующие товары', 
-                'Аксессуары в салон и багажник', 
-                'Коврики', 
-                'Внешний тюнинг', 
-                'Другие аксессуары и доп. оборудование', 
-                'Инструменты', 
-                'Мойки высокого давления и аксессуары', 
-                'Мототовары', 
-                'OFFroad', 
-                'Запчасти на силовую технику', 
+                'Шины и диски колесные',
+                'Запчасти на легковые автомобили',
+                'Масла и жидкости',
+                'Автокосметика и автохимия',
+                'Краски и грунтовки',
+                'Автоэлектроника и навигация',
+                'Аккумуляторы и сопутствующие товары',
+                'Аксессуары в салон и багажник',
+                'Коврики',
+                'Внешний тюнинг',
+                'Другие аксессуары и доп. оборудование',
+                'Инструменты',
+                'Мойки высокого давления и аксессуары',
+                'Мототовары',
+                'OFFroad',
+                'Запчасти на силовую технику',
                 'Запчасти для лодок и катеров'
             ];
-            
+
             foreach ($subcategoriesAuto as $index => $subcategory) {
                 $sheet2->setCellValue('T' . ($index + 2), $subcategory);
             }
-            
+
             // Подкатегории для Книги
             $sheet2->setCellValue('U1', 'Подкатегории_Книги');
             $subcategoriesBooks = [
@@ -711,11 +818,11 @@ class SpreadSheetController extends V1Controller
                 'Цифровые книги',
                 'Цифровые аудиокниги'
             ];
-            
+
             foreach ($subcategoriesBooks as $index => $subcategory) {
                 $sheet2->setCellValue('U' . ($index + 2), $subcategory);
             }
-            
+
             // Подкатегории для Ювелирные изделия
             $sheet2->setCellValue('V1', 'Подкатегории_Ювелирные_изделия');
             $subcategoriesJewelry = [
@@ -736,11 +843,11 @@ class SpreadSheetController extends V1Controller
                 'Украшения из керамики',
                 'Аксессуары для украшений'
             ];
-            
+
             foreach ($subcategoriesJewelry as $index => $subcategory) {
                 $sheet2->setCellValue('V' . ($index + 2), $subcategory);
             }
-            
+
             // Подкатегории для Для ремонта
             $sheet2->setCellValue('W1', 'Подкатегории_Для_ремонта');
             $subcategoriesRepair = [
@@ -755,11 +862,11 @@ class SpreadSheetController extends V1Controller
                 'Крепеж',
                 'Стройматериалы'
             ];
-            
+
             foreach ($subcategoriesRepair as $index => $subcategory) {
                 $sheet2->setCellValue('W' . ($index + 2), $subcategory);
             }
-            
+
             // Подкатегории для Сад и дача
             $sheet2->setCellValue('X1', 'Подкатегории_Сад_и_дача');
             $subcategoriesGarden = [
@@ -784,11 +891,11 @@ class SpreadSheetController extends V1Controller
                 'Мебель для отдыха',
                 'Защита от насекомых и грызунов'
             ];
-            
+
             foreach ($subcategoriesGarden as $index => $subcategory) {
                 $sheet2->setCellValue('X' . ($index + 2), $subcategory);
             }
-            
+
             // Подкатегории для Здоровье
             $sheet2->setCellValue('Y1', 'Подкатегории_Здоровье');
             $subcategoriesHealth = [
@@ -810,11 +917,11 @@ class SpreadSheetController extends V1Controller
                 'Сиропы и бальзамы',
                 'Уход за полостью рта'
             ];
-            
+
             foreach ($subcategoriesHealth as $index => $subcategory) {
                 $sheet2->setCellValue('Y' . ($index + 2), $subcategory);
             }
-            
+
             // Подкатегории для Канцтовары
             $sheet2->setCellValue('Z1', 'Подкатегории_Канцтовары');
             $subcategoriesStationery = [
@@ -828,31 +935,31 @@ class SpreadSheetController extends V1Controller
                 'Торговые принадлежности',
                 'Чертежные принадлежности'
             ];
-            
+
             foreach ($subcategoriesStationery as $index => $subcategory) {
                 $sheet2->setCellValue('Z' . ($index + 2), $subcategory);
             }
-            
+
             // Форматирование первого листа
             foreach (range('A', 'M') as $column) {
                 $sheet1->getColumnDimension($column)->setAutoSize(true);
             }
-            
+
             // Форматирование второго листа
             foreach (range('A', 'Z') as $column) {
                 $sheet2->getColumnDimension($column)->setAutoSize(true);
             }
-            
+
             // Выделяем заголовки жирным
             $sheet1->getStyle('A1:M1')->getFont()->setBold(true);
             $sheet2->getStyle('A1:Z1')->getFont()->setBold(true);
-            
+
             // Добавляем прямые выпадающие списки (без именованных диапазонов)
-            
+
             // Категория товара (столбец C)
             $categoriesRange = 'Справочники!$A$2:$A$21';
             $this->addDropdownListDirect($sheet1, 'C', 2, 100, $categoriesRange);
-            
+
             // Подкатегория (столбец D) - зависимый список
             // Для простоты используем прямые ссылки на диапазоны
             $subcategoriesWomenRange = 'Справочники!$B$2:$B$28';
@@ -868,7 +975,7 @@ class SpreadSheetController extends V1Controller
             $subcategoriesAppliancesRange = 'Справочники!$Q$2:$Q$7'; // Диапазон для бытовой техники
             $subcategoriesPetsRange = 'Справочники!$R$2:$R$20'; // Диапазон для зоотоваров
             $subcategoriesAutoRange = 'Справочники!$T$2:$T$18'; // Диапазон для автотоваров
-            
+
             for ($row = 2; $row <= 100; $row++) {
                 $validation = $sheet1->getCell('D' . $row)->getDataValidation();
                 $validation->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST);
@@ -877,61 +984,60 @@ class SpreadSheetController extends V1Controller
                 $validation->setShowInputMessage(true);
                 $validation->setShowErrorMessage(true);
                 $validation->setShowDropDown(true);
-                
+
                 // Используем IF для выбора нужного диапазона в зависимости от категории
-                $formula = 'IF(C' . $row . '="Женщинам",' . $subcategoriesWomenRange . 
-                          ',IF(C' . $row . '="Мужчинам",' . $subcategoriesMenRange . 
-                          ',IF(C' . $row . '="Детям",' . $subcategoriesChildrenRange . 
-                          ',IF(C' . $row . '="Обувь",' . $subcategoriesShoesRange . 
-                          ',IF(C' . $row . '="Дом",' . $subcategoriesHomeRange . 
-                          ',IF(C' . $row . '="Красота",' . $subcategoriesBeautyRange . 
-                          ',IF(C' . $row . '="Аксессуары",' . $subcategoriesAccessoriesRange . 
-                          ',IF(C' . $row . '="Электроника",' . $subcategoriesElectronicsRange . 
-                          ',IF(C' . $row . '="Игрушки",' . $subcategoriesToysRange . 
-                          ',IF(C' . $row . '="Мебель",' . $subcategoriesFurnitureRange . 
-                          ',IF(C' . $row . '="Бытовая техника",' . $subcategoriesAppliancesRange . 
-                          ',IF(C' . $row . '="Зоотовары",' . $subcategoriesPetsRange . 
-                          ',IF(C' . $row . '="Спорт",' . 'Справочники!$S$2:$S$28' . 
-                          ',IF(C' . $row . '="Автотовары",' . 'Справочники!$T$2:$T$18' . 
-                          ',IF(C' . $row . '="Книги",' . 'Справочники!$U$2:$U$29' . 
-                          ',IF(C' . $row . '="Ювелирные изделия",' . 'Справочники!$V$2:$V$17' . 
-                          ',IF(C' . $row . '="Для ремонта",' . 'Справочники!$W$2:$W$11' . 
-                          ',IF(C' . $row . '="Сад и дача",' . 'Справочники!$X$2:$X$21' . 
-                          ',IF(C' . $row . '="Здоровье",' . 'Справочники!$Y$2:$Y$18' . 
-                          ',IF(C' . $row . '="Канцтовары",' . 'Справочники!$Z$2:$Z$10' . 
-                          ',"Выберите категорию"))))))))))))))))))))';
+                $formula = 'IF(C' . $row . '="Женщинам",' . $subcategoriesWomenRange .
+                    ',IF(C' . $row . '="Мужчинам",' . $subcategoriesMenRange .
+                    ',IF(C' . $row . '="Детям",' . $subcategoriesChildrenRange .
+                    ',IF(C' . $row . '="Обувь",' . $subcategoriesShoesRange .
+                    ',IF(C' . $row . '="Дом",' . $subcategoriesHomeRange .
+                    ',IF(C' . $row . '="Красота",' . $subcategoriesBeautyRange .
+                    ',IF(C' . $row . '="Аксессуары",' . $subcategoriesAccessoriesRange .
+                    ',IF(C' . $row . '="Электроника",' . $subcategoriesElectronicsRange .
+                    ',IF(C' . $row . '="Игрушки",' . $subcategoriesToysRange .
+                    ',IF(C' . $row . '="Мебель",' . $subcategoriesFurnitureRange .
+                    ',IF(C' . $row . '="Бытовая техника",' . $subcategoriesAppliancesRange .
+                    ',IF(C' . $row . '="Зоотовары",' . $subcategoriesPetsRange .
+                    ',IF(C' . $row . '="Спорт",' . 'Справочники!$S$2:$S$28' .
+                    ',IF(C' . $row . '="Автотовары",' . 'Справочники!$T$2:$T$18' .
+                    ',IF(C' . $row . '="Книги",' . 'Справочники!$U$2:$U$29' .
+                    ',IF(C' . $row . '="Ювелирные изделия",' . 'Справочники!$V$2:$V$17' .
+                    ',IF(C' . $row . '="Для ремонта",' . 'Справочники!$W$2:$W$11' .
+                    ',IF(C' . $row . '="Сад и дача",' . 'Справочники!$X$2:$X$21' .
+                    ',IF(C' . $row . '="Здоровье",' . 'Справочники!$Y$2:$Y$18' .
+                    ',IF(C' . $row . '="Канцтовары",' . 'Справочники!$Z$2:$Z$10' .
+                    ',"Выберите категорию"))))))))))))))))))))';
                 $validation->setFormula1($formula);
             }
-            
+
             // Тип доставки (столбец H)
             $this->addDropdownListDirect($sheet1, 'H', 2, 100, 'Справочники!$E$2:$E$6');
-            
+
             // Тип пункта доставки (столбец I)
             $this->addDropdownListDirect($sheet1, 'I', 2, 100, 'Справочники!$F$2:$F$5');
-            
+
             // Адрес пункта доставки (столбец J)
             $this->addDropdownListDirect($sheet1, 'J', 2, 100, 'Справочники!$G$2:$G$5');
-            
+
             // Тип упаковки (столбец K)
             $this->addDropdownListDirect($sheet1, 'K', 2, 100, 'Справочники!$H$2:$H$5');
-            
+
             // Глубокая инспекция (столбец M)
             $this->addDropdownListDirect($sheet1, 'M', 2, 100, 'Справочники!$I$2:$I$3');
-            
+
             // Возвращаемся к первому листу
             $spreadsheet->setActiveSheetIndex(0);
-            
+
             // Создаем временный файл
             $tempFile = tempnam(sys_get_temp_dir(), 'test_order_data_');
             $writer = new WriterXlsx($spreadsheet);
             $writer->save($tempFile);
-            
+
             $response = Yii::$app->response;
             $response->headers->set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
             $response->headers->set('Content-Disposition', 'attachment; filename="test_order_data.xlsx"');
-            
+
             return $response->sendFile($tempFile, 'test_order_data.xlsx', ['inline' => false]);
-            
         } catch (\Exception $e) {
             Yii::error("Ошибка при создании тестового Excel файла: " . $e->getMessage() . "\n" . $e->getTraceAsString());
             return $this->asJson([
@@ -996,17 +1102,17 @@ class SpreadSheetController extends V1Controller
         // Входное логирование
         Yii::debug("=== getTypeDeliveryPointId ===", 'delivery_point_debug');
         Yii::debug("Raw input name: '" . $name . "'", 'delivery_point_debug');
-        
+
         if (empty($name)) {
             Yii::debug("Empty delivery point name", 'delivery_point_debug');
             return null;
         }
-        
+
         $name = trim($name);
-        
+
         // Логируем имя после trim()
         Yii::debug("Trimmed name: '" . $name . "'", 'delivery_point_debug');
-        
+
         if (is_numeric($name)) {
             $id = (int)$name;
             if ($id >= 1 && $id <= 4) {
@@ -1016,7 +1122,7 @@ class SpreadSheetController extends V1Controller
             Yii::debug("Invalid numeric ID: " . $id, 'delivery_point_debug');
             return null;
         }
-        
+
         // Обновленный маппинг типов пунктов доставки
         $types = [
             'фулфилмент' => 1,
@@ -1036,18 +1142,18 @@ class SpreadSheetController extends V1Controller
             '3' => 3,
             '4' => 4
         ];
-        
+
         $normalizedName = mb_strtolower(trim($name), 'UTF-8');
-        
+
         // Логируем нормализованное имя
         Yii::debug("Normalized name: '" . $normalizedName . "'", 'delivery_point_debug');
-        
+
         if (isset($types[$normalizedName])) {
             $result = $types[$normalizedName];
             Yii::debug("Found in mapping, returning: " . $result, 'delivery_point_debug');
             return $result;
         }
-        
+
         Yii::debug("Delivery point type not found in mapping", 'delivery_point_debug');
         return null;
     }
@@ -1057,17 +1163,17 @@ class SpreadSheetController extends V1Controller
         // Входное логирование
         Yii::debug("=== getDeliveryPointAddressId ===", 'address_debug');
         Yii::debug("Raw input address: '" . $address . "'", 'address_debug');
-        
+
         if (empty($address)) {
             Yii::debug("Empty address detected", 'address_debug');
             return null;
         }
-        
+
         $address = trim($address);
-        
+
         // Логируем адрес после trim()
         Yii::debug("Trimmed address: '" . $address . "'", 'address_debug');
-        
+
         // Если это числовое значение
         if (is_numeric($address)) {
             $id = (int)$address;
@@ -1078,7 +1184,7 @@ class SpreadSheetController extends V1Controller
             Yii::debug("Invalid numeric ID: " . $id, 'address_debug');
             return null;
         }
-        
+
         // Обновленный список адресов в соответствии с вашей базой данных
         $addresses = [
             // ID 1
@@ -1089,7 +1195,7 @@ class SpreadSheetController extends V1Controller
             'Москва Тестовый склад' => 1,
             'тестовый склад' => 1,
             'Тестовый склад' => 1,
-            
+
             // ID 2
             'кутузовское ш 12' => 2,
             'Кутузовское ш 12' => 2,
@@ -1101,34 +1207,34 @@ class SpreadSheetController extends V1Controller
             'кутузовское' => 2,
             'Кутузовское' => 2
         ];
-        
+
         // Нормализуем входящий адрес
         $normalizedAddress = mb_strtolower(trim($address), 'UTF-8');
-        
+
         // Удаляем множественные пробелы
         $normalizedAddress = preg_replace('/\s+/', ' ', $normalizedAddress);
-        
+
         // Логируем нормализованный адрес
         Yii::debug("Normalized address: '" . $normalizedAddress . "'", 'address_debug');
-        
+
         // Проверяем прямое совпадение
         if (isset($addresses[$normalizedAddress])) {
             $id = $addresses[$normalizedAddress];
             Yii::debug("Direct match found, returning: " . $id, 'address_debug');
             return $id;
         }
-        
+
         // Проверяем частичное совпадение
         if (strpos($normalizedAddress, 'москва') !== false && strpos($normalizedAddress, 'тестовый') !== false && strpos($normalizedAddress, 'склад') !== false) {
             Yii::debug("Partial match for Moscow test warehouse, returning: 1", 'address_debug');
             return 1;
         }
-        
+
         if (strpos($normalizedAddress, 'кутузовск') !== false && (strpos($normalizedAddress, '12') !== false || strpos($normalizedAddress, 'двенадцать') !== false)) {
             Yii::debug("Partial match for Kutuzovskoe 12, returning: 2", 'address_debug');
             return 2;
         }
-        
+
         // Если адрес не найден
         Yii::debug("Address not found in mapping", 'address_debug');
         return null;
@@ -1391,21 +1497,21 @@ class SpreadSheetController extends V1Controller
         $errors = [];
         $config = require Yii::getAlias('@app/config/modelFields.php');
         $orderConfig = $config['Order'];
-        
+
         // Проверка обязательных полей
         foreach ($orderConfig['required_fields'] as $field => $message) {
             if (empty($data[$field])) {
                 $errors[$field] = $message;
             }
         }
-        
+
         // Проверка числовых ограничений
         foreach ($orderConfig['numeric_constraints'] as $field => $constraints) {
             if (isset($data[$field]) && isset($constraints['min']) && $data[$field] < $constraints['min']) {
                 $errors[$field] = "Значение поля должно быть больше " . $constraints['min'];
             }
         }
-        
+
         return $errors;
     }
 
@@ -1588,7 +1694,7 @@ class SpreadSheetController extends V1Controller
                 'application/vnd.ms-excel',
                 'text/csv'
             ];
-            
+
             if (!in_array($uploadedFile['type'], $allowedTypes)) {
                 return $this->asJson([
                     'success' => false,
@@ -1627,7 +1733,7 @@ class SpreadSheetController extends V1Controller
             // Обработка каждой строки
             for ($row = 2; $row <= $worksheet->getHighestRow(); $row++) {  // Изменено с 4 на 2
                 $productName = trim($worksheet->getCell('B' . $row)->getValue());
-                
+
                 // Пропускаем пустые строки
                 if (empty($productName)) {
                     $debugData['statistics']['empty_rows']++;
@@ -1643,11 +1749,11 @@ class SpreadSheetController extends V1Controller
                 $packagingType = trim($worksheet->getCell('K' . $row)->getValue());
 
                 // Обновляем статистику
-                $debugData['statistics']['categories_count'][$category] = 
+                $debugData['statistics']['categories_count'][$category] =
                     ($debugData['statistics']['categories_count'][$category] ?? 0) + 1;
-                $debugData['statistics']['delivery_types_count'][$deliveryType] = 
+                $debugData['statistics']['delivery_types_count'][$deliveryType] =
                     ($debugData['statistics']['delivery_types_count'][$deliveryType] ?? 0) + 1;
-                $debugData['statistics']['packaging_types_count'][$packagingType] = 
+                $debugData['statistics']['packaging_types_count'][$packagingType] =
                     ($debugData['statistics']['packaging_types_count'][$packagingType] ?? 0) + 1;
 
                 // Получаем сконвертированные ID
@@ -1658,8 +1764,8 @@ class SpreadSheetController extends V1Controller
                 $subcategoryId = $this->getSubcategoryId($category, $subcategory);
 
                 // Проверяем валидность данных
-                $isValid = $typeDeliveryId && $typeDeliveryPointId && $deliveryPointAddressId && 
-                          $typePackagingId && $subcategoryId;
+                $isValid = $typeDeliveryId && $typeDeliveryPointId && $deliveryPointAddressId &&
+                    $typePackagingId && $subcategoryId;
 
                 if ($isValid) {
                     $debugData['statistics']['valid_rows']++;
@@ -1710,7 +1816,6 @@ class SpreadSheetController extends V1Controller
                 'success' => true,
                 'debug_data' => $debugData
             ]);
-
         } catch (\Throwable $e) {
             Yii::error('Excel debug error: ' . $e->getMessage());
             return $this->asJson([

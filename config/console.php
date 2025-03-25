@@ -1,5 +1,6 @@
 <?php
 
+
 $params = require __DIR__ . '/params.php';
 
 $config = [
@@ -10,6 +11,9 @@ $config = [
     'controllerNamespace' => 'app\console\controllers',
     'language' => 'ru-RU',
     'components' => [
+        'telegramLog' => [
+            'class' => 'app\components\TelegramLog',
+        ],
         'queue' => [
             'class' => \yii\queue\db\Queue::class,
             'db' => 'db',

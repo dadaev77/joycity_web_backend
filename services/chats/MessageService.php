@@ -94,7 +94,7 @@ class MessageService
                 'zh' => $translateResult['zh'],
             ];
         }
-        
+
         return [
             'en' => $text,
             'ru' => $text,
