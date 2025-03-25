@@ -2,10 +2,12 @@
 
 namespace $namespace;
 
-use Yii;
+use yii\base\BaseObject;
+use yii\queue\JobInterface;
 use Exception;
+use Yii;
 
-class $className
+class $className extends BaseObject implements JobInterface
 {
     /**
      * Братан, это джобка

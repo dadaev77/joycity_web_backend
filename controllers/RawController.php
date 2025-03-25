@@ -195,7 +195,11 @@ class RawController extends Controller
 
     public function actionJob()
     {
-        \Yii::$app->queue->push(new \app\jobs\TestJob());
+        \Yii::$app->queue->push(new \app\jobs\Telegram\SendMessageJob([
+            'type' => 'info',
+            'message' => 'test job',
+        ]));
+
         return 'job pushed';
     }
 }
