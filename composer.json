@@ -55,7 +55,7 @@
     "kreait/firebase-php": "^5.26",
     "yiisoft/yii2-queue": "^2.3",
     "phpoffice/phpspreadsheet": "^4.1",
-    "symfony/dotenv": "^7.2"
+    "symfony/dotenv": "7.0"
   },
   "require-dev": {
     
