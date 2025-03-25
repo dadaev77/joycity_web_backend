@@ -35,6 +35,7 @@ class MessageJob extends BaseObject implements JobInterface
                     'ru_translate' => $translateResult['ru'],
                     'zh_translate' => $translateResult['zh'],
                 ]);
+
                 if ($message->save()) {
                     throw new \yii\base\Exception('Остановка задания');
                 }

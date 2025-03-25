@@ -94,12 +94,16 @@ class Message extends ActiveRecord
 
     public function afterSave($insert, $changedAttributes)
     {
-        if ($this->content !== null) {
-            Yii::$app->queue->push(new \app\jobs\Translate\MessageJob([
-                'message' => $this->content,
-                'messageId' => $this->id,
-            ]));
+        parent::afterSave($insert, $changedAttributes);
+
+        if (isset($changedAttributes['content'])) {
+            return;
         }
+
+        Yii::$app->queue->push(new \app\jobs\Translate\MessageJob([
+            'messageId' => $this->id,
+            'message' => $this->content
+        ]));
     }
 
     /**
