@@ -689,15 +689,15 @@ class ChatController extends V1Controller
                     ]
                 );
             }
-
+            $messageToSend = Message::findOne($message->id);
             self::socketHandler(
                 array_diff($participants, [$userId]),
-                Message::findOne($message->id)->toArray()
+                $messageToSend->toArray()
             );
 
             return [
                 'status' => 'success',
-                'data' => Message::findOne($message->id)
+                'data' => $messageToSend
             ];
         } catch (\Exception $e) {
             Yii::$app->telegramLog->send('error', 'Не удалось отправить сообщение: ' . json_encode($e->getMessage()));
