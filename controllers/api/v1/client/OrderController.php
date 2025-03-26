@@ -199,15 +199,23 @@ class OrderController extends ClientController
                 }
                 OrderDistributionService::buyerAccept($distributionStatus->result, $product->buyer_id);
                 OrderStatusService::buyerAssigned($order->id);
-                ChatService::CreateGroupChat('Order ' . $order->id, $user->id, $order->id, [
-                    'deal_type' => 'order',
-                    'participants' => [$user->id, $order->manager_id, $product->buyer_id],
-                    'group_name' => 'client_buyer_manager',
-                ]);
-                PushService::sendPushNotification($product->buyer_id, [
+
+                Yii::$app->queue->push(new \app\jobs\CreateGroupChatJob([
+                    'name' => 'Order ' . $order->id,
+                    'creator_id' => $user->id,
+                    'order_id' => $order->id,
+                    'metadata' => [
+                        'deal_type' => 'order',
+                        'participants' => [$user->id, $order->manager_id, $product->buyer_id],
+                        'group_name' => 'client_buyer_manager',
+                    ],
+                ]));
+
+                Yii::$app->queue->push(new \app\jobs\PushNotificationJob([
+                    'user_id' => $product->buyer_id,
                     'title' => Yii::t('order', 'new_order_for_buyer', [], $language),
                     'body' => Yii::t('order', 'new_order_for_buyer_text', ['order_id' => $order->id], $language),
-                ]);
+                ]));
             } else {
                 $distribution = OrderDistributionService::createDistributionTask($order->id);
                 if (!$distribution->success) {
@@ -484,7 +492,8 @@ class OrderController extends ClientController
         $user = User::getIdentity();
         $orderIds = Order::find()
             ->select(['id'])
-            ->where(['OR',
+            ->where([
+                'OR',
                 ['created_by' => $user->id],
                 ['buyer_id' => $user->id]
             ])
