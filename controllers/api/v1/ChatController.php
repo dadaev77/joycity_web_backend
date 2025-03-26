@@ -686,7 +686,11 @@ class ChatController extends V1Controller
             }
             $messageToSend = Message::findOne($message->id);
 
-            \app\services\WebsocketService::sendNotification($participants, json_encode($messageToSend->toArray()));
+            \app\services\WebsocketService::sendNotification(
+                $participants,
+                $messageToSend->id,
+                true
+            );
 
             return [
                 'status' => 'success',
