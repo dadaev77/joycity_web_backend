@@ -22,10 +22,13 @@ class WebsocketNotificationJob extends BaseObject implements JobInterface
 
     public function execute($queue)
     {
+        echo "Выполняется джоб" . PHP_EOL;
         try {
             if (!$this->multiple) {
+                echo "Отправляется одно уведомление" . PHP_EOL;
                 return $this->sendSingleNotification();
             }
+            echo "Отправляется несколько уведомлений" . PHP_EOL;
             return $this->sendToParticipants();
         } catch (Exception $e) {
             Yii::error("Ошибка в джобе: " . $e->getMessage(), 'websocket');
