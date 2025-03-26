@@ -21,7 +21,9 @@ class WebsocketService
     private static function sendNotificationAsync($participants, $notification, bool $multiple = true)
     {
 
+
         var_dump($notification);
+        var_dump($participants);
         die();
 
         try {
