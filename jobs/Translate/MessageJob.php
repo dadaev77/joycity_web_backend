@@ -29,8 +29,8 @@ class MessageJob extends BaseObject implements JobInterface
             if (isset($translateResult['en']) && isset($translateResult['ru']) && isset($translateResult['zh'])) {
                 $message->content = json_encode(['ru' => $translateResult['ru'], 'en' => $translateResult['en'], 'zh' => $translateResult['zh']]);
 
-                echo "\033[32m" . 'Message translated' . "\033[0m";
-                print_r([
+                echo "\033[32m" . 'message translated' . "\033[0m";
+                echo print_r([
                     'en_translate' => $translateResult['en'],
                     'ru_translate' => $translateResult['ru'],
                     'zh_translate' => $translateResult['zh'],
