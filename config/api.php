@@ -178,6 +178,7 @@ $config = [
                         'api/v1/client/waybill',
                         'api/v1/push',
                         'api/v1/spread-sheet',
+                        'api/v1/excel-upload',
 
 
                     ],
