@@ -113,10 +113,10 @@ class OrderOutputService extends OutputService
             };
 
             $info['product_description'] = match (strtolower($userLanguage)) {
-                'ru' => $model->product_description_ru,
-                'en' => $model->product_description_en,
-                'zh' => $model->product_description_zh,
-                default => $model->product_description_ru,
+                'ru' => $model->product_description_ru . ($model->expected_price_per_item ? "\nЦена за единицу: " . $model->expected_price_per_item . " " . $model->currency : ''),
+                'en' => $model->product_description_en . ($model->expected_price_per_item ? "\nPrice per unit: " . $model->expected_price_per_item . " " . $model->currency : ''),
+                'zh' => $model->product_description_zh . ($model->expected_price_per_item ? "\n单价: " . $model->expected_price_per_item . " " . $model->currency : ''),
+                default => $model->product_description_ru . ($model->expected_price_per_item ? "\nЦена за единицу: " . $model->expected_price_per_item . " " . $model->currency : ''),
             };
 
             if ($info['product']) {
