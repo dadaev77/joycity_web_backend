@@ -24,9 +24,10 @@ class PushNotificationJob extends BaseObject implements JobInterface
             if (!$send) {
                 Yii::error('Error sending push notification: ' . $send);
             }
-            echo 'Push notification sent successfully to user ' . $this->user_id;
+            echo "\n" . "\033[32m" . 'Push notification sent successfully to user ' . $this->user_id . "\033[0m";
         } catch (Exception $e) {
             Yii::error('Error sending push notification: ' . $e->getMessage());
+            echo "\n" . "\033[31m" . 'Error sending push notification: ' . $e->getMessage() . "\033[0m";
         }
     }
 }
