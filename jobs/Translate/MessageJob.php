@@ -22,29 +22,30 @@ class MessageJob extends BaseObject implements JobInterface
     {
         try {
             $message = \app\models\Message::findOne($this->messageId);
-            echo 'message: ' . $message->id . "\n";
+
             $result = \app\services\TranslationService::translate($this->message);
             $translateResult = $result->result;
-            echo 'translateResult: ' . json_encode($translateResult) . "\n";
 
             if (isset($translateResult['en']) && isset($translateResult['ru']) && isset($translateResult['zh'])) {
                 $message->content = json_encode(['ru' => $translateResult['ru'], 'en' => $translateResult['en'], 'zh' => $translateResult['zh']]);
-
-                var_dump([
-                    'en_translate' => $translateResult['en'],
-                    'ru_translate' => $translateResult['ru'],
-                    'zh_translate' => $translateResult['zh'],
-                ]);
-
                 if ($message->save()) {
-                    throw new \yii\base\Exception('Остановка задания');
+                    echo "\033[32m" . 'Сообщение ' . $message->id . ' переведено' . "\033[0m \n";
+                    echo print_r([
+                        'en_translate' => $translateResult['en'],
+                        'ru_translate' => $translateResult['ru'],
+                        'zh_translate' => $translateResult['zh'],
+                    ], true);
+                    echo "\n";
+                } else {
+                    echo "\033[31m" . 'Не удалось обновить переводы для сообщения ' . $message->id . "\033[0m";
                 }
             } else {
-                echo 'message translation not updated' . "\n";
+                echo "\033[31m" . 'Ответ сервера не содержит переводов' . "\033[0m";
             }
             return true;
         } catch (\Exception $e) {
             Yii::error("Ошибка выполнения перевода сообщения: " . $e->getMessage());
+            echo "\033[31m" . 'Error: ' . $e->getMessage() . "\033[0m";
             return false;
         }
     }

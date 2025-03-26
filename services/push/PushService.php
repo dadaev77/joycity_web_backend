@@ -129,27 +129,27 @@ class PushService
             $appNameKey = 'APP_NAME_' . strtoupper($user->role);
             $appName = Yii::t('app', $appNameKey, [], $language);
             $message['title'] = $appName . ' - ' . $message['title'];
-            
+
             // Группируем токены по device_id
             $groupedTokens = [];
             foreach ($pushTokens as $pushToken) {
                 $groupedTokens[$pushToken->device_id][] = $pushToken;
             }
-            
+
             // Отправляем уведомление только на одно устройство каждого типа
             foreach ($groupedTokens as $deviceTokens) {
                 // Для каждого устройства берем только один токен
                 $pushToken = $deviceTokens[0];
-                
+
                 if ($pushToken->operating_system === 'ios') {
                     $pushToken->badge_count++;
                     $pushToken->save();
                 }
-                
+
                 FirebaseService::sendPushNotification(
-                    $user_id, 
-                    $message, 
-                    $pushToken->push_token, 
+                    $user_id,
+                    $message,
+                    $pushToken->push_token,
                     $pushToken->operating_system
                 );
             }
