@@ -690,11 +690,7 @@ class ChatController extends V1Controller
                 );
             }
             $messageToSend = Message::findOne($message->id);
-            self::socketHandler(
-                array_diff($participants, [$userId]),
-                $messageToSend->toArray()
-            );
-
+            \app\services\WebsocketService::sendNotification($participants, $messageToSend->toArray());
             return [
                 'status' => 'success',
                 'data' => $messageToSend
@@ -812,11 +808,6 @@ class ChatController extends V1Controller
             'message' => 'all messages in chat ' . $chat->id . ' marked as read',
             'read_messages' => $readMessages
         ];
-    }
-
-    private static function socketHandler(array $participants, $data)
-    {
-        \app\services\WebsocketService::sendNotification($participants, $data);
     }
 
     /**
