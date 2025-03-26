@@ -111,7 +111,6 @@ class OrderPriceService extends PriceOutputService
         };
 
         $out['product']['price_per_item'] = $productPrice;
-        $out['product']['expected_price_per_item'] = $productPrice;
         $out['product']['overall'] = round($productPrice * $productQuantity, self::SYMBOLS_AFTER_DECIMAL_POINT);
         $out['product']['cost_price_per_item'] = $productQuantity
             ? round(
