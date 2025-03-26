@@ -13,20 +13,18 @@ class WebsocketService
      * @param array $notification
      * @return string
      */
-    public static function sendNotification(array $participants = [], array $notification, bool $multiple = true)
+    public static function sendNotification(array $participants = [], $notification, bool $multiple = true)
     {
         return self::sendNotificationAsync($participants, $notification, $multiple);
     }
 
-    private static function sendNotificationAsync(array $participants, array $notification, bool $multiple = true)
+    private static function sendNotificationAsync(array $participants, $notification, bool $multiple = true)
     {
-        $cleanNotification = array_filter($notification, function ($value) {
-            return !($value instanceof \Closure);
-        });
+
         try {
             Yii::$app->queue->push(new WebsocketNotificationJob([
                 'participants' => $participants,
-                'notification' => $cleanNotification,
+                'notification' => $notification,
                 'multiple' => $multiple
             ]));
         } catch (\Exception $e) {
