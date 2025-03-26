@@ -18,7 +18,6 @@ class WebsocketNotificationJob extends BaseObject implements JobInterface
     public function __construct($config = [])
     {
         parent::__construct($config);
-        $this->client = new Client();
     }
 
     public function execute($queue)
@@ -36,6 +35,7 @@ class WebsocketNotificationJob extends BaseObject implements JobInterface
 
     private function sendSingleNotification()
     {
+        $this->client = new Client();
         try {
             $this->client->post($_ENV['APP_URL_NOTIFICATIONS'] . '/notification/send', [
                 'json' => ['notification' => $this->notification],
@@ -50,7 +50,7 @@ class WebsocketNotificationJob extends BaseObject implements JobInterface
 
     private function sendToParticipants()
     {
-        $results = [];
+        $this->client = new Client();
         $message = \app\models\Message::findOne($this->notification);
 
         foreach ($this->participants as $participant) {
