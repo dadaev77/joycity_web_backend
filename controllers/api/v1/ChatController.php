@@ -687,7 +687,7 @@ class ChatController extends V1Controller
             $messageToSend = Message::findOne($message->id);
 
             \app\services\WebsocketService::sendNotification(
-                $participants,
+                array_diff($participants, [$userId]),
                 $messageToSend->toArray(),
                 true
             );
