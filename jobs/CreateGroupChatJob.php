@@ -26,10 +26,10 @@ class CreateGroupChatJob extends BaseObject implements JobInterface
             );
 
             if ($chat) {
-                echo "\n" . "\033[32m" . 'Chat created ' . $chat->id . ' for order ' . $this->order_id . "\033[0m";
+                echo "\n" . "\033[32m" . 'Создан чат ' . $chat->id . ' для заказа ' . $this->order_id . "\033[0m";
             }
         } catch (Exception $e) {
-            echo 'Error: ' . $e->getMessage();
+            echo "\033[31m" . 'Ошибка при создании чата: ' . $e->getMessage() . "\033[0m";
         }
     }
 }
