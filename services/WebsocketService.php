@@ -23,7 +23,6 @@ class WebsocketService
         $cleanNotification = array_filter($notification, function ($value) {
             return !($value instanceof \Closure);
         });
-        Yii::info("Отправка уведомления: " . json_encode($cleanNotification), 'websocket');
         try {
             Yii::$app->queue->push(new WebsocketNotificationJob([
                 'participants' => $participants,

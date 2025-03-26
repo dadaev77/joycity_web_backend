@@ -686,6 +686,7 @@ class ChatController extends V1Controller
             }
             $messageToSend = Message::findOne($message->id);
 
+            Yii::error(json_encode($messageToSend->toArray()));
             \app\services\WebsocketService::sendNotification($participants, $messageToSend->toArray());
 
             return [
