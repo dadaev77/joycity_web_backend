@@ -28,16 +28,19 @@ class MessageJob extends BaseObject implements JobInterface
 
             if (isset($translateResult['en']) && isset($translateResult['ru']) && isset($translateResult['zh'])) {
                 $message->content = json_encode(['ru' => $translateResult['ru'], 'en' => $translateResult['en'], 'zh' => $translateResult['zh']]);
-
-                echo "\033[32m" . 'message translated' . "\033[0m";
-                echo print_r([
-                    'en_translate' => $translateResult['en'],
-                    'ru_translate' => $translateResult['ru'],
-                    'zh_translate' => $translateResult['zh'],
-                ], true);
-                echo "\n";
+                if ($message->save()) {
+                    echo "\033[32m" . 'Сообщение ' . $message->id . ' переведено' . "\033[0m \n";
+                    echo print_r([
+                        'en_translate' => $translateResult['en'],
+                        'ru_translate' => $translateResult['ru'],
+                        'zh_translate' => $translateResult['zh'],
+                    ], true);
+                    echo "\n";
+                } else {
+                    echo "\033[31m" . 'Не удалось обновить переводы для сообщения ' . $message->id . "\033[0m";
+                }
             } else {
-                echo "\033[31m" . 'message translation not updated' . "\033[0m";
+                echo "\033[31m" . 'Ответ сервера не содержит переводов' . "\033[0m";
             }
             return true;
         } catch (\Exception $e) {
