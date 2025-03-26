@@ -192,14 +192,14 @@ class RawController extends Controller
 
         return \app\services\push\PushService::sendPushNotification($user_id, $message);
     }
+
     public function actionJob()
     {
-        \Yii::$app->queue->push(new \app\jobs\TestJob());
-    }
+        \Yii::$app->queue->push(new \app\jobs\Telegram\SendMessageJob([
+            'type' => 'info',
+            'message' => 'test job',
+        ]));
 
-    public function actionEnv()
-    {
-        var_dump($_ENV['DB_HOST']);
-        die;
+        return 'job pushed';
     }
 }

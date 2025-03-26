@@ -17,7 +17,6 @@ use Exception as BaseException;
 use Throwable;
 use Yii;
 
-use app\services\chats\ChatService;
 
 class AuthController extends V1Controller implements ApiAuth
 {
@@ -394,7 +393,15 @@ class AuthController extends V1Controller implements ApiAuth
                 return $letters . '-' . $numbers;
             }
 
-            $user->uuid = generateCustomUUID();
+            $uuid = generateCustomUUID();
+
+            $uuidExists = User::find()->where(['uuid' => $uuid])->exists();
+            while ($uuidExists) {
+                $uuid = generateCustomUUID();
+                $uuidExists = User::find()->where(['uuid' => $uuid])->exists();
+            }
+
+            $user->uuid = $uuid;
 
             $user->personal_id = md5(time() . random_int(1e3, 9e3));
             $user->password = Yii::$app

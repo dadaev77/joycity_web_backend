@@ -228,9 +228,9 @@ class ChatController extends V1Controller
      * 
      * @return array Статус операции, ID пользователя и массив чатов с информацией о них
      */
-   
-   
-     public function actionGetChats()
+
+
+    public function actionGetChats()
     {
         $userId = User::getIdentity()->id;
         $filteredChats = [];
@@ -514,7 +514,7 @@ class ChatController extends V1Controller
      * @return array Статус операции, ID пользователя и массив чатов
      */
 
-     
+
     public function actionGetOrderChats($orderId)
     {
         $chats = Chat::find()->where(['order_id' => $orderId, 'status' => 'active', 'is_deleted' => false])->all();
@@ -567,7 +567,7 @@ class ChatController extends V1Controller
 
 
 
-    
+
     /**
      * Отправка сообщения в чат
      * 
@@ -689,15 +689,15 @@ class ChatController extends V1Controller
                     ]
                 );
             }
-
+            $messageToSend = Message::findOne($message->id);
             self::socketHandler(
                 array_diff($participants, [$userId]),
-                Message::findOne($message->id)->toArray()
+                $messageToSend->toArray()
             );
 
             return [
                 'status' => 'success',
-                'data' => Message::findOne($message->id)
+                'data' => $messageToSend
             ];
         } catch (\Exception $e) {
             Yii::$app->telegramLog->send('error', 'Не удалось отправить сообщение: ' . json_encode($e->getMessage()));
@@ -921,7 +921,7 @@ class ChatController extends V1Controller
         $userId = User::getIdentity()->id;
         $chatId = Yii::$app->request->post('chat_id');
         $chat = Chat::findOne($chatId);
-        
+
         if (!$chat) {
             throw new BadRequestHttpException('Чат не найден');
         }
@@ -931,7 +931,7 @@ class ChatController extends V1Controller
 
         $chat->is_deleted = true;
         $chat->deleted_at = date('Y-m-d H:i:s');
-        
+
         if ($chat->save()) {
             // Формируем данные для уведомления
             $notificationData = [

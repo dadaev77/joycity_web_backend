@@ -37,14 +37,13 @@ class MessageService
             $message = new Message([
                 'chat_id' => $chatId,
                 'user_id' => $userId,
-                'content' => $type === 'text' ? self::translateMessage($content) : json_encode(['ru' => '', 'en' => '', 'zh' => '']),
                 'metadata' => $metadata ? json_encode($metadata) : null,
                 'reply_to_id' => $replyToId,
                 'status' => 'delivered',
+                'content' => $type === 'text' ? self::translateMessage($content) : json_encode(['ru' => '', 'en' => '', 'zh' => '']),
                 'attachments' => $attachments ? json_encode($attachments) : null,
             ]);
             $message->type = $type;
-
             if (!$message->save()) {
                 throw new Exception('Ошибка при создании сообщения: ' . json_encode($message->getErrors()));
             }
@@ -83,18 +82,6 @@ class MessageService
      */
     private static function translateMessage($text)
     {
-        $translator = new \app\services\TranslationService();
-        $result = $translator->translate($text);
-        $translateResult = $result->result;
-
-        if (isset($translateResult['en']) && isset($translateResult['ru']) && isset($translateResult['zh'])) {
-            return [
-                'en' => $translateResult['en'],
-                'ru' => $translateResult['ru'],
-                'zh' => $translateResult['zh'],
-            ];
-        }
-        
         return [
             'en' => $text,
             'ru' => $text,
