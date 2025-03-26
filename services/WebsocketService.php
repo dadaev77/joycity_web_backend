@@ -26,9 +26,6 @@ class WebsocketService
             'multiple' => $multiple
         ];
 
-        var_dump($jobData);
-        die();
-
         try {
             Yii::$app->queue->push(new WebsocketNotificationJob([
                 'participants' => $participants,
