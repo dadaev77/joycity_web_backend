@@ -85,11 +85,12 @@ class OrderOutputService extends OutputService
             }
             unset($tracking);
 
-            // foreach ($info as $key => $value) {
-            //     if ($value && (str_starts_with($key, 'price_') || $key === 'expected_price_per_item')) {
-            //         $info[$key] = RateService::convertValue($value, $info['currency'], $userCurrency);
-            //     }
-            // }
+            foreach ($info as $key => $value) {
+                if ($value && (str_starts_with($key, 'price_') || $key === 'expected_price_per_item')) {
+                    $info[$key] = RateService::convertValue($value, $info['currency'], $userCurrency);
+                }
+            }
+
 
             $keys = [
                 'product_name_ru',

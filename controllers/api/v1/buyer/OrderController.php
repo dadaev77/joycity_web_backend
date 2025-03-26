@@ -72,7 +72,7 @@ class OrderController extends BuyerController
         $apiCodes = Order::apiCodes();
         $user = User::getIdentity();
         $order = Order::find()
-            ->select(['id', 'buyer_id'])
+            ->select(['id', 'buyer_id', 'expected_price_per_item'])
             ->where(['id' => $id])
             ->one();
 
