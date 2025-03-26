@@ -20,10 +20,13 @@ class WebsocketService
 
     private static function sendNotificationAsync($participants, $notification, bool $multiple = true)
     {
+        $jobData = [
+            'participants' => $participants,
+            'notification' => $notification,
+            'multiple' => $multiple
+        ];
 
-
-        var_dump($notification);
-        var_dump($participants);
+        var_dump($jobData);
         die();
 
         try {
