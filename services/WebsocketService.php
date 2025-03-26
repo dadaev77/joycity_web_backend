@@ -2,6 +2,7 @@
 
 namespace app\services;
 
+use app\jobs\WebsocketNotificationJob;
 use Yii;
 
 class WebsocketService
@@ -23,11 +24,16 @@ class WebsocketService
             return !($value instanceof \Closure);
         });
 
-        Yii::$app->queue->push(new \app\jobs\WebsocketNotificationJob([
-            'participants' => $participants,
-            'notification' => $cleanNotification,
-            'multiple' => $multiple
-        ]));
+        try {
+            Yii::$app->queue->push(new WebsocketNotificationJob([
+                'participants' => $participants,
+                'notification' => $cleanNotification,
+                'multiple' => $multiple
+            ]));
+        } catch (\Exception $e) {
+            Yii::error("Ошибка при отправке уведомления: " . $e->getMessage(), 'websocket');
+            return 'error ' . $e->getMessage();
+        }
 
         return true;
     }

@@ -458,8 +458,6 @@ class ChatController extends V1Controller
         ];
     }
 
-
-
     /**
      * Получение чатов для конкретного заказа
      * 
@@ -564,9 +562,6 @@ class ChatController extends V1Controller
             'data' => $filteredChats
         ];
     }
-
-
-
 
     /**
      * Отправка сообщения в чат
