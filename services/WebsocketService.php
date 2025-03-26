@@ -13,12 +13,12 @@ class WebsocketService
      * @param array $notification
      * @return string
      */
-    public static function sendNotification(array $participants = [], $notification, bool $multiple = true)
+    public static function sendNotification($participants, int $notification, bool $multiple = true)
     {
         return self::sendNotificationAsync($participants, $notification, $multiple);
     }
 
-    private static function sendNotificationAsync(array $participants, $notification, bool $multiple = true)
+    private static function sendNotificationAsync($participants, int $notification, bool $multiple = true)
     {
 
         try {
