@@ -22,13 +22,13 @@ class WebsocketNotificationJob extends BaseObject implements JobInterface
 
     public function execute($queue)
     {
-        echo "Выполняется джоб" . PHP_EOL;
+        echo "\nВыполняется джоб" . PHP_EOL;
         try {
             if (!$this->multiple) {
-                echo "Отправляется одно уведомление" . PHP_EOL;
+                echo "\nОтправляется одно уведомление" . PHP_EOL;
                 return $this->sendSingleNotification();
             }
-            echo "Отправляется несколько уведомлений" . PHP_EOL;
+            echo "\nОтправляется несколько уведомлений" . PHP_EOL;
             return $this->sendToParticipants();
         } catch (Exception $e) {
             Yii::error("Ошибка в джобе: " . $e->getMessage(), 'websocket');
@@ -44,10 +44,10 @@ class WebsocketNotificationJob extends BaseObject implements JobInterface
                 'json' => ['notification' => $this->notification],
                 'headers' => ['Content-Type' => 'application/json']
             ]);
-            echo "Уведомление отправлено" . PHP_EOL;
+            echo "\nУведомление отправлено" . PHP_EOL;
         } catch (Exception $e) {
             Yii::error("Ошибка при отправке уведомления: " . $e->getMessage(), 'websocket');
-            echo "Ошибка при отправке уведомления: " . $e->getMessage() . PHP_EOL;
+            echo "\nОшибка при отправке уведомления: " . $e->getMessage() . PHP_EOL;
         }
     }
 
@@ -64,11 +64,12 @@ class WebsocketNotificationJob extends BaseObject implements JobInterface
                     'data' => $message->toArray(),
                 ],
             ];
-
+            echo "\nОтправляется уведомление для пользователя: " . $participant . PHP_EOL;
             $this->client->post($_ENV['APP_URL_NOTIFICATIONS'] . '/notification/send', [
                 'json' => $notificationData,
                 'headers' => ['Content-Type' => 'application/json']
             ]);
+            echo "\nУведомление отправлено для пользователя: " . $participant . PHP_EOL;
         }
     }
 }
