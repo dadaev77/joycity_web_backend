@@ -214,7 +214,7 @@ class OrderController extends ClientController
                 PushService::sendPushNotification($product->buyer_id, [
                     'title' => Yii::t('order', 'new_order_for_buyer', [], $language),
                     'body' => Yii::t('order', 'new_order_for_buyer_text', ['order_id' => $order->id], $language),
-                ], true);
+                ], false);
                 //
             } else {
                 $distribution = OrderDistributionService::createDistributionTask($order->id);
