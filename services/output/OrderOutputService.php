@@ -91,7 +91,6 @@ class OrderOutputService extends OutputService
                 }
             }
 
-
             $keys = [
                 'product_name_ru',
                 'product_description_ru',
@@ -119,9 +118,6 @@ class OrderOutputService extends OutputService
                 'zh' => $model->product_description_zh,
                 default => $model->product_description_ru,
             };
-
-
-
 
             if ($info['product']) {
                 $product = \app\models\Product::findOne($info['product']['id']);
@@ -167,7 +163,6 @@ class OrderOutputService extends OutputService
             if ($info['buyerOffer']) {
                 $info['buyerOffer']['price_product'] = RateService::convertValue($info['buyerOffer']['price_product'], $info['buyerOffer']['currency'], $userCurrency);
                 $info['buyerOffer']['price_inspection'] = RateService::convertValue($info['buyerOffer']['price_inspection'], $info['buyerOffer']['currency'], $userCurrency);
-                $info['expected_price_per_item'] = RateService::convertValue($info['expected_price_per_item'], $info['currency'], $userCurrency);
             }
             if (isset($info['buyerDeliveryOffer'])) {
                 $info['buyerDeliveryOffer']['price_product'] = RateService::convertValue($info['buyerDeliveryOffer']['price_product'], $info['buyerDeliveryOffer']['currency'], $userCurrency);

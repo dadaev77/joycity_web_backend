@@ -167,6 +167,8 @@ class OrderStructure extends Base
                     'price_delivery',
                 ],
                 'number',
+                'min' => 0,
+                'skipOnEmpty' => true,
             ],
             [['waybill_isset'], 'boolean'],
             [['link_tz'], 'string'],

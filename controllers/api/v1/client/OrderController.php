@@ -120,7 +120,7 @@ class OrderController extends ClientController
             'status' => Order::STATUS_CREATED,
             'currency' => $user->settings->currency,
             'type_delivery_point_id' => $request->post('type_delivery_point_id'),
-            'expected_price_per_item' => $request->post('expected_price_per_item') ?? 0,
+            'expected_price_per_item' => $request->post('expected_price_per_item') ? (float)$request->post('expected_price_per_item') : null,
             'expected_quantity' => $request->post('expected_quantity') ?? 0,
             'expected_packaging_quantity' => $request->post('expected_packaging_quantity') ?? 0,
             'type_packaging_id' => $request->post('type_packaging_id') ?? null,
