@@ -54,14 +54,13 @@ class WebsocketNotificationJob extends BaseObject implements JobInterface
     private function sendToParticipants()
     {
         $this->client = new Client();
-        $message = \app\models\Message::findOne($this->notification);
 
         foreach ($this->participants as $participant) {
             $notificationData = [
                 'notification' => [
                     'type' => 'new_message',
                     'user_id' => $participant,
-                    'data' => $message->toArray(),
+                    'data' => $this->notification,
                 ],
             ];
             echo "\nОтправляется уведомление для пользователя: " . $participant . PHP_EOL;
