@@ -2,21 +2,30 @@
 
 namespace app\services;
 
-use app\components\responseFunction\Result;
-use GuzzleHttp\Client;
+use Yii;
 
 class WebsocketService
 {
-    public static function sendNotification(array $notification)
+    /**
+     * Отправка уведомления
+     * @param array $participants
+     * @param array $notification
+     * @return string
+     */
+    public static function sendNotification(array $participants = [], array $notification, bool $multiple = true)
     {
-        $client = new \GuzzleHttp\Client();
-        $response = $client->post( $_ENV['APP_URL_NOTIFICATIONS'] . '/notification/send', [
-            'json' => ['notification' => $notification],
-            'headers' => ['Content-Type' => 'application/json']
-        ]);
-        if ($response->getBody()->getContents() !== 'ok') {
-            return Result::error();
+        return self::sendNotificationAsync($participants, $notification, $multiple);
+    }
+
+    private static function sendNotificationAsync(array $participants, array $notification, bool $multiple = true)
+    {
+        foreach ($participants as $participant) {
+            Yii::$app->queue->push(new \app\jobs\WebsocketNotificationJob([
+                'participants' => $participants,
+                'notification' => $notification,
+                'multiple' => $multiple
+            ]));
         }
-        return Result::success();
+        return true;
     }
 }

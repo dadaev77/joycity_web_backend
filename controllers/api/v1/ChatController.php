@@ -816,68 +816,7 @@ class ChatController extends V1Controller
 
     private static function socketHandler(array $participants, $data)
     {
-        $urls = ['http://joycityrussia.friflex.com:8081/notification/send'];
-        $multiHandle = curl_multi_init();
-        $curlHandles = [];
-
-        foreach ($participants as $participant) {
-            $ch = curl_init();
-            $notificationData = json_encode([
-                'notification' => [
-                    'type' => 'new_message',
-                    'user_id' => $participant,
-                    'data' => $data,
-                ],
-            ]);
-
-            Yii::debug("Sending notification: " . $notificationData, 'socket');
-
-            curl_setopt($ch, CURLOPT_URL, $urls[0]);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $notificationData);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, [
-                'Content-Type: application/json',
-                'Content-Length: ' . strlen($notificationData)
-            ]);
-
-            // Добавляем отладочную информацию
-            curl_setopt($ch, CURLOPT_VERBOSE, true);
-            $verbose = fopen('php://temp', 'w+');
-            curl_setopt($ch, CURLOPT_STDERR, $verbose);
-
-            curl_multi_add_handle($multiHandle, $ch);
-            $curlHandles[] = $ch;
-        }
-
-        $running = null;
-        do {
-            $status = curl_multi_exec($multiHandle, $running);
-            if ($running) {
-                curl_multi_select($multiHandle);
-            }
-        } while ($running > 0 && $status == CURLM_OK);
-
-        // Обработка результатов
-        foreach ($curlHandles as $ch) {
-            $response = curl_multi_getcontent($ch);
-
-            // Получаем отладочную информацию
-            rewind($verbose);
-            $verboseLog = stream_get_contents($verbose);
-
-            Yii::debug("Curl response: " . $response, 'socket');
-            Yii::debug("Verbose info: " . $verboseLog, 'socket');
-
-            if ($response === false) {
-                Yii::error("Curl error: " . curl_error($ch), 'socket');
-            }
-
-            curl_multi_remove_handle($multiHandle, $ch);
-            curl_close($ch);
-        }
-
-        curl_multi_close($multiHandle);
+        \app\services\WebsocketService::sendNotification($participants, $data);
     }
 
     /**
