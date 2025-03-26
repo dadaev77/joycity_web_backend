@@ -688,7 +688,7 @@ class ChatController extends V1Controller
 
             \app\services\WebsocketService::sendNotification(
                 $participants,
-                $messageToSend->id,
+                $messageToSend,
                 true
             );
 

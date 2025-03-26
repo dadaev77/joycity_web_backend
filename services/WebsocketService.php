@@ -13,13 +13,16 @@ class WebsocketService
      * @param array $notification
      * @return string
      */
-    public static function sendNotification($participants, int $notification, bool $multiple = true)
+    public static function sendNotification($participants, $notification, bool $multiple = true)
     {
         return self::sendNotificationAsync($participants, $notification, $multiple);
     }
 
-    private static function sendNotificationAsync($participants, int $notification, bool $multiple = true)
+    private static function sendNotificationAsync($participants, $notification, bool $multiple = true)
     {
+
+        var_dump($notification);
+        die();
 
         try {
             Yii::$app->queue->push(new WebsocketNotificationJob([
