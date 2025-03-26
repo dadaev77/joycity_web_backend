@@ -116,7 +116,15 @@ class PushService
      * @param array $message Массив с заголовком и текстом сообщения.
      * @return mixed Результат отправки уведомления.
      */
-    public static function sendPushNotification($user_id, $message)
+    public static function sendPushNotification($user_id, $message, bool $async = true)
+    {
+        if ($async) {
+            return self::sendAsync($user_id, $message);
+        }
+        return self::sendSync($user_id, $message);
+    }
+
+    private static function sendSync($user_id, $message)
     {
         $pushTokens = PushNotification::find()->where(['client_id' => $user_id])->all();
         try {
@@ -159,8 +167,14 @@ class PushService
             Yii::error("Push notification error: " . $e->getMessage(), 'push');
             return $e->getMessage();
         }
-
         return true;
+    }
+    private static function sendAsync($user_id, $message)
+    {
+        \Yii::$app->queue->push(new \app\jobs\PushNotificationJob([
+            'user_id' => $user_id,
+            'message' => $message
+        ]));
     }
 
     public static function getToken()

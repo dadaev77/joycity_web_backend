@@ -11,16 +11,12 @@ use Yii;
 class PushNotificationJob extends BaseObject implements JobInterface
 {
     public $user_id;
-    public $title;
-    public $body;
+    public $message;
 
     public function execute($queue)
     {
         try {
-            $send = PushService::sendPushNotification($this->user_id, [
-                'title' => $this->title,
-                'body' => $this->body,
-            ]);
+            $send = PushService::sendPushNotification($this->user_id, $this->message, false);
             if (!$send) {
                 Yii::error('Ошибка при отправке push уведомления: ' . $send);
             }
