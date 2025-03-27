@@ -98,7 +98,6 @@ class ChatService
                 'order_id' => $orderId,
                 'metadata' => [] + $metadata
             ]);
-            return $chat;
             if (!$chat->save()) {
                 throw new \yii\db\Exception('Ошибка при создании группового чата: ' . json_encode($chat->getErrors()));
             }
