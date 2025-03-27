@@ -35,7 +35,7 @@ class MessageJob extends BaseObject implements JobInterface
                         'ru_translate' => $translateResult['ru'],
                         'zh_translate' => $translateResult['zh'],
                     ], true);
-                    echo "\n" . "\033[32m" . '[Translate] Конец сообщения' . "\033[0m";
+                    echo "\033[32m" . '[Translate] Конец сообщения' . "\033[0m";
                 } else {
                     echo "\n" . "\033[31m" . '[Translate] Не удалось обновить переводы для сообщения ' . $message->id . "\033[0m";
                 }
