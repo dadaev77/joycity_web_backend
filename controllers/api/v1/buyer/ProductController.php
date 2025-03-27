@@ -155,9 +155,6 @@ class ProductController extends BuyerController
                 );
             }
 
-
-
-
             $product->linkAll('attachments', $attachmentSaveResponse->result, [
                 'type' => ProductLinkAttachment::TYPE_DEFAULT,
             ]);

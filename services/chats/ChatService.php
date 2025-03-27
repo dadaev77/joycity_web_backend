@@ -78,23 +78,33 @@ class ChatService
         $name,
         $creatorId,
         int $orderId = null,
-        array $metadata = []
+        array $metadata = [],
+        bool $async = true
     ) {
-        $chat = new Chat([
-            'type' => 'group',
-            'name' => $name,
-            'status' => 'active',
-            'user_id' => $creatorId,
-            'role' => 'owner',
-            'order_id' => $orderId,
-            'metadata' => [] + $metadata
-        ]);
+        if ($async) {
+            Yii::$app->queue->push(new \app\jobs\CreateGroupChatJob([
+                'name' => $name,
+                'creator_id' => $creatorId,
+                'order_id' => $orderId,
+                'metadata' => [] + $metadata
+            ]));
+        } else {
+            $chat = new Chat([
+                'type' => 'group',
+                'name' => $name,
+                'status' => 'active',
+                'user_id' => $creatorId,
+                'role' => 'owner',
+                'order_id' => $orderId,
+                'metadata' => [] + $metadata
+            ]);
 
-        if (!$chat->save()) {
-            throw new \yii\db\Exception('Ошибка при создании группового чата: ' . json_encode($chat->getErrors()));
+            return $chat;
+
+            if (!$chat->save()) {
+                throw new \yii\db\Exception('Ошибка при создании группового чата: ' . json_encode($chat->getErrors()));
+            }
         }
-
-        return $chat;
     }
 
     /**
