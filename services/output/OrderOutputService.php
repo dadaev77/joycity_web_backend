@@ -55,7 +55,7 @@ class OrderOutputService extends OutputService
             'fulfillmentInspectionReport',
             'fulfillmentStockReport' => fn($q) => $q->with(['attachments']),
             'fulfillmentPackagingLabeling' => fn($q) => $q->with(['attachments']),
-            'productStockReports' => fn($q) => $q->with(['attachments', 'attachmentsDict']),
+            'productStockReports' => fn($q) => $q->with(['attachments']),
             'orderTrackings',
             'orderRate',
         ];
@@ -111,7 +111,7 @@ class OrderOutputService extends OutputService
                 'zh' => $model->product_name_zh,
                 default => $model->product_name_ru,
             };
-
+            $info['productStockReport']['dict'] = 'asdasdasd';
             $info['product_description'] = match (strtolower($userLanguage)) {
                 'ru' => $model->product_description_ru,
                 'en' => $model->product_description_en,
@@ -200,7 +200,7 @@ class OrderOutputService extends OutputService
                 $info['productInspectionReport']['order_id'],
                 $info['productInspectionReports'],
                 $info['productStockReport']['order_id'],
-                $info['productStockReports'],
+                // $info['productStockReports'],
                 $info['orderLinkAttachments'],
                 $info['type_packaging_id'],
                 $info['type_delivery_id'],
