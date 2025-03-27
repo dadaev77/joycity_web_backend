@@ -77,33 +77,39 @@ class OrderOutputService extends OutputService
             $info['fulfilmentMarketplaceDeliveryInfo'] = $fulfilmentMarketplaceDeliveryInfo ?: null;
             // Product Stock Report
             $info['productStockReport'] = $info['productStockReports'] ? $info['productStockReports'][0] : null;
-            $info['productStockReport']['attachments'] = $info['productStockReport']['attachmentsSmallSize'];
-            $info['productStockReport']['attachments_dict'] = [
-                '256' => $info['productStockReport']['attachmentsSmallSize'],
-                '512' => $info['productStockReport']['attachmentsMediumSize'],
-                '1024' => $info['productStockReport']['attachmentsLargeSize'],
-                '2048' => $info['productStockReport']['attachmentsXlargeSize'],
-            ];
+            if ($info['productStockReport']) {
+                $info['productStockReport']['attachments'] = $info['productStockReport']['attachmentsSmallSize'];
+                $info['productStockReport']['attachments_dict'] = [
+                    '256' => $info['productStockReport']['attachmentsSmallSize'],
+                    '512' => $info['productStockReport']['attachmentsMediumSize'],
+                    '1024' => $info['productStockReport']['attachmentsLargeSize'],
+                    '2048' => $info['productStockReport']['attachmentsXlargeSize'],
+                ];
+            }
 
             // Fulfillment Stock Report
             $info['fulfillmentStockReport'] = $info['fulfillmentStockReport'] ? $info['fulfillmentStockReport'] : null;
-            $info['fulfillmentStockReport']['attachments'] = $info['fulfillmentStockReport']['attachmentsSmallSize'];
-            $info['fulfillmentStockReport']['attachments_dict'] = [
-                '256' => $info['fulfillmentStockReport']['attachmentsSmallSize'],
-                '512' => $info['fulfillmentStockReport']['attachmentsMediumSize'],
-                '1024' => $info['fulfillmentStockReport']['attachmentsLargeSize'],
-                '2048' => $info['fulfillmentStockReport']['attachmentsXlargeSize'],
-            ];
+            if ($info['fulfillmentStockReport']) {
+                $info['fulfillmentStockReport']['attachments'] = $info['fulfillmentStockReport']['attachmentsSmallSize'];
+                $info['fulfillmentStockReport']['attachments_dict'] = [
+                    '256' => $info['fulfillmentStockReport']['attachmentsSmallSize'],
+                    '512' => $info['fulfillmentStockReport']['attachmentsMediumSize'],
+                    '1024' => $info['fulfillmentStockReport']['attachmentsLargeSize'],
+                    '2048' => $info['fulfillmentStockReport']['attachmentsXlargeSize'],
+                ];
+            }
 
             // Fulfillment Packaging Labeling
             $info['fulfillmentPackagingLabeling'] = $info['fulfillmentPackagingLabeling'] ? $info['fulfillmentPackagingLabeling'] : null;
-            $info['fulfillmentPackagingLabeling']['attachments'] = $info['fulfillmentPackagingLabeling']['attachmentsSmallSize'];
-            $info['fulfillmentPackagingLabeling']['attachments_dict'] = [
-                '256' => $info['fulfillmentPackagingLabeling']['attachmentsSmallSize'],
-                '512' => $info['fulfillmentPackagingLabeling']['attachmentsMediumSize'],
-                '1024' => $info['fulfillmentPackagingLabeling']['attachmentsLargeSize'],
-                '2048' => $info['fulfillmentPackagingLabeling']['attachmentsXlargeSize'],
-            ];
+            if ($info['fulfillmentPackagingLabeling']) {
+                $info['fulfillmentPackagingLabeling']['attachments'] = $info['fulfillmentPackagingLabeling']['attachmentsSmallSize'];
+                $info['fulfillmentPackagingLabeling']['attachments_dict'] = [
+                    '256' => $info['fulfillmentPackagingLabeling']['attachmentsSmallSize'],
+                    '512' => $info['fulfillmentPackagingLabeling']['attachmentsMediumSize'],
+                    '1024' => $info['fulfillmentPackagingLabeling']['attachmentsLargeSize'],
+                    '2048' => $info['fulfillmentPackagingLabeling']['attachmentsXlargeSize'],
+                ];
+            }
 
             $info['buyerOffer'] = $info['buyerOffers'] ? $info['buyerOffers'][0] : null;
             $info['productInspectionReport'] = $info['productInspectionReports'] ? $info['productInspectionReports'][0] : null;
