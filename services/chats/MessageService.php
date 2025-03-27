@@ -47,6 +47,12 @@ class MessageService
             if (!$message->save()) {
                 throw new Exception('Ошибка при создании сообщения: ' . json_encode($message->getErrors()));
             }
+
+            Yii::$app->queue->push(new \app\jobs\Translate\MessageJob([
+                'messageId' => $message->id,
+                'message' => $message->content
+            ]));
+
             return $message;
         } catch (\Exception $e) {
             throw new Exception('Ошибка при создании сообщения: ' . $e->getMessage());
