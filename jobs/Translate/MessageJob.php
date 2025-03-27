@@ -36,6 +36,15 @@ class MessageJob extends BaseObject implements JobInterface
                         'zh_translate' => $translateResult['zh'],
                     ], true);
                     echo "\033[32m" . '[Translate] Конец сообщения' . "\033[0m";
+
+                    \app\services\WebsocketService::sendNotification($message->chat->metadata['participants'], [
+                        'type' => 'translate_message',
+                        'data' => [
+                            'message' => $message->toArray(),
+                        ],
+                        'multiple' => false,
+                        'async' => false,
+                    ]);
                 } else {
                     echo "\n" . "\033[31m" . '[Translate] Не удалось обновить переводы для сообщения ' . $message->id . "\033[0m";
                 }
