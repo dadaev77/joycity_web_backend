@@ -18,7 +18,7 @@ class CreateGroupChatJob extends BaseObject implements JobInterface
     public function execute($queue)
     {
         try {
-
+            echo "create group chat from job";
             $chat = ChatService::CreateGroupChat(
                 $this->name,
                 $this->creator_id,
