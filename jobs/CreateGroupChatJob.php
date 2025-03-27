@@ -22,7 +22,8 @@ class CreateGroupChatJob extends BaseObject implements JobInterface
                 $this->name,
                 $this->creator_id,
                 $this->order_id,
-                $this->metadata
+                $this->metadata,
+                false
             );
             echo "create group chat from job" . json_encode($this);
             if ($chat) {
