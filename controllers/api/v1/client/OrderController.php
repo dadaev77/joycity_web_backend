@@ -197,12 +197,12 @@ class OrderController extends ClientController
                 OrderDistributionService::buyerAccept($distributionStatus->result, $product->buyer_id);
                 OrderStatusService::buyerAssigned($order->id);
 
-
+                echo "create group chat from controller";
                 ChatService::CreateGroupChat('Order ' . $order->id, $user->id, $order->id, [
                     'deal_type' => 'order',
                     'participants' => [$user->id, $order->manager_id, $product->buyer_id],
                     'group_name' => 'client_buyer_manager',
-                ], true);
+                ]);
 
                 PushService::sendPushNotification($product->buyer_id, [
                     'title' => Yii::t('order', 'new_order_for_buyer', [], $language),

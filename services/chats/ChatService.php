@@ -83,12 +83,12 @@ class ChatService
     ) {
         if ($async) {
             echo "async create group chat from service";
-            // Yii::$app->queue->push(new \app\jobs\CreateGroupChatJob([
-            //     'name' => $name,
-            //     'creator_id' => $creatorId,
-            //     'order_id' => $orderId,
-            //     'metadata' => [] + $metadata
-            // ]));
+            Yii::$app->queue->push(new \app\jobs\CreateGroupChatJob([
+                'name' => $name,
+                'creator_id' => $creatorId,
+                'order_id' => $orderId,
+                'metadata' => [] + $metadata
+            ]));
             return;
         } else {
             $chat = new Chat([
