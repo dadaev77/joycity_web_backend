@@ -30,7 +30,7 @@ class SendMessageJob extends BaseObject implements JobInterface
                 'env' => $this->env,
                 'async' => 'queue',
             ]);
-            echo "\n" . "\033[32m" . '[Telegram] Конец сообщения' . "\033[0m";
+            echo "\033[32m" . '[Telegram] Конец сообщения' . "\033[0m";
         } catch (Exception $e) {
             echo "\n" . "\033[31m" . '[Telegram] Ошибка отправки в телеграм: ' . $e->getMessage() . "\033[0m";
             throw $e;
