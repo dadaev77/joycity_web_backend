@@ -778,7 +778,6 @@ class ChatController extends V1Controller
                 $messageMetadata['read_by'][] = $userId;
                 $message->metadata = $messageMetadata;
                 if ($message->save()) {
-                    Yii::$app->telegramLog->send('info', 'Message metadata: ' . json_encode($message->metadata));
                     $readMessages[] = [
                         'id' => $message->id,
                         'chat_id' => $message->chat_id,
@@ -786,12 +785,9 @@ class ChatController extends V1Controller
                         'sender_id' => $message->user_id,
                         'created_at' => $message->created_at
                     ];
-                    Yii::$app->telegramLog->send('info', 'Read message: ' . json_encode($readMessages));
                 }
             }
         }
-
-        Yii::$app->telegramLog->send('info', 'Read messages: ' . json_encode($readMessages));
 
         if (!empty($readMessages)) {
             $notificationData = [
