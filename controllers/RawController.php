@@ -195,11 +195,10 @@ class RawController extends Controller
 
     public function actionJob()
     {
-
         $original_message = Yii::$app->request->post('message');
 
-        $api_key = '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';
-        $endpoint = "https://api.openai.com/v1/chat/completions";
+        $api_key = '0c66676b39cc4cf896349a113eb05ff0';
+        $endpoint = "https://joyka.openai.azure.com/openai/deployments/";
 
         $headers = [
             "Content-Type: application/json",
@@ -234,7 +233,7 @@ class RawController extends Controller
 
 
         $data = [
-            "model" => 'gpt-4o-mini-2024-07-18',
+            "model" => 'chat_translate_GPT4',
             "messages" => [
                 ["role" => "system", "content" => $instruction],
                 ["role" => "user", "content" => $prompt]
