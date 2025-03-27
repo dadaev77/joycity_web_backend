@@ -786,6 +786,7 @@ class ChatController extends V1Controller
                         'sender_id' => $message->sender_id,
                         'created_at' => $message->created_at
                     ];
+                    Yii::$app->telegramLog->send('info', 'Read message: ' . json_encode($readMessages));
                 }
             }
         }
