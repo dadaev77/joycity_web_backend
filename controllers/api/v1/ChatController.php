@@ -690,6 +690,7 @@ class ChatController extends V1Controller
                 'user_id' => $userId,
                 'message' => $messageToSend->toArray(),
             ];
+
             \app\services\WebsocketService::sendNotification(
                 array_diff($participants, [$userId]),
                 $notificationData,
