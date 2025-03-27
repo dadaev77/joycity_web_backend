@@ -18,7 +18,7 @@ class CreateGroupChatJob extends BaseObject implements JobInterface
     public function execute($queue)
     {
         try {
-            echo "create group chat from job";
+
             $chat = ChatService::CreateGroupChat(
                 $this->name,
                 $this->creator_id,
@@ -29,6 +29,7 @@ class CreateGroupChatJob extends BaseObject implements JobInterface
             if ($chat) {
                 echo "\n" . "\033[32m" . 'Создан чат ' . $chat->id . ' для заказа ' . $this->order_id . "\033[0m";
             }
+            return;
         } catch (Exception $e) {
             echo "\033[31m" . 'Ошибка при создании чата: ' . $e->getMessage() . "\033[0m";
         }
