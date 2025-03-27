@@ -795,9 +795,10 @@ class ChatController extends V1Controller
             ];
 
             try {
-                self::socketHandler(
+                \app\services\WebsocketService::sendNotification(
                     array_diff($participants, [$userId]),
-                    $notificationData
+                    $notificationData,
+                    true
                 );
             } catch (\Exception $e) {
                 Yii::error("Socket notification error: " . $e->getMessage(), 'socket');
@@ -864,7 +865,6 @@ class ChatController extends V1Controller
         $chat->deleted_at = date('Y-m-d H:i:s');
 
         if ($chat->save()) {
-            // Формируем данные для уведомления
             $notificationData = [
                 'type' => 'chat_deleted',
                 'chat_id' => $chatId,
@@ -875,10 +875,10 @@ class ChatController extends V1Controller
             ];
 
             try {
-                // Отправляем уведомление всем участникам чата, кроме удалившего
-                self::socketHandler(
+                \app\services\WebsocketService::sendNotification(
                     array_diff($participants, [$userId]),
-                    $notificationData
+                    $notificationData,
+                    true
                 );
             } catch (\Exception $e) {
                 Yii::error("Socket notification error: " . $e->getMessage(), 'socket');
@@ -956,7 +956,6 @@ class ChatController extends V1Controller
         $message->deleted_at = date('Y-m-d H:i:s');
 
         if ($message->save()) {
-            // Формируем данные для уведомления
             $notificationData = [
                 'type' => 'message_deleted',
                 'chat_id' => $chatId,
@@ -967,10 +966,10 @@ class ChatController extends V1Controller
             ];
 
             try {
-                // Отправляем уведомление всем участникам чата, кроме удалившего
-                self::socketHandler(
+                \app\services\WebsocketService::sendNotification(
                     array_diff($participants, [$userId]),
-                    $notificationData
+                    $notificationData,
+                    true
                 );
             } catch (\Exception $e) {
                 Yii::error("Socket notification error: " . $e->getMessage(), 'socket');
