@@ -54,7 +54,7 @@ class OrderOutputService extends OutputService
             'productInspectionReports',
             'fulfillmentInspectionReport',
             'fulfillmentStockReport' => fn($q) => $q->with(['attachments', 'attachmentsSmallSize', 'attachmentsMediumSize', 'attachmentsLargeSize', 'attachmentsXlargeSize']),
-            'fulfillmentPackagingLabeling' => fn($q) => $q->with(['attachments']),
+            'fulfillmentPackagingLabeling' => fn($q) => $q->with(['attachments', 'attachmentsSmallSize', 'attachmentsMediumSize', 'attachmentsLargeSize', 'attachmentsXlargeSize']),
             'productStockReports' => fn($q) => $q->with(['attachments', 'attachmentsSmallSize', 'attachmentsMediumSize', 'attachmentsLargeSize', 'attachmentsXlargeSize']),
             'orderTrackings',
             'orderRate',
@@ -93,6 +93,16 @@ class OrderOutputService extends OutputService
                 '512' => $info['fulfillmentStockReport']['attachmentsMediumSize'],
                 '1024' => $info['fulfillmentStockReport']['attachmentsLargeSize'],
                 '2048' => $info['fulfillmentStockReport']['attachmentsXlargeSize'],
+            ];
+
+            // Fulfillment Packaging Labeling
+            $info['fulfillmentPackagingLabeling'] = $info['fulfillmentPackagingLabeling'] ? $info['fulfillmentPackagingLabeling'] : null;
+            $info['fulfillmentPackagingLabeling']['attachments'] = $info['fulfillmentPackagingLabeling']['attachmentsSmallSize'];
+            $info['fulfillmentPackagingLabeling']['attachments_dict'] = [
+                '256' => $info['fulfillmentPackagingLabeling']['attachmentsSmallSize'],
+                '512' => $info['fulfillmentPackagingLabeling']['attachmentsMediumSize'],
+                '1024' => $info['fulfillmentPackagingLabeling']['attachmentsLargeSize'],
+                '2048' => $info['fulfillmentPackagingLabeling']['attachmentsXlargeSize'],
             ];
 
             $info['buyerOffer'] = $info['buyerOffers'] ? $info['buyerOffers'][0] : null;
@@ -219,6 +229,11 @@ class OrderOutputService extends OutputService
                 $info['fulfillmentStockReport']['attachmentsMediumSize'],
                 $info['fulfillmentStockReport']['attachmentsLargeSize'],
                 $info['fulfillmentStockReport']['attachmentsXlargeSize'],
+
+                $info['fulfillmentPackagingLabeling']['attachmentsSmallSize'],
+                $info['fulfillmentPackagingLabeling']['attachmentsMediumSize'],
+                $info['fulfillmentPackagingLabeling']['attachmentsLargeSize'],
+                $info['fulfillmentPackagingLabeling']['attachmentsXlargeSize'],
 
                 $info['delivery_start_date'],
                 $info['delivery_days_expected'],
