@@ -54,7 +54,7 @@ class OrderOutputService extends OutputService
             'productInspectionReports',
             'fulfillmentInspectionReport',
             'fulfillmentStockReport' => fn($q) => $q->with(['attachments']),
-            'fulfillmentPackagingLabeling' => fn($q) => $q->with(['attachments', 'attachmentsDict']),
+            'fulfillmentPackagingLabeling' => fn($q) => $q->with(['attachments', 'attachments_dict']),
             'productStockReports' => fn($q) => $q->with(['attachments']),
             'orderTrackings',
             'orderRate',

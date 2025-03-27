@@ -85,9 +85,7 @@ class ProductStockReport extends \app\models\Base
 
     public function getAttachmentsDict()
     {
-        return $this->attachments->mapWithKeys(function ($attachment) {
-            return [$attachment->id => $attachment];
-        });
+        return $this->attachments;
     }
 
     public static function apiCodes(): BuyerStockReportCodes
