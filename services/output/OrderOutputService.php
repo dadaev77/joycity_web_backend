@@ -76,7 +76,8 @@ class OrderOutputService extends OutputService
             $fulfilmentMarketplaceDeliveryInfo = MarketplaceTransactionService::getDeliveredCountInfo($info['id']);
             $info['fulfilmentMarketplaceDeliveryInfo'] = $fulfilmentMarketplaceDeliveryInfo ?: null;
             $info['productStockReport'] = $info['productStockReports'] ? $info['productStockReports'][0] : null;
-            $info['productStockReport']['attachments'] = [
+            $info['productStockReport']['attachments'] = $info['productStockReport']['attachmentsSmallSize'];
+            $info['productStockReport']['attachments_dict'] = [
                 '256' => $info['productStockReport']['attachmentsSmallSize'],
                 '512' => $info['productStockReport']['attachmentsMediumSize'],
                 '1024' => $info['productStockReport']['attachmentsLargeSize'],
@@ -196,6 +197,11 @@ class OrderOutputService extends OutputService
             $info['chats'] = [];
 
             unset(
+                $info['productStockReport']['attachmentsSmallSize'],
+                $info['productStockReport']['attachmentsMediumSize'],
+                $info['productStockReport']['attachmentsLargeSize'],
+                $info['productStockReport']['attachmentsXlargeSize'],
+
                 $info['delivery_start_date'],
                 $info['delivery_days_expected'],
                 $info['delivery_delay_days'],
