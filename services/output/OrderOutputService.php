@@ -86,7 +86,7 @@ class OrderOutputService extends OutputService
             ];
 
             // Fulfillment Stock Report
-            $info['fulfillmentStockReport'] = $info['fulfillmentStockReports'] ? $info['fulfillmentStockReports'][0] : null;
+            $info['fulfillmentStockReport'] = $info['fulfillmentStockReport'] ? $info['fulfillmentStockReport'] : null;
             $info['fulfillmentStockReport']['attachments'] = $info['fulfillmentStockReport']['attachmentsSmallSize'];
             $info['fulfillmentStockReport']['attachments_dict'] = [
                 '256' => $info['fulfillmentStockReport']['attachmentsSmallSize'],
@@ -209,10 +209,16 @@ class OrderOutputService extends OutputService
             $info['chats'] = [];
 
             unset(
+
                 $info['productStockReport']['attachmentsSmallSize'],
                 $info['productStockReport']['attachmentsMediumSize'],
                 $info['productStockReport']['attachmentsLargeSize'],
                 $info['productStockReport']['attachmentsXlargeSize'],
+
+                $info['fulfillmentStockReport']['attachmentsSmallSize'],
+                $info['fulfillmentStockReport']['attachmentsMediumSize'],
+                $info['fulfillmentStockReport']['attachmentsLargeSize'],
+                $info['fulfillmentStockReport']['attachmentsXlargeSize'],
 
                 $info['delivery_start_date'],
                 $info['delivery_days_expected'],
