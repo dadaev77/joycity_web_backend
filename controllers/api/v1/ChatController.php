@@ -429,7 +429,7 @@ class ChatController extends V1Controller
         }
         if ($user->role === User::ROLE_MANAGER) {
             $query = Message::find()
-                ->where(['chat_id' => $chatId, 'is_deleted' => true])
+                ->where(['chat_id' => $chatId])
                 ->orderBy(['created_at' => SORT_DESC]);
         } else {
             $query = Message::find()
