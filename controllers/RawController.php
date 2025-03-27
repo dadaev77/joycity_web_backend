@@ -195,19 +195,20 @@ class RawController extends Controller
 
     public function actionJob()
     {
-        $original_message = Yii::$app->request->post('message');
+        try {
+            $original_message = Yii::$app->request->post('message');
 
-        $api_key = '0c66676b39cc4cf896349a113eb05ff0';
-        $endpoint = "https://joyka.openai.azure.com/openai/deployments/";
+            $api_key = '0c66676b39cc4cf896349a113eb05ff0';
+            $endpoint = "https://joyka.openai.azure.com/openai/deployments/";
 
-        $headers = [
-            "Content-Type: application/json",
-            "Authorization: Bearer {$api_key}"
-        ];
+            $headers = [
+                "Content-Type: application/json",
+                "Authorization: Bearer {$api_key}"
+            ];
 
-        $instruction = "Imagine that you are a professional linguist and translator.";
+            $instruction = "Imagine that you are a professional linguist and translator.";
 
-        $prompt = "Translate the following text into 3 languages: English, Russian, Chinese.
+            $prompt = "Translate the following text into 3 languages: English, Russian, Chinese.
             - Do NOT swap languages: 
             - 'ru' must contain only Russian translations.
             - 'en' must contain only English translations.
@@ -232,29 +233,27 @@ class RawController extends Controller
             Original text is: " . $original_message;
 
 
-        $data = [
-            "model" => 'chat_translate_GPT4',
-            "messages" => [
-                ["role" => "system", "content" => $instruction],
-                ["role" => "user", "content" => $prompt]
-            ]
-        ];
+            $data = [
+                "model" => 'chat_translate_GPT4',
+                "messages" => [
+                    ["role" => "system", "content" => $instruction],
+                    ["role" => "user", "content" => $prompt]
+                ]
+            ];
 
-        $ch = curl_init($endpoint);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+            $ch = curl_init($endpoint);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
 
-        $response = curl_exec($ch);
-        $http_status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-
-        if ($http_status === 200) {
+            $response = curl_exec($ch);
+            $http_status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
             $response_data = json_decode($response, true);
             return $response_data['choices'][0]['message']['content'];
-        } else {
-            error_log("Ошибка запроса к chatGPT (chatgpt_request): " . $response);
-            return "Ошибка: HTTP $http_status";
+        } catch (\Exception $e) {
+            Yii::error("Ошибка при переводе текста: " . $e->getMessage());
+            return 'Ошибка при переводе текста: ' . $e->getMessage();
         }
     }
 }
