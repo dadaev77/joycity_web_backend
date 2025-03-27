@@ -75,7 +75,10 @@ class OrderOutputService extends OutputService
             $info = ModelTypeHelper::toArray($model);
             $fulfilmentMarketplaceDeliveryInfo = MarketplaceTransactionService::getDeliveredCountInfo($info['id']);
             $info['fulfilmentMarketplaceDeliveryInfo'] = $fulfilmentMarketplaceDeliveryInfo ?: null;
+
             $info['productStockReport'] = $info['productStockReports'] ? $info['productStockReports'][0] : null;
+            $info['productStockReport']['dict'] = 'asdasdasd';
+
             $info['buyerOffer'] = $info['buyerOffers'] ? $info['buyerOffers'][0] : null;
             $info['productInspectionReport'] = $info['productInspectionReports'] ? $info['productInspectionReports'][0] : null;
             $info['orderTracking'] = $info['orderTrackings'];
@@ -111,7 +114,7 @@ class OrderOutputService extends OutputService
                 'zh' => $model->product_name_zh,
                 default => $model->product_name_ru,
             };
-            $info['productStockReports']['dict'] = 'asdasdasd';
+
             $info['product_description'] = match (strtolower($userLanguage)) {
                 'ru' => $model->product_description_ru,
                 'en' => $model->product_description_en,
@@ -200,7 +203,7 @@ class OrderOutputService extends OutputService
                 $info['productInspectionReport']['order_id'],
                 $info['productInspectionReports'],
                 $info['productStockReport']['order_id'],
-                // $info['productStockReports'],
+                $info['productStockReports'],
                 $info['orderLinkAttachments'],
                 $info['type_packaging_id'],
                 $info['type_delivery_id'],
