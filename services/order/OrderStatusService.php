@@ -310,8 +310,10 @@ class OrderStatusService
 
             \Yii::$app->queue->push(new \app\jobs\PushNotificationJob([
                 'user_id' => $order->created_by,
-                'title' => Yii::t('order', 'update_status', ['order_id' => $order->id], $language),
-                'body' => Yii::t('order', $orderStatus, [], $language),
+                [
+                    'title' => Yii::t('order', 'update_status', ['order_id' => $order->id], $language),
+                    'body' => Yii::t('order', $orderStatus, [], $language),
+                ]
             ]));
 
             if (

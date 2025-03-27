@@ -961,7 +961,6 @@ class ChatController extends V1Controller
         $message->deleted_at = date('Y-m-d H:i:s');
 
         if ($message->save()) {
-
             $messages = $chat->messages;
             $currentIndex = array_search($messageId, array_column($messages, 'id'));
             if ($currentIndex !== false && $currentIndex > 0) {
