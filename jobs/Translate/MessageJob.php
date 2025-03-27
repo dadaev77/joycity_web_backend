@@ -41,6 +41,8 @@ class MessageJob extends BaseObject implements JobInterface
                         'type' => 'translate_message',
                         'data' => [
                             'message' => json_decode($message->content, true),
+                            'message_id' => $message->id,
+                            'chat_id' => $message->chat_id,
                         ],
                         'multiple' => false,
                         'async' => false,
