@@ -83,6 +83,13 @@ class ProductStockReport extends \app\models\Base
             ->via('productStockReportLinkAttachments');
     }
 
+    public function getAttachmentsDict()
+    {
+        return $this->attachments->mapWithKeys(function ($attachment) {
+            return [$attachment->id => $attachment];
+        });
+    }
+
     public static function apiCodes(): BuyerStockReportCodes
     {
         return BuyerStockReportCodes::getStatic();

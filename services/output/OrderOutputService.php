@@ -54,7 +54,7 @@ class OrderOutputService extends OutputService
             'productInspectionReports',
             'fulfillmentInspectionReport',
             'fulfillmentStockReport' => fn($q) => $q->with(['attachments']),
-            'fulfillmentPackagingLabeling' => fn($q) => $q->with(['attachments']),
+            'fulfillmentPackagingLabeling' => fn($q) => $q->with(['attachments', 'attachmentsDict']),
             'productStockReports' => fn($q) => $q->with(['attachments']),
             'orderTrackings',
             'orderRate',
@@ -188,7 +188,7 @@ class OrderOutputService extends OutputService
             $info = $tempInfo;
 
             $info['chats'] = [];
-            
+
             unset(
                 $info['delivery_start_date'],
                 $info['delivery_days_expected'],
