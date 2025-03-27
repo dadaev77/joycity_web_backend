@@ -472,10 +472,14 @@ class AuthController extends V1Controller implements ApiAuth
                 'access_token' => $user->access_token,
                 'uuid' => $user->uuid,
             ]);
-        } catch (Throwable $e) {
+        } catch (\yii\db\Exception $e) {
+            if ($e->getCode() === 23000) {
+                return ApiResponse::codeErrors($apiCodes->NOT_VALID, [
+                    'telegram' => 'Пользователь с таким ником уже существует'
+                ]);
+            }
             Yii::$app->telegramLog->send('error', 'Ошибка при регистрации: ' . $e->getMessage());
             isset($transaction) && $transaction->rollBack();
-
             return ApiResponse::internalError($e);
         }
     }
