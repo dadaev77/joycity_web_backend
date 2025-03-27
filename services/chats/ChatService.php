@@ -77,7 +77,7 @@ class ChatService
     public static function createGroupChat(
         $name,
         $creatorId,
-        int $orderId = null,
+        int $orderId,
         array $metadata = [],
         bool $async = true
     ) {
