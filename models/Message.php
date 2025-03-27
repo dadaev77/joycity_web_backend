@@ -99,6 +99,9 @@ class Message extends ActiveRecord
         if (isset($changedAttributes['content'])) {
             return;
         }
+        if (isset($changedAttributes['metadata'])) {
+            return;
+        }
 
         $content = is_array($this->content) ? $this->content : json_decode($this->content, true);
         if (
@@ -107,6 +110,7 @@ class Message extends ActiveRecord
         ) {
             return;
         }
+
 
         Yii::$app->queue->push(new \app\jobs\Translate\MessageJob([
             'messageId' => $this->id,
