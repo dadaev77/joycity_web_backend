@@ -75,6 +75,8 @@ class BuyerOfferController extends BuyerController
     {
         $apiCodes = BuyerOffer::apiCodes();
 
+        \Yii::$app->telegramLog->send('info', 'Create buyer offer');
+
         try {
             $postData = Yii::$app->request->post();
             $user = User::getIdentity();
