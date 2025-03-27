@@ -121,9 +121,6 @@ class BuyerOfferController extends BuyerController
                 // 'product_weight' => $postData['product_weight'] ?? 0,
                 'currency' => $user->settings->currency,
             ]);
-
-
-            \Yii::$app->telegramLog->send('info', 'before save');
             if (!$buyerOffer->save()) {
                 $transaction?->rollBack();
 
@@ -132,13 +129,9 @@ class BuyerOfferController extends BuyerController
                     $buyerOffer->getFirstErrors(),
                 );
             }
-
-            \Yii::$app->telegramLog->send('info', 'after save');
             $orderStatusChange = OrderStatusService::buyerOfferCreated(
                 $buyerOffer->order_id,
             );
-
-            \Yii::$app->telegramLog->send('info', 'after order status change');
 
             if (!$orderStatusChange->success) {
                 $transaction?->rollBack();
@@ -149,8 +142,6 @@ class BuyerOfferController extends BuyerController
                 );
             }
 
-            \Yii::$app->telegramLog->send('info', 'after order status change');
-
             // PushService::sendPushNotification(
             //     $order->created_by,
             //     [
@@ -160,8 +151,6 @@ class BuyerOfferController extends BuyerController
             // );
 
             $transaction?->commit();
-
-            \Yii::$app->telegramLog->send('info', 'after commit');
 
             return ApiResponse::info(
                 BuyerOfferOutputService::getEntity($buyerOffer->id),

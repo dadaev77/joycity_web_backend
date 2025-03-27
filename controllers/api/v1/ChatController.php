@@ -961,6 +961,18 @@ class ChatController extends V1Controller
         $message->deleted_at = date('Y-m-d H:i:s');
 
         if ($message->save()) {
+
+            $messages = $chat->messages;
+            $currentIndex = array_search($messageId, array_column($messages, 'id'));
+            if ($currentIndex !== false && $currentIndex > 0) {
+                $previousMessageId = $messages[$currentIndex - 1]->id;
+                $chat->last_message_id = $previousMessageId;
+            } else {
+                $chat->last_message_id = null;
+            }
+
+            $chat->save();
+
             $notificationData = [
                 'type' => 'message_deleted',
                 'chat_id' => $chatId,
