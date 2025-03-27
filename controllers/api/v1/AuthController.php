@@ -310,6 +310,16 @@ class AuthController extends V1Controller implements ApiAuth
             $address = $request->post('address');
             $telegram = $request->post('telegram') ? ($request->post('telegram') != "" ? $request->post('telegram') : null) : null;
 
+            
+            if ($telegram) {
+                $existingUser = User::findOne(['telegram' => $telegram]);
+                if ($existingUser) {
+                    return ApiResponse::codeErrors($apiCodes->NOT_VALID, [
+                        'telegram' => 'Пользователь с таким ником уже существует'
+                    ]);
+                }
+            }
+
             $user = new User([
                 'email' => $email,
                 'password' => $password,
