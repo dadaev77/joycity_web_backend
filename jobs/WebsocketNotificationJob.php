@@ -54,9 +54,7 @@ class WebsocketNotificationJob extends BaseObject implements JobInterface
         $this->client = new Client();
 
         foreach ($this->participants as $participant) {
-            $notificationData = [
-                'notification' => $this->notification,
-            ];
+            $notificationData = $this->notification;
             $this->client->post($_ENV['APP_URL_NOTIFICATIONS'] . '/notification/send', [
                 'json' => $notificationData,
                 'headers' => ['Content-Type' => 'application/json']
