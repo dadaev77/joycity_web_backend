@@ -22,7 +22,7 @@ class ProductStockReportOutputService extends OutputService
 
         return array_map(static function ($model) {
             $info = ModelTypeHelper::toArray($model);
-
+            $info['adsasd'] = 'asdasdasdasd';
             unset($info['productStockReportLinkAttachments']);
 
             return $info;
