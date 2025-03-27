@@ -156,10 +156,7 @@ class OrderController extends ClientController
             $order->product_id = $product_id;
         }
 
-        $translations = TranslationService::translateProductAttributes(
-            $request->post('product_name'),
-            $request->post('product_description')
-        )->result ?? [
+        $translations = [
             'ru' => ['name' => $request->post('product_name'), 'description' => $request->post('product_description')],
             'en' => ['name' => $request->post('product_name'), 'description' => $request->post('product_description')],
             'zh' => ['name' => $request->post('product_name'), 'description' => $request->post('product_description')],
@@ -186,7 +183,7 @@ class OrderController extends ClientController
                 'deal_type' => 'order',
                 'participants' => [$user->id, $order->manager_id],
                 'group_name' => 'client_manager',
-            ]);
+            ], true);
 
             if ($product_id) {
                 $buyer = User::findOne($product->buyer_id);
@@ -200,21 +197,16 @@ class OrderController extends ClientController
                 OrderDistributionService::buyerAccept($distributionStatus->result, $product->buyer_id);
                 OrderStatusService::buyerAssigned($order->id);
 
-                Yii::$app->queue->push(new \app\jobs\CreateGroupChatJob([
-                    'name' => 'Order ' . $order->id,
-                    'creator_id' => $user->id,
-                    'order_id' => $order->id,
-                    'metadata' => [
-                        'deal_type' => 'order',
-                        'participants' => [$user->id, $order->manager_id, $product->buyer_id],
-                        'group_name' => 'client_buyer_manager',
-                    ],
-                ]));
+                ChatService::CreateGroupChat('Order ' . $order->id, $user->id, $order->id, [
+                    'deal_type' => 'order',
+                    'participants' => [$user->id, $order->manager_id, $product->buyer_id],
+                    'group_name' => 'client_buyer_manager',
+                ]);
 
                 PushService::sendPushNotification($product->buyer_id, [
                     'title' => Yii::t('order', 'new_order_for_buyer', [], $language),
                     'body' => Yii::t('order', 'new_order_for_buyer_text', ['order_id' => $order->id], $language),
-                ]);
+                ], true);
             } else {
                 $distribution = OrderDistributionService::createDistributionTask($order->id);
                 if (!$distribution->success) {

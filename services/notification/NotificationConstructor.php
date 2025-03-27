@@ -27,14 +27,7 @@ class NotificationConstructor
         }
 
         if ($publish) {
-            
-            $pushResponse = WebsocketService::sendNotification(
-                NotificationOutputService::getEntity($notification->id),
-            );
-
-            if (!$pushResponse->success) {
-                return Result::error(['base' => 'Error send to websocket']);
-            }
+            WebsocketService::sendNotification([$notification->user_id], NotificationOutputService::getEntity($notification->id), false);
         }
 
         return Result::success();

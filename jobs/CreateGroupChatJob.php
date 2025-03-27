@@ -22,9 +22,9 @@ class CreateGroupChatJob extends BaseObject implements JobInterface
                 $this->name,
                 $this->creator_id,
                 $this->order_id,
-                $this->metadata
+                $this->metadata,
+                false
             );
-
             if ($chat) {
                 echo "\n" . "\033[32m" . 'Создан чат ' . $chat->id . ' для заказа ' . $this->order_id . "\033[0m";
             }

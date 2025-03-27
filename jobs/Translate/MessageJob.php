@@ -29,23 +29,23 @@ class MessageJob extends BaseObject implements JobInterface
             if (isset($translateResult['en']) && isset($translateResult['ru']) && isset($translateResult['zh'])) {
                 $message->content = json_encode(['ru' => $translateResult['ru'], 'en' => $translateResult['en'], 'zh' => $translateResult['zh']]);
                 if ($message->save()) {
-                    echo "\033[32m" . 'Сообщение ' . $message->id . ' переведено' . "\033[0m \n";
+                    echo "\n" . "\033[32m" . '[Translate] Сообщение ' . $message->id . ' переведено' . "\033[0m \n";
                     echo print_r([
                         'en_translate' => $translateResult['en'],
                         'ru_translate' => $translateResult['ru'],
                         'zh_translate' => $translateResult['zh'],
                     ], true);
-                    echo "\n";
+                    echo "\033[32m" . '[Translate] Конец сообщения' . "\033[0m";
                 } else {
-                    echo "\033[31m" . 'Не удалось обновить переводы для сообщения ' . $message->id . "\033[0m";
+                    echo "\n" . "\033[31m" . '[Translate] Не удалось обновить переводы для сообщения ' . $message->id . "\033[0m";
                 }
             } else {
-                echo "\033[31m" . 'Ответ сервера не содержит переводов' . "\033[0m";
+                echo "\n" . "\033[31m" . '[Translate] Ответ сервера не содержит переводов' . "\033[0m";
             }
             return true;
         } catch (\Exception $e) {
             Yii::error("Ошибка выполнения перевода сообщения: " . $e->getMessage());
-            echo "\033[31m" . 'Error: ' . $e->getMessage() . "\033[0m";
+            echo "\n" . "\033[31m" . '[Translate] Error: ' . $e->getMessage() . "\033[0m";
             return false;
         }
     }

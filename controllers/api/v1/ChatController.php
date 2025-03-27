@@ -458,8 +458,6 @@ class ChatController extends V1Controller
         ];
     }
 
-
-
     /**
      * Получение чатов для конкретного заказа
      * 
@@ -564,9 +562,6 @@ class ChatController extends V1Controller
             'data' => $filteredChats
         ];
     }
-
-
-
 
     /**
      * Отправка сообщения в чат
@@ -690,9 +685,11 @@ class ChatController extends V1Controller
                 );
             }
             $messageToSend = Message::findOne($message->id);
-            self::socketHandler(
+
+            \app\services\WebsocketService::sendNotification(
                 array_diff($participants, [$userId]),
-                $messageToSend->toArray()
+                $messageToSend->toArray(),
+                true
             );
 
             return [
@@ -798,9 +795,10 @@ class ChatController extends V1Controller
             ];
 
             try {
-                self::socketHandler(
+                \app\services\WebsocketService::sendNotification(
                     array_diff($participants, [$userId]),
-                    $notificationData
+                    $notificationData,
+                    true
                 );
             } catch (\Exception $e) {
                 Yii::error("Socket notification error: " . $e->getMessage(), 'socket');
@@ -812,72 +810,6 @@ class ChatController extends V1Controller
             'message' => 'all messages in chat ' . $chat->id . ' marked as read',
             'read_messages' => $readMessages
         ];
-    }
-
-    private static function socketHandler(array $participants, $data)
-    {
-        $urls = ['http://joycityrussia.friflex.com:8081/notification/send'];
-        $multiHandle = curl_multi_init();
-        $curlHandles = [];
-
-        foreach ($participants as $participant) {
-            $ch = curl_init();
-            $notificationData = json_encode([
-                'notification' => [
-                    'type' => 'new_message',
-                    'user_id' => $participant,
-                    'data' => $data,
-                ],
-            ]);
-
-            Yii::debug("Sending notification: " . $notificationData, 'socket');
-
-            curl_setopt($ch, CURLOPT_URL, $urls[0]);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $notificationData);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, [
-                'Content-Type: application/json',
-                'Content-Length: ' . strlen($notificationData)
-            ]);
-
-            // Добавляем отладочную информацию
-            curl_setopt($ch, CURLOPT_VERBOSE, true);
-            $verbose = fopen('php://temp', 'w+');
-            curl_setopt($ch, CURLOPT_STDERR, $verbose);
-
-            curl_multi_add_handle($multiHandle, $ch);
-            $curlHandles[] = $ch;
-        }
-
-        $running = null;
-        do {
-            $status = curl_multi_exec($multiHandle, $running);
-            if ($running) {
-                curl_multi_select($multiHandle);
-            }
-        } while ($running > 0 && $status == CURLM_OK);
-
-        // Обработка результатов
-        foreach ($curlHandles as $ch) {
-            $response = curl_multi_getcontent($ch);
-
-            // Получаем отладочную информацию
-            rewind($verbose);
-            $verboseLog = stream_get_contents($verbose);
-
-            Yii::debug("Curl response: " . $response, 'socket');
-            Yii::debug("Verbose info: " . $verboseLog, 'socket');
-
-            if ($response === false) {
-                Yii::error("Curl error: " . curl_error($ch), 'socket');
-            }
-
-            curl_multi_remove_handle($multiHandle, $ch);
-            curl_close($ch);
-        }
-
-        curl_multi_close($multiHandle);
     }
 
     /**
@@ -933,7 +865,6 @@ class ChatController extends V1Controller
         $chat->deleted_at = date('Y-m-d H:i:s');
 
         if ($chat->save()) {
-            // Формируем данные для уведомления
             $notificationData = [
                 'type' => 'chat_deleted',
                 'chat_id' => $chatId,
@@ -944,10 +875,10 @@ class ChatController extends V1Controller
             ];
 
             try {
-                // Отправляем уведомление всем участникам чата, кроме удалившего
-                self::socketHandler(
+                \app\services\WebsocketService::sendNotification(
                     array_diff($participants, [$userId]),
-                    $notificationData
+                    $notificationData,
+                    true
                 );
             } catch (\Exception $e) {
                 Yii::error("Socket notification error: " . $e->getMessage(), 'socket');
@@ -1025,7 +956,6 @@ class ChatController extends V1Controller
         $message->deleted_at = date('Y-m-d H:i:s');
 
         if ($message->save()) {
-            // Формируем данные для уведомления
             $notificationData = [
                 'type' => 'message_deleted',
                 'chat_id' => $chatId,
@@ -1036,10 +966,10 @@ class ChatController extends V1Controller
             ];
 
             try {
-                // Отправляем уведомление всем участникам чата, кроме удалившего
-                self::socketHandler(
+                \app\services\WebsocketService::sendNotification(
                     array_diff($participants, [$userId]),
-                    $notificationData
+                    $notificationData,
+                    true
                 );
             } catch (\Exception $e) {
                 Yii::error("Socket notification error: " . $e->getMessage(), 'socket');
