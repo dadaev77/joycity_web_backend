@@ -43,6 +43,7 @@ class WebsocketService
     private static function sendNotificationSync($participants, $notification)
     {
         $client = new Client();
+        echo "Sending notifications to " . count($participants) . " participants" . PHP_EOL;
         foreach ($participants as $participant) {
             $notificationData = $notification;
             $notificationData['user_id'] = $participant;
