@@ -40,7 +40,7 @@ class MessageJob extends BaseObject implements JobInterface
                     \app\services\WebsocketService::sendNotification($message->chat->metadata['participants'], [
                         'type' => 'translate_message',
                         'data' => [
-                            'message' => $message->content,
+                            'message' => json_decode($message->content, true),
                         ],
                         'multiple' => false,
                         'async' => false,

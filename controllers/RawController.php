@@ -195,20 +195,11 @@ class RawController extends Controller
 
     public function actionJob()
     {
-        try {
-            $original_message = Yii::$app->request->post('message');
+        $text = Yii::$app->request->post('message');
 
-            $api_key = '0c66676b39cc4cf896349a113eb05ff0';
-            $endpoint = "https://joyka.openai.azure.com/openai/deployments/";
-
-            $headers = [
-                "Content-Type: application/json",
-                "Authorization: Bearer {$api_key}"
-            ];
-
-            $instruction = "Imagine that you are a professional linguist and translator.";
-
-            $prompt = "Translate the following text into 3 languages: English, Russian, Chinese.
+        $instruction = "Imagine that you are a professional linguist and translator.";
+        $prompt = "
+        Translate the following text into 3 languages: English, Russian, Chinese.
             - Do NOT swap languages: 
             - 'ru' must contain only Russian translations.
             - 'en' must contain only English translations.
@@ -230,30 +221,42 @@ class RawController extends Controller
             - Also, adapt the translation to natural language structures while preserving the overall meaning of the phrase.
             - Structure the response as a JSON object:
             {{ \"ru\": \"translation in Russian\", \"en\": \"translation in English\", \"zh\": \"translation in Chinese\" }}, and nothing else.
-            Original text is: " . $original_message;
+            Original text is: " . $text;
 
+        $api_key = '0c66676b39cc4cf896349a113eb05ff0';
+        $endpoint = "https://joyka.openai.azure.com/openai/deployments/";
+        $deployment_id = 'chat_translate_GPT4';
+        $api_version = '2024-08-01-preview';
+        $url = $endpoint . $deployment_id . "/chat/completions?api-version=" . $api_version;
 
-            $data = [
-                "model" => 'chat_translate_GPT4',
-                "messages" => [
-                    ["role" => "system", "content" => $instruction],
-                    ["role" => "user", "content" => $prompt]
-                ]
-            ];
+        $headers = [
+            "Content-Type: application/json",
+            "Authorization: Bearer " . $api_key,
+            "api-key: " . $api_key
+        ];
 
-            $ch = curl_init($endpoint);
+        $data = [
+            "messages" => [
+                ["role" => "system", "content" => $instruction],
+                ["role" => "user", "content" => $prompt]
+            ]
+        ];
+
+        try {
+            $ch = curl_init($url);
+            curl_setopt($ch, CURLOPT_POST, true);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
 
             $response = curl_exec($ch);
-            $http_status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            curl_close($ch);
-            $response_data = json_decode($response, true);
-            return $response_data['choices'][0]['message']['content'];
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+
+            $result = json_decode($response, true);
+            return $result["choices"][0]["message"]["content"];
         } catch (\Exception $e) {
-            Yii::error("Ошибка при переводе текста: " . $e->getMessage());
-            return 'Ошибка при переводе текста: ' . $e->getMessage();
+            return "Error: " . $e->getMessage();
         }
     }
 }
