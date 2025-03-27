@@ -754,6 +754,7 @@ class ChatController extends V1Controller
      */
     public function actionMarkAsRead()
     {
+        \Yii::$app->telegramLog->send('info', 'Mark as read: ' . json_encode(Yii::$app->request->post()));
         $userId = User::getIdentity()->id;
         $messageId = Yii::$app->request->post('message_id');
         $message = Message::findOne($messageId);
