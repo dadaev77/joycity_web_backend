@@ -21,7 +21,7 @@ class FeedbackProductOutputService extends OutputService
                     ->select(SqlQueryService::getUserSelect())
                     ->with(['avatar']),
                 'product' => function ($q) {
-                    $q->select(['id', 'name', 'rating', 'feedback_count']);
+                    $q->select(['id', 'name_ru', 'name_en', 'name_zh', 'rating', 'feedback_count']);
                 },
             ])
             ->orderBy(self::getOrderByIdExpression($ids))
