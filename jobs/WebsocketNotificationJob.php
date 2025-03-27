@@ -65,7 +65,7 @@ class WebsocketNotificationJob extends BaseObject implements JobInterface
                 'json' => $notificationData,
                 'headers' => ['Content-Type' => 'application/json']
             ]);
-            echo "\nУведомление отправлено для пользователя: " . $participant . PHP_EOL;
+            echo "\n\033[34m [WS] Уведомление отправлено для пользователя: " . $participant . "\033[0m";
         }
     }
 }
