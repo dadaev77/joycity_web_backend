@@ -197,7 +197,6 @@ class OrderController extends ClientController
                 OrderDistributionService::buyerAccept($distributionStatus->result, $product->buyer_id);
                 OrderStatusService::buyerAssigned($order->id);
 
-                echo "create group chat from controller";
                 ChatService::CreateGroupChat('Order ' . $order->id, $user->id, $order->id, [
                     'deal_type' => 'order',
                     'participants' => [$user->id, $order->manager_id, $product->buyer_id],

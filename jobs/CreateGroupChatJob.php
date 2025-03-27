@@ -25,11 +25,9 @@ class CreateGroupChatJob extends BaseObject implements JobInterface
                 $this->metadata,
                 false
             );
-            echo "create group chat from job" . json_encode($this);
             if ($chat) {
                 echo "\n" . "\033[32m" . 'Создан чат ' . $chat->id . ' для заказа ' . $this->order_id . "\033[0m";
             }
-            return;
         } catch (Exception $e) {
             echo "\033[31m" . 'Ошибка при создании чата: ' . $e->getMessage() . "\033[0m";
         }

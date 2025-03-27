@@ -88,7 +88,6 @@ class ChatService
                 'order_id' => $orderId,
                 'metadata' => [] + $metadata
             ]));
-            return;
         } else {
             $chat = new Chat([
                 'type' => 'group',
