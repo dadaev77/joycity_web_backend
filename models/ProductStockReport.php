@@ -79,13 +79,7 @@ class ProductStockReport extends \app\models\Base
     public function getAttachments()
     {
         return $this->hasMany(Attachment::class, ['id' => 'attachment_id'])
-            ->andOnCondition(['img_size' => 'small'])
             ->via('productStockReportLinkAttachments');
-    }
-
-    public function getAttachmentsDict()
-    {
-        return $this->attachments;
     }
 
     public static function apiCodes(): BuyerStockReportCodes
