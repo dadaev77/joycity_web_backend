@@ -111,7 +111,7 @@ class OrderOutputService extends OutputService
                 'zh' => $model->product_name_zh,
                 default => $model->product_name_ru,
             };
-            $info['productStockReport']['dict'] = 'asdasdasd';
+            $info['productStockReports']['dict'] = 'asdasdasd';
             $info['product_description'] = match (strtolower($userLanguage)) {
                 'ru' => $model->product_description_ru,
                 'en' => $model->product_description_en,
