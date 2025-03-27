@@ -75,10 +75,7 @@ class OrderOutputService extends OutputService
             $info = ModelTypeHelper::toArray($model);
             $fulfilmentMarketplaceDeliveryInfo = MarketplaceTransactionService::getDeliveredCountInfo($info['id']);
             $info['fulfilmentMarketplaceDeliveryInfo'] = $fulfilmentMarketplaceDeliveryInfo ?: null;
-
             $info['productStockReport'] = $info['productStockReports'] ? $info['productStockReports'][0] : null;
-            $info['productStockReport']['dict'] = 'asdasdasd';
-
             $info['buyerOffer'] = $info['buyerOffers'] ? $info['buyerOffers'][0] : null;
             $info['productInspectionReport'] = $info['productInspectionReports'] ? $info['productInspectionReports'][0] : null;
             $info['orderTracking'] = $info['orderTrackings'];
