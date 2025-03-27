@@ -771,7 +771,7 @@ class ChatController extends V1Controller
 
         $readMessages = [];
         $messages = $chat->messages;
-
+        Yii::$app->telegramLog->send('info', 'Messages: ' . json_encode($messages));
         foreach ($messages as $message) {
             $messageMetadata = $message->metadata ?? [];
             if (!in_array($userId, $messageMetadata['read_by'])) {
