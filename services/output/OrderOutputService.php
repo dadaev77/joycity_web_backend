@@ -94,6 +94,7 @@ class OrderOutputService extends OutputService
                 '1024' => $info['fulfillmentStockReport']['attachmentsLargeSize'],
                 '2048' => $info['fulfillmentStockReport']['attachmentsXlargeSize'],
             ];
+
             $info['buyerOffer'] = $info['buyerOffers'] ? $info['buyerOffers'][0] : null;
             $info['productInspectionReport'] = $info['productInspectionReports'] ? $info['productInspectionReports'][0] : null;
             $info['orderTracking'] = $info['orderTrackings'];
@@ -241,11 +242,7 @@ class OrderOutputService extends OutputService
                 $info['productStockReport']['productStockReportLinkAttachments'],
                 $info['fulfillmentPackagingLabeling']['packagingReportLinkAttachments'],
                 $info['fulfillmentStockReport']['fulfillmentStockReportLinkAttachments'],
-                // Fulfillment Stock Report unset attachments for response
-                $info['fulfillmentStockReport']['attachmentsSmallSize'],
-                $info['fulfillmentStockReport']['attachmentsMediumSize'],
-                $info['fulfillmentStockReport']['attachmentsLargeSize'],
-                $info['fulfillmentStockReport']['attachmentsXlargeSize'],
+
             );
 
             return $info;
