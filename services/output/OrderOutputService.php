@@ -53,7 +53,7 @@ class OrderOutputService extends OutputService
             'product' => fn($q) => $q->select(['id', 'name_ru', 'description_ru', 'product_height', 'product_width', 'product_depth', 'product_weight'])->with(['attachments']),
             'productInspectionReports',
             'fulfillmentInspectionReport',
-            'fulfillmentStockReport' => fn($q) => $q->with(['attachments']),
+            'fulfillmentStockReport' => fn($q) => $q->with(['attachments', 'attachmentsSmallSize', 'attachmentsMediumSize', 'attachmentsLargeSize', 'attachmentsXlargeSize']),
             'fulfillmentPackagingLabeling' => fn($q) => $q->with(['attachments']),
             'productStockReports' => fn($q) => $q->with(['attachments', 'attachmentsSmallSize', 'attachmentsMediumSize', 'attachmentsLargeSize', 'attachmentsXlargeSize']),
             'orderTrackings',
@@ -75,6 +75,7 @@ class OrderOutputService extends OutputService
             $info = ModelTypeHelper::toArray($model);
             $fulfilmentMarketplaceDeliveryInfo = MarketplaceTransactionService::getDeliveredCountInfo($info['id']);
             $info['fulfilmentMarketplaceDeliveryInfo'] = $fulfilmentMarketplaceDeliveryInfo ?: null;
+            // Product Stock Report
             $info['productStockReport'] = $info['productStockReports'] ? $info['productStockReports'][0] : null;
             $info['productStockReport']['attachments'] = $info['productStockReport']['attachmentsSmallSize'];
             $info['productStockReport']['attachments_dict'] = [
@@ -82,6 +83,16 @@ class OrderOutputService extends OutputService
                 '512' => $info['productStockReport']['attachmentsMediumSize'],
                 '1024' => $info['productStockReport']['attachmentsLargeSize'],
                 '2048' => $info['productStockReport']['attachmentsXlargeSize'],
+            ];
+
+            // Fulfillment Stock Report
+            $info['fulfillmentStockReport'] = $info['fulfillmentStockReports'] ? $info['fulfillmentStockReports'][0] : null;
+            $info['fulfillmentStockReport']['attachments'] = $info['fulfillmentStockReport']['attachmentsSmallSize'];
+            $info['fulfillmentStockReport']['attachments_dict'] = [
+                '256' => $info['fulfillmentStockReport']['attachmentsSmallSize'],
+                '512' => $info['fulfillmentStockReport']['attachmentsMediumSize'],
+                '1024' => $info['fulfillmentStockReport']['attachmentsLargeSize'],
+                '2048' => $info['fulfillmentStockReport']['attachmentsXlargeSize'],
             ];
             $info['buyerOffer'] = $info['buyerOffers'] ? $info['buyerOffers'][0] : null;
             $info['productInspectionReport'] = $info['productInspectionReports'] ? $info['productInspectionReports'][0] : null;
@@ -230,6 +241,11 @@ class OrderOutputService extends OutputService
                 $info['productStockReport']['productStockReportLinkAttachments'],
                 $info['fulfillmentPackagingLabeling']['packagingReportLinkAttachments'],
                 $info['fulfillmentStockReport']['fulfillmentStockReportLinkAttachments'],
+                // Fulfillment Stock Report unset attachments for response
+                $info['fulfillmentStockReport']['attachmentsSmallSize'],
+                $info['fulfillmentStockReport']['attachmentsMediumSize'],
+                $info['fulfillmentStockReport']['attachmentsLargeSize'],
+                $info['fulfillmentStockReport']['attachmentsXlargeSize'],
             );
 
             return $info;

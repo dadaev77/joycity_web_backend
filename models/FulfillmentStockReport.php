@@ -128,7 +128,9 @@ class FulfillmentStockReport extends Base
 
     public function getAttachmentsXlargeSize()
     {
-        return $this->attachments->andOnCondition(['img_size' => 'xlarge']);
+        return $this->hasMany(Attachment::class, ['id' => 'attachment_id'])
+            ->andOnCondition(['img_size' => 'xlarge'])
+            ->via('fulfillmentStockReportLinkAttachments');
     }
 
 
