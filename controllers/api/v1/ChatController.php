@@ -419,17 +419,23 @@ class ChatController extends V1Controller
         }
 
         // Проверяем, является ли пользователь участником чата
-        $userId = User::getIdentity()->id;
+        $user = User::getIdentity();
+        $userId = $user->id;
         $metadata = $chat->metadata ?? [];
         $participants = $metadata['participants'] ?? [];
 
         if ($userId && !in_array($userId, $participants)) {
             throw new BadRequestHttpException('У вас нет доступа к этому чату');
         }
-
-        $query = Message::find()
-            ->where(['chat_id' => $chatId, 'is_deleted' => false])
-            ->orderBy(['created_at' => SORT_DESC]);
+        if ($user->role === User::ROLE_MANAGER) {
+            $query = Message::find()
+                ->where(['chat_id' => $chatId, 'is_deleted' => true])
+                ->orderBy(['created_at' => SORT_DESC]);
+        } else {
+            $query = Message::find()
+                ->where(['chat_id' => $chatId, 'is_deleted' => false])
+                ->orderBy(['created_at' => SORT_DESC]);
+        }
 
         $countQuery = clone $query;
 
