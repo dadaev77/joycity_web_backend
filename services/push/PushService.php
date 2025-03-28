@@ -118,6 +118,7 @@ class PushService
      */
     public static function sendPushNotification($user_id, $message, bool $async = true)
     {
+        echo "\n" . "\033[38;5;214m" . "Отправляем push-уведомление для пользователя {$user_id}" . "\n" . "\033[0m";
         if ($async) {
             return self::sendAsync($user_id, $message);
         }
