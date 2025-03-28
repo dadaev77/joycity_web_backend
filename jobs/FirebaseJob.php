@@ -14,9 +14,6 @@ class FirebaseJob extends BaseObject implements JobInterface
 
     public function execute($queue)
     {
-        echo "\n" . "\033[38;5;214m" . "************************************************" . "\033[0m";
-        echo "\n" . "\033[38;5;214m" . "   [FJ:MESSAGE] " . $this->message . "\033[0m";
-        echo "\n" . "\033[38;5;214m" . "   [FJ:PUSH_TOKEN] " . $this->pushToken . "\033[0m";
-        echo "\n" . "\033[38;5;214m" . "************************************************" . "\033[0m";
+        Yii::$app->telegramLog->send('info', "FirebaseJob: " . json_encode($this->message) . " " . json_encode($this->pushToken));
     }
 }
