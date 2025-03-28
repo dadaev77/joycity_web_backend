@@ -157,6 +157,7 @@ class PushService
         try {
             $user = User::findOne($user_id);
             foreach ($user->pushTokens as $pushToken) {
+                Yii::info("Push notification job: " . $pushToken->push_token, 'push');
                 \Yii::$app->queue->push(new \app\jobs\PushNotificationJob([
                     'user_id' => $user_id,
                     'message' => $message,
