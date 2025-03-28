@@ -118,9 +118,9 @@ class PushService
      */
     public static function sendPushNotification($user_id, $message, bool $async = true)
     {
-        // if ($async) {
-        //     return self::sendAsync($user_id, $message);
-        // }
+        if ($async) {
+            return self::sendAsync($user_id, $message);
+        }
         return self::sendSync($user_id, $message);
     }
 
@@ -129,12 +129,12 @@ class PushService
 
         try {
             $user = User::findOne($user_id);
-            // echo "\n" . "\033[38;5;214m" . "[PT Count]  {$user_id}: " . count($user->pushTokens) . "\n" . "\033[0m";
+            echo "\n" . "\033[38;5;214m" . "[PT Count]  {$user_id}: " . count($user->pushTokens) . "\n" . "\033[0m";
             foreach ($user->pushTokens as $pushToken) {
-                // echo "\n" . "\033[31m" . "--[PT:{$user_id}] " . $pushToken->push_token . "\033[0m";
-                // echo "\n" . "\033[38;5;214m" . "   [PT:OS] " . $pushToken->operating_system . "\033[0m";
-                // echo "\n" . "\033[38;5;214m" . "   [PT:USER] " . $user->id . "\033[0m";
-                // echo "\n" . "\033[38;5;214m" . "   [PT:MESSAGE] " . $message . "\033[0m";
+                echo "\n" . "\033[31m" . "--[PT:{$user_id}] " . $pushToken->push_token . "\033[0m";
+                echo "\n" . "\033[38;5;214m" . "   [PT:OS] " . $pushToken->operating_system . "\033[0m";
+                echo "\n" . "\033[38;5;214m" . "   [PT:USER] " . $user->id . "\033[0m";
+                echo "\n" . "\033[38;5;214m" . "   [PT:MESSAGE] " . $message . "\033[0m";
 
                 if ($pushToken->operating_system === 'ios') {
                     $pushToken->badge_count++;
