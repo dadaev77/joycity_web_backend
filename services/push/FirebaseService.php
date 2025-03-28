@@ -146,6 +146,6 @@ class FirebaseService
             Yii::$app->telegramLog->send('error', 'Неизвестная ошибка: ' . $e->getMessage(), 'dev');
             PushNotification::findOne(['push_token' => $pushToken])->delete();
         }
-        return null;
+        return;
     }
 }
