@@ -154,18 +154,12 @@ class PushService
 
     private static function sendAsync($user_id, $message)
     {
-        try {
-            $user = User::findOne($user_id);
-            foreach ($user->pushTokens as $pushToken) {
-                \Yii::$app->queue->push(new \app\jobs\PushNotificationJob([
-                    'user_id' => $user_id,
-                    'message' => $message,
-                    'pushToken' => $pushToken->push_token,
-                ]));
-            }
-        } catch (\Exception $e) {
-            Yii::error("Push notification error: " . $e->getMessage(), 'push');
-            return $e->getMessage();
+        $user = User::findOne($user_id);
+        foreach ($user->pushTokens as $pushToken) {
+            \Yii::$app->queue->push(new \app\jobs\FirebaseJob([
+                'message' => $message,
+                'pushToken' => $pushToken->push_token,
+            ]));
         }
     }
 

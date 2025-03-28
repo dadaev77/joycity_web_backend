@@ -71,8 +71,6 @@ class FirebaseService
 
             $response = $this->messaging->send($cloudMessage);
 
-            echo "\n" . "\033[38;5;214m" . "   [FBS:RESPONSE] " . json_encode($response) . "\033[0m";
-
             return json_encode($response);
         } catch (FirebaseException $e) {
             Yii::$app->actionLog->error('Ошибка Firebase: ' . $e->getMessage());
@@ -120,7 +118,7 @@ class FirebaseService
                 ->withHighestPossiblePriority();
 
             $response = $this->messaging->send($cloudMessage);
-            echo "\n" . "\033[38;5;214m" . "   [FBS:RESPONSE] " . json_encode($response) . "\033[0m";
+
             return json_encode($response);
         } catch (FirebaseException $e) {
             Yii::$app->actionLog->error('Ошибка Firebase: ' . $e->getMessage());
