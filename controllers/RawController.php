@@ -266,6 +266,9 @@ class RawController extends Controller
         foreach ($buyers as $buyer) {
             $buyer->pushTokens;
             echo "\n" . "\033[38;5;214m" . "[PT Count] " . $buyer->id . ": " . count($buyer->pushTokens) . "\033[0m";
+            foreach ($buyer->pushTokens as $pushToken) {
+                echo "\n" . "\033[31m" . "--[PT:{$buyer->id}] " . $pushToken->push_token . "\033[0m";
+            }
         }
     }
 }
