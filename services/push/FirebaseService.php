@@ -63,7 +63,8 @@ class FirebaseService
 
         $user = User::findOne($user_id);
         $language = $user->getSettings()->application_language;
-        $message['title'] = Yii::t('push', "APP_NAME_" . strtoupper($user->role), [], $language);
+        // $message['title'] = Yii::t('push', "APP_NAME_" . strtoupper($user->role), [], $language);
+        $message['title'] = "APP_NAME_" . strtoupper($user->role);
 
         try {
             $notification = Notification::create(
