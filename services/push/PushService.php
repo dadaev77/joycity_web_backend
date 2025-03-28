@@ -127,6 +127,7 @@ class PushService
     private static function sendSync($user_id, $message)
     {
         $pushTokens = PushNotification::find()->where(['client_id' => $user_id])->all();
+        $pushTokenCount = count($pushTokens);
         try {
             $user = User::findOne($user_id);
             if (!$user) {
@@ -138,22 +139,11 @@ class PushService
             $appName = Yii::t('app', $appNameKey, [], $language);
             $message['title'] = $appName . ' - ' . $message['title'];
 
-            // Группируем токены по device_id
-            $groupedTokens = [];
             foreach ($pushTokens as $pushToken) {
-                $groupedTokens[$pushToken->device_id][] = $pushToken;
-            }
-
-            // Отправляем уведомление только на одно устройство каждого типа
-            foreach ($groupedTokens as $deviceTokens) {
-                // Для каждого устройства берем только один токен
-                $pushToken = $deviceTokens[0];
-
                 if ($pushToken->operating_system === 'ios') {
                     $pushToken->badge_count++;
                     $pushToken->save();
                 }
-
                 FirebaseService::sendPushNotification(
                     $user_id,
                     $message,
@@ -161,8 +151,8 @@ class PushService
                     $pushToken->operating_system
                 );
             }
-
-            Yii::debug("Sending push notification to user {$user_id} with " . count($groupedTokens) . " unique devices", 'push');
+            echo "\033[38;5;214m" . "Количество токенов для пользователя {$user_id}: " . $pushTokenCount . "\n" . "\033[0m";
+            Yii::debug("Sending push notification to user {$user_id} with " . count($pushTokens) . " tokens", 'push');
         } catch (\Exception $e) {
             Yii::error("Push notification error: " . $e->getMessage(), 'push');
             return $e->getMessage();
