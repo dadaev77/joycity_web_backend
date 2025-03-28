@@ -48,6 +48,8 @@ class FirebaseService
         $firebaseService = new FirebaseService();
         $user = User::findOne($clientId);
         echo "\n" . "\033[38;5;214m" . "---[PT FBS] " . $pushToken . "\033[0m";
+        echo "\n" . "\033[38;5;214m" . "   [OS FBS] " . $os . "\033[0m";
+        echo "\n" . "\033[38;5;214m" . "   [USER FBS] " . $user->id . "\033[0m";
         if (!$user) {
             return ApiResponse::byResponseCode($firebaseService->apiCodes->NOT_VALIDATED, ['message' => 'User not found']);
         }
