@@ -62,10 +62,13 @@ class FirebaseService
     {
 
         $user = User::findOne($user_id);
-        $language = $user->getSettings()->application_language;
-        // $message['title'] = Yii::t('push', "APP_NAME_" . strtoupper($user->role), [], $language);
-        $message['title'] = "APP_NAME_" . strtoupper($user->role);
-
+        $appNames = [
+            'APP_NAME_CLIENT' => 'JoyCity',
+            'APP_NAME_BUYER' => 'JoyCity Buyer',
+            'APP_NAME_MANAGER' => 'JoyCity Manager',
+            'APP_NAME_FULFILLMENT' => 'JoyCity Fulfillment',
+        ];
+        $message['title'] = $appNames['APP_NAME_' . strtoupper($user->role)];
         try {
             $notification = Notification::create(
                 $message['title'],
@@ -100,8 +103,13 @@ class FirebaseService
     protected function sendIosNotification(int $user_id, array $message, string $pushToken)
     {
         $user = User::findOne($user_id);
-        $language = $user->getSettings()->application_language;
-        $message['title'] = Yii::t('push', "APP_NAME_" . strtoupper($user->role), [], $language);
+        $appNames = [
+            'APP_NAME_CLIENT' => 'JoyCity',
+            'APP_NAME_BUYER' => 'JoyCity Buyer',
+            'APP_NAME_MANAGER' => 'JoyCity Manager',
+            'APP_NAME_FULFILLMENT' => 'JoyCity Fulfillment',
+        ];
+        $message['title'] = $appNames['APP_NAME_' . strtoupper($user->role)];
 
         try {
             $notification = Notification::create(
