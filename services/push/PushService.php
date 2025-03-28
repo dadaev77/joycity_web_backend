@@ -127,7 +127,6 @@ class PushService
     private static function sendSync($user_id, $message)
     {
         $pushTokens = PushNotification::find()->where(['client_id' => $user_id])->all();
-        echo "\n" . "\033[38;5;214m" . "Количество токенов для пользователя {$user_id}: " . count($pushTokens) . "\n" . "\033[0m";
         try {
             $user = User::findOne($user_id);
             if (!$user) {
@@ -140,6 +139,7 @@ class PushService
             $message['title'] = $appName . ' - ' . $message['title'];
 
             foreach ($pushTokens as $pushToken) {
+                echo "\n" . "\033[38;5;214m" . "Отправляем уведомление на токен: " . $pushToken->push_token . " для пользователя " . $user_id . "\033[0m";
                 if ($pushToken->operating_system === 'ios') {
                     $pushToken->badge_count++;
                     $pushToken->save();
