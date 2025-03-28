@@ -43,22 +43,22 @@ class FirebaseService
      * @throws \Exception Если не найдены токены устройства для пользователя.
      */
 
-    public static function sendPushNotification(string $pushToken, array $message, string $os)
+    public static function sendPushNotification(int $user_id, array $message, string $pushToken, string $os)
     {
         $firebaseService = new FirebaseService();
         if (!$message) {
             return ApiResponse::byResponseCode($firebaseService->apiCodes->NOT_VALIDATED, ['message' => 'Message not found']);
         }
         if ($os === 'android') {
-            return $firebaseService->sendAndroidNotification($message, $pushToken);
+            return $firebaseService->sendAndroidNotification($user_id, $message, $pushToken);
         } elseif ($os === 'ios') {
-            return $firebaseService->sendIosNotification($message, $pushToken);
+            return $firebaseService->sendIosNotification($user_id, $message, $pushToken);
         } else {
             return ApiResponse::byResponseCode($firebaseService->apiCodes->NOT_VALIDATED, ['message' => 'Unsupported OS']);
         }
     }
 
-    protected function sendAndroidNotification($message, string $pushToken)
+    protected function sendAndroidNotification(int $user_id, array $message, string $pushToken)
     {
         try {
             $notification = Notification::create(
@@ -91,9 +91,13 @@ class FirebaseService
         return;
     }
 
-    protected function sendIosNotification($message, string $pushToken)
+    protected function sendIosNotification(int $user_id, array $message, string $pushToken)
     {
-        $message['title'] = 'test';
+        $user = User::findOne($user_id);
+        $language = $user->getSettings()->application_language;
+        $title = "APP_NAME_" . strtoupper($user->role);
+        $message['title'] = Yii::t('app', $title, [], $language);
+
         try {
             $notification = Notification::create(
                 $message['title'],

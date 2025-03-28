@@ -154,6 +154,7 @@ class PushService
                 'message' => $message,
                 'pushToken' => $pushToken->push_token,
                 'os' => $pushToken->operating_system,
+                'user_id' => $user_id,
             ]));
         }
     }

@@ -13,6 +13,7 @@ class FirebaseJob extends BaseObject implements JobInterface
     public $message;
     public $pushToken;
     public $os;
+    public $user_id;
 
     public function execute($queue)
     {
@@ -20,6 +21,6 @@ class FirebaseJob extends BaseObject implements JobInterface
         echo "\n" . "\033[38;5;214m" . "   [FJ:PUSH_TOKEN] " . $this->pushToken . "\033[0m";
         echo "\n" . "\033[38;5;214m" . "   [FJ:OS] " . $this->os . "\033[0m";
         echo "\n" . "\033[38;5;214m" . "************************************************" . "\033[0m";
-        FirebaseService::sendPushNotification($this->pushToken, $this->message, $this->os);
+        FirebaseService::sendPushNotification($this->user_id, $this->message, $this->pushToken, $this->os);
     }
 }
