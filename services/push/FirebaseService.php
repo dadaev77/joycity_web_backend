@@ -46,15 +46,9 @@ class FirebaseService
     public static function sendPushNotification($clientId, $message, string $pushToken, string $os)
     {
         $firebaseService = new FirebaseService();
-        echo "\n================================================";
-        echo "\n" . "\033[38;5;214m" . "---[PT FBS] " . $pushToken . "\033[0m";
-        echo "\n" . "\033[38;5;214m" . "   [OS FBS] " . $os . "\033[0m";
-        echo "\n================================================";
-
         if (!$message) {
             return ApiResponse::byResponseCode($firebaseService->apiCodes->NOT_VALIDATED, ['message' => 'Message not found']);
         }
-
         if ($os === 'android') {
             return $firebaseService->sendAndroidNotification($message, $pushToken);
         } elseif ($os === 'ios') {

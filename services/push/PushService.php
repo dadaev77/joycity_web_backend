@@ -126,7 +126,6 @@ class PushService
 
     private static function sendSync($user_id, $message, $pushToken)
     {
-
         try {
             $user = User::findOne($user_id);
             echo "\n" . "\033[38;5;214m" . "[PT Count]  {$user_id}: " . count($user->pushTokens) . "\n" . "\033[0m";
@@ -158,6 +157,7 @@ class PushService
         try {
             $user = User::findOne($user_id);
             foreach ($user->pushTokens as $pushToken) {
+                echo "\n" . "\033[31m" . "--[PT:{$user_id}] " . $pushToken->push_token . "\033[0m";
                 \Yii::$app->queue->push(new \app\jobs\PushNotificationJob([
                     'user_id' => $user_id,
                     'message' => $message,
