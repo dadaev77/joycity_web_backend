@@ -100,7 +100,7 @@ class ChatController extends V1Controller
     private function calculateUnreadMessages($chat, $userId)
     {
         $unreadMessages = 0;
-        $chatMessages = $chat->messages ?? [];
+        $chatMessages = Message::find()->where(['chat_id' => $chat->id, 'is_deleted' => false])->all();
         foreach ($chatMessages as $message) {
             $messageMetadata = $message->metadata ?? [];
             $readBy = $messageMetadata['read_by'] ?? [];
