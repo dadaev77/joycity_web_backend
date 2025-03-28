@@ -13,6 +13,7 @@ return [
     'ERROR_QUESTION_EXISTS' => 'Такой вопрос в теме уже существует.',
     'INTERNAL_ERROR' => 'Внутренняя ошибка сервера',
     'FORBIDDEN' => 'Неверный код сброса.',
+
     'APP_NAME_CLIENT' => 'JoyCity',
     'APP_NAME_BUYER' => 'JoyCity Buyer',
     'APP_NAME_MANAGER' => 'JoyCity Manager',

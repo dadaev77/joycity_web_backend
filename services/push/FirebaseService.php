@@ -94,9 +94,9 @@ class FirebaseService
     protected function sendIosNotification(int $user_id, array $message, string $pushToken)
     {
         $user = User::findOne($user_id);
+
         $language = $user->getSettings()->application_language;
-        $title = "APP_NAME_" . strtoupper($user->role);
-        $message['title'] = Yii::t('app', $title, [], $language);
+        $message['title'] = Yii::t('push', "APP_NAME_" . strtoupper($user->role), [], $language);
 
         try {
             $notification = Notification::create(
