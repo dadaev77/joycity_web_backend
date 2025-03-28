@@ -131,10 +131,16 @@ class PushService
             $user = User::findOne($user_id);
             echo "\n" . "\033[38;5;214m" . "[PT Count]  {$user_id}: " . count($user->pushTokens) . "\n" . "\033[0m";
             foreach ($user->pushTokens as $pushToken) {
+                echo "\n" . "\033[31m" . "--[PT:{$user_id}] " . $pushToken->push_token . "\033[0m";
+                echo "\n" . "\033[38;5;214m" . "   [PT:OS] " . $pushToken->operating_system . "\033[0m";
+                echo "\n" . "\033[38;5;214m" . "   [PT:USER] " . $user->id . "\033[0m";
+                echo "\n" . "\033[38;5;214m" . "   [PT:MESSAGE] " . $message . "\033[0m";
+
                 if ($pushToken->operating_system === 'ios') {
                     $pushToken->badge_count++;
                     $pushToken->save();
                 }
+
                 FirebaseService::sendPushNotification(
                     $user_id,
                     $message,
@@ -150,27 +156,10 @@ class PushService
 
     private static function sendAsync($user_id, $message)
     {
-        try {
-            $user = User::findOne($user_id);
-            echo "\n" . "\033[38;5;214m" . "[PT Count]  {$user_id}: " . count($user->pushTokens) . "\n" . "\033[0m";
-            foreach ($user->pushTokens as $pushToken) {
-                echo "\n" . "\033[31m" . "--[PT:{$user_id}] " . $pushToken->push_token . "\033[0m";
-                if ($pushToken->operating_system === 'ios') {
-                    $pushToken->badge_count++;
-                    $pushToken->save();
-                }
-                FirebaseService::sendPushNotification(
-                    $user_id,
-                    $message,
-                    $pushToken->push_token,
-                    $pushToken->operating_system
-                );
-                echo "\n" . "\033[38;5;214m" . "  [PT sent] " . "\033[0m";
-            }
-        } catch (\Exception $e) {
-            Yii::error("Push notification error: " . $e->getMessage(), 'push');
-            return $e->getMessage();
-        }
+        \Yii::$app->queue->push(new \app\jobs\PushNotificationJob([
+            'user_id' => $user_id,
+            'message' => $message
+        ]));
     }
 
     public static function getToken()

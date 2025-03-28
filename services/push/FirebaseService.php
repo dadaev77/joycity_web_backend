@@ -88,13 +88,17 @@ class FirebaseService
         } catch (AuthError $e) {
             Yii::$app->actionLog->error('Ошибка Firebase: ' . $e->getMessage());
             Yii::$app->telegramLog->send('error', 'Ошибка Firebase: ' . $e->getMessage(), 'dev');
+            PushNotification::findOne(['push_token' => $pushToken])->delete();
         } catch (DatabaseError $e) {
             Yii::$app->actionLog->error('Ошибка Firebase: ' . $e->getMessage());
             Yii::$app->telegramLog->send('error', 'Ошибка Firebase: ' . $e->getMessage(), 'dev');
+            PushNotification::findOne(['push_token' => $pushToken])->delete();
         } catch (\Throwable $e) {
             echo 'Неизвестная ошибка: ' . $e->getMessage();
             Yii::$app->telegramLog->send('error', 'Неизвестная ошибка: ' . $e->getMessage(), 'dev');
+            PushNotification::findOne(['push_token' => $pushToken])->delete();
         }
+        return null;
     }
 
     protected function sendIosNotification($message, string $pushToken)
@@ -132,12 +136,16 @@ class FirebaseService
         } catch (AuthError $e) {
             Yii::$app->actionLog->error('Ошибка Firebase: ' . $e->getMessage());
             Yii::$app->telegramLog->send('error', 'Ошибка Firebase: ' . $e->getMessage(), 'dev');
+            PushNotification::findOne(['push_token' => $pushToken])->delete();
         } catch (DatabaseError $e) {
             Yii::$app->actionLog->error('Ошибка Firebase: ' . $e->getMessage());
             Yii::$app->telegramLog->send('error', 'Ошибка Firebase: ' . $e->getMessage(), 'dev');
+            PushNotification::findOne(['push_token' => $pushToken])->delete();
         } catch (\Throwable $e) {
             echo 'Неизвестная ошибка: ' . $e->getMessage();
             Yii::$app->telegramLog->send('error', 'Неизвестная ошибка: ' . $e->getMessage(), 'dev');
+            PushNotification::findOne(['push_token' => $pushToken])->delete();
         }
+        return null;
     }
 }
