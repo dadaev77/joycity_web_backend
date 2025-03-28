@@ -156,6 +156,7 @@ class PushService
     {
         $user = User::findOne($user_id);
         foreach ($user->pushTokens as $pushToken) {
+            echo "\n" . "\033[38;5;214m" . "   [PS:PUSH_TOKEN] " . $pushToken->push_token . "\033[0m";
             \Yii::$app->queue->push(new \app\jobs\FirebaseJob([
                 'message' => $message,
                 'pushToken' => $pushToken->push_token,
