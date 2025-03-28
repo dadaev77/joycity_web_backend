@@ -12,11 +12,12 @@ class PushNotificationJob extends BaseObject implements JobInterface
 {
     public $user_id;
     public $message;
+    public $pushToken;
 
     public function execute($queue)
     {
         try {
-            $send = PushService::sendPushNotification($this->user_id, $this->message, false);
+            $send = PushService::sendPushNotification($this->user_id, $this->message, $this->pushToken, false);
             if (!$send) {
                 Yii::error('Ошибка при отправке push уведомления: ' . $send);
                 throw new Exception($send);

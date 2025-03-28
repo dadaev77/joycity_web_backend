@@ -116,15 +116,15 @@ class PushService
      * @param array $message Массив с заголовком и текстом сообщения.
      * @return mixed Результат отправки уведомления.
      */
-    public static function sendPushNotification($user_id, $message, bool $async = true)
+    public static function sendPushNotification($user_id, $message, $pushToken = null, bool $async = true)
     {
         if ($async) {
-            return self::sendAsync($user_id, $message);
+            return self::sendAsync($user_id, $message, $pushToken);
         }
-        return self::sendSync($user_id, $message);
+        return self::sendSync($user_id, $message, $pushToken);
     }
 
-    private static function sendSync($user_id, $message)
+    private static function sendSync($user_id, $message, $pushToken)
     {
 
         try {
@@ -135,7 +135,6 @@ class PushService
                 echo "\n" . "\033[38;5;214m" . "   [PT:OS] " . $pushToken->operating_system . "\033[0m";
                 echo "\n" . "\033[38;5;214m" . "   [PT:USER] " . $user->id . "\033[0m";
                 echo "\n" . "\033[38;5;214m" . "   [PT:MESSAGE] " . $message . "\033[0m";
-
                 if ($pushToken->operating_system === 'ios') {
                     $pushToken->badge_count++;
                     $pushToken->save();
@@ -156,10 +155,19 @@ class PushService
 
     private static function sendAsync($user_id, $message)
     {
-        \Yii::$app->queue->push(new \app\jobs\PushNotificationJob([
-            'user_id' => $user_id,
-            'message' => $message
-        ]));
+        try {
+            $user = User::findOne($user_id);
+            foreach ($user->pushTokens as $pushToken) {
+                \Yii::$app->queue->push(new \app\jobs\PushNotificationJob([
+                    'user_id' => $user_id,
+                    'message' => $message,
+                    'pushToken' => $pushToken->push_token,
+                ]));
+            }
+        } catch (\Exception $e) {
+            Yii::error("Push notification error: " . $e->getMessage(), 'push');
+            return $e->getMessage();
+        }
     }
 
     public static function getToken()
