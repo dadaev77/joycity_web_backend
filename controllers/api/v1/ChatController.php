@@ -565,7 +565,7 @@ class ChatController extends V1Controller
                 ];
             }
             $metadata['last_message'] = $this->getLastMessage($chat);
-            $metadata['unread_messages'] = $this->calculateUnreadMessages($chat, $userId);
+            $metadata['unread_messages'] = $this->calculateUnreadMessages($chat, $userId, $user->role);
             $chat->metadata = $metadata;
         }
 
