@@ -20,7 +20,6 @@ class PushNotificationJob extends BaseObject implements JobInterface
             if (!$send) {
                 Yii::error('Ошибка при отправке push уведомления: ' . $send);
             }
-            echo "\n" . "\033[32m" . '[Push] Уведомление отправлено успешно для пользователя ' . $this->user_id . "\033[0m";
         } catch (Exception $e) {
             Yii::error('Ошибка при отправке push уведомления: ' . $e->getMessage());
             echo "\n" . "\033[31m" . 'Ошибка при отправке push уведомления: ' . $e->getMessage() . "\033[0m";

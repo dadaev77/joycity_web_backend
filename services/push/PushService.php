@@ -126,18 +126,10 @@ class PushService
 
     private static function sendSync($user_id, $message)
     {
-        $pushTokens = PushNotification::find()->where(['client_id' => $user_id])->all();
+
         try {
-            $user = User::findOne($user_id);
-            if (!$user) {
-                throw new \Exception('User not found');
-            }
-
-            $language = $user->getSettings()->application_language;
-            $appNameKey = 'APP_NAME_' . strtoupper($user->role);
-            $appName = Yii::t('app', $appNameKey, [], $language);
-            $message['title'] = $appName . ' - ' . $message['title'];
-
+            $pushTokens = PushNotification::find()->where(['client_id' => $user_id])->all();
+            $pushTokenCount = count($pushTokens);
             foreach ($pushTokens as $pushToken) {
                 echo "\n" . "\033[38;5;214m" . "Отправляем уведомление на токен: " . $pushToken->push_token . " для пользователя " . $user_id . "\033[0m";
                 if ($pushToken->operating_system === 'ios') {
@@ -151,6 +143,7 @@ class PushService
                     $pushToken->operating_system
                 );
             }
+            echo "\n" . "\033[38;5;214m" . "Количество токенов для пользователя {$user_id}: " . $pushTokenCount . "\n" . "\033[0m";
             return true;
         } catch (\Exception $e) {
             Yii::error("Push notification error: " . $e->getMessage(), 'push');
