@@ -140,6 +140,7 @@ class PushService
                     $pushToken->badge_count++;
                     $pushToken->save();
                 }
+
                 FirebaseService::sendPushNotification(
                     $user_id,
                     $message,
