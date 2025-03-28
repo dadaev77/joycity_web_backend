@@ -144,6 +144,7 @@ class PushService
                     $pushToken->badge_count++;
                     $pushToken->save();
                 }
+                echo "\n" . "\033[38;5;214m" . "Отправляем уведомление на токен: " . $pushToken->push_token . "\n" . "\033[0m";
                 FirebaseService::sendPushNotification(
                     $user_id,
                     $message,
@@ -151,7 +152,7 @@ class PushService
                     $pushToken->operating_system
                 );
             }
-            echo "\033[38;5;214m" . "Количество токенов для пользователя {$user_id}: " . $pushTokenCount . "\n" . "\033[0m";
+            echo "\n" . "\033[38;5;214m" . "Количество токенов для пользователя {$user_id}: " . $pushTokenCount . "\n" . "\033[0m";
             Yii::debug("Sending push notification to user {$user_id} with " . count($pushTokens) . " tokens", 'push');
         } catch (\Exception $e) {
             Yii::error("Push notification error: " . $e->getMessage(), 'push');
