@@ -129,9 +129,8 @@ class PushService
 
         try {
             $pushTokens = PushNotification::find()->where(['client_id' => $user_id])->all();
-            $pushTokenCount = count($pushTokens);
+
             foreach ($pushTokens as $pushToken) {
-                echo "\n" . "\033[38;5;214m" . "Отправляем уведомление на токен: " . $pushToken->push_token . " для пользователя " . $user_id . "\033[0m";
                 if ($pushToken->operating_system === 'ios') {
                     $pushToken->badge_count++;
                     $pushToken->save();
@@ -143,8 +142,6 @@ class PushService
                     $pushToken->operating_system
                 );
             }
-            echo "\n" . "\033[38;5;214m" . "Количество токенов для пользователя {$user_id}: " . $pushTokenCount . "\n" . "\033[0m";
-            return true;
         } catch (\Exception $e) {
             Yii::error("Push notification error: " . $e->getMessage(), 'push');
             return $e->getMessage();
