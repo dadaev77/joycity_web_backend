@@ -17,7 +17,6 @@ class PushNotificationJob extends BaseObject implements JobInterface
     {
         try {
             $send = PushService::sendPushNotification($this->user_id, $this->message, false);
-
             if (!$send) {
                 Yii::error('Ошибка при отправке push уведомления: ' . $send);
             }
