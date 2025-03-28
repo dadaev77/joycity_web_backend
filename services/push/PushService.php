@@ -162,6 +162,7 @@ class PushService
     }
     private static function sendAsync($user_id, $message)
     {
+        echo "\n" . "\033[38;5;214m" . "Отправляем уведомление асинхронно для пользователя {$user_id}" . "\n" . "\033[0m";
         \Yii::$app->queue->push(new \app\jobs\PushNotificationJob([
             'user_id' => $user_id,
             'message' => $message
