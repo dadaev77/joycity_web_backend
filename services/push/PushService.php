@@ -118,7 +118,6 @@ class PushService
      */
     public static function sendPushNotification($user_id, $message, bool $async = true)
     {
-        echo "\n" . "\033[38;5;214m" . "Отправляем push-уведомление для пользователя {$user_id}" . "\n" . "\033[0m";
         if ($async) {
             return self::sendAsync($user_id, $message);
         }
@@ -128,7 +127,7 @@ class PushService
     private static function sendSync($user_id, $message)
     {
         $pushTokens = PushNotification::find()->where(['client_id' => $user_id])->all();
-        $pushTokenCount = count($pushTokens);
+        echo "\n" . "\033[38;5;214m" . "Количество токенов для пользователя {$user_id}: " . count($pushTokens) . "\n" . "\033[0m";
         try {
             $user = User::findOne($user_id);
             if (!$user) {
@@ -145,7 +144,6 @@ class PushService
                     $pushToken->badge_count++;
                     $pushToken->save();
                 }
-                echo "\n" . "\033[38;5;214m" . "Отправляем уведомление на токен: " . $pushToken->push_token . "\n" . "\033[0m";
                 FirebaseService::sendPushNotification(
                     $user_id,
                     $message,
@@ -153,14 +151,13 @@ class PushService
                     $pushToken->operating_system
                 );
             }
-            echo "\n" . "\033[38;5;214m" . "Количество токенов для пользователя {$user_id}: " . $pushTokenCount . "\n" . "\033[0m";
-            Yii::debug("Sending push notification to user {$user_id} with " . count($pushTokens) . " tokens", 'push');
+            return true;
         } catch (\Exception $e) {
             Yii::error("Push notification error: " . $e->getMessage(), 'push');
             return $e->getMessage();
         }
-        return true;
     }
+
     private static function sendAsync($user_id, $message)
     {
         \Yii::$app->queue->push(new \app\jobs\PushNotificationJob([
