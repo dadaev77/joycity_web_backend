@@ -97,10 +97,15 @@ class ChatController extends V1Controller
      * непрочитанным, если ID пользователя отсутствует в массиве read_by в метаданных
      * сообщения.
      */
-    private function calculateUnreadMessages($chat, $userId)
+    private function calculateUnreadMessages($chat, $userId, $role)
     {
         $unreadMessages = 0;
-        $chatMessages = Message::find()->where(['chat_id' => $chat->id, 'is_deleted' => false])->all();
+
+        if ($role === User::ROLE_MANAGER) {
+            $chatMessages = Message::find()->where(['chat_id' => $chat->id])->all();
+        } else {
+            $chatMessages = Message::find()->where(['chat_id' => $chat->id, 'is_deleted' => false])->all();
+        }
         foreach ($chatMessages as $message) {
             $messageMetadata = $message->metadata ?? [];
             $readBy = $messageMetadata['read_by'] ?? [];
@@ -145,7 +150,9 @@ class ChatController extends V1Controller
      */
     public function actionGetUnreadMessages()
     {
-        $userId = User::getIdentity()->id;
+        $user = User::getIdentity();
+        $userId = $user->id;
+        $role = $user->role;
         $userChats = [];
         $chats = Chat::find()->where(['status' => 'active'])->all();
         foreach ($chats as $chat) {
@@ -159,7 +166,7 @@ class ChatController extends V1Controller
         $unreadMessages = 0;
 
         foreach ($userChats as $chat) {
-            $unreadMessages += $this->calculateUnreadMessages($chat, $userId);
+            $unreadMessages += $this->calculateUnreadMessages($chat, $userId, $role);
         }
         return [
             'status' => 'success',
