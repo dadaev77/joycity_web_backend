@@ -43,7 +43,7 @@ class FirebaseService
      * @throws \Exception Если не найдены токены устройства для пользователя.
      */
 
-    public static function sendPushNotification($clientId, $message, string $pushToken, string $os)
+    public static function sendPushNotification(string $pushToken, array $message, string $os)
     {
         $firebaseService = new FirebaseService();
         if (!$message) {

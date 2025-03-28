@@ -6,14 +6,16 @@ use yii\base\BaseObject;
 use yii\queue\JobInterface;
 use Exception;
 use Yii;
+use app\services\push\FirebaseService;
 
 class FirebaseJob extends BaseObject implements JobInterface
 {
     public $message;
     public $pushToken;
+    public $os;
 
     public function execute($queue)
     {
-        Yii::$app->telegramLog->send('info', "FirebaseJob: " . json_encode($this->message) . " " . json_encode($this->pushToken));
+        FirebaseService::sendPushNotification($this->pushToken, $this->message, $this->os);
     }
 }
