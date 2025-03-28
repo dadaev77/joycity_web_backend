@@ -128,9 +128,9 @@ class PushService
     {
 
         try {
-            $pushTokens = PushNotification::find()->where(['client_id' => $user_id])->all();
-
-            foreach ($pushTokens as $pushToken) {
+            $user = User::findOne($user_id);
+            echo "\n" . "\033[38;5;214m" . "Количество токенов для пользователя {$user_id}: " . count($user->pushTokens) . "\n" . "\033[0m";
+            foreach ($user->pushTokens as $pushToken) {
                 if ($pushToken->operating_system === 'ios') {
                     $pushToken->badge_count++;
                     $pushToken->save();

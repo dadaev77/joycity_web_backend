@@ -88,7 +88,7 @@ use yii\db\ActiveQuery;
  * @property UserVerificationRequest[] $userVerificationRequestsApproving
  * @property UserVerificationRequest[] $userVerificationRequestsCreator
  * @property UserVerificationRequest[] $userVerificationRequestsManager
- *
+ * @property PushNotification[] $pushTokens
  */
 class UserStructure extends Base
 {
@@ -629,5 +629,15 @@ class UserStructure extends Base
         return $this->hasMany(UserVerificationRequest::class, [
             'manager_id' => 'id',
         ]);
+    }
+
+    /**
+     * Gets query for [[PushTokens]].
+     *
+     * @return ActiveQuery
+     */
+    public function getPushTokens()
+    {
+        return $this->hasMany(PushNotification::class, ['client_id' => 'id']);
     }
 }

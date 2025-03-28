@@ -42,7 +42,7 @@ class WebsocketNotificationJob extends BaseObject implements JobInterface
                 'json' => ['notification' => $this->notification],
                 'headers' => ['Content-Type' => 'application/json']
             ]);
-            echo "\n\033[32mУведомление успешно отправлено\033[0m" . PHP_EOL;
+            echo "\n\033[32m[WS] Уведомление успешно отправлено\033[0m" . PHP_EOL;
         } catch (Exception $e) {
             Yii::error("Ошибка при отправке уведомления: " . $e->getMessage(), 'websocket');
             echo "\n\033[31mОшибка при отправке уведомления: " . $e->getMessage() . "\033[0m" . PHP_EOL;
