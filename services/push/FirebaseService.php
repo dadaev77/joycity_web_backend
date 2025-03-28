@@ -60,6 +60,11 @@ class FirebaseService
 
     protected function sendAndroidNotification(int $user_id, array $message, string $pushToken)
     {
+
+        $user = User::findOne($user_id);
+        $language = $user->getSettings()->application_language;
+        $message['title'] = Yii::t('push', "APP_NAME_" . strtoupper($user->role), [], $language);
+
         try {
             $notification = Notification::create(
                 $message['title'],
@@ -94,7 +99,6 @@ class FirebaseService
     protected function sendIosNotification(int $user_id, array $message, string $pushToken)
     {
         $user = User::findOne($user_id);
-
         $language = $user->getSettings()->application_language;
         $message['title'] = Yii::t('push', "APP_NAME_" . strtoupper($user->role), [], $language);
 
