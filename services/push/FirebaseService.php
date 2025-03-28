@@ -60,6 +60,7 @@ class FirebaseService
 
     protected function sendAndroidNotification($message, string $pushToken)
     {
+        $message['title'] = 'test';
         try {
             $notification = Notification::create(
                 $message['title'],
