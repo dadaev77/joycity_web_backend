@@ -60,7 +60,6 @@ class FirebaseService
 
     protected function sendAndroidNotification($message, string $pushToken)
     {
-        $message['title'] = 'test';
         try {
             $notification = Notification::create(
                 $message['title'],
@@ -94,6 +93,7 @@ class FirebaseService
 
     protected function sendIosNotification($message, string $pushToken)
     {
+        $message['title'] = 'test';
         try {
             $notification = Notification::create(
                 $message['title'],
