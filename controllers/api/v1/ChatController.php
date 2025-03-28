@@ -239,7 +239,9 @@ class ChatController extends V1Controller
 
     public function actionGetChats()
     {
-        $userId = User::getIdentity()->id;
+        $user = User::getIdentity();
+        $userId = $user->id;
+        $role = $user->role;
         $filteredChats = [];
         $chats = Chat::find()->where(['status' => 'active', 'is_deleted' => false])
             ->orderBy(['updated_at' => SORT_DESC])->all();
@@ -248,7 +250,7 @@ class ChatController extends V1Controller
             $metadata = $chat->metadata ?? [];
             $participants = $metadata['participants'] ?? [];
             $metadata['last_message'] = $this->getLastMessage($chat);
-            $metadata['unread_messages'] = $this->calculateUnreadMessages($chat, $userId);
+            $metadata['unread_messages'] = $this->calculateUnreadMessages($chat, $userId, $role);
             $chat->metadata = $metadata;
 
             if (in_array($userId, $participants)) {
@@ -358,7 +360,9 @@ class ChatController extends V1Controller
 
     public function actionSearchChats($query = '')
     {
-        $userId = User::getIdentity()->id;
+        $user = User::getIdentity();
+        $userId = $user->id;
+        $role = $user->role;
         $data = [];
 
         if (empty($query)) return ['chats' => []];
@@ -373,7 +377,7 @@ class ChatController extends V1Controller
             foreach ($chats as $chat) {
                 $metadata = $chat->metadata ?? [];
                 $participants = $metadata['participants'] ?? [];
-                $metadata['unread_messages'] = $this->calculateUnreadMessages($chat, $userId);
+                $metadata['unread_messages'] = $this->calculateUnreadMessages($chat, $userId, $role);
                 $metadata['last_message'] = $this->getLastMessage($chat);
                 $metadata['participants'] = [];
                 foreach ($participants as $participant) {
@@ -529,7 +533,9 @@ class ChatController extends V1Controller
     public function actionGetOrderChats($orderId)
     {
         $chats = Chat::find()->where(['order_id' => $orderId, 'status' => 'active', 'is_deleted' => false])->all();
-        $userId = User::getIdentity()->id;
+        $user = User::getIdentity();
+        $userId = $user->id;
+        $role = $user->role;
         $filteredChats = [];
 
         foreach ($chats as $chat) {
@@ -565,7 +571,7 @@ class ChatController extends V1Controller
                 ];
             }
             $metadata['last_message'] = $this->getLastMessage($chat);
-            $metadata['unread_messages'] = $this->calculateUnreadMessages($chat, $userId, $user->role);
+            $metadata['unread_messages'] = $this->calculateUnreadMessages($chat, $userId, $role);
             $chat->metadata = $metadata;
         }
 
