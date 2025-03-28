@@ -157,10 +157,6 @@ class PushService
         try {
             $user = User::findOne($user_id);
             foreach ($user->pushTokens as $pushToken) {
-                Yii::$app->telegramLog->send(
-                    'info',
-                    "Push notification job: " . $pushToken->push_token
-                );
                 \Yii::$app->queue->push(new \app\jobs\PushNotificationJob([
                     'user_id' => $user_id,
                     'message' => $message,
