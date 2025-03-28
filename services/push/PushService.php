@@ -118,9 +118,9 @@ class PushService
      */
     public static function sendPushNotification($user_id, $message, bool $async = true)
     {
-        if ($async) {
-            return self::sendAsync($user_id, $message);
-        }
+        // if ($async) {
+        //     return self::sendAsync($user_id, $message);
+        // }
         return self::sendSync($user_id, $message);
     }
 
