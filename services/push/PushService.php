@@ -157,7 +157,6 @@ class PushService
         try {
             $user = User::findOne($user_id);
             foreach ($user->pushTokens as $pushToken) {
-                echo "\n" . "\033[31m" . "--[PT:{$user_id}] " . $pushToken->push_token . "\033[0m";
                 \Yii::$app->queue->push(new \app\jobs\PushNotificationJob([
                     'user_id' => $user_id,
                     'message' => $message,
