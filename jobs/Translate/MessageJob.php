@@ -33,10 +33,17 @@ class MessageJob extends BaseObject implements JobInterface
     public function execute($queue)
     {
         try {
+            echo "\n\033[32mНачало выполнения работы: " . $this->message . "\033[0m";
             $message = \app\models\Message::findOne($this->messageId);
-            echo "Message: " . $message->id . "\n";
-        } catch (\Exception $e) {
-            echo "Error: " . $e->getMessage() . "\n";
+            $translations = \app\services\TranslationService::translate($this->data);
+            if (is_string($translations)) {
+                $translations = json_decode($translations, true);
+            }
+            $message->content = $translations;
+            $message->save();
+            return true;
+        } catch (Exception $e) {
+            echo "\n\033[31mОшибка перевода: " . $e->getMessage() . "\033[0m";
         }
     }
 }

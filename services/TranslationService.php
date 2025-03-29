@@ -43,8 +43,21 @@ class TranslationService
             - Structure the response as a JSON object:
             {{ \"ru\": \"translation in Russian\", \"en\": \"translation in English\", \"zh\": \"translation in Chinese\" }}, and nothing else.
             Original text is: " . $message;
-        $translation = self::translate($instruction, $prompt);
-        return $translation;
+
+        $data = [
+            "messages" => [
+                ["role" => "system", "content" => $instruction],
+                ["role" => "user", "content" => $prompt]
+            ]
+        ];
+
+        \Yii::$app->queue->push(new \app\jobs\Translate\MessageJob([
+            'message' => $message,
+            'mesageId' => $mesageId,
+            'data' => $data
+        ]));
+
+        return;
     }
 
     public static function translateAttributes(
