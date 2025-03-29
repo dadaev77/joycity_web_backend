@@ -16,11 +16,7 @@ class AttributeTranslateJob extends BaseObject implements JobInterface
     public $data;
     public function execute($queue)
     {
-        var_dump([
-            'name' => $this->name,
-            'description' => $this->description,
-            'type' => $this->type,
-            'id' => $this->id,
-        ]);
+        $result = \app\services\TranslationService::translate($this->data);
+        var_dump($result);
     }
 }
