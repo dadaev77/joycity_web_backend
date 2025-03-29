@@ -692,17 +692,7 @@ class ChatController extends V1Controller
             $chat->last_message_id = $message->id;
             $chat->save();
 
-            $recievers = array_diff($participants, [$userId]);
-            foreach ($recievers as $reciever) {
-                $language = User::findOne($reciever)->getSettings()->application_language;
-                PushService::sendPushNotification(
-                    $reciever,
-                    [
-                        'title' => \Yii::t('chat', 'new_message', [], $language),
-                        'body' => \Yii::t('chat', 'new_message', ['chat_id' => $chat->order_id], $language),
-                    ]
-                );
-            }
+
             $messageToSend = Message::findOne($message->id);
             $notificationData = [
                 'type' => 'new_message',
@@ -715,6 +705,18 @@ class ChatController extends V1Controller
                 $notificationData,
                 true
             );
+
+            $recievers = array_diff($participants, [$userId]);
+            foreach ($recievers as $reciever) {
+                $language = User::findOne($reciever)->getSettings()->application_language;
+                PushService::sendPushNotification(
+                    $reciever,
+                    [
+                        'title' => \Yii::t('chat', 'new_message', [], $language),
+                        'body' => \Yii::t('chat', 'new_message', ['chat_id' => $chat->order_id], $language),
+                    ]
+                );
+            }
 
             return [
                 'status' => 'success',
