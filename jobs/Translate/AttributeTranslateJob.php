@@ -29,7 +29,6 @@ class AttributeTranslateJob extends BaseObject implements JobInterface
                 echo "\n\033[32mОбновление заказа с ID: " . $this->id . "\033[0m";
                 $this->updateOrder($translations);
             }
-            echo "\n\033[32mРабота выполнена успешно: " . $this->name . "\033[0m";
             return true;
         } catch (Exception $e) {
             echo "\n\033[31mОшибка перевода: " . $e->getMessage() . "\033[0m";

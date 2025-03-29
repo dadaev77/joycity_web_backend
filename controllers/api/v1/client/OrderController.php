@@ -231,13 +231,12 @@ class OrderController extends ClientController
             NotificationConstructor::orderOrderCreated($order->manager_id, $order->id);
             $transaction->commit();
 
-            TranslationService::translateAttributes(
-                $request->post('product_name'),
-                $request->post('product_description'),
+            \app\services\TranslationService::translateAttributes(
+                'Название товара',
+                'Описание товара',
                 'order',
                 $order->id
             );
-
 
             return ApiResponse::byResponseCode(null, ['info' => OrderOutputService::getEntity($order->id)]);
         } catch (Throwable $e) {
