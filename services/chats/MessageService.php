@@ -40,7 +40,7 @@ class MessageService
                 'metadata' => $metadata ? json_encode($metadata) : null,
                 'reply_to_id' => $replyToId,
                 'status' => 'delivered',
-                'content' => $type === 'text' ? self::translateMessage($content) : json_encode(['ru' => '', 'en' => '', 'zh' => '']),
+                'content' => $type === 'text' ? json_encode(['ru' => $content, 'en' => $content, 'zh' => $content]) : json_encode(['ru' => '', 'en' => '', 'zh' => '']),
                 'attachments' => $attachments ? json_encode($attachments) : null,
             ]);
             $message->type = $type;
@@ -48,10 +48,7 @@ class MessageService
                 throw new Exception('Ошибка при создании сообщения: ' . json_encode($message->getErrors()));
             }
 
-            Yii::$app->queue->push(new \app\jobs\Translate\MessageJob([
-                'messageId' => $message->id,
-                'message' => $message->content
-            ]));
+            self::translateMessage($message, $message->id);
 
             return $message;
         } catch (\Exception $e) {
@@ -86,12 +83,12 @@ class MessageService
      * @param string $text
      * @return array
      */
-    private static function translateMessage($text)
+    private static function translateMessage($text, $messageId)
     {
-        return [
-            'en' => $text,
-            'ru' => $text,
-            'zh' => $text,
-        ];
+        Yii::$app->queue->push(new \app\jobs\Translate\MessageJob([
+            'messageId' => $messageId,
+            'message' => $text
+        ]));
+        return true;
     }
 }

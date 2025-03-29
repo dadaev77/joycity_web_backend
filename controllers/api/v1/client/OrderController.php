@@ -230,6 +230,12 @@ class OrderController extends ClientController
 
             NotificationConstructor::orderOrderCreated($order->manager_id, $order->id);
             $transaction->commit();
+
+            Yii::$app->queue->push([
+                'order_id' => $order->id,
+            ]);
+
+
             return ApiResponse::byResponseCode(null, ['info' => OrderOutputService::getEntity($order->id)]);
         } catch (Throwable $e) {
             $transaction->rollBack();
