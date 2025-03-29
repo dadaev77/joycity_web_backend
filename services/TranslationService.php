@@ -51,7 +51,7 @@ class TranslationService
             ]
         ];
 
-        \Yii::$app->queue->priority(10)->push(new \app\jobs\Translate\MessageJob([
+        \Yii::$app->queue->priority(5)->push(new \app\jobs\Translate\MessageJob([
             'message' => $message,
             'messageId' => $mesageId,
             'data' => $data
@@ -109,7 +109,7 @@ class TranslationService
             ]
         ];
 
-        \Yii::$app->queue->priority(10)->push(new \app\jobs\Translate\AttributeTranslateJob([
+        \Yii::$app->queue->priority(5)->push(new \app\jobs\Translate\AttributeTranslateJob([
             'name' => $name,
             'description' => $description,
             'type' => $type,

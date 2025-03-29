@@ -27,7 +27,7 @@ class WebsocketService
     {
 
         try {
-            Yii::$app->queue->priority(10)->push(new WebsocketNotificationJob([
+            Yii::$app->queue->priority(1)->push(new WebsocketNotificationJob([
                 'participants' => $participants,
                 'notification' => $notification,
                 'multiple' => $multiple
