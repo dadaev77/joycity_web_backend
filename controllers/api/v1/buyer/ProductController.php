@@ -116,14 +116,14 @@ class ProductController extends BuyerController
 
             // translate product attributes
             $translations = [
-                'ru' => ['name' => $request->post('product_name'), 'description' => $request->post('product_description')],
+                'ru' => ['name' => $request->post('name'), 'description' => $request->post('description')],
                 'en' => ['name' => $request->post('name'), 'description' => $request->post('description')],
-                'zh' => ['name' => $request->post('product_name'), 'description' => $request->post('product_description')],
+                'zh' => ['name' => $request->post('name'), 'description' => $request->post('description')],
             ];
 
-            foreach ($translations as $key => $value) {
-                $product->{"name_$key"} = $value['name'];
-                $product->{"description_$key"} = $value['description'];
+            foreach ($translations as $lang => $value) {
+                $product->{"name_$lang"} = $value['name'];
+                $product->{"description_$lang"} = $value['description'];
             }
             // set buyer id
             $product->buyer_id = $user->id;
