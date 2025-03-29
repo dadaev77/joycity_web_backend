@@ -69,6 +69,7 @@ class FirebaseService
             'APP_NAME_FULFILLMENT' => 'JoyCity Fulfillment',
         ];
         $message['title'] = $appNames['APP_NAME_' . strtoupper($user->role)];
+
         try {
             $notification = Notification::create(
                 $message['title'],
@@ -102,6 +103,7 @@ class FirebaseService
 
     protected function sendIosNotification(int $user_id, array $message, string $pushToken)
     {
+
         $user = User::findOne($user_id);
         $appNames = [
             'APP_NAME_CLIENT' => 'JoyCity',
