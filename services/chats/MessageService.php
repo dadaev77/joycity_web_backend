@@ -85,10 +85,7 @@ class MessageService
      */
     private static function translateMessage($text, $messageId)
     {
-        Yii::$app->queue->push(new \app\jobs\Translate\MessageJob([
-            'messageId' => $messageId,
-            'message' => $text
-        ]));
+        \app\services\TranslationService::translateMessage($text, $messageId);
         return true;
     }
 }

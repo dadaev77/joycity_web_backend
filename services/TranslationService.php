@@ -53,7 +53,7 @@ class TranslationService
 
         \Yii::$app->queue->push(new \app\jobs\Translate\MessageJob([
             'message' => $message,
-            'mesageId' => $mesageId,
+            'messageId' => $mesageId,
             'data' => $data
         ]));
 
