@@ -117,7 +117,7 @@ class ProductController extends BuyerController
             // translate product attributes
             $translations = [
                 'ru' => ['name' => $request->post('product_name'), 'description' => $request->post('product_description')],
-                'en' => ['name' => $request->post('product_name'), 'description' => $request->post('product_description')],
+                'en' => ['name' => $request->post('name'), 'description' => $request->post('description')],
                 'zh' => ['name' => $request->post('product_name'), 'description' => $request->post('product_description')],
             ];
 
@@ -165,8 +165,8 @@ class ProductController extends BuyerController
             $transaction?->commit();
 
             \app\services\TranslationService::translateAttributes(
-                $request->post('product_name'),
-                $request->post('product_description'),
+                $request->post('name'),
+                $request->post('description'),
                 'product',
                 $product->id
             );
@@ -270,9 +270,9 @@ class ProductController extends BuyerController
             $product->load($data, '');
 
             $translations = [
-                'ru' => ['name' => $request->post('product_name'), 'description' => $request->post('product_description')],
-                'en' => ['name' => $request->post('product_name'), 'description' => $request->post('product_description')],
-                'zh' => ['name' => $request->post('product_name'), 'description' => $request->post('product_description')],
+                'ru' => ['name' => $request->post('name'), 'description' => $request->post('description')],
+                'en' => ['name' => $request->post('name'), 'description' => $request->post('description')],
+                'zh' => ['name' => $request->post('name'), 'description' => $request->post('description')],
             ];
 
             foreach ($translations as $key => $value) {
@@ -338,8 +338,8 @@ class ProductController extends BuyerController
             $transaction?->commit();
 
             \app\services\TranslationService::translateAttributes(
-                $request->post('product_name'),
-                $request->post('product_description'),
+                $request->post('name'),
+                $request->post('description'),
                 'product',
                 $id
             );
