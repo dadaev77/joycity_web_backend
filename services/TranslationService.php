@@ -3,91 +3,21 @@
 namespace app\services;
 
 use app\components\responseFunction\Result;
-
 use GuzzleHttp\Client;
 
 class TranslationService
 {
-    protected $async;
-    protected $client;
-    protected $apiUrl;
 
-    public function __construct(bool $async = true)
-    {
-        $this->async = $async;
-        $this->client = new Client();
-        $this->apiUrl = $_ENV['APP_URL_AI'];
-    }
+    private static $api_key = '0c66676b39cc4cf896349a113eb05ff0';
+    private static $endpoint = "https://joyka.openai.azure.com/openai/deployments/";
+    private static $deployment_id = 'chat_translate_GPT4';
+    private static $api_version = '2024-08-01-preview';
 
-    public static function translate(
-        string $originalText,
-        bool $async = true,
-        array $entity = []
+
+    public static function translateMessage(
+        $message,
+        $mesageId
     ) {
-        return self::translateProcess([
-            'original_message' => $originalText
-        ]);
-        // $service = new self($async);
-
-        // try {
-        //     $response = $service->client->post($service->apiUrl . '/translate_message', [
-        //         'json' => [
-        //             'original_message' => $originalText
-        //         ],
-        //         'headers' => [
-        //             'Content-Type' => 'application/json',
-        //         ],
-        //         'verify' => false,
-        //     ]);
-
-        //     $responseParsed = json_decode($response->getBody()->getContents(), true);
-
-        //     if ($response->getStatusCode() !== 200 || !$responseParsed['success']) {
-        //         return Result::error();
-        //     }
-
-        //     return Result::success($responseParsed['result']);
-        // } catch (\Throwable $e) {
-        //     return Result::error();
-        // }
-    }
-
-    public static function translateProductAttributes(string $productName, string $productDescription, bool $async = true)
-    {
-        return self::translateProcess([
-            'product_name' => $productName,
-            'product_description' => $productDescription
-        ]);
-        // $service = new self($async);
-
-        // try {
-        //     $response = $service->client->post($service->apiUrl . '/translate_product_attributes', [
-        //         'json' => [
-        //             'product_name' => $productName,
-        //             'product_description' => $productDescription
-        //         ],
-        //         'headers' => [
-        //             'Content-Type' => 'application/json',
-        //         ],
-        //         'verify' => false,
-        //     ]);
-
-        //     $responseParsed = json_decode($response->getBody()->getContents(), true);
-
-        //     if ($response->getStatusCode() !== 200 || !$responseParsed['success']) {
-        //         return Result::error();
-        //     }
-
-        //     return Result::success($responseParsed['result']);
-        // } catch (\Throwable $e) {
-        //     return Result::error();
-        // }
-    }
-
-    private static function translateProcess(array $data)
-    {
-        $text = $data['original_message'];
-
         $instruction = "Imagine that you are a professional linguist and translator.";
         $prompt = "
         Translate the following text into 3 languages: English, Russian, Chinese.
@@ -112,19 +42,52 @@ class TranslationService
             - Also, adapt the translation to natural language structures while preserving the overall meaning of the phrase.
             - Structure the response as a JSON object:
             {{ \"ru\": \"translation in Russian\", \"en\": \"translation in English\", \"zh\": \"translation in Chinese\" }}, and nothing else.
-            Original text is: " . $text;
+            Original text is: " . $message;
+        $translation = self::translate($instruction, $prompt);
+        return $translation;
+    }
 
-        $api_key = '0c66676b39cc4cf896349a113eb05ff0';
-        $endpoint = "https://joyka.openai.azure.com/openai/deployments/";
-        $deployment_id = 'chat_translate_GPT4';
-        $api_version = '2024-08-01-preview';
-        $url = $endpoint . $deployment_id . "/chat/completions?api-version=" . $api_version;
+    public static function translateAttributes(
+        $name,
+        $description,
+        $type,
+        $id
+    ) {
 
-        $headers = [
-            "Content-Type: application/json",
-            "Authorization: Bearer " . $api_key,
-            "api-key: " . $api_key
-        ];
+        $instruction = "Imagine that you are a professional linguist and translator.";
+        $prompt = "
+            Please translate the following product name and description into three languages: English, Russian, and Chinese.  
+            - Do NOT swap languages: 
+            - 'ru' must contain only Russian translations.
+            - 'en' must contain only English translations.
+            - 'zh' must contain only Chinese translations.  
+            - Maintain punctuation, spacing, and capitalization as in the original text.  
+            - Provide only literal translations, avoiding interpretations or additional commentary.  
+            - Do not perform any mathematical operations.  
+            - Use transliteration for slang terms or abbreviations.  
+            - If a word contains an error, suggest a similar word in meaning or transliterate it.  
+            - If unsure of a translation, default to transliteration.  
+            - Do not translate Russian words into English or English words into Russian unless specified.  
+            - Return only the JSON object with no surrounding text or formatting.  
+            - Clear all previous conversation context after completing the translation. 
+            - Structure the response as a JSON object: {{
+                \"ru\": {{
+                    \"name\": \"translated product name in Russian\",
+                    \"description\": \"translated product description in Russian\"
+                }},
+                \"en\": {{
+                    \"name\": \"translated product name in English\",
+                    \"description\": \"translated product description in English\"
+                }},
+                \"zh\": {{
+                    \"name\": \"translated product name in Chinese\",
+                    \"description\": \"translated product description in Chinese\"
+                }}
+            }}, and nothing else. 
+            Product name: {$name} 
+            Product description: {$description} 
+            For instance, if the word \"товор\" contains an error, replace it with a similar word.
+        ";
 
         $data = [
             "messages" => [
@@ -133,18 +96,36 @@ class TranslationService
             ]
         ];
 
+        \Yii::$app->queue->push(new \app\jobs\Translate\AttributeTranslateJob(
+            $name,
+            $description,
+            $type,
+            $id,
+            $data
+        ));
+
+        return;
+    }
+
+    public static function translate(
+        $data
+    ) {
+        $url = self::$endpoint . self::$deployment_id . "/chat/completions?api-version=" . self::$api_version;
+
+        $headers = [
+            "Content-Type: application/json",
+            "Authorization: Bearer " . self::$api_key,
+            "api-key: " . self::$api_key
+        ];
+
         try {
-            $ch = curl_init($url);
-            curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+            $client = new \GuzzleHttp\Client();
+            $response = $client->post($url, [
+                'headers' => $headers,
+                'json' => $data,
+            ]);
 
-            $response = curl_exec($ch);
-            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
-
-            $result = json_decode($response, true);
+            $result = json_decode($response->getBody(), true);
             return $result["choices"][0]["message"]["content"];
         } catch (\Exception $e) {
             return "Error: " . $e->getMessage();

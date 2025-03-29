@@ -231,9 +231,12 @@ class OrderController extends ClientController
             NotificationConstructor::orderOrderCreated($order->manager_id, $order->id);
             $transaction->commit();
 
-            Yii::$app->queue->push([
-                'order_id' => $order->id,
-            ]);
+            TranslationService::translateAttributes(
+                $request->post('product_name'),
+                $request->post('product_description'),
+                'order',
+                $order->id
+            );
 
 
             return ApiResponse::byResponseCode(null, ['info' => OrderOutputService::getEntity($order->id)]);

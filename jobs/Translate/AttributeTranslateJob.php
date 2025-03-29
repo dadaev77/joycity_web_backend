@@ -9,17 +9,22 @@ use Yii;
 
 class AttributeTranslateJob extends BaseObject implements JobInterface
 {
-    /**
-     * Братан, это джобка
-     * а как и че тут дальше делать, спросишь?
-     * 
-     * я без понятия, я только сделал шаблон
-     */
+    public $name;
+    public $description;
+    public $type;
+    public $id;
 
     public function execute($queue)
     {
-        /**
-         *  а тут короче что-то делаем
-         */
+        $entity = $this->type === 'product' ?
+            \app\models\Product::findOne($this->id) :
+            \app\models\Order::findOne($this->id);
+
+        if (!$entity) {
+            return 'Entity not found';
+        }
+
+        echo 'сущность: ' . json_encode($entity) . ' ' . $this->id . ' ' . $this->type;
+        echo 'промт: ' . json_encode($this->data);
     }
 }
