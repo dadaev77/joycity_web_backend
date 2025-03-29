@@ -13,7 +13,7 @@ class AttributeTranslateJob extends BaseObject implements JobInterface
     public $description;
     public $type;
     public $id;
-
+    public $data;
     public function execute($queue)
     {
         $entity = $this->type === 'product' ?
