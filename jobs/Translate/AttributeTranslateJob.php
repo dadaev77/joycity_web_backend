@@ -23,8 +23,7 @@ class AttributeTranslateJob extends BaseObject implements JobInterface
         if (!$entity) {
             return 'Entity not found';
         }
-
-        echo 'сущность: ' . json_encode($entity) . ' ' . $this->id . ' ' . $this->type;
-        echo 'промт: ' . json_encode($this->data);
+        $translation = \app\services\TranslationService::translate($this->data);
+        echo 'перевод: ' . json_encode($translation);
     }
 }
