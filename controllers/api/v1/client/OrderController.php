@@ -166,7 +166,7 @@ class OrderController extends ClientController
             $order->{'product_name_' . $lang} = $values['name'];
             $order->{'product_description_' . $lang} = $values['description'];
         }
-
+        Yii::$app->telegramLog->send('error', 'Некорректные данные для создания заказа');
         if (!$order->validate()) {
             \Yii::$app->telegramLog->send('error', 'Некорректные данные для создания заказа');
             return ApiResponse::codeErrors($apiCodes->NOT_VALID, $order->getErrors());
