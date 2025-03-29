@@ -261,11 +261,16 @@ class RawController extends Controller
     }
     public function actionTranslate()
     {
-        \app\services\TranslationService::translateAttributes(
-            'Название товара',
-            'Описание товара',
-            'order',
-            286
-        );
+        try {
+            \app\services\TranslationService::translateAttributes(
+                'Название товара',
+                'Описание товара',
+                'order',
+                286
+            );
+            return "Success";
+        } catch (\Exception $e) {
+            return "Error: " . $e->getMessage();
+        }
     }
 }
