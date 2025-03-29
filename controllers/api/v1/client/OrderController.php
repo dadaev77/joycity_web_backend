@@ -166,7 +166,7 @@ class OrderController extends ClientController
             $order->{'product_name_' . $lang} = $values['name'];
             $order->{'product_description_' . $lang} = $values['description'];
         }
-        Yii::$app->telegramLog->send('error', 'Некорректные данные для создания заказа');
+
         if (!$order->validate()) {
             \Yii::$app->telegramLog->send('error', 'Некорректные данные для создания заказа');
             return ApiResponse::codeErrors($apiCodes->NOT_VALID, $order->getErrors());
@@ -231,12 +231,12 @@ class OrderController extends ClientController
             NotificationConstructor::orderOrderCreated($order->manager_id, $order->id);
             $transaction->commit();
 
-            TranslationService::translateAttributes(
-                $request->post('product_name'),
-                $request->post('product_description'),
-                'order',
-                $order->id
-            );
+            // TranslationService::translateAttributes(
+            //     $request->post('product_name'),
+            //     $request->post('product_description'),
+            //     'order',
+            //     $order->id
+            // );
 
 
             return ApiResponse::byResponseCode(null, ['info' => OrderOutputService::getEntity($order->id)]);
