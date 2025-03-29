@@ -110,21 +110,19 @@ class TranslationService
     public static function translate(
         $data
     ) {
-        $url = self::$endpoint . self::$deployment_id . "/chat/completions?api-version=" . self::$api_version;
 
+        $url = self::$endpoint . self::$deployment_id . "/chat/completions?api-version=" . self::$api_version;
         $headers = [
             "Content-Type: application/json",
             "Authorization: Bearer " . self::$api_key,
             "api-key: " . self::$api_key
         ];
-
         try {
             $client = new \GuzzleHttp\Client();
             $response = $client->post($url, [
                 'headers' => $headers,
                 'json' => $data,
             ]);
-
             $result = json_decode($response->getBody(), true);
             return $result["choices"][0]["message"]["content"];
         } catch (\Exception $e) {
