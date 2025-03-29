@@ -25,6 +25,6 @@ class AttributeTranslateJob extends BaseObject implements JobInterface
         }
 
         echo 'сущность: ' . json_encode($entity) . ' ' . $this->id . ' ' . $this->type;
-        echo 'промт: ' . json_encode($this->data);
+        // echo 'промт: ' . json_encode($this->data);
     }
 }
