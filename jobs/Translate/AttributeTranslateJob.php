@@ -21,7 +21,6 @@ class AttributeTranslateJob extends BaseObject implements JobInterface
             'description' => $this->description,
             'type' => $this->type,
             'id' => $this->id,
-            'data' => $this->data
         ]);
     }
 }
