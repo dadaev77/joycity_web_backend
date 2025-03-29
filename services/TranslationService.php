@@ -111,11 +111,16 @@ class TranslationService
         $data
     ) {
 
-        $url = self::$endpoint . self::$deployment_id . "/chat/completions?api-version=" . self::$api_version;
+        $api_key = '0c66676b39cc4cf896349a113eb05ff0';
+        $endpoint = "https://joyka.openai.azure.com/openai/deployments/";
+        $deployment_id = 'chat_translate_GPT4';
+        $api_version = '2024-08-01-preview';
+        $url = $endpoint . $deployment_id . "/chat/completions?api-version=" . $api_version;
+
         $headers = [
             "Content-Type: application/json",
-            "Authorization: Bearer " . self::$api_key,
-            "api-key: " . self::$api_key
+            "Authorization: Bearer " . $api_key,
+            "api-key: " . $api_key
         ];
         try {
             $client = new \GuzzleHttp\Client();
