@@ -36,6 +36,7 @@ class MessageJob extends BaseObject implements JobInterface
             $message = \app\models\Message::findOne($this->messageId);
             echo "Message: " . $message->id . "\n";
         } catch (\Exception $e) {
+            echo "Error: " . $e->getMessage() . "\n";
         }
     }
 }
