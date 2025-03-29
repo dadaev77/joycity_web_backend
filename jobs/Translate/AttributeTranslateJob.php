@@ -17,8 +17,8 @@ class AttributeTranslateJob extends BaseObject implements JobInterface
     public function execute($queue)
     {
         $entity = $this->type === 'product' ?
-            \app\models\Product::findOne($this->id) :
-            \app\models\Order::findOne($this->id);
+            \app\models\Product::find()->where(['id' => $this->id])->one() :
+            \app\models\Order::find()->where(['id' => $this->id])->one();
 
         if (!$entity) {
             return 'Entity not found';
