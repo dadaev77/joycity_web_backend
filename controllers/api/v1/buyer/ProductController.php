@@ -115,8 +115,11 @@ class ProductController extends BuyerController
             );
 
             // translate product attributes
-            $translation = TranslationService::translateProductAttributes($request->post('name'), $request->post('description'));
-            $translations = $translation->result;
+            $translations = [
+                'ru' => ['name' => $request->post('product_name'), 'description' => $request->post('product_description')],
+                'en' => ['name' => $request->post('product_name'), 'description' => $request->post('product_description')],
+                'zh' => ['name' => $request->post('product_name'), 'description' => $request->post('product_description')],
+            ];
 
             foreach ($translations as $key => $value) {
                 $product->{"name_$key"} = $value['name'];
@@ -160,6 +163,13 @@ class ProductController extends BuyerController
             ]);
 
             $transaction?->commit();
+
+            \app\services\TranslationService::translateAttributes(
+                $request->post('product_name'),
+                $request->post('product_description'),
+                'product',
+                $product->id
+            );
 
             return ApiResponse::info(
                 ProductOutputService::getEntity(
@@ -259,8 +269,11 @@ class ProductController extends BuyerController
             // Загрузка данных в модель
             $product->load($data, '');
 
-            $translation = TranslationService::translateProductAttributes($request->post('name'), $request->post('description'));
-            $translations = $translation->result;
+            $translations = [
+                'ru' => ['name' => $request->post('product_name'), 'description' => $request->post('product_description')],
+                'en' => ['name' => $request->post('product_name'), 'description' => $request->post('product_description')],
+                'zh' => ['name' => $request->post('product_name'), 'description' => $request->post('product_description')],
+            ];
 
             foreach ($translations as $key => $value) {
                 $product->{"name_$key"} = $value['name'];
@@ -323,6 +336,13 @@ class ProductController extends BuyerController
             }
 
             $transaction?->commit();
+
+            \app\services\TranslationService::translateAttributes(
+                $request->post('product_name'),
+                $request->post('product_description'),
+                'product',
+                $id
+            );
 
             return ApiResponse::info(ProductOutputService::getEntity($id, 'small'));
         } catch (Throwable $e) {
