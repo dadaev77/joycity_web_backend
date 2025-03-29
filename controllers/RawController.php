@@ -266,7 +266,7 @@ class RawController extends Controller
                 'Название товара',
                 'Описание товара',
                 'order',
-                286
+                222
             );
             return "Success";
         } catch (\Exception $e) {
