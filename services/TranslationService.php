@@ -96,13 +96,13 @@ class TranslationService
             ]
         ];
 
-        \Yii::$app->queue->push(new \app\jobs\Translate\AttributeTranslateJob(
-            $name,
-            $description,
-            $type,
-            $id,
-            $data
-        ));
+        \Yii::$app->queue->push(new \app\jobs\Translate\AttributeTranslateJob([
+            'name' => $name,
+            'description' => $description,
+            'type' => $type,
+            'id' => $id,
+            'data' => $data
+        ]));
 
         return;
     }
