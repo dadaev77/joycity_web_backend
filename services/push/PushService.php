@@ -121,7 +121,7 @@ class PushService
         if ($async) {
             return self::sendAsync($user_id, $message, $pushToken);
         }
-        // return self::sendSync($user_id, $message, $pushToken);
+        return self::sendSync($user_id, $message, $pushToken);
     }
 
     private static function sendSync($user_id, $message, $pushToken)
@@ -135,8 +135,9 @@ class PushService
                 }
 
                 FirebaseService::sendPushNotification(
-                    $pushToken->push_token,
+                    $user_id,
                     $message,
+                    $pushToken->push_token,
                     $pushToken->operating_system
                 );
             }
@@ -150,7 +151,7 @@ class PushService
     {
         $user = User::findOne($user_id);
         foreach ($user->pushTokens as $pushToken) {
-            \Yii::$app->queue->push(new \app\jobs\FirebaseJob([
+            \Yii::$app->queue->priority(1)->push(new \app\jobs\FirebaseJob([
                 'message' => $message,
                 'pushToken' => $pushToken->push_token,
                 'os' => $pushToken->operating_system,

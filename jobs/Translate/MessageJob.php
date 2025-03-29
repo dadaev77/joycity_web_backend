@@ -16,12 +16,12 @@ class MessageJob extends BaseObject implements JobInterface
     public function execute($queue)
     {
         try {
-            echo "\n\033[32mНачало выполнения работы: " . $this->message . "\033[0m";
+            echo "\n" . "\033[38;5;214m" . "************************************************" . "\033[0m";
+            echo "\n" . "\033[38;5;214m" . "   [TS:MESSAGE_ID] " . $this->messageId . "\033[0m";
+            echo "\n" . "\033[38;5;214m" . "   [TS:MESSAGE] " . $this->message . "\033[0m";
 
             $message = \app\models\Message::findOne($this->messageId);
-
             $translations = \app\services\TranslationService::translate($this->data);
-
             if (is_string($translations)) {
                 $translations = json_decode($translations, true);
             }
@@ -35,9 +35,11 @@ class MessageJob extends BaseObject implements JobInterface
                     'multiple' => false,
                     'async' => false,
                 ]);
+                echo "\n" . "\033[38;5;214m" . "   [TS:MESSAGE_SAVED] TRUE\033[0m";
             } else {
-                echo "\n\033[31mОшибка сохранения сообщения: " . $message->getErrors() . "\033[0m";
+                echo "\n" . "\033[38;5;214m" . "   [TS:MESSAGE_SAVED] FALSE " . $message->getErrors() . "\033[0m";
             }
+            echo "\n" . "\033[38;5;214m" . "************************************************" . "\033[0m";
             return true;
         } catch (Exception $e) {
             echo "\n\033[31mОшибка перевода: " . $e->getMessage() . "\033[0m";
