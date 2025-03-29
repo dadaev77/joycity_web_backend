@@ -40,7 +40,18 @@ class MessageJob extends BaseObject implements JobInterface
                 $translations = json_decode($translations, true);
             }
             $message->content = $translations;
-            $message->save();
+            if ($message->save()) {
+                \app\services\WebsocketService::sendNotification($message->chat->metadata['participants'], [
+                    'type' => 'translate_message',
+                    'message' => json_decode($message->content, true),
+                    'message_id' => $message->id,
+                    'chat_id' => $message->chat_id,
+                    'multiple' => false,
+                    'async' => false,
+                ]);
+            } else {
+                echo "\n\033[31mОшибка сохранения сообщения: " . $message->getErrors() . "\033[0m";
+            }
             return true;
         } catch (Exception $e) {
             echo "\n\033[31mОшибка перевода: " . $e->getMessage() . "\033[0m";
