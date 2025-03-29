@@ -232,8 +232,8 @@ class OrderController extends ClientController
             $transaction->commit();
 
             \app\services\TranslationService::translateAttributes(
-                'Название товара',
-                'Описание товара',
+                $request->post('product_name'),
+                $request->post('product_description'),
                 'order',
                 $order->id
             );
