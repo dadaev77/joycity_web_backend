@@ -13,6 +13,7 @@ class SendMessageJob extends BaseObject implements JobInterface
     public $message;
     public $env;
     public $async;
+    public $thread;
 
     public function __construct($config = [])
     {
@@ -22,12 +23,13 @@ class SendMessageJob extends BaseObject implements JobInterface
     public function execute($queue)
     {
         try {
-            Yii::$app->telegramLog->send($this->type, $this->message, $this->env, $this->async);
+            Yii::$app->telegramLog->send($this->type, $this->message, $this->thread, $this->env, $this->async);
             echo "\n" . "\033[32m" . '[Telegram] Отправлено в телеграм' . "\033[0m \n";
             var_dump([
                 'type' => $this->type,
                 'message' => $this->message,
                 'env' => $this->env,
+                'thread' => $this->thread,
                 'async' => 'queue',
             ]);
             echo "\033[32m" . '[Telegram] Конец сообщения' . "\033[0m";
