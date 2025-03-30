@@ -207,6 +207,16 @@ class OrderController extends ClientController
                     'title' => Yii::t('order', 'new_order_for_buyer', [], $language),
                     'body' => Yii::t('order', 'new_order_for_buyer_text', ['order_id' => $order->id], $language),
                 ], true);
+
+                Yii::$app->telegramLog->send(
+                    'info',
+                    "Создана новая заявка Buyer №{$order->id}\n" .
+                    "Клиент: {$user->name} (ID: {$user->id})\n" .
+                    "Байер: {$buyer->name} (ID: {$buyer->id})\n" .
+                    'buyer',
+                    'dev',
+                    true
+                );
             } else {
                 $distribution = OrderDistributionService::createDistributionTask($order->id);
                 if (!$distribution->success) {
