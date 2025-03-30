@@ -22,6 +22,14 @@ $config = [
             'mutex' => \yii\mutex\MysqlMutex::class,
             'as log' => \yii\queue\LogBehavior::class,
         ],
+        'pushQueue' => [
+            'class' => \yii\queue\db\Queue::class,
+            'db' => 'db',
+            'tableName' => '{{%queue}}',
+            'channel' => 'push',
+            'mutex' => \yii\mutex\MysqlMutex::class,
+            'as log' => \yii\queue\LogBehavior::class,
+        ],
         'cache' => [
             'class' => 'yii\caching\FileCache',
         ],
