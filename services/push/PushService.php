@@ -151,7 +151,7 @@ class PushService
     {
         $user = User::findOne($user_id);
         foreach ($user->pushTokens as $pushToken) {
-            \Yii::$app->queue->priority(20)->push(new \app\jobs\FirebaseJob([
+            \Yii::$app->pushQueue->priority(1)->push(new \app\jobs\FirebaseJob([
                 'message' => $message,
                 'pushToken' => $pushToken->push_token,
                 'os' => $pushToken->operating_system,
