@@ -184,12 +184,4 @@ class RawController extends Controller
         }
         return $response;
     }
-
-    public function actionTg()
-    {
-        \Yii::$app->telegramLog->send('info', ['main chat test']);
-        \Yii::$app->telegramLog->send('warning', ['main chat test']);
-        \Yii::$app->telegramLog->send('error', ['main chat test']);
-        \Yii::$app->telegramLog->send('success', 'BUYER MODE ENABLED');
-    }
 }

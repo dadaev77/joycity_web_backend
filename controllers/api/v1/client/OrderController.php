@@ -210,12 +210,12 @@ class OrderController extends ClientController
 
                 Yii::$app->telegramLog->send(
                     'info',
-                    "Создана новая заявка Buyer №{$order->id}\n" .
-                    "Клиент: {$user->name} (ID: {$user->id})\n" .
-                    "Байер: {$buyer->name} (ID: {$buyer->id})\n" .
-                    'buyer',
-                    'dev',
-                    true
+                    [
+                        "Создана новая заявка Buyer №{$order->id}",
+                        "Клиент: {$user->name} (ID: {$user->id})",
+                        "Байер: {$buyer->name} (ID: {$buyer->id})",
+                    ],
+                    'buyer'
                 );
             } else {
                 $distribution = OrderDistributionService::createDistributionTask($order->id);
