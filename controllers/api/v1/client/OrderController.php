@@ -261,7 +261,7 @@ class OrderController extends ClientController
                 }
                 $order->linkAll('attachments', $attachmentResponse->result);
             }
-            throw new Exception('Test error');
+
             NotificationConstructor::orderOrderCreated($order->manager_id, $order->id);
             $transaction->commit();
 
