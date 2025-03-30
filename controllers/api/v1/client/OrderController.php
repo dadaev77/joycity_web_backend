@@ -168,14 +168,22 @@ class OrderController extends ClientController
         }
 
         if (!$order->validate()) {
-            \Yii::$app->telegramLog->send('error', 'Некорректные данные для создания заказа');
+            \Yii::$app->telegramLog->send('error', [
+                'Ошибка валидации заказа',
+                'Текст ошибки:',
+                json_encode($order->getErrors()),
+            ], 'client');
             return ApiResponse::codeErrors($apiCodes->NOT_VALID, $order->getErrors());
         }
 
         $transaction = Yii::$app->db->beginTransaction();
         try {
             if (!$order->save()) {
-                \Yii::$app->telegramLog->send('error', 'Не удалось создать заказ');
+                \Yii::$app->telegramLog->send('error', [
+                    'Ошибка создания заказа',
+                    'Текст ошибки:',
+                    json_encode($order->getErrors()),
+                ], 'client');
                 throw new Exception('Order save error: ' . json_encode($order->getErrors()));
             }
 
@@ -191,7 +199,11 @@ class OrderController extends ClientController
 
                 $distributionStatus = OrderDistributionService::createDistributionTask($order->id, $product->buyer_id);
                 if (!$distributionStatus->success) {
-                    \Yii::$app->telegramLog->send('error', 'Не удалось создать задачу на распределение');
+                    \Yii::$app->telegramLog->send('error', [
+                        'Ошибка создания задачи на распределение',
+                        'Текст ошибки:',
+                        $distributionStatus->reason,
+                    ], 'client');
                     throw new Exception('Distribution error: ' . $distributionStatus->reason);
                 }
                 OrderDistributionService::buyerAccept($distributionStatus->result, $product->buyer_id);
@@ -220,11 +232,19 @@ class OrderController extends ClientController
             } else {
                 $distribution = OrderDistributionService::createDistributionTask($order->id);
                 if (!$distribution->success) {
-                    \Yii::$app->telegramLog->send('error', 'Не удалось создать задачу на распределение');
+                    \Yii::$app->telegramLog->send('error', [
+                        'Ошибка создания задачи на распределение',
+                        'Текст ошибки:',
+                        $distribution->reason,
+                    ], 'client');
                     throw new Exception('Distribution error: ' . $distribution->reason);
                 }
                 if (!\app\controllers\CronController::actionCreate($distribution->result->id)) {
-                    \Yii::$app->telegramLog->send('error', 'Не удалось создать задачу cron для распределения заказа ' . $order->id);
+                    \Yii::$app->telegramLog->send('error', [
+                        'Ошибка создания задачи cron для распределения заказа',
+                        'Текст ошибки:',
+                        $distribution->result->id,
+                    ], 'client');
                     throw new Exception('Cron task creation error: ' . $distribution->result->id);
                 }
             }
@@ -232,7 +252,11 @@ class OrderController extends ClientController
             if ($images) {
                 $attachmentResponse = AttachmentService::writeFilesCollection($images);
                 if (!$attachmentResponse->success) {
-                    \Yii::$app->telegramLog->send('error', 'Не удалось загрузить изображения');
+                    \Yii::$app->telegramLog->send('error', [
+                        'Ошибка загрузки изображений',
+                        'Текст ошибки:',
+                        json_encode($attachmentResponse->reason),
+                    ], 'client');
                     throw new Exception('Image upload error: ' . json_encode($attachmentResponse->reason));
                 }
                 $order->linkAll('attachments', $attachmentResponse->result);
@@ -251,7 +275,11 @@ class OrderController extends ClientController
             return ApiResponse::byResponseCode(null, ['info' => OrderOutputService::getEntity($order->id)]);
         } catch (Throwable $e) {
             $transaction->rollBack();
-            \Yii::$app->telegramLog->send('error', 'Не удалось создать заказ(общая ошибка): ' . $e->getMessage());
+            \Yii::$app->telegramLog->send('error', [
+                'Ошибка создания заказа',
+                'Текст ошибки:',
+                $e->getMessage(),
+            ], 'client');
             return ApiResponse::internalError($e);
         }
     }
