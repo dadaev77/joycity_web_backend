@@ -224,7 +224,7 @@ class OrderController extends ClientController
                         "Клиент: {$user->name} (ID: {$user->id})",
                         "Байер: {$buyer->name} (ID: {$buyer->id})",
                     ],
-                    'buyer'
+                    'client'
                 );
             } else {
                 $distribution = OrderDistributionService::createDistributionTask($order->id);
