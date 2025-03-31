@@ -137,12 +137,19 @@ class VerificationController extends ManagerController
             $request = UserVerificationRequest::findOne(['id' => $id]);
 
             if (!$request) {
-                \Yii::$app->telegramLog->send('error', 'Запрос на верификацию не найден');
+                \Yii::$app->telegramLog->send('error', [
+                    'Запрос на верификацию не найден',
+                    "ID запроса: {$id}"
+                ], 'client');
                 return ApiResponse::code($apiCodes->NOT_FOUND);
             }
 
             if ($request->status === UserVerificationRequest::STATUS_APPROVED) {
-                \Yii::$app->telegramLog->send('error', 'Запрос на верификацию уже одобрен');
+                \Yii::$app->telegramLog->send('error', [
+                    'Запрос на верификацию уже одобрен',
+                    "ID запроса: {$id}",
+                    "Клиент: {$request->createdBy->name} (ID: {$request->created_by_id})"
+                ], 'client');
                 return ApiResponse::code($apiCodes->ALREADY_APPROVED);
             }
 
@@ -153,7 +160,13 @@ class VerificationController extends ManagerController
 
             if (!$request->save()) {
                 $transaction?->rollBack();
-                \Yii::$app->telegramLog->send('error', $request->getFirstErrors());
+                \Yii::$app->telegramLog->send('error', [
+                    'Ошибка сохранения запроса на верификацию',
+                    "ID запроса: {$id}",
+                    "Клиент: {$request->createdBy->name} (ID: {$request->created_by_id})",
+                    "Менеджер: {$user->name} (ID: {$user->id})",
+                    json_encode($request->getFirstErrors())
+                ], 'client');
                 return ApiResponse::codeErrors(
                     $apiCodes->ERROR_SAVE,
                     $request->getFirstErrors(),
@@ -166,7 +179,13 @@ class VerificationController extends ManagerController
 
             if (!$verifiedUser->save(true, ['is_verified', 'markup'])) {
                 $transaction?->rollBack();
-                \Yii::$app->telegramLog->send('error', 'Не удалось подтвердить аккаунт пользователя');
+                \Yii::$app->telegramLog->send('error', [
+                    'Пользователь не получил подтверждение о верификации',
+                    "Клиент: {$verifiedUser->name} (ID: {$verifiedUser->id})",
+                    "Менеджер: {$user->name} (ID: {$user->id})",
+                    json_encode($verifiedUser->getFirstErrors()),
+                ], 'client');
+                
                 return ApiResponse::codeErrors(
                     $apiCodes->ERROR_SAVE,
                     $verifiedUser->getFirstErrors(),
@@ -186,6 +205,12 @@ class VerificationController extends ManagerController
             if ($verificationChat) {
                 ChatService::archiveChat($verificationChat->id);
             }
+
+            \Yii::$app->telegramLog->send('success', [
+                'Пользователь получил подтверждение о верификации',
+                "Клиент: {$verifiedUser->name} (ID: {$verifiedUser->id})",
+                "Менеджер: {$user->name} (ID: {$user->id})",
+            ], 'client');
 
             return ApiResponse::info(
                 UserVerificationRequestOutputService::getEntity($request->id),
