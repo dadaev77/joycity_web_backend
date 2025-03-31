@@ -21,6 +21,12 @@ class OrderStatusService
         //
     }
 
+
+    public static function waitingForBuyerOffer(int $orderId): ResultAnswer
+    {
+        return self::changeOrderStatus(Order::STATUS_WAITING_FOR_BUYER_OFFER, $orderId);
+    }
+
     public static function created(int $orderId): ResultAnswer
     {
         return self::changeOrderStatus(Order::STATUS_CREATED, $orderId);
@@ -301,13 +307,12 @@ class OrderStatusService
             }
             $receiver = \app\models\User::findOne($order->created_by);
             $language = $receiver->getSettings()->application_language;
-            PushService::sendPushNotification(
-                $order->created_by,
-                [
-                    'title' => Yii::t('order', 'update_status', ['order_id' => $order->id], $language),
-                    'body' => Yii::t('order', $orderStatus, [], $language),
-                ]
-            );
+
+
+            PushService::sendPushNotification($order->created_by, [
+                'title' => Yii::t('order', 'update_status', ['order_id' => $order->id], $language),
+                'body' => Yii::t('order', $orderStatus, [], $language),
+            ], true);
 
             if (
                 $order->status !== Order::STATUS_COMPLETED &&

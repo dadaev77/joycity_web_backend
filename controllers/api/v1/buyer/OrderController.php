@@ -5,12 +5,14 @@ namespace app\controllers\api\v1\buyer;
 use app\components\ApiResponse;
 use app\components\response\ResponseCodes;
 use app\controllers\api\v1\BuyerController;
+use app\controllers\CronController;
 use app\models\Order;
 use app\models\OrderDistribution;
 use app\models\User;
 use app\services\order\OrderDistributionService;
 use app\services\order\OrderStatusService;
 use app\services\output\OrderOutputService;
+use yii\base\Exception;
 use Throwable;
 use Yii;
 
@@ -70,7 +72,7 @@ class OrderController extends BuyerController
         $apiCodes = Order::apiCodes();
         $user = User::getIdentity();
         $order = Order::find()
-            ->select(['id', 'buyer_id'])
+            ->select(['id', 'buyer_id', 'expected_price_per_item'])
             ->where(['id' => $id])
             ->one();
 
@@ -238,12 +240,28 @@ class OrderController extends BuyerController
                         $order->getFirstErrors(),
                     );
                 }
-                $orderStatus = OrderStatusService::created($order->id);
+
+                $orderStatus = OrderStatusService::waitingForBuyerOffer($order->id);
+                if (!$orderStatus->success) {
+                    Yii::$app->telegramLog->send('error', 'Ошибка при установке статуса заказа на ожидание предложения от байера: ' . json_encode($orderStatus->reason));
+                    return ApiResponse::transactionCodeErrors(
+                        $transaction,
+                        $apiCodes->ERROR_SAVE,
+                        $orderStatus->reason,
+                    );
+                }
+
+                $distribution = OrderDistributionService::createDistributionTask($order->id);
+
+                if (!$distribution->success) {
+                    Yii::$app->telegramLog->send('error', 'Не удалось создать задачу на распределение при отклонении заказа: ' . $order->id);
+                    Yii::$app->actionLog->error('Ошибка при создании задачи на распределение: ' . json_encode($distribution->reason));
+                } else {
+                    CronController::actionCreate($distribution->result->id);
+                }
             } else {
                 $orderDistribution = $order->orderDistribution;
-
                 $orderDistribution->status = OrderDistribution::STATUS_CLOSED;
-
                 if (!$orderDistribution->save()) {
                     return ApiResponse::transactionCodeErrors(
                         $transaction,
@@ -251,7 +269,6 @@ class OrderController extends BuyerController
                         $orderDistribution->reason,
                     );
                 }
-
                 $orderStatus = OrderStatusService::cancelled($order->id);
             }
 

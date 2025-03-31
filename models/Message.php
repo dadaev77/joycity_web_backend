@@ -92,6 +92,31 @@ class Message extends ActiveRecord
         }
     }
 
+    public function afterSave($insert, $changedAttributes)
+    {
+        parent::afterSave($insert, $changedAttributes);
+
+        // if (isset($changedAttributes['content'])) {
+        //     return;
+        // }
+        // if (isset($changedAttributes['metadata'])) {
+        //     return;
+        // }
+
+        // $content = is_array($this->content) ? $this->content : json_decode($this->content, true);
+        // if (
+        //     isset($content['ru']) && isset($content['en']) && isset($content['zh'])
+        //     && empty($content['ru']) && empty($content['en']) && empty($content['zh'])
+        // ) {
+        //     return;
+        // }
+
+        // Yii::$app->queue->push(new \app\jobs\Translate\MessageJob([
+        //     'messageId' => $this->id,
+        //     'message' => $this->content
+        // ]));
+    }
+
     /**
      * {@inheritdoc}
      */

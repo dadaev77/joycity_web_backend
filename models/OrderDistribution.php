@@ -51,7 +51,6 @@ class OrderDistribution extends Base
             [['requested_at'], 'safe'],
             [['buyer_ids_list'], 'string'],
             [['status'], 'string', 'max' => 255],
-            [['order_id'], 'unique'],
             [
                 ['current_buyer_id'],
                 'exist',

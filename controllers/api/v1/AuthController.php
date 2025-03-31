@@ -17,7 +17,6 @@ use Exception as BaseException;
 use Throwable;
 use Yii;
 
-use app\services\chats\ChatService;
 
 class AuthController extends V1Controller implements ApiAuth
 {
@@ -311,6 +310,16 @@ class AuthController extends V1Controller implements ApiAuth
             $address = $request->post('address');
             $telegram = $request->post('telegram') ? ($request->post('telegram') != "" ? $request->post('telegram') : null) : null;
 
+            
+            if ($telegram) {
+                $existingUser = User::findOne(['telegram' => $telegram]);
+                if ($existingUser) {
+                    return ApiResponse::codeErrors($apiCodes->NOT_VALID, [
+                        'telegram' => 'Пользователь с таким ником уже существует'
+                    ]);
+                }
+            }
+
             $user = new User([
                 'email' => $email,
                 'password' => $password,
@@ -394,7 +403,15 @@ class AuthController extends V1Controller implements ApiAuth
                 return $letters . '-' . $numbers;
             }
 
-            $user->uuid = generateCustomUUID();
+            $uuid = generateCustomUUID();
+
+            $uuidExists = User::find()->where(['uuid' => $uuid])->exists();
+            while ($uuidExists) {
+                $uuid = generateCustomUUID();
+                $uuidExists = User::find()->where(['uuid' => $uuid])->exists();
+            }
+
+            $user->uuid = $uuid;
 
             $user->personal_id = md5(time() . random_int(1e3, 9e3));
             $user->password = Yii::$app
@@ -455,10 +472,14 @@ class AuthController extends V1Controller implements ApiAuth
                 'access_token' => $user->access_token,
                 'uuid' => $user->uuid,
             ]);
-        } catch (Throwable $e) {
+        } catch (\yii\db\Exception $e) {
+            if ($e->getCode() === 23000) {
+                return ApiResponse::codeErrors($apiCodes->NOT_VALID, [
+                    'telegram' => 'Пользователь с таким ником уже существует'
+                ]);
+            }
             Yii::$app->telegramLog->send('error', 'Ошибка при регистрации: ' . $e->getMessage());
             isset($transaction) && $transaction->rollBack();
-
             return ApiResponse::internalError($e);
         }
     }

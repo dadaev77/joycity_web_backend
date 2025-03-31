@@ -4,15 +4,22 @@ namespace app\models;
 
 use app\models\responseCodes\OrderCodes;
 use app\models\structure\OrderStructure;
+use app\models\OrderTracking;
+use app\models\TypeDelivery;
+use DateTime;
 
 class Order extends OrderStructure
 {
+
+
     // Статусы заявки
     public const STATUS_CREATED = 'created';
+    public const STATUS_WAITING_FOR_BUYER_OFFER = 'waiting_for_buyer_offer';
     public const STATUS_BUYER_ASSIGNED = 'buyer_assigned';
     public const STATUS_BUYER_OFFER_CREATED = 'buyer_offer_created';
     public const STATUS_BUYER_OFFER_ACCEPTED = 'buyer_offer_accepted';
     public const STATUS_PAID = 'paid';
+
 
     // Статусы сделки
     public const STATUS_TRANSFERRING_TO_BUYER = 'transferring_to_buyer';
@@ -124,6 +131,7 @@ class Order extends OrderStructure
 
     public const STATUS_GROUP_ALL = [
         self::STATUS_CREATED,
+        self::STATUS_WAITING_FOR_BUYER_OFFER,
         self::STATUS_BUYER_ASSIGNED,
         self::STATUS_BUYER_OFFER_CREATED,
         self::STATUS_BUYER_OFFER_ACCEPTED,
@@ -165,6 +173,7 @@ class Order extends OrderStructure
     {
         $keys = [
             self::STATUS_CREATED => 'Принята',
+            self::STATUS_WAITING_FOR_BUYER_OFFER => 'В ожидании предложения',
             self::STATUS_BUYER_ASSIGNED => 'В ожидании предложения',
             self::STATUS_BUYER_OFFER_CREATED => 'Сделано предложение',
             self::STATUS_BUYER_OFFER_ACCEPTED => 'Ожидает оплаты',
@@ -231,5 +240,15 @@ class Order extends OrderStructure
             ->where(['order_link_attachment.order_id' => $this->id])
             ->orderBy(['order_link_attachment.id' => SORT_ASC])
             ->one();
+    }
+
+    public function getOrderRate()
+    {
+        return $this->hasOne(OrderRate::class, ['order_id' => 'id']);
+    }
+
+    public function getOrderTrackings()
+    {
+        return $this->hasMany(OrderTracking::class, ['order_id' => 'id']);
     }
 }

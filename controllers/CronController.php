@@ -121,7 +121,7 @@ class CronController extends Controller
 
             if ($rate->save()) {
                 Yii::$app->heartbeat->addHeartbeat('rates', 'success');
-                Yii::$app->telegramLog->send('success', 'Курсы обновлены курс/+комиссия: USD - ' . $rates['data']['USD'] . '/' . $rate->USD . ' CNY - ' . $rates['data']['CNY'] . '/' . $rate->CNY);
+                Yii::$app->telegramLog->send('success', 'Курсы обновлены: USD - ' . $rates['data']['USD'] . ', CNY - ' . $rates['data']['CNY'] . '; Курсы + проценты: USD + 2% - ' . $rate->USD . ', CNY + 5% - ' . $rate->CNY);
                 return ['status' => 'success', 'message' => 'Курсы обновлены'];
             } else {
                 Yii::$app->telegramLog->send('error', 'Ошибка сохранения курсов');

@@ -37,17 +37,19 @@ class MessageService
             $message = new Message([
                 'chat_id' => $chatId,
                 'user_id' => $userId,
-                'content' => $type === 'text' ? self::translateMessage($content) : json_encode(['ru' => '', 'en' => '', 'zh' => '']),
                 'metadata' => $metadata ? json_encode($metadata) : null,
                 'reply_to_id' => $replyToId,
                 'status' => 'delivered',
+                'content' => $type === 'text' ? json_encode(['ru' => $content, 'en' => $content, 'zh' => $content]) : json_encode(['ru' => '', 'en' => '', 'zh' => '']),
                 'attachments' => $attachments ? json_encode($attachments) : null,
             ]);
             $message->type = $type;
-
             if (!$message->save()) {
                 throw new Exception('Ошибка при создании сообщения: ' . json_encode($message->getErrors()));
             }
+
+            self::translateMessage($content, $message->id);
+
             return $message;
         } catch (\Exception $e) {
             throw new Exception('Ошибка при создании сообщения: ' . $e->getMessage());
@@ -81,24 +83,9 @@ class MessageService
      * @param string $text
      * @return array
      */
-    private static function translateMessage($text)
+    private static function translateMessage($text, $messageId)
     {
-        $translator = new \app\services\TranslationService();
-        $result = $translator->translate($text);
-        $translateResult = $result->result;
-
-        if (isset($translateResult['en']) && isset($translateResult['ru']) && isset($translateResult['zh'])) {
-            return [
-                'en' => $translateResult['en'],
-                'ru' => $translateResult['ru'],
-                'zh' => $translateResult['zh'],
-            ];
-        }
-        
-        return [
-            'en' => $text,
-            'ru' => $text,
-            'zh' => $text,
-        ];
+        \app\services\TranslationService::translateMessage($text, $messageId);
+        return true;
     }
 }

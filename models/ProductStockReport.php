@@ -79,8 +79,28 @@ class ProductStockReport extends \app\models\Base
     public function getAttachments()
     {
         return $this->hasMany(Attachment::class, ['id' => 'attachment_id'])
-            ->andOnCondition(['img_size' => 'small'])
             ->via('productStockReportLinkAttachments');
+    }
+
+
+    public function getAttachmentsSmallSize()
+    {
+        return $this->hasMany(Attachment::class, ['id' => 'attachment_id'])->andOnCondition(['img_size' => 'small'])->via('productStockReportLinkAttachments');
+    }
+
+    public function getAttachmentsMediumSize()
+    {
+        return $this->hasMany(Attachment::class, ['id' => 'attachment_id'])->andOnCondition(['img_size' => 'medium'])->via('productStockReportLinkAttachments');
+    }
+
+    public function getAttachmentsLargeSize()
+    {
+        return $this->hasMany(Attachment::class, ['id' => 'attachment_id'])->andOnCondition(['img_size' => 'large'])->via('productStockReportLinkAttachments');
+    }
+
+    public function getAttachmentsXlargeSize()
+    {
+        return $this->hasMany(Attachment::class, ['id' => 'attachment_id'])->andOnCondition(['img_size' => 'xlarge'])->via('productStockReportLinkAttachments');
     }
 
     public static function apiCodes(): BuyerStockReportCodes

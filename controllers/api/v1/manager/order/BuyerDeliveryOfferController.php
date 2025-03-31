@@ -10,11 +10,8 @@ use app\models\Order;
 use app\models\OrderRate;
 use app\models\Rate;
 use app\models\User;
-use app\models\Waybill;
 use app\services\output\BuyerDeliveryOfferOutputService;
-use app\services\RateService;
 use app\services\WaybillService;
-use Mpdf\Mpdf;
 use Throwable;
 use Yii;
 

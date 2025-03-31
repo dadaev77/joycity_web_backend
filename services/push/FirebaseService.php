@@ -43,29 +43,33 @@ class FirebaseService
      * @throws \Exception Если не найдены токены устройства для пользователя.
      */
 
-    public static function sendPushNotification($clientId, $message, string $pushToken, string $os)
+    public static function sendPushNotification(int $user_id, array $message, string $pushToken, string $os)
     {
         $firebaseService = new FirebaseService();
-        $user = User::findOne($clientId);
-
-        if (!$user) {
-            return ApiResponse::byResponseCode($firebaseService->apiCodes->NOT_VALIDATED, ['message' => 'User not found']);
-        }
         if (!$message) {
             return ApiResponse::byResponseCode($firebaseService->apiCodes->NOT_VALIDATED, ['message' => 'Message not found']);
         }
-
         if ($os === 'android') {
-            return $firebaseService->sendAndroidNotification($message, $pushToken);
+            return $firebaseService->sendAndroidNotification($user_id, $message, $pushToken);
         } elseif ($os === 'ios') {
-            return $firebaseService->sendIosNotification($message, $pushToken);
+            return $firebaseService->sendIosNotification($user_id, $message, $pushToken);
         } else {
             return ApiResponse::byResponseCode($firebaseService->apiCodes->NOT_VALIDATED, ['message' => 'Unsupported OS']);
         }
     }
 
-    protected function sendAndroidNotification($message, string $pushToken)
+    protected function sendAndroidNotification(int $user_id, array $message, string $pushToken)
     {
+
+        $user = User::findOne($user_id);
+        $appNames = [
+            'APP_NAME_CLIENT' => 'JoyCity',
+            'APP_NAME_BUYER' => 'JoyCity Buyer',
+            'APP_NAME_MANAGER' => 'JoyCity Manager',
+            'APP_NAME_FULFILLMENT' => 'JoyCity Fulfillment',
+        ];
+        $message['title'] = $appNames['APP_NAME_' . strtoupper($user->role)];
+
         try {
             $notification = Notification::create(
                 $message['title'],
@@ -76,25 +80,55 @@ class FirebaseService
                 ->withHighestPossiblePriority();
 
             $response = $this->messaging->send($cloudMessage);
+
             return json_encode($response);
         } catch (FirebaseException $e) {
             Yii::$app->actionLog->error('Ошибка Firebase: ' . $e->getMessage());
-            Yii::$app->telegramLog->send('error', 'Ошибка Firebase: ' . $e->getMessage(), 'dev');
+            Yii::$app->telegramLog->send('error', [
+                'Ошибка Firebase: ' . $e->getMessage(),
+                'Текст ошибки:',
+                $e->getMessage(),
+            ]);
             PushNotification::findOne(['push_token' => $pushToken])->delete();
         } catch (AuthError $e) {
             Yii::$app->actionLog->error('Ошибка Firebase: ' . $e->getMessage());
-            Yii::$app->telegramLog->send('error', 'Ошибка Firebase: ' . $e->getMessage(), 'dev');
+            Yii::$app->telegramLog->send('error', [
+                'Ошибка Firebase: ' . $e->getMessage(),
+                'Текст ошибки:',
+                $e->getMessage(),
+            ]);
+            PushNotification::findOne(['push_token' => $pushToken])->delete();
         } catch (DatabaseError $e) {
             Yii::$app->actionLog->error('Ошибка Firebase: ' . $e->getMessage());
-            Yii::$app->telegramLog->send('error', 'Ошибка Firebase: ' . $e->getMessage(), 'dev');
+            Yii::$app->telegramLog->send('error', [
+                'Ошибка Firebase: ' . $e->getMessage(),
+                'Текст ошибки:',
+                $e->getMessage(),
+            ]);
+            PushNotification::findOne(['push_token' => $pushToken])->delete();
         } catch (\Throwable $e) {
-            echo 'Неизвестная ошибка: ' . $e->getMessage();
-            Yii::$app->telegramLog->send('error', 'Неизвестная ошибка: ' . $e->getMessage(), 'dev');
+            Yii::$app->telegramLog->send('error', [
+                'Неизвестная ошибка: ' . $e->getMessage(),
+                'Текст ошибки:',
+                $e->getMessage(),
+            ]);
+            PushNotification::findOne(['push_token' => $pushToken])->delete();
         }
+        return;
     }
 
-    protected function sendIosNotification($message, string $pushToken)
+    protected function sendIosNotification(int $user_id, array $message, string $pushToken)
     {
+
+        $user = User::findOne($user_id);
+        $appNames = [
+            'APP_NAME_CLIENT' => 'JoyCity',
+            'APP_NAME_BUYER' => 'JoyCity Buyer',
+            'APP_NAME_MANAGER' => 'JoyCity Manager',
+            'APP_NAME_FULFILLMENT' => 'JoyCity Fulfillment',
+        ];
+        $message['title'] = $appNames['APP_NAME_' . strtoupper($user->role)];
+
         try {
             $notification = Notification::create(
                 $message['title'],
@@ -120,6 +154,7 @@ class FirebaseService
                 ->withHighestPossiblePriority();
 
             $response = $this->messaging->send($cloudMessage);
+
             return json_encode($response);
         } catch (FirebaseException $e) {
             Yii::$app->actionLog->error('Ошибка Firebase: ' . $e->getMessage());
@@ -128,12 +163,16 @@ class FirebaseService
         } catch (AuthError $e) {
             Yii::$app->actionLog->error('Ошибка Firebase: ' . $e->getMessage());
             Yii::$app->telegramLog->send('error', 'Ошибка Firebase: ' . $e->getMessage(), 'dev');
+            PushNotification::findOne(['push_token' => $pushToken])->delete();
         } catch (DatabaseError $e) {
             Yii::$app->actionLog->error('Ошибка Firebase: ' . $e->getMessage());
             Yii::$app->telegramLog->send('error', 'Ошибка Firebase: ' . $e->getMessage(), 'dev');
+            PushNotification::findOne(['push_token' => $pushToken])->delete();
         } catch (\Throwable $e) {
             echo 'Неизвестная ошибка: ' . $e->getMessage();
             Yii::$app->telegramLog->send('error', 'Неизвестная ошибка: ' . $e->getMessage(), 'dev');
+            PushNotification::findOne(['push_token' => $pushToken])->delete();
         }
+        return;
     }
 }

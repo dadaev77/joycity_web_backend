@@ -103,4 +103,24 @@ class FulfillmentPackagingLabeling extends \app\models\Base
             'id' => 'attachment_id',
         ])->via('packagingReportLinkAttachments');
     }
+
+    public function getAttachmentsSmallSize()
+    {
+        return $this->hasMany(Attachment::class, ['id' => 'attachment_id'])->andOnCondition(['img_size' => 'small'])->via('packagingReportLinkAttachments');
+    }
+
+    public function getAttachmentsMediumSize()
+    {
+        return $this->hasMany(Attachment::class, ['id' => 'attachment_id'])->andOnCondition(['img_size' => 'medium'])->via('packagingReportLinkAttachments');
+    }
+
+    public function getAttachmentsLargeSize()
+    {
+        return $this->hasMany(Attachment::class, ['id' => 'attachment_id'])->andOnCondition(['img_size' => 'large'])->via('packagingReportLinkAttachments');
+    }
+
+    public function getAttachmentsXlargeSize()
+    {
+        return $this->hasMany(Attachment::class, ['id' => 'attachment_id'])->andOnCondition(['img_size' => 'xlarge'])->via('packagingReportLinkAttachments');
+    }
 }

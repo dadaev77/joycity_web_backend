@@ -8,6 +8,7 @@ use app\components\ApiResponse;
 use app\helpers\POSTHelper;
 use app\models\UserSettings;
 use app\models\Category;
+use app\models\Charges;
 use Throwable;
 use Yii;
 use app\services\output\SettingsOutputService;
@@ -22,6 +23,8 @@ class SettingsController extends ManagerController
         $behaviours['verbFilter']['actions']['self'] = ['get'];
         $behaviours['verbFilter']['actions']['update'] = ['put'];
         $behaviours['verbFilter']['actions']['set-categories'] = ['put'];
+        $behaviours['verbFilter']['actions']['charges'] = ['get'];
+        $behaviours['verbFilter']['actions']['charges-update'] = ['put'];
         // array_unshift($behaviours['access']['rules'], [
         //     'actions' => ['update', 'delete'],
         //     'allow' => false,
@@ -57,8 +60,119 @@ class SettingsController extends ManagerController
     public function actionSelf()
     {
         $user = User::getIdentity();
+        $settings = SettingsOutputService::getEntity($user->id);
+        
+        // Добавляем информацию о наценках
+        $charges = Charges::getCurrentCharges();
+        if ($charges) {
+            $settings['charges'] = $charges;
+        }
 
-        return ApiResponse::info(SettingsOutputService::getEntity($user->id));
+        return ApiResponse::info($settings);
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/v1/manager/settings/charges",
+     *     security={{"Bearer":{}}},
+     *     summary="Получить текущие значения наценок на валюты",
+     *     description="Возвращает текущие значения наценок USD и CNY.",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешный ответ"
+     *     )
+     * )
+     */
+    public function actionCharges()
+    {
+        try {
+            Yii::debug('Начало выполнения actionCharges');
+            
+            // Проверяем существование таблицы и записей
+            $connection = Yii::$app->db;
+            $tableExists = $connection->createCommand("SHOW TABLES LIKE 'charges'")->queryOne();
+            
+            if (!$tableExists) {
+                Yii::error('Таблица charges не существует');
+                return ApiResponse::internalError('Таблица charges не существует');
+            }
+            
+            // Проверяем наличие записей
+            $count = Charges::find()->count();
+            Yii::debug('Количество записей в таблице charges: ' . $count);
+            
+            // Получаем данные через сервис
+            $charges = \app\services\ChargesService::getCurrentCharges();
+            Yii::debug('Полученные данные: ' . print_r($charges, true));
+            
+            return ApiResponse::info([
+                'data' => $charges
+            ]);
+        } catch (\Throwable $e) {
+            Yii::error('Ошибка при получении наценок: ' . $e->getMessage());
+            Yii::error('Stack trace: ' . $e->getTraceAsString());
+            
+            return ApiResponse::internalError(
+                YII_DEBUG ? [
+                    'message' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine()
+                ] : 'Ошибка при получении наценок'
+            );
+        }
+    }
+
+    /**
+     * @OA\Put(
+     *     path="/api/v1/manager/settings/charges/update",
+     *     security={{"Bearer":{}}},
+     *     summary="Обновить значения наценок на валюты",
+     *     description="Обновляет значения наценок USD и CNY.",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="usd_charge", type="integer"),
+     *             @OA\Property(property="cny_charge", type="integer")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешное обновление"
+     *     )
+     * )
+     */
+    public function actionChargesUpdate()
+    {
+        try {
+            $charges = Charges::find()->one();
+            if (!$charges) {
+                $charges = new Charges();
+            }
+
+            $postParams = POSTHelper::getPostWithKeys([
+                'usd_charge',
+                'cny_charge',
+            ]);
+
+            $charges->load($postParams, '');
+
+            if (!$charges->save()) {
+                return ApiResponse::codeErrors(
+                    'ERROR_SAVE',
+                    $charges->getFirstErrors()
+                );
+            }
+
+            return ApiResponse::info([
+                'message' => 'Настройки наценок обновлены',
+                'data' => [
+                    'usd_charge' => $charges->usd_charge,
+                    'cny_charge' => $charges->cny_charge,
+                ]
+            ]);
+        } catch (Throwable $e) {
+            return ApiResponse::internalError($e->getMessage());
+        }
     }
 
     /**

@@ -137,7 +137,7 @@ class OrderPriceService extends PriceOutputService
     {
         return [
             'product' => [
-                'price_per_item' => 0,
+                'expected_price_per_item' => 0,
                 'cost_price_per_item' => 0,
                 'overall' => 0,
             ],

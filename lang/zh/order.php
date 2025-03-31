@@ -29,4 +29,5 @@ return [
     'cancelled_request' => '订单已根据客户请求取消',
     'cancelled_order' => '订单已由卖家主动取消',
     'completed' => '订单已成功完成',
+    'waiting_for_buyer_offer' => '订单 №{order_id} 等待买家报价',
 ];

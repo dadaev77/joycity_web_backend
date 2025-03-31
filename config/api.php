@@ -33,6 +33,15 @@ $config = [
             'tableName' => '{{%queue}}',
             'channel' => 'default',
             'mutex' => \yii\mutex\MysqlMutex::class,
+            'as log' => \yii\queue\LogBehavior::class,
+        ],
+        'pushQueue' => [
+            'class' => \yii\queue\db\Queue::class,
+            'db' => 'db',
+            'tableName' => '{{%queue}}',
+            'channel' => 'push',
+            'mutex' => \yii\mutex\MysqlMutex::class,
+            'as log' => \yii\queue\LogBehavior::class,
         ],
         'actionLog' => [
             'class' => 'app\components\ActionLog',
@@ -176,12 +185,18 @@ $config = [
                         'api/v1/manager/waybill',
                         'api/v1/client/waybill',
                         'api/v1/push',
-                        'api/v1/spreadsheet',
+                        'api/v1/spread-sheet',
+                        'api/v1/excel-upload',
+
+
                     ],
                     'pluralize' => false,
                 ],
                 'swagger' => '/swagger',
                 'sign-up' => 'api/v1/auth/register',
+
+                // Специальные правила для settings
+                'api/v1/manager/settings/charges/update' => 'api/v1/manager/settings/charges-update',
 
                 'api/v1/<controller>/<id:\d+>/<action>' =>
                 'api/v1/<controller>/<action>',

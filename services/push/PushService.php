@@ -6,6 +6,7 @@ use app\models\PushNotification;
 use app\services\push\FirebaseService;
 use app\components\ApiResponse;
 use Google\Auth\Credentials\ServiceAccountCredentials;
+use app\models\User;
 
 use Yii;
 
@@ -111,26 +112,52 @@ class PushService
     /**
      * Отправляет push-уведомление клиенту.
      *
-     * @param int $clientId Идентификатор клиента.
-     * @param string $message Сообщение для отправки.
+     * @param int $user_id Идентификатор пользователя.
+     * @param array $message Массив с заголовком и текстом сообщения.
      * @return mixed Результат отправки уведомления.
      */
-    public static function sendPushNotification($user_id, $message)
+    public static function sendPushNotification($user_id, $message, $pushToken = null, bool $async = true)
     {
-        $pushTokens = PushNotification::find()->where(['client_id' => $user_id])->all();
+        if ($async) {
+            return self::sendAsync($user_id, $message, $pushToken);
+        }
+        return self::sendSync($user_id, $message, $pushToken);
+    }
+
+    private static function sendSync($user_id, $message, $pushToken)
+    {
         try {
-            foreach ($pushTokens as $pushToken) {
+            $user = User::findOne($user_id);
+            foreach ($user->pushTokens as $pushToken) {
                 if ($pushToken->operating_system === 'ios') {
                     $pushToken->badge_count++;
                     $pushToken->save();
                 }
-                FirebaseService::sendPushNotification($user_id, $message, $pushToken->push_token, $pushToken->operating_system);
+
+                FirebaseService::sendPushNotification(
+                    $user_id,
+                    $message,
+                    $pushToken->push_token,
+                    $pushToken->operating_system
+                );
             }
         } catch (\Exception $e) {
+            Yii::error("Push notification error: " . $e->getMessage(), 'push');
             return $e->getMessage();
         }
+    }
 
-        return true;
+    private static function sendAsync($user_id, $message)
+    {
+        $user = User::findOne($user_id);
+        foreach ($user->pushTokens as $pushToken) {
+            \Yii::$app->pushQueue->priority(1)->push(new \app\jobs\FirebaseJob([
+                'message' => $message,
+                'pushToken' => $pushToken->push_token,
+                'os' => $pushToken->operating_system,
+                'user_id' => $user_id,
+            ]));
+        }
     }
 
     public static function getToken()

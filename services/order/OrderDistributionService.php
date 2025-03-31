@@ -29,7 +29,7 @@ class OrderDistributionService
      * @param int $onlyBuyerId (optional) The ID of the buyer to assign to the order. If not provided, a buyer will be assigned based on criteria.
      * @return ResultAnswer The result of the operation, containing the created distribution task or an error message.
      */
-    public static function createDistributionTask(int $orderId, int $onlyBuyerId = 0): ResultAnswer
+    public static function createDistributionTask(int $orderId, int $onlyBuyerId = 0, int $declinedBy = 0): ResultAnswer
     {
         $buyersList = $onlyBuyerId
             ? (string) $onlyBuyerId

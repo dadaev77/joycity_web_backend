@@ -10,6 +10,7 @@ use app\services\modificators\price\OrderPrice;
 use app\services\RateService;
 
 use app\services\SqlQueryService;
+use app\services\order\OrderDeliveryTimeService;
 use Yii;
 
 class OrderOutputService extends OutputService
@@ -52,9 +53,9 @@ class OrderOutputService extends OutputService
             'product' => fn($q) => $q->select(['id', 'name_ru', 'description_ru', 'product_height', 'product_width', 'product_depth', 'product_weight'])->with(['attachments']),
             'productInspectionReports',
             'fulfillmentInspectionReport',
-            'fulfillmentStockReport' => fn($q) => $q->with(['attachments']),
-            'fulfillmentPackagingLabeling' => fn($q) => $q->with(['attachments']),
-            'productStockReports' => fn($q) => $q->with(['attachments']),
+            'fulfillmentStockReport' => fn($q) => $q->with(['attachments', 'attachmentsSmallSize', 'attachmentsMediumSize', 'attachmentsLargeSize', 'attachmentsXlargeSize']),
+            'fulfillmentPackagingLabeling' => fn($q) => $q->with(['attachments', 'attachmentsSmallSize', 'attachmentsMediumSize', 'attachmentsLargeSize', 'attachmentsXlargeSize']),
+            'productStockReports' => fn($q) => $q->with(['attachments', 'attachmentsSmallSize', 'attachmentsMediumSize', 'attachmentsLargeSize', 'attachmentsXlargeSize']),
             'orderTrackings',
             'orderRate',
         ];
@@ -74,7 +75,42 @@ class OrderOutputService extends OutputService
             $info = ModelTypeHelper::toArray($model);
             $fulfilmentMarketplaceDeliveryInfo = MarketplaceTransactionService::getDeliveredCountInfo($info['id']);
             $info['fulfilmentMarketplaceDeliveryInfo'] = $fulfilmentMarketplaceDeliveryInfo ?: null;
+            // Product Stock Report
             $info['productStockReport'] = $info['productStockReports'] ? $info['productStockReports'][0] : null;
+            if ($info['productStockReport']) {
+                $info['productStockReport']['attachments'] = $info['productStockReport']['attachmentsSmallSize'];
+                $info['productStockReport']['attachments_dict'] = [
+                    '256' => $info['productStockReport']['attachmentsSmallSize'],
+                    '512' => $info['productStockReport']['attachmentsMediumSize'],
+                    '1024' => $info['productStockReport']['attachmentsLargeSize'],
+                    '2048' => $info['productStockReport']['attachmentsXlargeSize'],
+                ];
+            }
+
+            // Fulfillment Stock Report
+            $info['fulfillmentStockReport'] = $info['fulfillmentStockReport'] ? $info['fulfillmentStockReport'] : null;
+            if ($info['fulfillmentStockReport']) {
+                $info['fulfillmentStockReport']['attachments'] = $info['fulfillmentStockReport']['attachmentsSmallSize'];
+                $info['fulfillmentStockReport']['attachments_dict'] = [
+                    '256' => $info['fulfillmentStockReport']['attachmentsSmallSize'],
+                    '512' => $info['fulfillmentStockReport']['attachmentsMediumSize'],
+                    '1024' => $info['fulfillmentStockReport']['attachmentsLargeSize'],
+                    '2048' => $info['fulfillmentStockReport']['attachmentsXlargeSize'],
+                ];
+            }
+
+            // Fulfillment Packaging Labeling
+            $info['fulfillmentPackagingLabeling'] = $info['fulfillmentPackagingLabeling'] ? $info['fulfillmentPackagingLabeling'] : null;
+            if ($info['fulfillmentPackagingLabeling']) {
+                $info['fulfillmentPackagingLabeling']['attachments'] = $info['fulfillmentPackagingLabeling']['attachmentsSmallSize'];
+                $info['fulfillmentPackagingLabeling']['attachments_dict'] = [
+                    '256' => $info['fulfillmentPackagingLabeling']['attachmentsSmallSize'],
+                    '512' => $info['fulfillmentPackagingLabeling']['attachmentsMediumSize'],
+                    '1024' => $info['fulfillmentPackagingLabeling']['attachmentsLargeSize'],
+                    '2048' => $info['fulfillmentPackagingLabeling']['attachmentsXlargeSize'],
+                ];
+            }
+
             $info['buyerOffer'] = $info['buyerOffers'] ? $info['buyerOffers'][0] : null;
             $info['productInspectionReport'] = $info['productInspectionReports'] ? $info['productInspectionReports'][0] : null;
             $info['orderTracking'] = $info['orderTrackings'];
@@ -84,11 +120,11 @@ class OrderOutputService extends OutputService
             }
             unset($tracking);
 
-            // foreach ($info as $key => $value) {
-            //     if ($value && (str_starts_with($key, 'price_') || $key === 'expected_price_per_item')) {
-            //         $info[$key] = RateService::convertValue($value, $info['currency'], $userCurrency);
-            //     }
-            // }
+            foreach ($info as $key => $value) {
+                if ($value && (str_starts_with($key, 'price_') || $key === 'expected_price_per_item')) {
+                    $info[$key] = RateService::convertValue($value, $info['currency'], $userCurrency);
+                }
+            }
 
             $keys = [
                 'product_name_ru',
@@ -117,9 +153,6 @@ class OrderOutputService extends OutputService
                 'zh' => $model->product_description_zh,
                 default => $model->product_description_ru,
             };
-
-
-
 
             if ($info['product']) {
                 $product = \app\models\Product::findOne($info['product']['id']);
@@ -165,7 +198,6 @@ class OrderOutputService extends OutputService
             if ($info['buyerOffer']) {
                 $info['buyerOffer']['price_product'] = RateService::convertValue($info['buyerOffer']['price_product'], $info['buyerOffer']['currency'], $userCurrency);
                 $info['buyerOffer']['price_inspection'] = RateService::convertValue($info['buyerOffer']['price_inspection'], $info['buyerOffer']['currency'], $userCurrency);
-                $info['expected_price_per_item'] = RateService::convertValue($info['expected_price_per_item'], $info['currency'], $userCurrency);
             }
             if (isset($info['buyerDeliveryOffer'])) {
                 $info['buyerDeliveryOffer']['price_product'] = RateService::convertValue($info['buyerDeliveryOffer']['price_product'], $info['buyerDeliveryOffer']['currency'], $userCurrency);
@@ -177,57 +209,38 @@ class OrderOutputService extends OutputService
             if ($info['buyerOffer']) {
                 $info['price']['product_overall'] = $info['buyerOffer']['price_product'] * $info['buyerOffer']['total_quantity'];
             }
-            $info['timeDelivery'] = $info['delivery_days_expected'];
+
+            $timeDelivery = OrderDeliveryTimeService::calculateDeliveryTime($model);
+            unset($info['timeDelivery']);
+
+            $tempInfo = [];
+            foreach ($info as $key => $value) {
+                $tempInfo[$key] = $value;
+                if ($key === 'typeDeliveryPoint') {
+                    $tempInfo['timeDelivery'] = $timeDelivery;
+                }
+            }
+            $info = $tempInfo;
+
             $info['chats'] = [];
+
             unset(
-                // $info['created_at'],
-                // $info['status'],
-                // $info['created_by'],
-                // $info['manager_id'],
-                // $info['fulfillment_id'],
-                // $info['product_name'],
-                // $info['product_description'],
-                // $info['expected_quantity'],
-                // $info['expected_price_per_item'],
-                // $info['expected_packaging_quantity'],
-                // $info['price_product'],
-                // $info['price_inspection'],
-                // $info['price_packaging'],
-                // $info['price_fulfilment'],
-                // $info['price_delivery'],
-                // $info['total_quantity'],
-                // $info['is_need_deep_inspection'],
-                // $info['is_deleted'],
-                // $info['link_tz'],
-                // $info['fulfillmentMarketplaceTransactions'],
-                // $info['attachments'],
-                // $info['createdBy'],
-                // $info['buyer'],
-                // $info['manager'],
-                // $info['fulfillmentOffer'],
-                // $info['buyerDeliveryOffer'],
-                // $info['deliveryPointAddress'],
-                // $info['typeDelivery'],
-                // $info['typeDeliveryPoint'],
-                // $info['typePackaging'],
-                // $info['chats'],
-                // $info['subcategory'],
-                // $info['product'],
-                // $info['productInspectionReport'],
-                // $info['fulfillment'],
-                // $info['fulfillmentInspectionReport'],
-                // $info['fulfillmentStockReport'],
-                // $info['fulfillmentPackagingLabeling'],
-                // $info['productStockReports'],
-                // $info['orderTrackings'],
-                // $info['orderRate'],
-                // $info['fulfilmentMarketplaceDeliveryInfo'],
-                // $info['productStockReport'],
-                // $info['buyerOffer'],
-                // $info['productInspectionReport'],
-                // $info['orderTracking'],
-                // $info['type'],
-                // 
+
+                $info['productStockReport']['attachmentsSmallSize'],
+                $info['productStockReport']['attachmentsMediumSize'],
+                $info['productStockReport']['attachmentsLargeSize'],
+                $info['productStockReport']['attachmentsXlargeSize'],
+
+                $info['fulfillmentStockReport']['attachmentsSmallSize'],
+                $info['fulfillmentStockReport']['attachmentsMediumSize'],
+                $info['fulfillmentStockReport']['attachmentsLargeSize'],
+                $info['fulfillmentStockReport']['attachmentsXlargeSize'],
+
+                $info['fulfillmentPackagingLabeling']['attachmentsSmallSize'],
+                $info['fulfillmentPackagingLabeling']['attachmentsMediumSize'],
+                $info['fulfillmentPackagingLabeling']['attachmentsLargeSize'],
+                $info['fulfillmentPackagingLabeling']['attachmentsXlargeSize'],
+
                 $info['delivery_start_date'],
                 $info['delivery_days_expected'],
                 $info['delivery_delay_days'],
@@ -256,6 +269,7 @@ class OrderOutputService extends OutputService
                 $info['productStockReport']['productStockReportLinkAttachments'],
                 $info['fulfillmentPackagingLabeling']['packagingReportLinkAttachments'],
                 $info['fulfillmentStockReport']['fulfillmentStockReportLinkAttachments'],
+
             );
 
             return $info;

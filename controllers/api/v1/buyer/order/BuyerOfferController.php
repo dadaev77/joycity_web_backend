@@ -121,7 +121,6 @@ class BuyerOfferController extends BuyerController
                 // 'product_weight' => $postData['product_weight'] ?? 0,
                 'currency' => $user->settings->currency,
             ]);
-
             if (!$buyerOffer->save()) {
                 $transaction?->rollBack();
 
@@ -130,7 +129,6 @@ class BuyerOfferController extends BuyerController
                     $buyerOffer->getFirstErrors(),
                 );
             }
-
             $orderStatusChange = OrderStatusService::buyerOfferCreated(
                 $buyerOffer->order_id,
             );

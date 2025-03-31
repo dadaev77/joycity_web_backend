@@ -120,7 +120,7 @@ class OrderController extends ClientController
             'status' => Order::STATUS_CREATED,
             'currency' => $user->settings->currency,
             'type_delivery_point_id' => $request->post('type_delivery_point_id'),
-            'expected_price_per_item' => $request->post('expected_price_per_item') ?? 0,
+            'expected_price_per_item' => $request->post('expected_price_per_item') ? (float)$request->post('expected_price_per_item') : null,
             'expected_quantity' => $request->post('expected_quantity') ?? 0,
             'expected_packaging_quantity' => $request->post('expected_packaging_quantity') ?? 0,
             'type_packaging_id' => $request->post('type_packaging_id') ?? null,
@@ -156,10 +156,7 @@ class OrderController extends ClientController
             $order->product_id = $product_id;
         }
 
-        $translations = TranslationService::translateProductAttributes(
-            $request->post('product_name'),
-            $request->post('product_description')
-        )->result ?? [
+        $translations = [
             'ru' => ['name' => $request->post('product_name'), 'description' => $request->post('product_description')],
             'en' => ['name' => $request->post('product_name'), 'description' => $request->post('product_description')],
             'zh' => ['name' => $request->post('product_name'), 'description' => $request->post('product_description')],
@@ -171,14 +168,22 @@ class OrderController extends ClientController
         }
 
         if (!$order->validate()) {
-            \Yii::$app->telegramLog->send('error', 'Некорректные данные для создания заказа');
+            \Yii::$app->telegramLog->send('error', [
+                'Ошибка валидации заказа',
+                'Текст ошибки:',
+                json_encode($order->getErrors()),
+            ], 'client');
             return ApiResponse::codeErrors($apiCodes->NOT_VALID, $order->getErrors());
         }
 
         $transaction = Yii::$app->db->beginTransaction();
         try {
             if (!$order->save()) {
-                \Yii::$app->telegramLog->send('error', 'Не удалось создать заказ');
+                \Yii::$app->telegramLog->send('error', [
+                    'Ошибка создания заказа',
+                    'Текст ошибки:',
+                    json_encode($order->getErrors()),
+                ], 'client');
                 throw new Exception('Order save error: ' . json_encode($order->getErrors()));
             }
 
@@ -186,7 +191,7 @@ class OrderController extends ClientController
                 'deal_type' => 'order',
                 'participants' => [$user->id, $order->manager_id],
                 'group_name' => 'client_manager',
-            ]);
+            ], true);
 
             if ($product_id) {
                 $buyer = User::findOne($product->buyer_id);
@@ -194,28 +199,52 @@ class OrderController extends ClientController
 
                 $distributionStatus = OrderDistributionService::createDistributionTask($order->id, $product->buyer_id);
                 if (!$distributionStatus->success) {
-                    \Yii::$app->telegramLog->send('error', 'Не удалось создать задачу на распределение');
+                    \Yii::$app->telegramLog->send('error', [
+                        'Ошибка создания задачи на распределение',
+                        'Текст ошибки:',
+                        $distributionStatus->reason,
+                    ], 'client');
                     throw new Exception('Distribution error: ' . $distributionStatus->reason);
                 }
                 OrderDistributionService::buyerAccept($distributionStatus->result, $product->buyer_id);
                 OrderStatusService::buyerAssigned($order->id);
+
                 ChatService::CreateGroupChat('Order ' . $order->id, $user->id, $order->id, [
                     'deal_type' => 'order',
                     'participants' => [$user->id, $order->manager_id, $product->buyer_id],
                     'group_name' => 'client_buyer_manager',
                 ]);
+
                 PushService::sendPushNotification($product->buyer_id, [
                     'title' => Yii::t('order', 'new_order_for_buyer', [], $language),
                     'body' => Yii::t('order', 'new_order_for_buyer_text', ['order_id' => $order->id], $language),
-                ]);
+                ], true);
+
+                Yii::$app->telegramLog->send(
+                    'info',
+                    [
+                        "Создана новая заявка Buyer №{$order->id}",
+                        "Клиент: {$user->name} (ID: {$user->id})",
+                        "Байер: {$buyer->name} (ID: {$buyer->id})",
+                    ],
+                    'buyer'
+                );
             } else {
                 $distribution = OrderDistributionService::createDistributionTask($order->id);
                 if (!$distribution->success) {
-                    \Yii::$app->telegramLog->send('error', 'Не удалось создать задачу на распределение');
+                    \Yii::$app->telegramLog->send('error', [
+                        'Ошибка создания задачи на распределение',
+                        'Текст ошибки:',
+                        $distribution->reason,
+                    ], 'client');
                     throw new Exception('Distribution error: ' . $distribution->reason);
                 }
                 if (!\app\controllers\CronController::actionCreate($distribution->result->id)) {
-                    \Yii::$app->telegramLog->send('error', 'Не удалось создать задачу cron для распределения заказа ' . $order->id);
+                    \Yii::$app->telegramLog->send('error', [
+                        'Ошибка создания задачи cron для распределения заказа',
+                        'Текст ошибки:',
+                        $distribution->result->id,
+                    ], 'client');
                     throw new Exception('Cron task creation error: ' . $distribution->result->id);
                 }
             }
@@ -223,7 +252,11 @@ class OrderController extends ClientController
             if ($images) {
                 $attachmentResponse = AttachmentService::writeFilesCollection($images);
                 if (!$attachmentResponse->success) {
-                    \Yii::$app->telegramLog->send('error', 'Не удалось загрузить изображения');
+                    \Yii::$app->telegramLog->send('error', [
+                        'Ошибка загрузки изображений',
+                        'Текст ошибки:',
+                        json_encode($attachmentResponse->reason),
+                    ], 'client');
                     throw new Exception('Image upload error: ' . json_encode($attachmentResponse->reason));
                 }
                 $order->linkAll('attachments', $attachmentResponse->result);
@@ -231,9 +264,22 @@ class OrderController extends ClientController
 
             NotificationConstructor::orderOrderCreated($order->manager_id, $order->id);
             $transaction->commit();
+
+            \app\services\TranslationService::translateAttributes(
+                $request->post('product_name'),
+                $request->post('product_description'),
+                'order',
+                $order->id
+            );
+
             return ApiResponse::byResponseCode(null, ['info' => OrderOutputService::getEntity($order->id)]);
         } catch (Throwable $e) {
             $transaction->rollBack();
+            \Yii::$app->telegramLog->send('error', [
+                'Ошибка создания заказа',
+                'Текст ошибки:',
+                $e->getMessage(),
+            ], 'client');
             return ApiResponse::internalError($e);
         }
     }
@@ -440,7 +486,7 @@ class OrderController extends ClientController
         $apiCodes = Order::apiCodes();
         $user = User::getIdentity();
         $order = Order::find()
-            ->select(['id', 'created_by'])
+            ->select(['id', 'created_by', 'buyer_id'])
             ->where(['id' => $id])
             ->one();
 
@@ -448,7 +494,7 @@ class OrderController extends ClientController
             return ApiResponse::byResponseCode($apiCodes->NOT_FOUND);
         }
 
-        if ($order->created_by !== $user->id) {
+        if ($order->created_by !== $user->id && $order->buyer_id !== $user->id) {
             return ApiResponse::code($apiCodes->NO_ACCESS);
         }
 
@@ -478,27 +524,35 @@ class OrderController extends ClientController
      *     )
      * )
      */
-    public function actionMy(string $type = 'request')
+    public function actionMy(?string $type = null)
     {
         $user = User::getIdentity();
         $orderIds = Order::find()
             ->select(['id'])
-            ->where(['created_by' => $user->id])
+            ->where([
+                'OR',
+                ['created_by' => $user->id],
+                ['buyer_id' => $user->id]
+            ])
             ->orderBy(['id' => SORT_DESC]);
 
         if ($type === 'request') {
             $orderIds->andWhere([
                 'status' => Order::STATUS_GROUP_REQUEST_ACTIVE,
             ]);
-        } else {
-            $orderIds->andWhere(['status' => Order::STATUS_GROUP_ORDER_ACTIVE]);
+        } elseif ($type === 'order') {
+            // Для типа "order" показываем все активные заказы
+            $orderIds->andWhere([
+                'status' => Order::STATUS_GROUP_ORDER_ACTIVE,
+            ]);
         }
+        // Если type не указан, показываем все заказы
 
         return ApiResponse::collection(
             OrderOutputService::getCollection(
                 $orderIds->column(),
-                false, // Show deleted
-                'small', // Size of output images
+                false,
+                'small'
             ),
         );
     }

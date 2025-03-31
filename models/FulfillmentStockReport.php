@@ -101,10 +101,38 @@ class FulfillmentStockReport extends Base
 
     public function getAttachments()
     {
-        return $this->hasMany(Attachment::class, [
-            'id' => 'attachment_id',
-        ])->via('fulfillmentStockReportLinkAttachments');
+        return $this->hasMany(Attachment::class, ['id' => 'attachment_id'])
+            ->via('fulfillmentStockReportLinkAttachments');
     }
+
+    public function getAttachmentsSmallSize()
+    {
+        return $this->hasMany(Attachment::class, ['id' => 'attachment_id'])
+            ->andOnCondition(['img_size' => 'small'])
+            ->via('fulfillmentStockReportLinkAttachments');
+    }
+
+    public function getAttachmentsMediumSize()
+    {
+        return $this->hasMany(Attachment::class, ['id' => 'attachment_id'])
+            ->andOnCondition(['img_size' => 'medium'])
+            ->via('fulfillmentStockReportLinkAttachments');
+    }
+
+    public function getAttachmentsLargeSize()
+    {
+        return $this->hasMany(Attachment::class, ['id' => 'attachment_id'])
+            ->andOnCondition(['img_size' => 'large'])
+            ->via('fulfillmentStockReportLinkAttachments');
+    }
+
+    public function getAttachmentsXlargeSize()
+    {
+        return $this->hasMany(Attachment::class, ['id' => 'attachment_id'])
+            ->andOnCondition(['img_size' => 'xlarge'])
+            ->via('fulfillmentStockReportLinkAttachments');
+    }
+
 
     public static function apiCodes(): FulfillmentStockReportCodes
     {

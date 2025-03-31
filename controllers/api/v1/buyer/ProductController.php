@@ -14,8 +14,9 @@ use app\services\output\ProductOutputService;
 use app\services\SaveModelService;
 use Throwable;
 use Yii;
-use yii\web\UploadedFile;
 use app\services\TranslationService;
+use yii\web\UploadedFile;
+
 
 class ProductController extends BuyerController
 {
@@ -27,6 +28,8 @@ class ProductController extends BuyerController
         $behaviors['verbFilter']['actions']['update'] = ['put'];
         $behaviors['verbFilter']['actions']['delete'] = ['delete'];
         $behaviors['verbFilter']['actions']['my'] = ['get'];
+        $behaviors['verbFilter']['actions']['download-excel'] = ['get'];
+        $behaviors['verbFilter']['actions']['upload-excel'] = ['post'];
         array_unshift($behaviors['access']['rules'], [
             'actions' => ['create', 'update', 'delete'],
             'allow' => false,
@@ -39,6 +42,13 @@ class ProductController extends BuyerController
                 ApiResponse::code(ResponseCodes::getStatic()->NO_ACCESS);
             Yii::$app->response->data = $response;
         };
+
+        // Добавляем оба действия в список разрешенных
+        $behaviors['access']['rules'][] = [
+            'actions' => ['download-excel', 'upload-excel'],
+            'allow' => true,
+            'roles' => ['@'],
+        ];
 
         return $behaviors;
     }
@@ -81,10 +91,16 @@ class ProductController extends BuyerController
 
             $images = UploadedFile::getInstancesByName('images');
 
-            if (!$images) return ApiResponse::codeErrors($apiCodes->NOT_VALID, ['images' => 'Param `images` is empty',]);
+            if (!$images) {
+                return ApiResponse::codeErrors($apiCodes->NOT_VALID, [
+                    'images' => 'Param `images` is empty',
+                ]);
+            }
 
             $transaction = Yii::$app->db->beginTransaction();
+
             $product = new Product();
+
             $product->load(
                 array_diff_key(
                     $request->post(),
@@ -99,16 +115,21 @@ class ProductController extends BuyerController
             );
 
             // translate product attributes
-            $translation = TranslationService::translateProductAttributes($request->post('name'), $request->post('description'));
-            $translations = $translation->result;
+            $translations = [
+                'ru' => ['name' => $request->post('name'), 'description' => $request->post('description')],
+                'en' => ['name' => $request->post('name'), 'description' => $request->post('description')],
+                'zh' => ['name' => $request->post('name'), 'description' => $request->post('description')],
+            ];
 
-            foreach ($translations as $key => $value) {
-                $product->{"name_$key"} = $value['name'];
-                $product->{"description_$key"} = $value['description'];
+            foreach ($translations as $lang => $value) {
+                $product->{"name_$lang"} = $value['name'];
+                $product->{"description_$lang"} = $value['description'];
             }
-
+            // set buyer id
             $product->buyer_id = $user->id;
+            // set currency from user settings
             $product->currency = $user->settings->currency;
+            // assign prices as is, without conversion
             $product->range_1_price = $request->post('range_1_price') ?? 0;
             $product->range_2_price = $request->post('range_2_price') ?? 0;
             $product->range_3_price = $request->post('range_3_price') ?? 0;
@@ -137,12 +158,18 @@ class ProductController extends BuyerController
                 );
             }
 
-
             $product->linkAll('attachments', $attachmentSaveResponse->result, [
                 'type' => ProductLinkAttachment::TYPE_DEFAULT,
             ]);
 
             $transaction?->commit();
+
+            \app\services\TranslationService::translateAttributes(
+                $request->post('name'),
+                $request->post('description'),
+                'product',
+                $product->id
+            );
 
             return ApiResponse::info(
                 ProductOutputService::getEntity(
@@ -151,7 +178,7 @@ class ProductController extends BuyerController
                 ),
             );
         } catch (Throwable $e) {
-            Yii::$app->telegramLog->send('error', 'Ошибка при создании продукта: ' . $e->getMessage());
+            Yii::$app->telegramLog->send('error', 'Ошибка при создании товара: ' . $e->getMessage());
             isset($transaction) && $transaction->rollBack();
 
             return ApiResponse::internalError($e);
@@ -242,8 +269,11 @@ class ProductController extends BuyerController
             // Загрузка данных в модель
             $product->load($data, '');
 
-            $translation = TranslationService::translateProductAttributes($request->post('name'), $request->post('description'));
-            $translations = $translation->result;
+            $translations = [
+                'ru' => ['name' => $request->post('name'), 'description' => $request->post('description')],
+                'en' => ['name' => $request->post('name'), 'description' => $request->post('description')],
+                'zh' => ['name' => $request->post('name'), 'description' => $request->post('description')],
+            ];
 
             foreach ($translations as $key => $value) {
                 $product->{"name_$key"} = $value['name'];
@@ -306,6 +336,13 @@ class ProductController extends BuyerController
             }
 
             $transaction?->commit();
+
+            \app\services\TranslationService::translateAttributes(
+                $request->post('name'),
+                $request->post('description'),
+                'product',
+                $id
+            );
 
             return ApiResponse::info(ProductOutputService::getEntity($id, 'small'));
         } catch (Throwable $e) {
@@ -437,5 +474,61 @@ class ProductController extends BuyerController
                 'small'
             ),
         ]);
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/v1/buyer/product/download-excel",
+     *     summary="Скачать шаблон Excel для загрузки товаров",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Файл шаблона Excel"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Ошибка сервера"
+     *     )
+     * )
+     */
+    public function actionDownloadExcel()
+    {
+        return Yii::$app->runAction('api/v1/spread-sheet/download-excel');
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/v1/buyer/product/upload-excel",
+     *     summary="Загрузить Excel файл с товарами",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *             @OA\Schema(
+     *                 @OA\Property(
+     *                     property="file",
+     *                     type="string",
+     *                     format="binary",
+     *                     description="Excel файл с товарами"
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Файл успешно обработан"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Ошибка в данных"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Ошибка сервера"
+     *     )
+     * )
+     */
+    public function actionUploadExcel()
+    {
+        return Yii::$app->runAction('api/v1/spread-sheet/upload-excel');
     }
 }

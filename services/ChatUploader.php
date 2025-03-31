@@ -84,7 +84,7 @@ class ChatUploader
 
             foreach (self::$sizes as $label => $size) {
                 $imagick = new Imagick($targetPath);
-                $imagick->resizeImage($size, $size, Imagick::FILTER_LANCZOS, 1);
+                $imagick->resizeImage($size, $size, Imagick::FILTER_LANCZOS, 1, true);
                 $resizedFileName = pathinfo($attachment['file_name'], PATHINFO_FILENAME) . "_{$label}." . pathinfo($attachment['file_name'], PATHINFO_EXTENSION);
                 $resizedPath = $uploader->uploadPath . $resizedFileName;
                 $imagick->writeImage($resizedPath);
