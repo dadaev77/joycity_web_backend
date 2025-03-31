@@ -116,8 +116,8 @@ class CronController extends Controller
         if (!empty($rates['data'])) {
             $rate = new \app\models\Rate();
             $rate->RUB = 1;
-            $rate->USD = round($rates['data']['USD'] * 1.02, 4);
-            $rate->CNY = round($rates['data']['CNY'] * 1.05, 4);
+            $rate->USD = round($rates['data']['USD'] * 1.05, 4);
+            $rate->CNY = round($rates['data']['CNY'] * 1.07, 4);
 
             if ($rate->save()) {
                 Yii::$app->heartbeat->addHeartbeat('rates', 'success');
