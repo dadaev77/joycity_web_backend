@@ -115,7 +115,12 @@ class DistributionController extends BuyerController
 
             if (!$status->success) {
                 $transaction?->rollBack();
-                Yii::$app->telegramLog->send('error', 'Ошибка при принятии задачи: ' . $status->reason);
+
+                \Yii::$app->telegramLog->send('error', [
+                    'Ошибка при принятии задачи',
+                    'Текст ошибки: ' . $status->reason,
+                ], 'buyer');
+
                 Yii::$app->actionLog->error('Ошибка при принятии задачи: ' . $status->reason);
                 return ApiResponse::codeErrors(
                     $apiCodes->ERROR_SAVE,
@@ -137,7 +142,12 @@ class DistributionController extends BuyerController
 
             if (!$orderStatusChange->success) {
                 $transaction?->rollBack();
-                Yii::$app->telegramLog->send('error', 'Ошибка при изменении статуса заказа: ' . $orderStatusChange->reason);
+
+                \Yii::$app->telegramLog->send('error', [
+                    'Ошибка при изменении статуса заказа',
+                    'Текст ошибки: ' . $orderStatusChange->reason,
+                ], 'buyer');
+
                 return ApiResponse::codeErrors(
                     $apiCodes->ERROR_SAVE,
                     $orderStatusChange->reason,
@@ -161,14 +171,28 @@ class DistributionController extends BuyerController
                 ]
             );
             /**===============================================
-            *  ===============================================
-            */
+             *  ===============================================
+             */
+
+            \Yii::$app->telegramLog->send('success', [
+                'Заявка принята',
+                'ID заявки: ' . $order->id,
+                'ID продавца: ' . $order->created_by,
+                'ID покупателя: ' . $user->id,
+            ], 'buyer');
+
             return ApiResponse::info(
                 OrderDistributionOutputService::getEntity($task->id),
             );
         } catch (Throwable $e) {
             isset($transaction) && $transaction->rollBack();
-            Yii::$app->actionLog->error('Внутренняя ошибка: ' . $e->getMessage());
+
+            \Yii::$app->telegramLog->send('error', [
+                'Ошибка при принятии задачи',
+                'Текст ошибки: ' . $e->getMessage(),
+                'Трассировка: ' . $e->getTraceAsString(),
+            ], 'buyer');
+
             return ApiResponse::internalError($e);
         }
     }
@@ -207,7 +231,13 @@ class DistributionController extends BuyerController
             }
 
             if ($task->current_buyer_id !== $user->id) {
-                Yii::$app->telegramLog->send('error', 'По задаче ' . $task->id . ' нет доступа, потому что текущий покупатель ' . $user->id . ' не совпадает с ' . $task->current_buyer_id);
+
+                \Yii::$app->telegramLog->send('error', [
+                    'Ошибка при отклонении задачи',
+                    'Номер задачи: ' . $task->id,
+                    'Не совпадают ID продавца и ID текущего продавца в распределении',
+                ], 'buyer');
+
                 Yii::$app->actionLog->error('По задаче ' . $task->id . ' нет доступа, потому что текущий покупатель ' . $user->id . ' не совпадает с ' . $task->current_buyer_id);
                 return ApiResponse::code($apiCodes->NO_ACCESS);
             }
@@ -215,7 +245,11 @@ class DistributionController extends BuyerController
             $status = OrderDistributionService::buyerDecline($task);
 
             if (!$status->success) {
-                Yii::$app->telegramLog->send('error', 'Ошибка при отклонении задачи: ' . $status->reason);
+                \Yii::$app->telegramLog->send('error', [
+                    'Ошибка при отклонении задачи',
+                    'Текст ошибки: ' . $status->reason,
+                ], 'buyer');
+
                 Yii::$app->actionLog->error('Ошибка при отклонении задачи: ' . $status->reason);
                 return ApiResponse::codeErrors(
                     $apiCodes->ERROR_SAVE,
@@ -225,7 +259,12 @@ class DistributionController extends BuyerController
 
             return ApiResponse::code($apiCodes->SUCCESS);
         } catch (Throwable $e) {
-            Yii::$app->actionLog->error('Внутренняя ошибка: ' . $e->getMessage());
+            \Yii::$app->telegramLog->send('error', [
+                'Ошибка при отклонении задачи',
+                'Текст ошибки: ' . $e->getMessage(),
+                'Трассировка: ' . $e->getTraceAsString(),
+            ], 'buyer');
+
             return ApiResponse::internalError($e);
         }
     }

@@ -37,7 +37,7 @@ class OrderController extends ManagerController
 
         return $behaviors;
     }
-    
+
 
     /**
      * @OA\Put(
@@ -95,8 +95,19 @@ class OrderController extends ManagerController
                 );
             }
 
+            \Yii::$app->telegramLog->send('success', [
+                'Заказ прибыл на склад',
+                'ID заказа: ' . $order->id,
+                'ID менеджера: ' . $user->id,
+            ], 'manager');
+
             return ApiResponse::code($apiCodes->SUCCESS);
         } catch (Throwable $e) {
+            \Yii::$app->telegramLog->send('error', [
+                'Ошибка при отметке заказа как прибывшего на склад',
+                'Текст ошибки: ' . $e->getMessage(),
+                'Трассировка: ' . $e->getTraceAsString(),
+            ], 'manager');
             return ApiResponse::internalError($e->getMessage());
         }
     }
@@ -170,6 +181,12 @@ class OrderController extends ManagerController
             }
             $transaction?->commit();
 
+            \Yii::$app->telegramLog->send('success', [
+                'Заказ завершен',
+                'ID заказа: ' . $order->id,
+                'ID менеджера: ' . $user->id,
+            ], 'manager');
+
             return ApiResponse::info(
                 OrderOutputService::getEntity(
                     $order->id,
@@ -178,6 +195,11 @@ class OrderController extends ManagerController
                 ),
             );
         } catch (Throwable $e) {
+            \Yii::$app->telegramLog->send('error', [
+                'Ошибка при завершении заказа',
+                'Текст ошибки: ' . $e->getMessage(),
+                'Трассировка: ' . $e->getTraceAsString(),
+            ], 'manager');
 
             isset($transaction) && $transaction->rollBack();
             return ApiResponse::internalError($e);
@@ -329,7 +351,7 @@ class OrderController extends ManagerController
         }
 
         $buyer = \app\models\User::findOne(['id' => $buyerId, 'role' => \app\models\User::ROLE_BUYER]);
-        
+
         if (!$buyer) {
             return \app\components\ApiResponse::byResponseCode($this->apiCodes->NOT_FOUND, ['message' => 'Buyer not found']);
         }
@@ -340,6 +362,13 @@ class OrderController extends ManagerController
                 'errors' => $order->errors
             ]);
         }
+
+        \Yii::$app->telegramLog->send('success', [
+            'Заказ обновлен менеджером',
+            'ID заказа: ' . $order->id,
+            'ID продавца: ' . $buyerId,
+            'ID менеджера: ' . \Yii::$app->user->id,
+        ], 'manager');
 
         return \app\components\ApiResponse::byResponseCode($this->apiCodes->SUCCESS, [
             'order' => $order,
@@ -410,11 +439,18 @@ class OrderController extends ManagerController
         if (!$id || !$buyerId) return ApiResponse::code($this->apiCodes->NOT_FOUND, ['message' => 'Order or buyer not provided']);
         if (!$order || !$buyer) return ApiResponse::code($this->apiCodes->NOT_FOUND, ['message' => 'Order or buyer not exists']);
         if ($order->manager_id !== $user->id) return ApiResponse::code($apiCodes->NO_ACCESS, ['message' => 'You have no access to this order']);
-        
+
         try {
             $order->buyer_id = $buyerId;
             $save = $order->save();
-            if (!$save) return ApiResponse::codeErrors( $apiCodes->ERROR_SAVE, $order->errors );
+            if (!$save) return ApiResponse::codeErrors($apiCodes->ERROR_SAVE, $order->errors);
+
+            \Yii::$app->telegramLog->send('success', [
+                'Заказ обновлен менеджером',
+                'ID заказа: ' . $order->id,
+                'ID продавца: ' . $buyerId,
+                'ID менеджера: ' . \Yii::$app->user->id,
+            ], 'manager');
 
             return ApiResponse::codeInfo(
                 $apiCodes->SUCCESS,
@@ -426,8 +462,12 @@ class OrderController extends ManagerController
                     'manager_id' => $order->manager_id
                 ]
             );
-
         } catch (Throwable $e) {
+            \Yii::$app->telegramLog->send('error', [
+                'Ошибка при обновлении заказа менеджером',
+                'Текст ошибки: ' . $e->getMessage(),
+                'Трассировка: ' . $e->getTraceAsString(),
+            ], 'manager');
             return ApiResponse::internalError($e->getMessage());
         }
     }

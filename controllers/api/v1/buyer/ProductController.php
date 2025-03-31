@@ -88,7 +88,6 @@ class ProductController extends BuyerController
             $user = User::getIdentity();
             $request = Yii::$app->request;
 
-
             $images = UploadedFile::getInstancesByName('images');
 
             if (!$images) {
@@ -171,6 +170,15 @@ class ProductController extends BuyerController
                 $product->id
             );
 
+            \Yii::$app->telegramLog->send('info', [
+                'Товар создан',
+                "ID товара: {$product->id}",
+                "Название: {$product->name}",
+                "Описание: {$product->description}",
+                "Пользователь: {$user->name} (ID: {$user->id})",
+            ], 'buyer');
+
+
             return ApiResponse::info(
                 ProductOutputService::getEntity(
                     $product->id,
@@ -178,9 +186,13 @@ class ProductController extends BuyerController
                 ),
             );
         } catch (Throwable $e) {
-            Yii::$app->telegramLog->send('error', 'Ошибка при создании товара: ' . $e->getMessage());
-            isset($transaction) && $transaction->rollBack();
+            Yii::$app->telegramLog->send('error', [
+                'Ошибка при создании товара: ' . $e->getMessage(),
+                'Текст ошибки: ' . $e->getMessage(),
+                'Трассировка: ' . $e->getTraceAsString(),
+            ]);
 
+            isset($transaction) && $transaction->rollBack();
             return ApiResponse::internalError($e);
         }
     }

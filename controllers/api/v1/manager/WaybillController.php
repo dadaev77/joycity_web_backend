@@ -62,7 +62,11 @@ class WaybillController extends ManagerController
                 'waybill' => $waybill
             ]);
         } catch (\Exception $e) {
-            Yii::$app->telegramLog->send('error', 'Ошибка при генерации накладной: ' . $e->getMessage());
+            \Yii::$app->telegramLog->send('error', [
+                'Ошибка при генерации накладной',
+                'Текст ошибки: ' . $e->getMessage(),
+                'Трассировка: ' . $e->getTraceAsString(),
+            ], 'manager');
             return ApiResponse::byResponseCode($apiCodes->ERROR_SAVE, [
                 'message' => $e->getMessage()
             ]);
@@ -86,7 +90,11 @@ class WaybillController extends ManagerController
                 'message' => $e->getMessage()
             ]);
         } catch (\Exception $e) {
-            Yii::$app->telegramLog->send('error', 'Ошибка при получении накладной: ' . $e->getMessage());
+            \Yii::$app->telegramLog->send('error', [
+                'Ошибка при получении накладной',
+                'Текст ошибки: ' . $e->getMessage(),
+                'Трассировка: ' . $e->getTraceAsString(),
+            ], 'manager');
             return ApiResponse::byResponseCode($apiCodes->ERROR_SAVE, [
                 'message' => $e->getMessage()
             ]);
@@ -114,7 +122,11 @@ class WaybillController extends ManagerController
                 'message' => $e->getMessage()
             ]);
         } catch (\Exception $e) {
-            Yii::$app->telegramLog->send('error', 'Ошибка при блокировке редактирования накладной: ' . $e->getMessage());
+            \Yii::$app->telegramLog->send('error', [
+                'Ошибка при блокировке редактирования накладной',
+                'Текст ошибки: ' . $e->getMessage(),
+                'Трассировка: ' . $e->getTraceAsString(),
+            ], 'manager');
             return ApiResponse::byResponseCode($apiCodes->ERROR_SAVE, [
                 'message' => $e->getMessage()
             ]);

@@ -133,7 +133,7 @@ class VerificationController extends ClientController
                 ]
             );
 
-            try{ 
+            try {
                 $client = new \GuzzleHttp\Client();
                 $client->request('POST', $_ENV['APP_URL_NOTIFICATIONS'] . '/notification/send', [
                     'json' => [
@@ -144,12 +144,21 @@ class VerificationController extends ClientController
                         ],
                     ],
                 ]);
+            } catch (Throwable $e) {
+                \Yii::$app->telegramLog->send('error', [
+                    'Ошибка при отправке уведомления',
+                    'Текст ошибки: ' . $e->getMessage(),
+                    'Трассировка: ' . $e->getTraceAsString(),
+                ], 'client');
             }
-            catch(Throwable $e){
-                
-            } 
 
             $transaction?->commit();
+
+            \Yii::$app->telegramLog->send('success', [
+                'Запрос на верификацию успешно создан',
+                'ID запроса: ' . $newRequest->id,
+                'ID пользователя: ' . $user->id,
+            ], 'client');
 
             return ApiResponse::codeInfo(
                 $apiCodes->SUCCESS,
@@ -159,6 +168,12 @@ class VerificationController extends ClientController
             );
         } catch (Throwable $e) {
             isset($transaction) && $transaction->rollBack();
+
+            \Yii::$app->telegramLog->send('error', [
+                'Ошибка при создании запроса на верификацию',
+                'Текст ошибки: ' . $e->getMessage(),
+                'Трассировка: ' . $e->getTraceAsString(),
+            ], 'client');
 
             return ApiResponse::internalError($e);
         }

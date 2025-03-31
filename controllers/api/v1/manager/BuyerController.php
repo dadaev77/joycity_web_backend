@@ -73,10 +73,26 @@ class BuyerController extends ManagerController
         $order->buyer_id = $buyerId;
 
         if (!$order->save()) {
+
+            \Yii::$app->telegramLog->send('error', [
+                'Ошибка при обновлении заказа менеджером',
+                'Текст ошибки: ' . json_encode($order->errors),
+                'ID заказа: ' . $order->id,
+                'ID продавца: ' . $buyerId,
+                'ID менеджера: ' . \Yii::$app->user->id,
+            ], 'manager');
+
             return \app\components\ApiResponse::byResponseCode($this->apiCodes->BAD_REQUEST, [
                 'errors' => $order->errors
             ]);
         }
+
+        \Yii::$app->telegramLog->send('success', [
+            'Заказ обновлен менеджером',
+            'ID менеджера: ' . \Yii::$app->user->id,
+            'ID заказа: ' . $order->id,
+            'ID покупателя: ' . $buyerId,
+        ], 'manager');
 
         return \app\components\ApiResponse::byResponseCode($this->apiCodes->SUCCESS, [
             'order' => $order,
