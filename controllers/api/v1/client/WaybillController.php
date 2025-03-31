@@ -10,14 +10,21 @@ use app\models\User;
 
 class WaybillController extends ClientController
 {
-    private $path = $_ENV['APP_URL'] . '/uploads/waybills/';
+    protected $path;
+
+    public function __construct($id, $module = null, $config = [])
+    {
+        parent::__construct($id, $module, $config);
+        $this->path = $_ENV['APP_URL'] . '/uploads/waybills/';
+    }
+
+
     public function behaviors()
     {
         $behaviors = parent::behaviors();
         $behaviors['verbFilter']['actions'] = [
             'view' => ['get'],
         ];
-
         return $behaviors;
     }
 
