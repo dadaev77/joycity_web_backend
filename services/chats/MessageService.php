@@ -48,7 +48,9 @@ class MessageService
                 throw new Exception('Ошибка при создании сообщения: ' . json_encode($message->getErrors()));
             }
 
-            self::translateMessage($content, $message->id);
+            if ($content !== null && $type === 'text') {
+                self::translateMessage($content, $message->id);
+            }
 
             return $message;
         } catch (\Exception $e) {

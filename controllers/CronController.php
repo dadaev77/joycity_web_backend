@@ -31,6 +31,7 @@ class CronController extends Controller
      *     @OA\Response(response="400", description="Неверный ID задачи или задача уже существует")
      * )
      */
+
     public static function actionCreate($taskID = null, $schedule = '* * * * *')
     {
         $task = OrderDistribution::find()->where(['id' => $taskID])->one();
@@ -54,7 +55,10 @@ class CronController extends Controller
             }
         } catch (\Exception $e) {
             Yii::$app->actionLog->error('Ошибка создания задачи cron: ' . $taskID . ' - ' . $e->getMessage());
-            Yii::$app->telegramLog->send('error', 'Ошибка создания задачи cron: ' . $taskID . ' - ' . $e->getMessage());
+            Yii::$app->telegramLog->send(
+                'error',
+                'Ошибка создания задачи cron: ' . $taskID . ' - ' . $e->getMessage()
+            );
             return false;
         }
     }
@@ -121,15 +125,28 @@ class CronController extends Controller
 
             if ($rate->save()) {
                 Yii::$app->heartbeat->addHeartbeat('rates', 'success');
-                Yii::$app->telegramLog->send('success', 'Курсы обновлены: USD - ' . $rates['data']['USD'] . ', CNY - ' . $rates['data']['CNY'] . '; Курсы + проценты: USD + 2% - ' . $rate->USD . ', CNY + 5% - ' . $rate->CNY);
+                Yii::$app->telegramLog->send(
+                    'success',
+                    [
+                        'Курсы обновлены:',
+                        'USD - ' . $rates['data']['USD'] . ', CNY - ' . $rates['data']['CNY'],
+                        'Курсы + проценты: USD + 2% - ' . $rate->USD . ', CNY + 5% - ' . $rate->CNY
+                    ]
+                );
                 return ['status' => 'success', 'message' => 'Курсы обновлены'];
             } else {
-                Yii::$app->telegramLog->send('error', 'Ошибка сохранения курсов');
+                Yii::$app->telegramLog->send(
+                    'error',
+                    'Ошибка сохранения курсов'
+                );
                 return ['status' => 'error', 'message' => 'Ошибка сохранения курсов'];
             }
         }
 
-        Yii::$app->telegramLog->send('error', 'Нет данных для обновления курсов');
+        Yii::$app->telegramLog->send(
+            'error',
+            'Нет данных для обновления курсов'
+        );
         return ['status' => 'error', 'message' => 'Нет данных для обновления курсов'];
     }
 
@@ -184,7 +201,13 @@ class CronController extends Controller
             $message = "В следующих сервисах есть ошибки: \n " . implode(', ', array_map(function ($service) {
                 return $this->services[$service] ?? $service;
             }, $uniqueServices));
-            Yii::$app->telegramLog->send('error', $message);
+            Yii::$app->telegramLog->send(
+                'error',
+                [
+                    'Обнаружены ошибки в сервисах:',
+                    $message
+                ]
+            );
             Yii::$app->actionLog->error('Обнаружены ошибки в сервисах: ' . implode(', ', $uniqueServices));
         }
 
