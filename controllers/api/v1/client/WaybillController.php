@@ -63,7 +63,6 @@ class WaybillController extends ClientController
             ]);
         }
 
-
         if (!$waybill->editable && $waybill->block_edit_date) {
 
             $blockEditDate = new \DateTime($waybill->block_edit_date);
@@ -89,7 +88,7 @@ class WaybillController extends ClientController
             "ID заказа: {$id}",
             "Клиент: {$user->name} (ID: {$user->id})",
             "Дата блокировки: {$waybill->block_edit_date}",
-            "Прошло дней: " . $interval->days ?? 0
+            "Прошло дней: " . $interval ? $interval->days : 0
         ], 'client');
 
         return ApiResponse::code($apiCodes->NO_ACCESS, [
