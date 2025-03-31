@@ -261,6 +261,14 @@ class RawController extends Controller
 
     public function actionTg()
     {
+        Yii::$app->telegramLog->send('success', 'test', 'client', 'prod');
+        Yii::$app->telegramLog->send('success', 'test', 'buyer', 'prod');
+        Yii::$app->telegramLog->send('success', 'test', 'manager', 'prod');
+        Yii::$app->telegramLog->send('success', 'test', 'fulfillment', 'prod');
+
         Yii::$app->telegramLog->send('success', 'test', 'client', 'dev');
+        Yii::$app->telegramLog->send('success', 'test', 'buyer', 'dev');
+        Yii::$app->telegramLog->send('success', 'test', 'manager', 'dev');
+        Yii::$app->telegramLog->send('success', 'test', 'fulfillment', 'dev');
     }
 }
