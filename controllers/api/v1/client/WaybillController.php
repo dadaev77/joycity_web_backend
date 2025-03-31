@@ -24,6 +24,7 @@ class WaybillController extends ClientController
     {
         $apiCodes = Order::apiCodes();
         $user = User::getIdentity();
+        $interval = null;
 
         $order = Order::findOne(['id' => $id]);
         if (!$order) {
