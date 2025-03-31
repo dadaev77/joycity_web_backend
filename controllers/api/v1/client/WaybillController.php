@@ -18,7 +18,6 @@ class WaybillController extends ClientController
         $this->path = $_ENV['APP_URL'] . '/uploads/waybills/';
     }
 
-
     public function behaviors()
     {
         $behaviors = parent::behaviors();
@@ -40,21 +39,18 @@ class WaybillController extends ClientController
         if (!$waybill) return ApiResponse::code($apiCodes->NOT_FOUND, ['message' => 'Накладная не найдена']);
 
         if ($waybill) {
-            var_dump([
-                'path' => $this->path . $waybill->file_path,
-                'editable' => $waybill->editable,
-                'block_edit_date' => $waybill->block_edit_date
-            ]);
-            die();
-            if (!$waybill->editable && $waybill->block_edit_date) {
+
+            if (
+                !$waybill->editable &&
+                $waybill->block_edit_date
+            ) {
                 $blockEditDate = new \DateTime($waybill->block_edit_date);
                 $currentDate = new \DateTime();
                 $interval = $currentDate->diff($blockEditDate);
 
                 if ($interval->days > 2) {
-
-                    return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
-                        'waybill_path' => $path,
+                    return ApiResponse::code($apiCodes->SUCCESS, [
+                        'waybill_path' => $this->path . $waybill->file_path,
                     ]);
                 } else {
                     return ApiResponse::code($apiCodes->NO_ACCESS, [
