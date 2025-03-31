@@ -33,10 +33,38 @@ class WaybillController extends ClientController
         $user = User::getIdentity();
         $order = Order::findOne(['id' => $id]);
 
-        if (!$order) return ApiResponse::code($apiCodes->NOT_FOUND, ['message' => 'Заказ не найден']);
-        if ($order->created_by !== $user->id) return ApiResponse::code($apiCodes->NO_ACCESS, ['message' => 'Нет доступа к накладной']);
+        if (!$order) {
+
+            \Yii::$app->telegramLog->send('error', [
+                'Заказ не найден',
+                "ID заказа: {$id}",
+                "Клиент: {$user->name} (ID: {$user->id})"
+            ], 'client');
+
+            return ApiResponse::code($apiCodes->NOT_FOUND, ['message' => 'Заказ не найден']);
+        };
+        if ($order->created_by !== $user->id) {
+
+            \Yii::$app->telegramLog->send('error', [
+                'Нет доступа к накладной',
+                "ID заказа: {$id}",
+                "Клиент: {$user->name} (ID: {$user->id})"
+            ], 'client');
+
+            return ApiResponse::code($apiCodes->NO_ACCESS, ['message' => 'Нет доступа к накладной']);
+        }
+
         $waybill = $order->waybill;
-        if (!$waybill) return ApiResponse::code($apiCodes->NOT_FOUND, ['message' => 'Накладная не найдена']);
+        if (!$waybill) {
+
+            \Yii::$app->telegramLog->send('error', [
+                'Накладная не найдена',
+                "ID заказа: {$id}",
+                "Клиент: {$user->name} (ID: {$user->id})"
+            ], 'client');
+
+            return ApiResponse::code($apiCodes->NOT_FOUND, ['message' => 'Накладная не найдена']);
+        };
 
         if ($waybill) {
 
@@ -53,12 +81,29 @@ class WaybillController extends ClientController
                         'waybill_path' => $this->path . $waybill->file_path,
                     ]);
                 } else {
+
+                    \Yii::$app->telegramLog->send('warning', [
+                        'Клиент пытается получить недоступную накладную',
+                        "ID заказа: {$id}",
+                        "Клиент: {$user->name} (ID: {$user->id})",
+                        "Дата блокировки: {$waybill->block_edit_date}",
+                        "Прошло дней: " . $interval !== null ? $interval->days : 0
+                    ], 'client');
+
+
                     return ApiResponse::code($apiCodes->NO_ACCESS, [
                         'message' => 'Накладная еще недоступна для просмотра'
                     ]);
                 }
             }
         }
+
+        \Yii::$app->telegramLog->send('error', [
+            'Накладная не найдена',
+            "ID заказа: {$id}",
+            "Клиент: {$user->name} (ID: {$user->id})"
+        ], 'client');
+
         return ApiResponse::code($apiCodes->NOT_FOUND, ['message' => 'Накладная не найдена']);
     }
 }
