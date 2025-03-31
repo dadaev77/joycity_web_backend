@@ -112,7 +112,11 @@ class BuyerOfferController extends ClientController
             );
         } catch (Throwable $e) {
             isset($transaction) && $transaction->rollBack();
-            \Yii::$app->telegramLog->send('error', 'Не удалось принять предложение продавца с ID ' . $buyerOffer->id . '. Ошибка: ' . $e->getMessage());
+            \Yii::$app->telegramLog->send('error', [
+                'Клиент не может откликнуться на заявку байера',
+                "Предложение ID: {$id}",
+                $e->getMessage(),
+            ], 'buyer');
             return ApiResponse::internalError($e);
         }
     }
@@ -217,7 +221,11 @@ class BuyerOfferController extends ClientController
             return ApiResponse::code($apiCodes->SUCCESS);
         } catch (Throwable $e) {
             isset($transaction) && $transaction->rollBack();
-            Yii::$app->telegramLog->send('error', 'Не удалось отклонить предложение продавца с ID ' . $buyerOffer->id . '. Ошибка: ' . $e->getMessage());
+            \Yii::$app->telegramLog->send('error', [
+                'Клиент не может отклонить заявку байера',
+                "Предложение ID: {$id}",
+                $e->getMessage(),
+            ], 'buyer');
             return ApiResponse::internalError($e);
         }
     }
