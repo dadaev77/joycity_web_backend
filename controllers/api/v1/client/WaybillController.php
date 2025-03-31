@@ -89,7 +89,7 @@ class WaybillController extends ClientController
             "ID заказа: {$id}",
             "Клиент: {$user->name} (ID: {$user->id})",
             "Дата блокировки: {$waybill->block_edit_date}",
-            "Прошло дней: " . $interval ? $interval->days : 0
+            // "Прошло дней: " . $interval ? $interval->days : 0
         ], 'client');
 
         return ApiResponse::code($apiCodes->NO_ACCESS, [
