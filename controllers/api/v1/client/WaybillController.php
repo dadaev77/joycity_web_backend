@@ -26,6 +26,7 @@ class WaybillController extends ClientController
         $user = User::getIdentity();
         $order = Order::findOne(['id' => $id]);
 
+        if (!$order) return ApiResponse::code($apiCodes->NOT_FOUND, ['message' => 'Заказ не найден']);
         if ($order->created_by !== $user->id) return ApiResponse::code($apiCodes->NO_ACCESS, ['message' => 'Нет доступа к накладной']);
         $waybill = $order->waybill;
         if (!$waybill) return ApiResponse::code($apiCodes->NOT_FOUND, ['message' => 'Накладная не найдена']);
