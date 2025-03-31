@@ -32,7 +32,7 @@ class WaybillController extends ClientController
         if (!$waybill) return ApiResponse::code($apiCodes->NOT_FOUND, ['message' => 'Накладная не найдена']);
 
         if ($waybill) {
-            var_dump($waybill);
+            var_dump($waybill->toArray());
             die();
             if (!$waybill->editable && $waybill->block_edit_date) {
                 $blockEditDate = new \DateTime($waybill->block_edit_date);
