@@ -173,8 +173,8 @@ class ProductController extends BuyerController
             \Yii::$app->telegramLog->send('info', [
                 'Товар создан',
                 "ID товара: {$product->id}",
-                "Название: {$product->name_ru}",
-                "Описание: {$product->description_ru}",
+                "Название: {$request->post('name')}",
+                "Описание: {$request->post('description')}",
                 "Пользователь: {$user->name} (ID: {$user->id})",
             ], 'buyer');
 
