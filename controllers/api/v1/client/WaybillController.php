@@ -68,7 +68,7 @@ class WaybillController extends ClientController
 
             $blockEditDate = new \DateTime($waybill->block_edit_date);
             $currentDate = new \DateTime();
-            $interval = $currentDate->diff($blockEditDate) ?? 0;
+            $interval = $currentDate->diff($blockEditDate);
 
             if ($interval->days > 2) {
                 $path = $_ENV['APP_URL'] . '/uploads/waybills/' . $waybill->file_path;
@@ -89,7 +89,7 @@ class WaybillController extends ClientController
             "ID заказа: {$id}",
             "Клиент: {$user->name} (ID: {$user->id})",
             "Дата блокировки: {$waybill->block_edit_date}",
-            "Прошло дней: {$interval->days}"
+            "Прошло дней: " . $interval->days ?? 0
         ], 'client');
 
         return ApiResponse::code($apiCodes->NO_ACCESS, [
