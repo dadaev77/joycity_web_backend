@@ -24,76 +24,31 @@ class WaybillController extends ClientController
     {
         $apiCodes = Order::apiCodes();
         $user = User::getIdentity();
-        $interval = null;
-
         $order = Order::findOne(['id' => $id]);
-        if (!$order) {
-            \Yii::$app->telegramLog->send('error', [
-                'Клиент пытается получить накладную несуществующего заказа',
-                "ID заказа: {$id}",
-                "Клиент: {$user->name} (ID: {$user->id})"
-            ], 'client');
-            return ApiResponse::code($apiCodes->NOT_FOUND, [
-                'message' => 'Заказ не найден'
-            ]);
-        }
 
+        if ($order->created_by !== $user->id) return ApiResponse::code($apiCodes->NO_ACCESS, ['message' => 'Нет доступа к накладной']);
+        $waybill = $order->waybill;
+        if (!$waybill) return ApiResponse::code($apiCodes->NOT_FOUND, ['message' => 'Накладная не найдена']);
 
-        if ($order->created_by !== $user->id) {
-            \Yii::$app->telegramLog->send('error', [
-                'Клиент пытается получить накладную чужого заказа',
-                "ID заказа: {$id}",
-                "Клиент: {$user->name} (ID: {$user->id})",
-                "Создатель заказа: {$order->created_by}"
-            ], 'client');
-            return ApiResponse::code($apiCodes->NO_ACCESS, [
-                'message' => 'Нет доступа к накладной'
-            ]);
-        }
+        if ($waybill) {
+            return 'waybill is here';
+            if (!$waybill->editable && $waybill->block_edit_date) {
+                $blockEditDate = new \DateTime($waybill->block_edit_date);
+                $currentDate = new \DateTime();
+                $interval = $currentDate->diff($blockEditDate);
 
-
-        $waybill = WaybillService::getByOrderId($id);
-        if (!$waybill) {
-            \Yii::$app->telegramLog->send('error', [
-                'Клиент пытается получить несуществующую накладную',
-                "ID заказа: {$id}",
-                "Клиент: {$user->name} (ID: {$user->id})"
-            ], 'client');
-            return ApiResponse::code($apiCodes->NOT_FOUND, [
-                'message' => 'Накладная не найдена'
-            ]);
-        }
-
-        if (!$waybill->editable && $waybill->block_edit_date) {
-
-            $blockEditDate = new \DateTime($waybill->block_edit_date);
-            $currentDate = new \DateTime();
-            $interval = $currentDate->diff($blockEditDate);
-
-            if ($interval->days > 2) {
-                $path = $_ENV['APP_URL'] . '/uploads/waybills/' . $waybill->file_path;
-                \Yii::$app->telegramLog->send('success', [
-                    'Клиент успешно получил накладную',
-                    "ID заказа: {$id}",
-                    "Клиент: {$user->name} (ID: {$user->id})",
-                    "Путь к накладной: {$path}"
-                ], 'client');
-                return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
-                    'waybill_path' => $path,
-                ]);
-            } else {
-                \Yii::$app->telegramLog->send('warning', [
-                    'Клиент пытается получить недоступную накладную',
-                    "ID заказа: {$id}",
-                    "Клиент: {$user->name} (ID: {$user->id})",
-                    "Дата блокировки: {$waybill->block_edit_date}",
-                    "Прошло дней: " . $interval !== null ? $interval->days : 0
-                ], 'client');
-
-                return ApiResponse::code($apiCodes->NO_ACCESS, [
-                    'message' => 'Накладная еще недоступна для просмотра'
-                ]);
+                if ($interval->days > 2) {
+                    $path = $_ENV['APP_URL'] . '/uploads/waybills/' . $waybill->file_path;
+                    return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
+                        'waybill_path' => $path,
+                    ]);
+                } else {
+                    return ApiResponse::code($apiCodes->NO_ACCESS, [
+                        'message' => 'Накладная еще недоступна для просмотра'
+                    ]);
+                }
             }
         }
+        return ApiResponse::code($apiCodes->NOT_FOUND, ['message' => 'Накладная не найдена']);
     }
 }
