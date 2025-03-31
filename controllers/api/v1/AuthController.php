@@ -128,7 +128,13 @@ class AuthController extends V1Controller implements ApiAuth
             return ApiResponse::code(User::apiCodes()->CREDENTIALS_NOT_FOUND);
         }
         if ($user->role !== $params['role']) {
-            Yii::$app->telegramLog->send('error', 'Ошибка при входе в систему: неверная роль');
+            Yii::$app->telegramLog->send('error', [
+                'Зарегистрированный пользователь не может войти в приложение',
+                'Email: ' . $params['email'],
+                'Указанная роль: ' . $params['role'],
+                'Реальная роль: ' . $user->role,
+                'UUID: ' . $user->uuid
+            ]);
             return ApiResponse::code(
                 User::apiCodes()->CREDENTIALS_NOT_PASSED_FOR_THIS_ROLE,
             );
@@ -139,9 +145,21 @@ class AuthController extends V1Controller implements ApiAuth
                 ->getSecurity()
                 ->validatePassword($params['password'], $user->password)
         ) {
-            Yii::$app->telegramLog->send('error', "Ошибка при входе в систему. \nЛогин: " . $params['email'] . " неверный пароль");
+            Yii::$app->telegramLog->send('error', [
+                'Зарегистрированный пользователь не может войти в приложение',
+                'Email: ' . $params['email'],
+                'UUID: ' . $user->uuid,
+                'Причина: неверный пароль'
+            ]);
             return ApiResponse::code(User::apiCodes()->CREDENTIALS_NOT_PASSED);
         }
+
+        Yii::$app->telegramLog->send('success', [
+            'Успешная авторизация пользователя',
+            'Email: ' . $params['email'],
+            'Роль: ' . $user->role,
+            'UUID: ' . $user->uuid
+        ]);
 
         return ApiResponse::code(null, [
             'access_token' => $user->access_token,
@@ -467,6 +485,13 @@ class AuthController extends V1Controller implements ApiAuth
             }
 
             $transaction?->commit();
+
+            Yii::$app->telegramLog->send('success', [
+                'Успешная регистрация нового пользователя',
+                'Email: ' . $email,
+                'Роль: ' . $role,
+                'UUID: ' . $user->uuid
+            ]);
 
             return ApiResponse::code($apiCodes->SUCCESS, [
                 'access_token' => $user->access_token,
