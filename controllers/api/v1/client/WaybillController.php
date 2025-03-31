@@ -53,7 +53,6 @@ class WaybillController extends ClientController
 
 
         $waybill = WaybillService::getByOrderId($id);
-
         if (!$waybill) {
             \Yii::$app->telegramLog->send('error', [
                 'Клиент пытается получить несуществующую накладную',
@@ -82,19 +81,19 @@ class WaybillController extends ClientController
                 return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
                     'waybill_path' => $path,
                 ]);
+            } else {
+                \Yii::$app->telegramLog->send('warning', [
+                    'Клиент пытается получить недоступную накладную',
+                    "ID заказа: {$id}",
+                    "Клиент: {$user->name} (ID: {$user->id})",
+                    "Дата блокировки: {$waybill->block_edit_date}",
+                    "Прошло дней: " . $interval !== null ? $interval->days : 0
+                ], 'client');
+
+                return ApiResponse::code($apiCodes->NO_ACCESS, [
+                    'message' => 'Накладная еще недоступна для просмотра'
+                ]);
             }
         }
-
-        \Yii::$app->telegramLog->send('warning', [
-            'Клиент пытается получить недоступную накладную',
-            "ID заказа: {$id}",
-            "Клиент: {$user->name} (ID: {$user->id})",
-            "Дата блокировки: {$waybill->block_edit_date}",
-            "Прошло дней: " . $interval !== null ? $interval->days : 0
-        ], 'client');
-
-        return ApiResponse::code($apiCodes->NO_ACCESS, [
-            'message' => 'Накладная еще недоступна для просмотра'
-        ]);
     }
 }
