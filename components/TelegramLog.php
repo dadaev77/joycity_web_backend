@@ -14,12 +14,12 @@ class TelegramLog
      * @param bool $async
      * @return string
      */
-    public function send(string $type, $message, $thread = false, string $env = 'dev', bool $async = true)
+    public function send(string $type, $message, $thread = false, $env = null)
     {
         Yii::$app->queue->push(new \app\jobs\Telegram\SendMessageJob([
             'type' => $type,
             'message' => $message,
-            'env' => $env,
+            'env' => !$env ? $_ENV['APP_ENV'] : (in_array($env, ['dev', 'prod']) ? $env : $_ENV['APP_ENV']),
             'async' => false,
             'thread' => $thread,
         ]));
