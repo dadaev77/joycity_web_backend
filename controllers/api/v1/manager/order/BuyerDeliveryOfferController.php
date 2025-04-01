@@ -129,7 +129,7 @@ class BuyerDeliveryOfferController extends ManagerController
                 [
                     'Накладная появилась у клиента через 2 дня после формирования в МП Менеджера',
                     "Заказ №{$order->id}",
-                    "Клиент: {$order->client->name} (ID: {$order->created_by})",
+                    "Клиент: " . User::findOne($order->created_by)->name . " (ID: {$order->created_by})",
                     "Менеджер: {$user->name} (ID: {$user->id})",
                 ],
                 'client'
