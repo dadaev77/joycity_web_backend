@@ -104,38 +104,14 @@ class BuyerDeliveryOfferController extends ManagerController
             // Устанавливаем флаг наличия накладной для заказа
             $order->waybill_isset = true;
             $order->client_waybill_isset = true;
+
             if (!$order->save()) {
-
-                \Yii::$app->telegramLog->send(
-                    'error',
-                    [
-                        'Накладная не появилась у клиента через 2 дня после формирования в МП Менеджера',
-                        "Заказ №{$order->id}",
-                        "Клиент: " . User::findOne($order->created_by)->name . " (ID: {$order->created_by})",
-                        "Менеджер: {$user->name} (ID: {$user->id})",
-                        json_encode($order->getFirstErrors()),
-                    ],
-                    'client'
-                );
-
                 return ApiResponse::codeErrors(
                     $apiCodes->ERROR_SAVE,
                     $order->getFirstErrors(),
                 );
             }
 
-            \Yii::$app->telegramLog->send(
-                'success',
-                [
-                    'Накладная появилась у клиента через 2 дня после формирования в МП Менеджера',
-                    "Заказ №{$order->id}",
-                    "Клиент: " . User::findOne($order->created_by)->name . " (ID: {$order->created_by})",
-                    "Менеджер: {$user->name} (ID: {$user->id})",
-                ],
-                'client'
-            );
-
-            // Подготавливаем данные для накладной
             $waybillData = array_merge($params, [
                 'buyer_id' => $order->buyer_id,
                 'client_id' => $order->created_by,
