@@ -241,7 +241,17 @@ class BuyerDeliveryOfferController extends ManagerController
             $buyerDeliveryOffer->status = BuyerDeliveryOffer::STATUS_PAID;
 
             if (!$buyerDeliveryOffer->save()) {
-                Yii::$app->telegramLog->send('error', 'Не удалось подтвердить оплату предложения по доставке: ' . json_encode($buyerDeliveryOffer->getFirstErrors()));
+
+                Yii::$app->telegramLog->send(
+                    'error',
+                    [
+                        'Не удалось подтвердить оплату предложения по доставке: ' . json_encode($buyerDeliveryOffer->getFirstErrors()),
+                        'ID предложения: ' . $id,
+                        'ID заказа: ' . $order->id,
+                        'ID менеджера: ' . $user->id,
+                    ],
+                    'manager'
+                );
                 return ApiResponse::transactionCodeErrors(
                     $transaction,
                     $apiCodes->ERROR_SAVE,
@@ -270,11 +280,31 @@ class BuyerDeliveryOfferController extends ManagerController
 
             $transaction?->commit();
 
+            Yii::$app->telegramLog->send(
+                'success',
+                [
+                    'Предложение по доставке оплачено',
+                    'ID предложения: ' . $id,
+                    'ID заказа: ' . $order->id,
+                    'ID менеджера: ' . $user->id,
+                ],
+                'manager'
+            );
+
             return ApiResponse::info(
                 BuyerDeliveryOfferOutputService::getEntity($id),
             );
         } catch (Throwable $e) {
-            Yii::$app->telegramLog->send('error', 'Ошибка при оплате предложения по доставке: ' . $e->getMessage());
+
+            Yii::$app->telegramLog->send(
+                'error',
+                [
+                    'Ошибка при оплате предложения по доставке: ' . $e->getMessage(),
+                    'Текст ошибки: ' . $e->getMessage(),
+                ],
+                'manager'
+            );
+
             isset($transaction) && $transaction->rollBack();
             return ApiResponse::internalError($e);
         }
