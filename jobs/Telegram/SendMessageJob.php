@@ -122,6 +122,7 @@ class SendMessageJob extends BaseObject implements JobInterface
             'fulfillment' => 9,
             'buyer' => 11,
             'client' => 3,
+            'rates' => 528,
         ];
 
         return $threads[$thread];
@@ -134,6 +135,7 @@ class SendMessageJob extends BaseObject implements JobInterface
             'fulfillment' => 6,
             'buyer' => 8,
             'client' => 4,
+            'rates' => 187,
         ];
 
         return $threads[$thread];
