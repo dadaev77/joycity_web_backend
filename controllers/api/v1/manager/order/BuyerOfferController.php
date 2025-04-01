@@ -153,6 +153,7 @@ class BuyerOfferController extends ManagerController
                     $orderStatusChange->reason,
                 );
             }
+
             $rate = Rate::find()
                 ->orderBy(['id' => SORT_DESC])
                 ->one();
@@ -194,9 +195,30 @@ class BuyerOfferController extends ManagerController
 
             $transaction?->commit();
 
+            \Yii::$app->telegramLog->send(
+                'success',
+                [
+                    'Предложение покупателя оплачено',
+                    'ID предложения: ' . $id,
+                    'ID заказа: ' . $order->id,
+                    'ID менеджера: ' . $user->id,
+                ],
+                'manager'
+            );
+
             return ApiResponse::info(BuyerOfferOutputService::getEntity($id));
         } catch (Throwable $e) {
-            Yii::$app->telegramLog->send('error', 'Ошибка при оплате предложения продавца: ' . $e->getMessage());
+            Yii::$app->telegramLog->send(
+                'error',
+                [
+                    'Ошибка при оплате предложения продавца: ',
+                    'Текст ошибки: ' . $e->getMessage(),
+                    'ID предложения: ' . $id,
+                    'ID заказа: ' . $order->id,
+                    'ID менеджера: ' . $user->id,
+                ],
+                'manager'
+            );
             isset($transaction) && $transaction->rollBack();
 
             return ApiResponse::internalError($e);
