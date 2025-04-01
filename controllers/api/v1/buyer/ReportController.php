@@ -117,7 +117,12 @@ class ReportController extends BuyerController
 
             if (!$stockReport->save()) {
                 $transaction?->rollBack();
-                Yii::$app->telegramLog->send('error', 'Не удалось создать отчет о наличии товара: ' . json_encode($stockReport->getFirstErrors()));
+
+                Yii::$app->telegramLog->send('error', [
+                    'Не удалось создать отчет о наличии товара',
+                    'Текст ошибки: ' . json_encode($stockReport->getFirstErrors()),
+                ], 'buyer');
+
                 return ApiResponse::codeErrors(
                     $apiCodes->ERROR_SAVE,
                     $stockReport->getFirstErrors(),
@@ -185,13 +190,25 @@ class ReportController extends BuyerController
 
             $transaction?->commit();
 
+            \Yii::$app->telegramLog->send('success', [
+                'Товар прибыл на склад продавца',
+                'ID отчета: ' . $stockReport->id,
+                'ID заказа: ' . $order_id,
+                'ID покупателя: ' . $user->id,
+            ], 'buyer');
+
             return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
                 'info' => ProductStockReportOutputService::getEntity(
                     $stockReport->id,
                 ),
             ]);
         } catch (Throwable $e) {
-            Yii::$app->telegramLog->send('error', 'Ошибка при отправке отчета о запасах: ' . $e->getMessage());
+            Yii::$app->telegramLog->send('error', [
+                'Ошибка при отправке отчета о запасах',
+                'Текст ошибки: ' . $e->getMessage(),
+                'Трассировка: ' . $e->getTraceAsString(),
+            ], 'buyer');
+
             isset($transaction) && $transaction->rollBack();
 
             return ApiResponse::internalError($e);
@@ -249,7 +266,10 @@ class ReportController extends BuyerController
             $productInspection->is_deep = $order->is_need_deep_inspection;
 
             if (!$productInspection->save()) {
-                Yii::$app->telegramLog->send('error', 'Не удалось создать отчет о проверке: ' . json_encode($productInspection->getFirstErrors()));
+                Yii::$app->telegramLog->send('error', [
+                    'Не удалось создать отчет о проверке',
+                    'Текст ошибки: ' . json_encode($productInspection->getFirstErrors()),
+                ], 'buyer');
                 return ApiResponse::transactionCodeErrors(
                     $transaction,
                     $apiCodes->ERROR_SAVE,
@@ -271,13 +291,24 @@ class ReportController extends BuyerController
 
             $transaction?->commit();
 
+            \Yii::$app->telegramLog->send('success', [
+                'Отчет об инспекции отправлен',
+                'ID отчета: ' . $productInspection->id,
+                'ID заказа: ' . $order_id,
+                'ID покупателя: ' . $user->id,
+            ], 'buyer');
+
             return ApiResponse::info(
                 ProductInspectionOutputService::getEntity(
                     $productInspection->id,
                 ),
             );
         } catch (Throwable $e) {
-            Yii::$app->telegramLog->send('error', 'Ошибка при отправке отчета об инспекции: ' . $e->getMessage());
+            Yii::$app->telegramLog->send('error', [
+                'Ошибка при отправке отчета об инспекции',
+                'Текст ошибки: ' . $e->getMessage(),
+                'Трассировка: ' . $e->getTraceAsString(),
+            ], 'buyer');
             isset($transaction) && $transaction->rollBack();
 
             return ApiResponse::internalError($e);
@@ -353,7 +384,10 @@ class ReportController extends BuyerController
             );
 
             if (!$status->success) {
-                Yii::$app->telegramLog->send('error', 'Не удалось создать отчет о отправке заказа: ' . json_encode($status->reason));
+                Yii::$app->telegramLog->send('error', [
+                    'Не удалось создать отчет о отправке заказа',
+                    'Текст ошибки: ' . json_encode($status->reason),
+                ], 'buyer');
                 return ApiResponse::transactionCodeErrors(
                     $transaction,
                     $apiCodes->ERROR_SAVE,
@@ -363,6 +397,12 @@ class ReportController extends BuyerController
 
             $transaction?->commit();
 
+            \Yii::$app->telegramLog->send('success', [
+                'Заказ отправлен',
+                'ID заказа: ' . $order_id,
+                'ID покупателя: ' . $user->id,
+            ], 'buyer');
+
             return ApiResponse::info(
                 OrderOutputService::getEntity(
                     $order_id,
@@ -371,7 +411,11 @@ class ReportController extends BuyerController
                 ),
             );
         } catch (Throwable $e) {
-            Yii::$app->telegramLog->send('error', 'Ошибка при отправке заказа как отправленного: ' . $e->getMessage());
+            Yii::$app->telegramLog->send('error', [
+                'Ошибка при отправке заказа как отправленного',
+                'Текст ошибки: ' . $e->getMessage(),
+                'Трассировка: ' . $e->getTraceAsString(),
+            ], 'buyer');
             isset($transaction) && $transaction->rollBack();
 
             return ApiResponse::internalError($e);

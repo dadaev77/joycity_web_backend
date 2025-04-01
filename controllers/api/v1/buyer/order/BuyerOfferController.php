@@ -142,21 +142,35 @@ class BuyerOfferController extends BuyerController
                 );
             }
 
-            // PushService::sendPushNotification(
-            //     $order->created_by,
-            //     [
-            //         'title' => 'Новое предложение',
-            //         'body' => 'Вы получили новое предложение ' . $buyerOffer->id,
-            //     ]
-            // );
+            PushService::sendPushNotification(
+                $order->created_by,
+                [
+                    'title' => 'Новое предложение',
+                    'body' => 'Вы получили новое предложение ' . $buyerOffer->id,
+                ]
+            );
 
             $transaction?->commit();
+
+
+            \Yii::$app->telegramLog->send('success', [
+                'Предложение продавца создано',
+                'ID предложения: ' . $buyerOffer->id,
+                'ID заявки: ' . $order->id,
+                'ID покупателя: ' . $user->id,
+            ], 'buyer');
 
             return ApiResponse::info(
                 BuyerOfferOutputService::getEntity($buyerOffer->id),
             );
         } catch (Throwable $e) {
-            Yii::$app->telegramLog->send('error', 'Ошибка при создании предложения продавца: ' . $e->getMessage());
+
+            \Yii::$app->telegramLog->send('error', [
+                'Ошибка при создании предложения продавца',
+                'Текст ошибки: ' . $e->getMessage(),
+                'Трассировка: ' . $e->getTraceAsString(),
+            ], 'buyer');
+
             isset($transaction) && $transaction->rollBack();
             return ApiResponse::internalError($e);
         }

@@ -99,6 +99,7 @@ class AttachmentService
                 }
                 $mainModel->unlinkAll($relationName, true);
             }
+
             // Проходимся по загруженным файлам и сохраняем их в базе данных
             foreach ($files as $file) {
                 $extension = $file->getExtension();

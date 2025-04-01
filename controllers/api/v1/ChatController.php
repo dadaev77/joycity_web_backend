@@ -636,25 +636,6 @@ class ChatController extends V1Controller
      */
     public function actionSendMessage()
     {
-        $uploadedTypes = [
-            'images' => UploadedFile::getInstancesByName('images'),
-            'videos' => UploadedFile::getInstancesByName('videos'),
-            'files' => UploadedFile::getInstancesByName('files'),
-            'audios' => UploadedFile::getInstancesByName('audios'),
-        ];
-
-        $uploadedAttachments = [];
-        foreach ($uploadedTypes as $type => $files) {
-            if ($files) {
-                $methodName = 'upload' . ucfirst($type);
-                $result = call_user_func([ChatUploader::class, $methodName], $files);
-                if (!empty($result)) {
-                    $uploadedAttachments = array_merge($uploadedAttachments, $result);
-                } else {
-                    Yii::$app->telegramLog->send('error', 'Не удалось загрузить файл в чат: ' . json_encode($result));
-                }
-            }
-        }
 
         $chatId = Yii::$app->request->post('chat_id');
         $content = Yii::$app->request->post('content');
@@ -674,6 +655,42 @@ class ChatController extends V1Controller
         $metadata = $chat->metadata ?? [];
         $participants = $metadata['participants'] ?? [];
 
+        $uploadedTypes = [
+            'images' => UploadedFile::getInstancesByName('images'),
+            'videos' => UploadedFile::getInstancesByName('videos'),
+            'files' => UploadedFile::getInstancesByName('files'),
+            'audios' => UploadedFile::getInstancesByName('audios'),
+        ];
+
+        $uploadedAttachments = [];
+        foreach ($uploadedTypes as $type => $files) {
+            if ($files) {
+                $methodName = 'upload' . ucfirst($type);
+                $result = call_user_func([ChatUploader::class, $methodName], $files);
+                if (!empty($result)) {
+                    $uploadedAttachments = array_merge($uploadedAttachments, $result);
+                    Yii::$app->telegramLog->send('success', [
+                        'Успешная загрузка файлов в чат',
+                        'Количество файлов: ' . count($files),
+                        'ID чата: ' . $chatId,
+                        'ID пользователя: ' . $userId
+                    ]);
+                } else {
+                    Yii::$app->telegramLog->send('error', [
+                        'Файлы в чатах не загрузились',
+                        'Количество файлов: ' . count($files),
+                        'ID чата: ' . $chatId,
+                        'ID пользователя: ' . $userId,
+                        'Причина: ' . json_encode($result)
+                    ]);
+                }
+            }
+        }
+
+
+
+
+
         if (!in_array($userId, $participants)) {
             throw new BadRequestHttpException('У вас нет доступа к этому чату');
         }
@@ -691,7 +708,6 @@ class ChatController extends V1Controller
 
             $chat->last_message_id = $message->id;
             $chat->save();
-
 
             $messageToSend = Message::findOne($message->id);
             $notificationData = [

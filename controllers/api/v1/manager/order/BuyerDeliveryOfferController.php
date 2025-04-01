@@ -89,32 +89,29 @@ class BuyerDeliveryOfferController extends ManagerController
                 );
             }
 
+            Yii::$app->telegramLog->send(
+                'success',
+                [
+                    'Менеджер создал предложение о доставке',
+                    'ID заказа: ' . $order->id,
+                    'ID клиента: ' . $order->created_by,
+                    'ID менеджера: ' . $user->id,
+                    'ID покупателя: ' . $order->buyer_id,
+                ],
+                'manager'
+            );
+
             // Устанавливаем флаг наличия накладной для заказа
             $order->waybill_isset = true;
             $order->client_waybill_isset = true;
+
             if (!$order->save()) {
-                \Yii::$app->telegramLog->send('error', [
-                    'Накладная не появилась у клиента через 2 дня после формирования в МП Менеджера',
-                    "Заказ №{$order->id}",
-                    "Клиент: {$order->client->name} (ID: {$order->created_by})",
-                    "Менеджер: {$user->name} (ID: {$user->id})",
-                    json_encode($order->getFirstErrors()),
-                ], 'client');
-                
                 return ApiResponse::codeErrors(
                     $apiCodes->ERROR_SAVE,
                     $order->getFirstErrors(),
                 );
             }
 
-            \Yii::$app->telegramLog->send('success', [
-                'Накладная появилась у клиента через 2 дня после формирования в МП Менеджера',
-                "Заказ №{$order->id}",
-                "Клиент: {$order->client->name} (ID: {$order->created_by})",
-                "Менеджер: {$user->name} (ID: {$user->id})",
-            ], 'client');
-
-            // Подготавливаем данные для накладной
             $waybillData = array_merge($params, [
                 'buyer_id' => $order->buyer_id,
                 'client_id' => $order->created_by,
@@ -134,13 +131,34 @@ class BuyerDeliveryOfferController extends ManagerController
             // Создаем накладную через сервис
             $waybill = WaybillService::create($waybillData);
             sleep(1); // TODO: Удалить
+
+            Yii::$app->telegramLog->send(
+                'success',
+                [
+                    'Накладная успешно сформирована',
+                    'ID заказа: ' . $order->id,
+                    'ID клиента: ' . $order->created_by,
+                    'ID продавца: ' . $order->buyer_id
+                ],
+                'manager'
+            );
+
             return ApiResponse::info(
                 BuyerDeliveryOfferOutputService::getEntity(
                     $buyerDeliveryOffer->id,
                 ),
             );
         } catch (Throwable $e) {
-            Yii::$app->telegramLog->send('error', 'Ошибка при создании предложения по доставке: ' . $e->getMessage());
+
+            Yii::$app->telegramLog->send(
+                'error',
+                [
+                    'Ошибка при создании предложения по доставке: ' . $e->getMessage(),
+                    'Текст ошибки: ' . $e->getMessage(),
+
+                ],
+            );
+
             return ApiResponse::internalError($e);
         }
     }
@@ -199,7 +217,17 @@ class BuyerDeliveryOfferController extends ManagerController
             $buyerDeliveryOffer->status = BuyerDeliveryOffer::STATUS_PAID;
 
             if (!$buyerDeliveryOffer->save()) {
-                Yii::$app->telegramLog->send('error', 'Не удалось подтвердить оплату предложения по доставке: ' . json_encode($buyerDeliveryOffer->getFirstErrors()));
+
+                Yii::$app->telegramLog->send(
+                    'error',
+                    [
+                        'Не удалось подтвердить оплату предложения по доставке: ' . json_encode($buyerDeliveryOffer->getFirstErrors()),
+                        'ID предложения: ' . $id,
+                        'ID заказа: ' . $order->id,
+                        'ID менеджера: ' . $user->id,
+                    ],
+                    'manager'
+                );
                 return ApiResponse::transactionCodeErrors(
                     $transaction,
                     $apiCodes->ERROR_SAVE,
@@ -228,11 +256,31 @@ class BuyerDeliveryOfferController extends ManagerController
 
             $transaction?->commit();
 
+            Yii::$app->telegramLog->send(
+                'success',
+                [
+                    'Предложение по доставке оплачено',
+                    'ID предложения: ' . $id,
+                    'ID заказа: ' . $order->id,
+                    'ID менеджера: ' . $user->id,
+                ],
+                'manager'
+            );
+
             return ApiResponse::info(
                 BuyerDeliveryOfferOutputService::getEntity($id),
             );
         } catch (Throwable $e) {
-            Yii::$app->telegramLog->send('error', 'Ошибка при оплате предложения по доставке: ' . $e->getMessage());
+
+            Yii::$app->telegramLog->send(
+                'error',
+                [
+                    'Ошибка при оплате предложения по доставке: ' . $e->getMessage(),
+                    'Текст ошибки: ' . $e->getMessage(),
+                ],
+                'manager'
+            );
+
             isset($transaction) && $transaction->rollBack();
             return ApiResponse::internalError($e);
         }
