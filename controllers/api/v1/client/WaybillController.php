@@ -81,15 +81,6 @@ class WaybillController extends ClientController
                         'waybill_path' => $this->path . $waybill->file_path,
                     ]);
                 } else {
-
-                    \Yii::$app->telegramLog->send('warning', [
-                        'Клиент пытается получить недоступную накладную',
-                        "ID заказа: {$id}",
-                        "Клиент: {$user->name} (ID: {$user->id})",
-                        "Дата блокировки: {$waybill->block_edit_date}",
-                    ], 'client');
-
-
                     return ApiResponse::code($apiCodes->NO_ACCESS, [
                         'message' => 'Накладная еще недоступна для просмотра'
                     ]);
