@@ -130,8 +130,9 @@ class CronController extends Controller
                     [
                         'Курсы обновлены:',
                         'USD - ' . $rates['data']['USD'] . ', CNY - ' . $rates['data']['CNY'],
-                        'Курсы + проценты: USD + 2% - ' . $rate->USD . ', CNY + 5% - ' . $rate->CNY
-                    ]
+                        'Курсы + проценты: USD + 2% - ' . $rate->USD . ', CNY + 5% - ' . $rate->CNY,
+                    ],
+                    'rates'
                 );
                 return ['status' => 'success', 'message' => 'Курсы обновлены'];
             } else {
