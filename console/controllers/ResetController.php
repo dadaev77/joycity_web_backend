@@ -25,7 +25,7 @@ class ResetController extends Controller
      */
     private $tables = [];
     private $attachments = [];
-
+    private $waybills = [];
     /**
      * Сброс базы данных
      * @return void
@@ -72,25 +72,67 @@ class ResetController extends Controller
         $this->stdout("Вложения удалены.\n", \yii\helpers\Console::FG_GREEN);
     }
 
-    private function getAttachments()
+    public function actionWaybills()
     {
-        $this->attachments = scandir(dirname(__DIR__, 2) . '/entrypoint/api/attachments');
+        $waybillDir = dirname(__DIR__, 2) . '/entrypoint/api/uploads/waybills';
 
-        foreach ($this->attachments as $attachment) {
-            if ($attachment !== '.' && $attachment !== '..') {
-                $this->deleteAttachment($attachment);
-            }
+        if (!is_dir($waybillDir)) {
+            $this->stdout("Папка с вложениями не существует.\n", \yii\helpers\Console::FG_RED);
+            return;
         }
+        $this->getWaybills($waybillDir)->deleteWaybills($waybillDir);
+    }
 
+    private function getWaybills($waybillDir)
+    {
+        $this->waybills = array_diff(scandir($waybillDir), ['..', '.']);
+        if (empty($this->waybills)) {
+            $this->stdout("Не найдены накладные.\n", \yii\helpers\Console::FG_YELLOW);
+            return $this;
+        } else {
+            $this->stdout("Найдено " . count($this->waybills) . " накладных.\n", \yii\helpers\Console::FG_YELLOW);
+        }
         return $this;
     }
 
-    private function deleteAttachment($attachment)
+    private function deleteWaybills($waybillDir)
     {
-        if (is_file(dirname(__DIR__, 2) . '/entrypoint/api/attachments/' . $attachment)) {
-            $this->stdout("Удаление вложения $attachment...\n", \yii\helpers\Console::FG_CYAN);
-            unlink(dirname(__DIR__, 2) . '/entrypoint/api/attachments/' . $attachment);
-            $this->stdout("Вложение $attachment удалено.\n", \yii\helpers\Console::FG_GREEN);
+        foreach ($this->waybills as $waybill) {
+            $this->deleteWaybill($waybill, $waybillDir);
+        }
+    }
+
+    private function deleteWaybill($waybill, $waybillDir)
+    {
+        if ($waybill !== '.' && $waybill !== '..') {
+            $this->stdout("Удаление вложения $waybill...\n", \yii\helpers\Console::FG_CYAN);
+            unlink($waybillDir . '/' . $waybill);
+            $this->stdout("Вложение $waybill удалено.\n", \yii\helpers\Console::FG_GREEN);
+        } else {
+            $this->stdout("Пропуск $waybill, так как это не файл.\n", \yii\helpers\Console::FG_YELLOW);
+        }
+    }
+
+    public function actionChatUploads() {}
+
+    /**
+     * Получение списка вложений
+     * @return $this
+     */
+    private function getAttachments()
+    {
+        $this->attachments = scandir(dirname(__DIR__, 2) . '/entrypoint/api/attachments');
+        return $this;
+    }
+
+    private function deleteAttachments()
+    {
+        foreach ($this->attachments as $attachment) {
+            if (is_file(dirname(__DIR__, 2) . '/entrypoint/api/attachments/' . $attachment)) {
+                $this->stdout("Удаление вложения $attachment...\n", \yii\helpers\Console::FG_CYAN);
+                unlink(dirname(__DIR__, 2) . '/entrypoint/api/attachments/' . $attachment);
+                $this->stdout("Вложение $attachment удалено.\n", \yii\helpers\Console::FG_GREEN);
+            }
         }
     }
 
