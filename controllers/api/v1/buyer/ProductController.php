@@ -157,6 +157,16 @@ class ProductController extends BuyerController
                 );
             }
 
+            \Yii::$app->telegramLog->send(
+                'info',
+                [
+                    'Изображения при создании товара загружены',
+                    "Товар: {$product->id}",
+                    "Пользователь: {$user->name} (ID: {$user->id})",
+                ],
+                'buyer'
+            );
+
             $product->linkAll('attachments', $attachmentSaveResponse->result, [
                 'type' => ProductLinkAttachment::TYPE_DEFAULT,
             ]);
