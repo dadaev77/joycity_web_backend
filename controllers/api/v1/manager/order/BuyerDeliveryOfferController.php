@@ -89,6 +89,14 @@ class BuyerDeliveryOfferController extends ManagerController
                 );
             }
 
+            Yii::$app->telegramLog->send('success', [
+                'Менеджер создал предложение о доставке',
+                'ID заказа: ' . $order->id,
+                'ID клиента: ' . $order->created_by,
+                'ID менеджера: ' . $user->id,
+                'ID покупателя: ' . $order->buyer_id,
+            ], 'manager');
+
             // Устанавливаем флаг наличия накладной для заказа
             $order->waybill_isset = true;
             $order->client_waybill_isset = true;
@@ -134,6 +142,19 @@ class BuyerDeliveryOfferController extends ManagerController
             // Создаем накладную через сервис
             $waybill = WaybillService::create($waybillData);
             sleep(1); // TODO: Удалить
+
+            Yii::$app->telegramLog->send('success', [
+                'Накладная успешно сформирована',
+                'ID заказа: ' . $order->id,
+                'ID клиента: ' . $order->created_by,
+                'ID менеджера: ' . $user->id,
+                'ID покупателя: ' . $order->buyer_id,
+                'Количество товара: ' . $params['total_quantity'],
+                'Вес товара: ' . $params['product_weight'],
+                'Объем товара: ' . $params['amount_of_space'],
+                'Размеры товара: ' . $params['product_width'] . 'x' . $params['product_height'] . 'x' . $params['product_depth']
+            ], 'manager');
+
             return ApiResponse::info(
                 BuyerDeliveryOfferOutputService::getEntity(
                     $buyerDeliveryOffer->id,

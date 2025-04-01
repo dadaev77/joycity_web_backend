@@ -308,6 +308,15 @@ class OrderStatusService
             $receiver = \app\models\User::findOne($order->created_by);
             $language = $receiver->getSettings()->application_language;
 
+            if ($orderStatus === Order::STATUS_PAID) {
+                Yii::$app->telegramLog->send('success', [
+                    'Оплата товара подтверждена менеджером',
+                    'ID заказа: ' . $order->id,
+                    'ID клиента: ' . $order->created_by,
+                    'ID менеджера: ' . $order->manager_id,
+                    'ID покупателя: ' . $order->buyer_id,
+                ], 'manager');
+            }
 
             PushService::sendPushNotification($order->created_by, [
                 'title' => Yii::t('order', 'update_status', ['order_id' => $order->id], $language),
