@@ -26,6 +26,7 @@ class ResetController extends Controller
     private $tables = [];
     private $attachments = [];
     private $waybills = [];
+    private $chatUploads = [];
     /**
      * Сброс базы данных
      * @return void
@@ -72,6 +73,9 @@ class ResetController extends Controller
         $this->stdout("Вложения удалены.\n", \yii\helpers\Console::FG_GREEN);
     }
 
+    /**
+     * Удаление накладных
+     */
     public function actionWaybills()
     {
         $waybillDir = dirname(__DIR__, 2) . '/entrypoint/api/uploads/waybills';
@@ -113,8 +117,44 @@ class ResetController extends Controller
         }
     }
 
-    public function actionChatUploads() {}
+    /**
+     * Удаление вложений в чатах
+     */
+    public function actionChatUploads()
+    {
+        $chatDir = dirname(__DIR__, 2) . '/entrypoint/api/uploads/chats';
+        if (!is_dir($chatDir)) {
+            $this->stdout("Папка с вложениями в чатах не существует.\n", \yii\helpers\Console::FG_RED);
+            return;
+        }
+        $this->getChatUploads($chatDir)->deleteChatUploads($chatDir);
+    }
 
+    private function getChatUploads($chatDir)
+    {
+        $this->chatUploads = array_diff(scandir($chatDir), ['..', '.']);
+        if (empty($this->chatUploads)) {
+            $this->stdout("Не найдены вложения в чатах.\n", \yii\helpers\Console::FG_YELLOW);
+            return $this;
+        } else {
+            $this->stdout("Найдено " . count($this->chatUploads) . " вложений в чатах.\n", \yii\helpers\Console::FG_YELLOW);
+        }
+        return $this;
+    }
+
+    private function deleteChatUploads($chatDir)
+    {
+        foreach ($this->chatUploads as $chatUpload) {
+            $this->deleteChatUpload($chatUpload, $chatDir);
+        }
+    }
+
+    private function deleteChatUpload($chatUpload, $chatDir)
+    {
+        $this->stdout("Удаление вложения $chatUpload...\n", \yii\helpers\Console::FG_CYAN);
+        unlink($chatDir . '/' . $chatUpload);
+        $this->stdout("Вложение $chatUpload удалено.\n", \yii\helpers\Console::FG_GREEN);
+    }
     /**
      * Получение списка вложений
      * @return $this
