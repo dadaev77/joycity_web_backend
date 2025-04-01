@@ -198,7 +198,7 @@ class BuyerOfferController extends ManagerController
             \Yii::$app->telegramLog->send(
                 'success',
                 [
-                    'Предложение покупателя оплачено',
+                    'Подтверждение оплаты предложения продавца',
                     'ID предложения: ' . $id,
                     'ID заказа: ' . $order->id,
                     'ID менеджера: ' . $user->id,
