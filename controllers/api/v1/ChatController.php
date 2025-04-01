@@ -636,6 +636,25 @@ class ChatController extends V1Controller
      */
     public function actionSendMessage()
     {
+
+        $chatId = Yii::$app->request->post('chat_id');
+        $content = Yii::$app->request->post('content');
+        $messageType = Yii::$app->request->post('type', 'text');
+        $replyToId = Yii::$app->request->post('reply_to_id');
+
+        if (!$chatId) {
+            throw new BadRequestHttpException('Необходимо указать chat_id');
+        }
+
+        $chat = Chat::findOne($chatId);
+        if (!$chat) {
+            throw new BadRequestHttpException('Чат не найден');
+        }
+
+        $userId = User::getIdentity()->id;
+        $metadata = $chat->metadata ?? [];
+        $participants = $metadata['participants'] ?? [];
+
         $uploadedTypes = [
             'images' => UploadedFile::getInstancesByName('images'),
             'videos' => UploadedFile::getInstancesByName('videos'),
@@ -668,23 +687,9 @@ class ChatController extends V1Controller
             }
         }
 
-        $chatId = Yii::$app->request->post('chat_id');
-        $content = Yii::$app->request->post('content');
-        $messageType = Yii::$app->request->post('type', 'text');
-        $replyToId = Yii::$app->request->post('reply_to_id');
 
-        if (!$chatId) {
-            throw new BadRequestHttpException('Необходимо указать chat_id');
-        }
 
-        $chat = Chat::findOne($chatId);
-        if (!$chat) {
-            throw new BadRequestHttpException('Чат не найден');
-        }
 
-        $userId = User::getIdentity()->id;
-        $metadata = $chat->metadata ?? [];
-        $participants = $metadata['participants'] ?? [];
 
         if (!in_array($userId, $participants)) {
             throw new BadRequestHttpException('У вас нет доступа к этому чату');
