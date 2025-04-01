@@ -70,11 +70,19 @@ class ResetController extends Controller
         $attachments = scandir(dirname(__DIR__, 2) . '/entrypoint/api/attachments');
         foreach ($attachments as $attachment) {
             if ($attachment !== '.' && $attachment !== '..') {
-                unlink(dirname(__DIR__, 2) . '/entrypoint/api/attachments/' . $attachment);
+                $this->deleteAttachment($attachment);
             }
         }
-        var_dump($attachments);
         $this->stdout("Вложения удалены.\n", \yii\helpers\Console::FG_GREEN);
+    }
+
+    private function deleteAttachment($attachment)
+    {
+        if (is_file(dirname(__DIR__, 2) . '/entrypoint/api/attachments/' . $attachment)) {
+            $this->stdout("Удаление вложения $attachment...\n", \yii\helpers\Console::FG_CYAN);
+            unlink(dirname(__DIR__, 2) . '/entrypoint/api/attachments/' . $attachment);
+            $this->stdout("Вложение $attachment удалено.\n", \yii\helpers\Console::FG_GREEN);
+        }
     }
 
     /**
