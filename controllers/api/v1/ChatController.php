@@ -644,16 +644,35 @@ class ChatController extends V1Controller
         ];
 
         $uploadedAttachments = [];
-        foreach ($uploadedTypes as $type => $files) {
-            if ($files) {
-                $methodName = 'upload' . ucfirst($type);
-                $result = call_user_func([ChatUploader::class, $methodName], $files);
-                if (!empty($result)) {
-                    $uploadedAttachments = array_merge($uploadedAttachments, $result);
-                } else {
-                    Yii::$app->telegramLog->send('error', 'Не удалось загрузить файл в чат: ' . json_encode($result));
+        try {
+            foreach ($uploadedTypes as $type => $files) {
+                if ($files) {
+                    $methodName = 'upload' . ucfirst($type);
+                    $result = call_user_func([ChatUploader::class, $methodName], $files);
+                    if (!empty($result)) {
+                        $uploadedAttachments = array_merge($uploadedAttachments, $result);
+                    } else {
+                        Yii::$app->telegramLog->send(
+                            'error',
+                            [
+                                'Не удалось загрузить файл в чат:',
+                                json_encode($result)
+                            ]
+                        );
+                    }
                 }
             }
+        } catch (\Exception $e) {
+
+            Yii::$app->telegramLog->send(
+                'error',
+                [
+                    'Не удалось загрузить файл в чат:',
+                    json_encode($e->getMessage())
+                ]
+            );
+
+            throw new BadRequestHttpException($e->getMessage());
         }
 
         $chatId = Yii::$app->request->post('chat_id');
@@ -691,7 +710,6 @@ class ChatController extends V1Controller
 
             $chat->last_message_id = $message->id;
             $chat->save();
-
 
             $messageToSend = Message::findOne($message->id);
             $notificationData = [
