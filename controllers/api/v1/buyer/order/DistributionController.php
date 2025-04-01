@@ -107,8 +107,10 @@ class DistributionController extends BuyerController
                 Yii::$app->telegramLog->send(
                     'error',
                     [
-                        'По задаче ' . $task->id . 'нет доступа',
-                        'Потому что текущий покупатель ' . $user->id . ' не совпадает с ' . $task->current_buyer_id
+                        'Нет доступа к задаче',
+                        'По задаче ' . $task->id,
+                        'ID продавца: ' . $user->id,
+                        'ID текущего продавца в распределении: ' . $task->current_buyer_id
                     ],
                     'buyer'
                 );
