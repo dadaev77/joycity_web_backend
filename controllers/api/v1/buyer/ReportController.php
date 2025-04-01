@@ -191,7 +191,7 @@ class ReportController extends BuyerController
             $transaction?->commit();
 
             \Yii::$app->telegramLog->send('success', [
-                'Отчет о запасах отправлен',
+                'Товар прибыл на склад продавца',
                 'ID отчета: ' . $stockReport->id,
                 'ID заказа: ' . $order_id,
                 'ID покупателя: ' . $user->id,

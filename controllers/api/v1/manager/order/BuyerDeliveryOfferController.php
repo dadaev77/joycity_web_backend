@@ -89,38 +89,51 @@ class BuyerDeliveryOfferController extends ManagerController
                 );
             }
 
-            Yii::$app->telegramLog->send('success', [
-                'Менеджер создал предложение о доставке',
-                'ID заказа: ' . $order->id,
-                'ID клиента: ' . $order->created_by,
-                'ID менеджера: ' . $user->id,
-                'ID покупателя: ' . $order->buyer_id,
-            ], 'manager');
+            Yii::$app->telegramLog->send(
+                'success',
+                [
+                    'Менеджер создал предложение о доставке',
+                    'ID заказа: ' . $order->id,
+                    'ID клиента: ' . $order->created_by,
+                    'ID менеджера: ' . $user->id,
+                    'ID покупателя: ' . $order->buyer_id,
+                ],
+                'manager'
+            );
 
             // Устанавливаем флаг наличия накладной для заказа
             $order->waybill_isset = true;
             $order->client_waybill_isset = true;
             if (!$order->save()) {
-                \Yii::$app->telegramLog->send('error', [
-                    'Накладная не появилась у клиента через 2 дня после формирования в МП Менеджера',
-                    "Заказ №{$order->id}",
-                    "Клиент: {$order->client->name} (ID: {$order->created_by})",
-                    "Менеджер: {$user->name} (ID: {$user->id})",
-                    json_encode($order->getFirstErrors()),
-                ], 'client');
-                
+
+                \Yii::$app->telegramLog->send(
+                    'error',
+                    [
+                        'Накладная не появилась у клиента через 2 дня после формирования в МП Менеджера',
+                        "Заказ №{$order->id}",
+                        "Клиент: " . User::findOne($order->created_by)->name . " (ID: {$order->created_by})",
+                        "Менеджер: {$user->name} (ID: {$user->id})",
+                        json_encode($order->getFirstErrors()),
+                    ],
+                    'client'
+                );
+
                 return ApiResponse::codeErrors(
                     $apiCodes->ERROR_SAVE,
                     $order->getFirstErrors(),
                 );
             }
 
-            \Yii::$app->telegramLog->send('success', [
-                'Накладная появилась у клиента через 2 дня после формирования в МП Менеджера',
-                "Заказ №{$order->id}",
-                "Клиент: {$order->client->name} (ID: {$order->created_by})",
-                "Менеджер: {$user->name} (ID: {$user->id})",
-            ], 'client');
+            \Yii::$app->telegramLog->send(
+                'success',
+                [
+                    'Накладная появилась у клиента через 2 дня после формирования в МП Менеджера',
+                    "Заказ №{$order->id}",
+                    "Клиент: {$order->client->name} (ID: {$order->created_by})",
+                    "Менеджер: {$user->name} (ID: {$user->id})",
+                ],
+                'client'
+            );
 
             // Подготавливаем данные для накладной
             $waybillData = array_merge($params, [
@@ -143,17 +156,16 @@ class BuyerDeliveryOfferController extends ManagerController
             $waybill = WaybillService::create($waybillData);
             sleep(1); // TODO: Удалить
 
-            Yii::$app->telegramLog->send('success', [
-                'Накладная успешно сформирована',
-                'ID заказа: ' . $order->id,
-                'ID клиента: ' . $order->created_by,
-                'ID менеджера: ' . $user->id,
-                'ID покупателя: ' . $order->buyer_id,
-                'Количество товара: ' . $params['total_quantity'],
-                'Вес товара: ' . $params['product_weight'],
-                'Объем товара: ' . $params['amount_of_space'],
-                'Размеры товара: ' . $params['product_width'] . 'x' . $params['product_height'] . 'x' . $params['product_depth']
-            ], 'manager');
+            Yii::$app->telegramLog->send(
+                'success',
+                [
+                    'Накладная успешно сформирована',
+                    'ID заказа: ' . $order->id,
+                    'ID клиента: ' . $order->created_by,
+                    'ID продавца: ' . $order->buyer_id
+                ],
+                'manager'
+            );
 
             return ApiResponse::info(
                 BuyerDeliveryOfferOutputService::getEntity(
@@ -161,7 +173,16 @@ class BuyerDeliveryOfferController extends ManagerController
                 ),
             );
         } catch (Throwable $e) {
-            Yii::$app->telegramLog->send('error', 'Ошибка при создании предложения по доставке: ' . $e->getMessage());
+
+            Yii::$app->telegramLog->send(
+                'error',
+                [
+                    'Ошибка при создании предложения по доставке: ' . $e->getMessage(),
+                    'Текст ошибки: ' . $e->getMessage(),
+
+                ],
+            );
+
             return ApiResponse::internalError($e);
         }
     }
