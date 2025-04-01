@@ -24,6 +24,7 @@ class ResetController extends Controller
      * @var array Список таблиц для обработки
      */
     private $tables = [];
+    private $attachments = [];
 
     /**
      * Сброс базы данных
@@ -67,13 +68,21 @@ class ResetController extends Controller
             $this->stdout("Папка с вложениями не существует.\n", \yii\helpers\Console::FG_RED);
             return;
         }
-        $attachments = scandir(dirname(__DIR__, 2) . '/entrypoint/api/attachments');
-        foreach ($attachments as $attachment) {
+        $this->getAttachments()->deleteAttachments();
+        $this->stdout("Вложения удалены.\n", \yii\helpers\Console::FG_GREEN);
+    }
+
+    private function getAttachments()
+    {
+        $this->attachments = scandir(dirname(__DIR__, 2) . '/entrypoint/api/attachments');
+
+        foreach ($this->attachments as $attachment) {
             if ($attachment !== '.' && $attachment !== '..') {
                 $this->deleteAttachment($attachment);
             }
         }
-        $this->stdout("Вложения удалены.\n", \yii\helpers\Console::FG_GREEN);
+
+        return $this;
     }
 
     private function deleteAttachment($attachment)
