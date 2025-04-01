@@ -104,7 +104,14 @@ class DistributionController extends BuyerController
             }
 
             if ($task->current_buyer_id !== $user->id) {
-                Yii::$app->telegramLog->send('error', 'По задаче ' . $task->id . ' нет доступа, потому что текущий покупатель ' . $user->id . ' не совпадает с ' . $task->current_buyer_id);
+                Yii::$app->telegramLog->send(
+                    'error',
+                    [
+                        'По задаче ' . $task->id . 'нет доступа',
+                        'Потому что текущий покупатель ' . $user->id . ' не совпадает с ' . $task->current_buyer_id
+                    ],
+                    'buyer'
+                );
                 Yii::$app->actionLog->error('По задаче ' . $task->id . ' нет доступа, потому что текущий покупатель ' . $user->id . ' не совпадает с ' . $task->current_buyer_id);
                 return ApiResponse::code($apiCodes->NO_ACCESS);
             }
@@ -115,12 +122,10 @@ class DistributionController extends BuyerController
 
             if (!$status->success) {
                 $transaction?->rollBack();
-
                 \Yii::$app->telegramLog->send('error', [
                     'Ошибка при принятии задачи',
                     'Текст ошибки: ' . $status->reason,
                 ], 'buyer');
-
                 Yii::$app->actionLog->error('Ошибка при принятии задачи: ' . $status->reason);
                 return ApiResponse::codeErrors(
                     $apiCodes->ERROR_SAVE,
@@ -132,13 +137,13 @@ class DistributionController extends BuyerController
                 $task->order_id,
             );
 
-            // PushService::sendPushNotification(
-            //     $order->created_by,
-            //     [
-            //         'title' => 'Ваша заявка принята',
-            //         'body' => 'Ваша заявка ' . $order->id . ' принята была принята продавцом ' . $user->organization_name,
-            //     ]
-            // );
+            PushService::sendPushNotification(
+                $order->created_by,
+                [
+                    'title' => 'Ваша заявка принята',
+                    'body' => 'Ваша заявка ' . $order->id . ' принята была принята продавцом ' . $user->organization_name,
+                ]
+            );
 
             if (!$orderStatusChange->success) {
                 $transaction?->rollBack();
@@ -146,6 +151,7 @@ class DistributionController extends BuyerController
                 \Yii::$app->telegramLog->send('error', [
                     'Ошибка при изменении статуса заказа',
                     'Текст ошибки: ' . $orderStatusChange->reason,
+                    'Заказ: ' . $order->id,
                 ], 'buyer');
 
                 return ApiResponse::codeErrors(
@@ -179,6 +185,7 @@ class DistributionController extends BuyerController
                 'ID заявки: ' . $order->id,
                 'ID продавца: ' . $order->created_by,
                 'ID покупателя: ' . $user->id,
+
             ], 'buyer');
 
             return ApiResponse::info(
@@ -236,6 +243,7 @@ class DistributionController extends BuyerController
                     'Ошибка при отклонении задачи',
                     'Номер задачи: ' . $task->id,
                     'Не совпадают ID продавца и ID текущего продавца в распределении',
+
                 ], 'buyer');
 
                 Yii::$app->actionLog->error('По задаче ' . $task->id . ' нет доступа, потому что текущий покупатель ' . $user->id . ' не совпадает с ' . $task->current_buyer_id);
@@ -260,7 +268,7 @@ class DistributionController extends BuyerController
             \Yii::$app->telegramLog->send('success', [
                 'Заявка отклонена',
                 'ID заявки: ' . $task->order_id,
-                'ID продавца: ' . $task->created_by,
+                'ID продавца: ' . $task->order->created_by,
                 'ID покупателя: ' . $user->id,
             ], 'buyer');
 
