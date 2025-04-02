@@ -33,7 +33,7 @@ class PushService
         $user = Yii::$app->user->getIdentity();
         if (!$user) throw new \Exception('User not found');
         $pushNotification = PushNotification::findOne(['push_token' => $token, 'client_id' => $user->id]);
-
+        
         $existingRecord = PushNotification::findOne(['device_id' => $deviceId, 'push_token' => $token, 'client_id' => $user->id]);
         if ($existingRecord) {
             return ApiResponse::byResponseCode($pushService->apiCodes->SUCCESS, [

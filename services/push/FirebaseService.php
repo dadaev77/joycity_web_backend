@@ -116,10 +116,8 @@ class FirebaseService
         }
         return;
     }
-
     protected function sendIosNotification(int $user_id, array $message, string $pushToken)
     {
-
         $user = User::findOne($user_id);
         $appNames = [
             'APP_NAME_CLIENT' => 'JoyCity',
@@ -153,8 +151,12 @@ class FirebaseService
                 ]))
                 ->withHighestPossiblePriority();
 
+            Yii::$app->telegramLog->send('info', [
+                'badge' => PushNotification::find()->where(['push_token' => $pushToken])->one()->badge_count ?? 0,
+                'pushToken' => $pushToken,
+            ]);
+            
             $response = $this->messaging->send($cloudMessage);
-
             return json_encode($response);
         } catch (FirebaseException $e) {
             Yii::$app->actionLog->error('Ошибка Firebase: ' . $e->getMessage());
