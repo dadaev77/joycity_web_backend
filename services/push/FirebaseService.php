@@ -150,12 +150,6 @@ class FirebaseService
                     ],
                 ]))
                 ->withHighestPossiblePriority();
-
-            Yii::$app->telegramLog->send('info', [
-                'badge' => PushNotification::find()->where(['push_token' => $pushToken])->one()->badge_count ?? 0,
-                'pushToken' => $pushToken,
-            ]);
-            
             $response = $this->messaging->send($cloudMessage);
             return json_encode($response);
         } catch (FirebaseException $e) {
