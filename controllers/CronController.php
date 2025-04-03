@@ -136,18 +136,18 @@ class CronController extends Controller
                 );
                 return ['status' => 'success', 'message' => 'Курсы обновлены'];
             } else {
-                Yii::$app->telegramLog->send([
+                Yii::$app->telegramLog->send(
                     'error',
                     'Ошибка сохранения курсов'
-                ], 'rates');
+                , 'rates');
                 return ['status' => 'error', 'message' => 'Ошибка сохранения курсов'];
             }
         }
 
-        Yii::$app->telegramLog->send([
+        Yii::$app->telegramLog->send(
             'error',
             'Нет данных для обновления курсов'
-        ], 'rates');
+        , 'rates');
         return ['status' => 'error', 'message' => 'Нет данных для обновления курсов'];
     }
 
@@ -220,6 +220,12 @@ class CronController extends Controller
 
         Yii::$app->response->format = yii\web\Response::FORMAT_JSON;
         Yii::$app->actionLog->success('Проверка сервисов завершена');
+
+        Yii::$app->telegramLog->send(
+            'success',
+            'Проверка сервисов завершена'
+        );
+        
         return [
             'status' => 'success',
             'message' => 'Проверка сервисов завершена',
