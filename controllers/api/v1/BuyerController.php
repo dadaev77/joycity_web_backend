@@ -17,7 +17,8 @@ class BuyerController extends V1Controller
                 [
                     'allow' => true,
                     'matchCallback' => function () {
-                        return User::getIdentity()->role === User::ROLE_BUYER || User::getIdentity()->role === User::ROLE_BUYER_DEMO;
+                        return User::getIdentity()->getRole()->name === User::ROLE_BUYER ||
+                            User::getIdentity()->getRole()->name === User::ROLE_BUYER_DEMO;
                     },
                 ],
             ],

@@ -17,7 +17,7 @@ class InternalController extends V1Controller
                 [
                     'allow' => true,
                     'matchCallback' => function () {
-                        return User::getIdentity()->role === User::ROLE_ADMIN;
+                        return User::getIdentity()->getRole()->name === User::ROLE_ADMIN;
                     },
                 ],
             ],

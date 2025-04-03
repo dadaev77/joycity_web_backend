@@ -106,49 +106,14 @@ class UserStructure extends Base
     public function rules()
     {
         return [
-            [
-                [
-                    'password',
-                    'personal_id',
-                    'name',
-                    'surname',
-                    'organization_name',
-                    'phone_number',
-                    'role',
-                ],
-                'required',
-            ],
+            [['password', 'personal_id', 'name', 'surname', 'organization_name', 'phone_number', 'role'], 'required', 'on' => 'create'],
             [['rating'], 'number'],
             ['markup', 'number', 'min' => 0, 'max' => 100],
-            [
-                [
-                    'feedback_count',
-                    'is_deleted',
-                    'is_email_confirmed',
-                    'is_verified',
-                    'avatar_id',
-                ],
-                'integer',
-            ],
+            [['feedback_count', 'is_deleted', 'is_email_confirmed', 'is_verified', 'avatar_id', 'role_id'], 'integer'],
             [['description'], 'string'],
             [['email', 'nickname'], 'string', 'max' => 100],
-            [
-                ['password', 'access_token', 'role', 'personal_id'],
-                'string',
-                'max' => 255,
-            ],
-            [
-                [
-                    'name',
-                    'surname',
-                    'organization_name',
-                    'country',
-                    'city',
-                    'address',
-                ],
-                'string',
-                'max' => 60,
-            ],
+            [['password', 'access_token', 'role', 'personal_id'], 'string', 'max' => 255],
+            [['name', 'surname', 'organization_name', 'country', 'city', 'address'], 'string', 'max' => 60],
             [['phone_number'], 'string', 'max' => 15],
             [['mpstats_token'], 'string', 'max' => 512],
             [['phone_country_code'], 'string', 'max' => 10],
@@ -156,97 +121,25 @@ class UserStructure extends Base
             [['personal_id'], 'unique'],
             [['nickname'], 'unique'],
             [['email'], 'unique'],
-            [
-                ['avatar_id'],
-                'exist',
-                'skipOnError' => true,
-                'targetClass' => Attachment::class,
-                'targetAttribute' => ['avatar_id' => 'id'],
-            ],
-            //
-            [
-                ['telegram'],
-                'string',
-                'min' => 5,
-                'max' => 32,
-                'skipOnEmpty' => true,
-                'tooShort' => 'Минимум 5 символов',
-                'tooLong' => 'Максимум 32 символа'
-            ],
-            // кастомные валидации
+            [['avatar_id'], 'exist', 'skipOnError' => true, 'targetClass' => Attachment::class, 'targetAttribute' => ['avatar_id' => 'id']],
+            [['telegram'], 'string', 'min' => 5, 'max' => 32, 'skipOnEmpty' => true, 'tooShort' => 'Минимум 5 символов', 'tooLong' => 'Максимум 32 символа'],
             [['id'], 'integer', 'max' => 9999999999],
             [['email'], 'email'],
-            [
-                ['email', 'phone_number'],
-                'validateEmailOrPhoneNumber',
-                'skipOnEmpty' => false,
-            ],
-            [
-                ['country', 'city', 'address'],
-                'required',
-                'when' => function ($model) {
-                    return $model->role === User::ROLE_BUYER;
-                },
-            ],
-            [
-                ['email'],
-                'unique',
-                'message' => 'Пользователь с таким email уже существует.',
-            ],
-            [
-                ['phone_number'],
-                'unique',
-                'message' =>
-                'Пользователь с таким номером телефона уже существует.',
-            ],
-            [
-                ['password'],
-                'match',
-                'pattern' => '/^(?=.*[A-Z])(?=.*\d)[A-Za-z\d]+$/',
-                'message' =>
-                'Латиница, A-z, 0-9. Должен содержать большую букву и цифру. Минимально символов 8 - максимально 20',
-            ],
-            [['password', 'nickname'], 'string', 'min' => 8, 'max' => 20],
+            [['email', 'phone_number'], 'validateEmailOrPhoneNumber', 'skipOnEmpty' => false],
+            [['country', 'city', 'address'], 'required', 'when' => function ($model) {
+                return $model->role === User::ROLE_BUYER;
+            }],
+            [['email'], 'unique', 'message' => 'Пользователь с таким email уже существует.'],
+            [['phone_number'], 'unique', 'message' => 'Пользователь с таким номером телефона уже существует.'],
+            [['password'], 'match', 'pattern' => '/^(?=.*[A-Z])(?=.*\d)[A-Za-z\d]+$/', 'message' => 'Латиница, A-z, 0-9. Должен содержать большую букву и цифру. Минимально символов 8 - максимально 20', 'on' => 'create'],
+            [['password', 'nickname'], 'string', 'min' => 8, 'max' => 20, 'on' => 'create'],
             [['role'], 'in', 'range' => User::ROLES_ALL],
-            [
-                [
-                    'name',
-                    'city',
-                    'country',
-                    'surname',
-                    'organization_name',
-                    'email',
-                ],
-                'required',
-                'on' => [User::SCENARIO_PROFILE_CREATION, ''],
-            ],
-            [
-                ['phone_number'],
-                'match',
-                'pattern' => '/^\+(\d{1,3})?\d{10}$/',
-                'message' => 'Неверный формат номера телефона',
-            ],
-            [
-                ['name', 'city', 'country', 'surname'],
-                'match',
-                'pattern' => '/^[A-Za-zА-Яа-я0-9\s\-\'\"«»""\'\']{1,60}$/u',
-                'message' =>
-                'Поле {attribute} должно содержать кириллицу, латиницу, цифры и не превышать 60 символов. Допустимы символы: A-z, А-я, 0-9, пробелы, кавычки и тире.',
-            ],
-            [
-                'organization_name',
-                'match',
-                'pattern' => '/^[A-Za-zА-Яа-я0-9\s\-\'\"«»""\'\'!:;*%]{1,60}$/u',
-                'message' =>
-                'Поле {attribute} должно содержать кириллицу, латиницу, цифры, пробелы, кавычки, тире и спецсимволы и не превышать 60 символов.',
-            ],
-            [
-                'address',
-                'match',
-                'pattern' => '/^[A-Za-zА-Яа-я0-9\s\-.\/]{1,60}$/u',
-                'message' =>
-                'Поле {attribute} должно содержать кириллицу, латиницу, цифры, пробелы, тире, точки и слеши и не превышать 60 символов. Допустимы символы: A-z, А-я, 0-9, пробелы, тире, точки и слеши.',
-            ],
+            [['name', 'city', 'country', 'surname'], 'match', 'pattern' => '/^[A-Za-zА-Яа-я0-9\s\-\'\"«»""\'\']{1,60}$/u', 'message' => 'Поле {attribute} должно содержать кириллицу, латиницу, цифры и не превышать 60 символов. Допустимы символы: A-z, А-я, 0-9, пробелы, кавычки и тире.'],
+            [['organization_name'], 'string', 'max' => 60],
+            [['phone_number'], 'match', 'pattern' => '/^\+(\d{1,3})?\d{10}$/', 'message' => 'Неверный формат номера телефона'],
+            [['organization_name'], 'match', 'pattern' => '/^[A-Za-zА-Яа-я0-9\s\-\'\"«»""\'\'!:;*%]{1,60}$/u', 'message' => 'Поле {attribute} должно содержать кириллицу, латиницу, цифры, пробелы, кавычки, тире и спецсимволы и не превышать 60 символов.'],
+            [['address'], 'match', 'pattern' => '/^[A-Za-zА-Яа-я0-9\s\-.\/]{1,60}$/u', 'message' => 'Поле {attribute} должно содержать кириллицу, латиницу, цифры, пробелы, тире, точки и слеши и не превышать 60 символов. Допустимы символы: A-z, А-я, 0-9, пробелы, тире, точки и слеши.'],
+            ['role_id', 'integer'],
         ];
     }
 
@@ -267,6 +160,7 @@ class UserStructure extends Base
     {
         return [
             'id' => 'ID',
+            'role_id' => 'Role ID',
             'email' => 'Email',
             'password' => 'Password',
             'access_token' => 'Access Token',
@@ -333,16 +227,6 @@ class UserStructure extends Base
     public function getBuyerOffers()
     {
         return $this->hasMany(BuyerOffer::class, ['buyer_id' => 'id']);
-    }
-
-    /**
-     * Gets query for [[ChatUsers]].
-     *
-     * @return ActiveQuery
-     */
-    public function getChatUsers()
-    {
-        return $this->hasMany(ChatUser::class, ['user_id' => 'id']);
     }
 
     /**
