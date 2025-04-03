@@ -40,7 +40,9 @@ class MessageService
                 'metadata' => $metadata ? json_encode($metadata) : null,
                 'reply_to_id' => $replyToId,
                 'status' => 'delivered',
-                'content' => $type === 'text' ? json_encode(['ru' => $content, 'en' => $content, 'zh' => $content]) : json_encode(['ru' => '', 'en' => '', 'zh' => '']),
+                'content' => $type === 'text' ?
+                    ($content === null ? json_encode(['ru' => '', 'en' => '', 'zh' => '']) : json_encode(['ru' => $content, 'en' => $content, 'zh' => $content])) :
+                    json_encode(['ru' => '', 'en' => '', 'zh' => '']),
                 'attachments' => $attachments ? json_encode($attachments) : null,
             ]);
             $message->type = $type;

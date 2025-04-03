@@ -116,10 +116,8 @@ class FirebaseService
         }
         return;
     }
-
     protected function sendIosNotification(int $user_id, array $message, string $pushToken)
     {
-
         $user = User::findOne($user_id);
         $appNames = [
             'APP_NAME_CLIENT' => 'JoyCity',
@@ -152,9 +150,7 @@ class FirebaseService
                     ],
                 ]))
                 ->withHighestPossiblePriority();
-
             $response = $this->messaging->send($cloudMessage);
-
             return json_encode($response);
         } catch (FirebaseException $e) {
             Yii::$app->actionLog->error('Ошибка Firebase: ' . $e->getMessage());

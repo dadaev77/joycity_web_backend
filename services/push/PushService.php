@@ -151,6 +151,10 @@ class PushService
     {
         $user = User::findOne($user_id);
         foreach ($user->pushTokens as $pushToken) {
+            if ($pushToken->operating_system === 'ios') {
+                $pushToken->badge_count++;
+                $pushToken->save();
+            }
             \Yii::$app->pushQueue->priority(1)->push(new \app\jobs\FirebaseJob([
                 'message' => $message,
                 'pushToken' => $pushToken->push_token,
