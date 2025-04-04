@@ -58,11 +58,10 @@
     "symfony/dotenv": "6.4.16"
   },
   "require-dev": {
-    
-    "yiisoft/yii2-codeception": "*",
     "yiisoft/yii2-debug": "*",
     "yiisoft/yii2-gii": "*",
-    "yiisoft/yii2-faker": "*"
+    "yiisoft/yii2-faker": "*",
+    "phpunit/phpunit": "10.0"
   },
   "config": {
     "process-timeout": 1800,
