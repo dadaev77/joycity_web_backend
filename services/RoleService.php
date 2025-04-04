@@ -55,7 +55,7 @@ class RoleService
 
     public static function migrateRoles()
     {
-        $users = \app\models\User::find()->all();
+        $users = Yii::$app->db->createCommand('SELECT * FROM user')->queryAll();
         $roles = \app\models\RoleModel::find()->all();
 
         $roles = array_reduce($roles, function ($carry, $role) {
@@ -66,7 +66,7 @@ class RoleService
         try {
             $added = 0;
             foreach ($users as $user) {
-                $user->role_id = $roles[$user->role];
+                $user->role_id = $roles[$user['role']];
                 $user->save();
                 $added++;
             }
