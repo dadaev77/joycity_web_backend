@@ -54,12 +54,15 @@ class BuyerController extends BuyerControllerParent
     public function actionView(int $id)
     {
         $apiCodes = User::apiCodes();
-        $isset = User::isset(['id' => $id, 'role' => User::ROLE_BUYER || User::ROLE_BUYER_DEMO]);
-        if (!$isset) {
-            return ApiResponse::code($apiCodes->NOT_FOUND);
-        }
+        $isset = User::isset(['id' => $id]);
 
-        return ApiResponse::info(BuyerOutputService::getEntity($id));
+        if (!$isset) return ApiResponse::code($apiCodes->NOT_FOUND);
+
+        $user = User::findOne($id);
+
+        if ($user->is([User::ROLE_BUYER, User::ROLE_BUYER_DEMO])) {
+            return ApiResponse::info(BuyerOutputService::getEntity($id));
+        }
     }
 
     /**
@@ -93,11 +96,12 @@ class BuyerController extends BuyerControllerParent
     public function actionBuyer(int $id)
     {
         $apiCodes = User::apiCodes();
-        $isset = User::isset(['id' => $id, 'role' => User::ROLE_BUYER || User::ROLE_BUYER_DEMO]);
-        if (!$isset) {
-            return ApiResponse::code($apiCodes->NOT_FOUND);
-        }
+        $isset = User::isset(['id' => $id]);
+        if (!$isset) return ApiResponse::code($apiCodes->NOT_FOUND);
 
-        return ApiResponse::info(BuyerOutputService::getEntity($id));
+        $user = User::findOne($id);
+        if ($user->is([User::ROLE_BUYER, User::ROLE_BUYER_DEMO])) {
+            return ApiResponse::info(BuyerOutputService::getEntity($id));
+        }
     }
 }

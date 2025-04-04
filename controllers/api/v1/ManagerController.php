@@ -17,7 +17,9 @@ class ManagerController extends V1Controller
                 [
                     'allow' => true,
                     'matchCallback' => function () {
-                        return User::getIdentity()->getRole()->name === User::ROLE_MANAGER;
+                        return User::getIdentity()->is([
+                            User::ROLE_MANAGER
+                        ]);
                     },
                 ],
             ],

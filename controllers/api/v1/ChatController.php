@@ -38,12 +38,14 @@ class ChatController extends V1Controller
                 [
                     'allow' => true,
                     'matchCallback' => function () {
-                        // User::getIdentity()->role === User::ROLE_BUYER_DEMO ||
-                        // User::getIdentity()->role === User::ROLE_CLIENT_DEMO ||
-                        return User::getIdentity()->role === User::ROLE_BUYER ||
-                            User::getIdentity()->role === User::ROLE_CLIENT ||
-                            User::getIdentity()->role === User::ROLE_MANAGER ||
-                            User::getIdentity()->role === User::ROLE_FULFILLMENT;
+                        return User::getIdentity()->is([
+                            User::ROLE_BUYER,
+                            User::ROLE_BUYER_DEMO,
+                            User::ROLE_CLIENT,
+                            User::ROLE_CLIENT_DEMO,
+                            User::ROLE_MANAGER,
+                            User::ROLE_FULFILLMENT
+                        ]);
                     },
                 ],
             ],
@@ -267,7 +269,7 @@ class ChatController extends V1Controller
                 $user = User::findOne($participant);
                 if ($user) {
                     $organizationName = null;
-                    if ($user->role === User::ROLE_BUYER) {
+                    if ($user->is([User::ROLE_BUYER])) {
                         $organizationName = $user->organization_name;
                     }
                     $metadata['participants'][] = [
@@ -384,7 +386,7 @@ class ChatController extends V1Controller
                     $user = User::findOne($participant);
                     if ($user) {
                         $organizationName = null;
-                        if ($user->role === User::ROLE_BUYER) {
+                        if ($user->is([User::ROLE_BUYER])) {
                             $organizationName = $user->organization_name;
                         }
                         $metadata['participants'][] = [
@@ -555,7 +557,7 @@ class ChatController extends V1Controller
             foreach ($participants as $participant) {
                 $user = User::findOne($participant);
                 $organizationName = null;
-                if ($user->role === User::ROLE_BUYER) {
+                if ($user->is([User::ROLE_BUYER])) {
                     $organizationName = $user->organization_name;
                 }
                 $metadata['participants'][] = [

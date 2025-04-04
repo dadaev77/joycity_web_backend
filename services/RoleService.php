@@ -55,7 +55,7 @@ class RoleService
 
     public static function migrateRoles()
     {
-        $users = \app\models\User::find()->all();
+        $users = Yii::$app->db->createCommand('SELECT * FROM user')->queryAll();
         $roles = \app\models\RoleModel::find()->all();
 
         $roles = array_reduce($roles, function ($carry, $role) {
@@ -66,8 +66,8 @@ class RoleService
         try {
             $added = 0;
             foreach ($users as $user) {
-                $user->role_id = $roles[$user->role];
-                $user->save();
+                $user['role_id'] = $roles[$user['role']];
+                Yii::$app->db->createCommand('UPDATE user SET role_id = :role_id WHERE id = :id')->bindValue(':role_id', $user['role_id'])->bindValue(':id', $user['id'])->execute();
                 $added++;
             }
             if ($added > 0) {

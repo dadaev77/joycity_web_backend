@@ -46,16 +46,15 @@ class BuyerController extends ClientController
     public function actionView(int $id)
     {
         $apiCodes = User::apiCodes();
-        $isset = User::isset([
-            'id' => $id,
-            'role' => User::ROLE_BUYER,
-        ]);
+        $isset = User::isset(['id' => $id]);
         if (!$isset) {
             return ApiResponse::byResponseCode($apiCodes->NOT_FOUND, null, 404);
         }
 
-        return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
-            'info' => BuyerOutputService::getEntity($id),
-        ]);
+        if (User::getIdentity()->is([User::ROLE_BUYER_DEMO])) {
+            return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
+                'info' => BuyerOutputService::getEntity($id),
+            ]);
+        }
     }
 }

@@ -33,11 +33,15 @@ class ProductController extends BuyerController
         array_unshift($behaviors['access']['rules'], [
             'actions' => ['create', 'update', 'delete'],
             'allow' => false,
-            'matchCallback' => fn() => User::getIdentity()->role === User::ROLE_BUYER_DEMO,
+            'matchCallback' => fn() => User::getIdentity()->is([
+                User::ROLE_BUYER_DEMO
+            ]),
         ]);
         $behaviors['access']['denyCallback'] = static function () {
             $response =
-                User::getIdentity()->role === User::ROLE_BUYER_DEMO ?
+                User::getIdentity()->is([
+                    User::ROLE_BUYER_DEMO
+                ]) ?
                 ApiResponse::byResponseCode(ResponseCodes::getStatic()->NOT_AUTHENTICATED) :
                 ApiResponse::code(ResponseCodes::getStatic()->NO_ACCESS);
             Yii::$app->response->data = $response;

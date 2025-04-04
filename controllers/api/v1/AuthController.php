@@ -8,6 +8,7 @@ use app\components\response\ResponseCodes;
 use app\controllers\api\V1Controller;
 use app\helpers\POSTHelper;
 use app\models\DeliveryPointAddress;
+use app\models\RoleModel;
 use app\models\TypeDeliveryPoint;
 use app\models\User;
 use app\models\UserSettings;
@@ -94,9 +95,8 @@ class AuthController extends V1Controller implements ApiAuth
             ['role', 'password', 'phone_number', 'email'],
             true,
         );
-
+        $role = \app\models\RoleModel::findOne(['name' => $params['role']]);
         $notValidParams = POSTHelper::getEmptyParams($params, true);
-
         if (
             (!$params['phone_number'] && !$params['email']) ||
             !$params['password'] ||
@@ -127,7 +127,8 @@ class AuthController extends V1Controller implements ApiAuth
             Yii::$app->telegramLog->send('error', "Ошибка при входе в систему. \nЛогин: " . $params['email'] . " не найден");
             return ApiResponse::code(User::apiCodes()->CREDENTIALS_NOT_FOUND);
         }
-        if ($user->role !== $params['role']) {
+
+        if ($user->role_id !== $role->id) {
             Yii::$app->telegramLog->send('error', [
                 'Зарегистрированный пользователь не может войти в приложение',
                 'Email: ' . $params['email'],
@@ -328,7 +329,7 @@ class AuthController extends V1Controller implements ApiAuth
             $address = $request->post('address');
             $telegram = $request->post('telegram') ? ($request->post('telegram') != "" ? $request->post('telegram') : null) : null;
 
-            
+
             if ($telegram) {
                 $existingUser = User::findOne(['telegram' => $telegram]);
                 if ($existingUser) {
@@ -345,11 +346,13 @@ class AuthController extends V1Controller implements ApiAuth
                 'organization_name' => $organizationName,
                 'surname' => $surname,
                 'name' => $name,
-                'role' => $role,
+                'role' => 'unused',
                 'rating' => Yii::$app->params['baseRating'],
                 'phone_country_code' => $phone_country_code,
                 'telegram' => $telegram,
             ]);
+
+            $user->role_id = \app\models\RoleModel::findOne(['name' => $role])->id;
 
             $requiredAttributes = [
                 'email',
@@ -491,7 +494,7 @@ class AuthController extends V1Controller implements ApiAuth
                 'Email: ' . $email,
                 'Роль: ' . $role,
                 'UUID: ' . $user->uuid
-            ]);
+            ], 'manager');
 
             return ApiResponse::code($apiCodes->SUCCESS, [
                 'access_token' => $user->access_token,

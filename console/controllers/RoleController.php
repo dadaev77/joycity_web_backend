@@ -38,38 +38,14 @@ class RoleController extends Controller
     {
         $this->stdout("Добавление ролей...\n");
         $roles = [
-            [
-                'name' => 'admin',
-                'description' => 'Администратор',
-            ],
-            [
-                'name' => 'super-admin',
-                'description' => 'Супер-администратор',
-            ],
-            [
-                'name' => 'client',
-                'description' => 'Клиент',
-            ],
-            [
-                'name' => 'client-demo',
-                'description' => 'Клиент-демо',
-            ],
-            [
-                'name' => 'manager',
-                'description' => 'Менеджер',
-            ],
-            [
-                'name' => 'buyer',
-                'description' => 'Покупатель',
-            ],
-            [
-                'name' => 'buyer-demo',
-                'description' => 'Покупатель-демо',
-            ],
-            [
-                'name' => 'fulfillment',
-                'description' => 'Фулфилмент',
-            ],
+            ['name' => 'admin', 'description' => 'Администратор'],
+            ['name' => 'super-admin', 'description' => 'Супер-администратор'],
+            ['name' => 'client', 'description' => 'Клиент'],
+            ['name' => 'client-demo', 'description' => 'Клиент-демо'],
+            ['name' => 'manager', 'description' => 'Менеджер'],
+            ['name' => 'buyer', 'description' => 'Покупатель'],
+            ['name' => 'buyer-demo', 'description' => 'Покупатель-демо'],
+            ['name' => 'fulfillment', 'description' => 'Фулфилмент'],
         ];
 
         try {

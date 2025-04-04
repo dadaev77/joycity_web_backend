@@ -187,6 +187,6 @@ class RawController extends Controller
 
     public function actionRoles()
     {
-        return \app\services\RoleService::pasteRoles();
+        return \app\services\RoleService::migrateRoles();
     }
 }

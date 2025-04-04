@@ -17,8 +17,9 @@ class FulfillmentController extends V1Controller
                 [
                     'allow' => true,
                     'matchCallback' => function () {
-                        return User::getIdentity()->getRole()->name ===
-                            User::ROLE_FULFILLMENT;
+                        return User::getIdentity()->is([
+                            User::ROLE_FULFILLMENT
+                        ]);
                     },
                 ],
             ],

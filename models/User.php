@@ -84,6 +84,11 @@ class User extends UserStructure implements IdentityInterface
         return $this->hasOne(RoleModel::class, ['id' => 'role_id'])->one();
     }
 
+    public function is(array $roles): bool
+    {
+        return in_array($this->getRole()->name, $roles);
+    }
+
     /**
      * {@inheritdoc}
      */

@@ -79,7 +79,7 @@ class SearchController extends ClientController
             ->asArray()
             ->all();
 
-        $categories = array_filter($categories, function($category) {
+        $categories = array_filter($categories, function ($category) {
             return (new Category())->findOne($category['id'])->getProducts()->count() > 0;
         });
 
