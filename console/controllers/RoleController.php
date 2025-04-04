@@ -25,6 +25,59 @@ class RoleController extends Controller
         }
     }
 
+    public function actionSeedPermissions()
+    {
+        $this->stdout("Начало заполнения разрешений...\n");
+        $permissions = [
+            // создание моделей
+            ['name' => 'create-order', 'description' => 'Создание заказа'],
+            ['name' => 'create-offer', 'description' => 'Создание предложения'],
+            ['name' => 'create-delivery', 'description' => 'Создание предложения о доставке'],
+            ['name' => 'create-product', 'description' => 'Создание продукта'],
+            ['name' => 'create-offer', 'description' => 'Создание категории'],
+            ['name' => 'create-delivery-offer', 'description' => 'Создание категории'],
+            ['name' => 'view-order', 'description' => 'Просмотр заказа'],
+        ];
+        foreach ($permissions as $permissionT) {
+            $isset = \app\models\PermissionModel::findOne(['name' => $permissionT['name']]);
+            if (!$isset) {
+                $permission = new \app\models\PermissionModel();
+                $permission->name = $permissionT['name'];
+                $permission->description = $permissionT['description'];
+                if (!$permission->save()) {
+                    // $this->stdout("Ошибка при создании разрешения: " . json_encode($permission->getErrors()) . "\n");
+                    var_dump($permission->getErrors());
+                }
+            }
+        }
+        $this->stdout("Разрешения заполнены!\n");
+    }
+
+    public function actionSeedRoles()
+    {
+        $roles = [
+            ['name' => 'admin', 'description' => 'Администратор'],
+            ['name' => 'super-admin', 'description' => 'Супер-администратор'],
+            ['name' => 'client', 'description' => 'Клиент'],
+            ['name' => 'client-demo', 'description' => 'Клиент-демо'],
+            ['name' => 'manager', 'description' => 'Менеджер'],
+            ['name' => 'buyer', 'description' => 'Покупатель'],
+            ['name' => 'buyer-demo', 'description' => 'Покупатель-демо'],
+            ['name' => 'fulfillment', 'description' => 'Фулфилмент'],
+        ];
+        foreach ($roles as $role) {
+            $isset = \app\models\RoleModel::findOne(['name' => $role['name']]);
+            if (!$isset) {
+                $role = new \app\models\RoleModel();
+                $role->name = $role['name'];
+                $role->description = $role['description'];
+                if (!$role->save()) {
+                    $this->stdout("Ошибка при создании роли: " . $role->getErrors() . "\n");
+                }
+            }
+        }
+    }
+
     public function actionMigrate()
     {
         Yii::$app->runAction('migrate/up', ['interactive' => 0]);

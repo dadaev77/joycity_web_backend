@@ -44,6 +44,32 @@ class RoleModel extends ActiveRecord
 
     public function getPermissions()
     {
-        return $this->hasMany(PermissionModel::class, ['id' => 'permission_id'])->via('roles_permissions');
+        return $this->hasMany(PermissionModel::class, ['id' => 'permission_id'])
+            ->viaTable('roles_permissions', ['role_id' => 'id']);
+    }
+    public function getUsers()
+    {
+        return $this->hasMany(User::class, ['role_id' => 'id']);
+    }
+
+    public function setNewPermissions(array $permissions)
+    {
+        $permissions = $this->permissions;
+        foreach ($permissions as $permission) {
+            $this->detach($permission);
+        }
+        $notFoundPermissions = [];
+        foreach ($permissions as $permission) {
+            $permission = \app\models\PermissionModel::findOne(['name' => $permission]);
+            if ($permission) {
+                $this->link('permissions', $permission);
+            } else {
+                $notFoundPermissions[] = $permission;
+            }
+        }
+        if (count($notFoundPermissions) > 0) {
+            return $notFoundPermissions;
+        }
+        return true;
     }
 }

@@ -184,9 +184,4 @@ class RawController extends Controller
         }
         return $response;
     }
-
-    public function actionRoles()
-    {
-        return \app\services\RoleService::migrateRoles();
-    }
 }

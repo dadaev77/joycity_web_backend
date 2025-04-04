@@ -32,6 +32,7 @@ class PermissionModel extends ActiveRecord
             [['name', 'description'], 'required'],
             [['name', 'description'], 'string', 'max' => 255],
             [['created_at', 'updated_at'], 'safe'],
+            [['name'], 'unique'],
         ];
     }
 

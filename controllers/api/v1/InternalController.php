@@ -3,7 +3,6 @@
 namespace app\controllers\api\v1;
 
 use app\controllers\api\V1Controller;
-use app\models\User;
 use yii\filters\AccessControl;
 
 class InternalController extends V1Controller
@@ -17,7 +16,7 @@ class InternalController extends V1Controller
                 [
                     'allow' => true,
                     'matchCallback' => function () {
-                        return User::getIdentity()->getRole()->name === User::ROLE_ADMIN;
+                        return true;
                     },
                 ],
             ],

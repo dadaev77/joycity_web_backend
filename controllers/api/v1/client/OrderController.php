@@ -3,10 +3,10 @@
 namespace app\controllers\api\v1\client;
 
 use app\components\ApiResponse;
-use app\components\response\ResponseCodes;
+
 use app\controllers\api\v1\ClientController;
 use app\helpers\POSTHelper;
-use app\models\Attachment;
+
 use app\models\Order;
 use app\models\TypeDeliveryPoint;
 use app\models\User;
@@ -20,7 +20,7 @@ use Throwable;
 use Yii;
 use yii\base\Exception;
 use yii\web\UploadedFile;
-use app\models\OrderDistribution;
+
 use app\services\modificators\price\OrderPrice;
 use app\services\TranslationService;
 use app\services\chats\ChatService;
@@ -35,31 +35,24 @@ class OrderController extends ClientController
     }
     public function behaviors()
     {
-        $behaviours = parent::behaviors();
-        $behaviours['verbFilter']['actions']['create'] = ['post'];
-        $behaviours['verbFilter']['actions']['update'] = ['put'];
-        $behaviours['verbFilter']['actions']['set-link-tz'] = ['put'];
-        $behaviours['verbFilter']['actions']['cancel'] = ['delete'];
-        $behaviours['verbFilter']['actions']['view'] = ['get'];
-        $behaviours['verbFilter']['actions']['my'] = ['get'];
-        $behaviours['verbFilter']['actions']['history'] = ['get'];
-        $behaviours['verbFilter']['actions']['fulfillment-list'] = ['get'];
-        $behaviours['verbFilter']['actions']['calculate-price'] = ['post'];
-        array_unshift($behaviours['access']['rules'], [
-            'actions' => ['create', 'update', 'cancel'],
-            'allow' => false,
-            'matchCallback' => fn() => User::getIdentity()->role === User::ROLE_CLIENT_DEMO ? true : !User::getIdentity()->is_verified,
-        ]);
-        $behaviours['access']['denyCallback'] = static function () {
-            $response =
-                User::getIdentity()->role === User::ROLE_CLIENT_DEMO ?
-                ApiResponse::byResponseCode(ResponseCodes::getStatic()->NOT_AUTHENTICATED) :
-                ApiResponse::byResponseCode(ResponseCodes::getStatic()->NO_ACCESS_FOR_NOT_VERIFIED);
+        $behaviors = parent::behaviors();
+        $behaviors['verbFilter']['actions'] = [
+            'create' => ['post'],
+            'update' => ['put'],
+            'set-link-tz' => ['put'],
+            'cancel' => ['delete'],
+            'view' => ['get'],
+            'my' => ['get'],
+            'history' => ['get'],
+            'fulfillment-list' => ['get'],
+            'calculate-price' => ['post'],
+        ];
 
-            Yii::$app->response->data = $response;
-        };
+        $behaviors['permissionFilter'] = [
+            'class' => \app\components\PermissionFilter::class,
+        ];
 
-        return $behaviours;
+        return $behaviors;
     }
 
     /**
@@ -102,6 +95,7 @@ class OrderController extends ClientController
     public function actionCreate()
     {
         $user = User::getIdentity();
+
         $request = Yii::$app->request;
         $apiCodes = Order::apiCodes();
         $images = UploadedFile::getInstancesByName('images');
@@ -256,7 +250,7 @@ class OrderController extends ClientController
                     throw new Exception('Image upload error: ' . json_encode($attachmentResponse->reason));
                 }
                 $order->linkAll('attachments', $attachmentResponse->result);
-                
+
                 \Yii::$app->telegramLog->send('success', [
                     'Изображения при заявке на товар загрузились',
                     "Заказ №{$order->id}",
@@ -486,6 +480,7 @@ class OrderController extends ClientController
     {
         $apiCodes = Order::apiCodes();
         $user = User::getIdentity();
+        $user->can('view-order');
         $order = Order::find()
             ->select(['id', 'created_by', 'buyer_id'])
             ->where(['id' => $id])
@@ -527,6 +522,7 @@ class OrderController extends ClientController
      */
     public function actionMy(?string $type = null)
     {
+        $apiCodes = Order::apiCodes();
         $user = User::getIdentity();
         $orderIds = Order::find()
             ->select(['id'])

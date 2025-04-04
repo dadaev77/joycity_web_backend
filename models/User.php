@@ -78,7 +78,6 @@ class User extends UserStructure implements IdentityInterface
         return $this->access_token;
     }
 
-
     public function getRole()
     {
         return $this->hasOne(RoleModel::class, ['id' => 'role_id'])->one();
@@ -87,6 +86,29 @@ class User extends UserStructure implements IdentityInterface
     public function is(array $roles): bool
     {
         return in_array($this->getRole()->name, $roles);
+    }
+
+    /**
+     * Check if a user has a permission
+     * @param string $permissionName The name of the permission
+     * @return bool True if the user has the permission, false otherwise
+     */
+    public function can(string $permissionName)
+    {
+        $allow = $this->getPermissions()->where(['name' => $permissionName])->one();
+
+        if (!$allow) {
+            return false;
+        }
+
+        return true;
+    }
+
+
+    public function getPermissions()
+    {
+        return $this->hasMany(\app\models\PermissionModel::class, ['id' => 'permission_id'])
+            ->viaTable('roles_permissions', ['role_id' => 'role_id']);
     }
 
     /**
