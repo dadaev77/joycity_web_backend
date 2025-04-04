@@ -133,7 +133,7 @@ class UserStructure extends Base
             [['phone_number'], 'unique', 'message' => 'Пользователь с таким номером телефона уже существует.'],
             [['password'], 'match', 'pattern' => '/^(?=.*[A-Z])(?=.*\d)[A-Za-z\d]+$/', 'message' => 'Латиница, A-z, 0-9. Должен содержать большую букву и цифру. Минимально символов 8 - максимально 20', 'on' => 'create'],
             [['password', 'nickname'], 'string', 'min' => 8, 'max' => 20, 'on' => 'create'],
-            [['role'], 'in', 'range' => User::ROLES_ALL],
+            [['role'], 'string'],
             [['name', 'city', 'country', 'surname'], 'match', 'pattern' => '/^[A-Za-zА-Яа-я0-9\s\-\'\"«»""\'\']{1,60}$/u', 'message' => 'Поле {attribute} должно содержать кириллицу, латиницу, цифры и не превышать 60 символов. Допустимы символы: A-z, А-я, 0-9, пробелы, кавычки и тире.'],
             [['organization_name'], 'string', 'max' => 60],
             [['phone_number'], 'match', 'pattern' => '/^\+(\d{1,3})?\d{10}$/', 'message' => 'Неверный формат номера телефона'],
