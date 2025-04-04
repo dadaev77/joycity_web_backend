@@ -215,7 +215,7 @@ class VerificationController extends ManagerController
                 'Пользователь получил подтверждение о верификации',
                 "Клиент: {$verifiedUser->name} (ID: {$verifiedUser->id})",
                 "Менеджер: {$user->name} (ID: {$user->id})",
-            ], 'manager');
+            ], 'client');
 
             return ApiResponse::info(
                 UserVerificationRequestOutputService::getEntity($request->id),
