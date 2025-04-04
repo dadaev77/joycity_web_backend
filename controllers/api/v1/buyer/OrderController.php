@@ -30,11 +30,15 @@ class OrderController extends BuyerController
         array_unshift($behaviors['access']['rules'], [
             'actions' => ['accept-order', 'decline-order', 'decline'],
             'allow' => false,
-            'matchCallback' => fn() => User::getIdentity()->role === User::ROLE_BUYER_DEMO,
+            'matchCallback' => fn() => User::getIdentity()->is([
+                User::ROLE_BUYER_DEMO
+            ]),
         ]);
         $behaviors['access']['denyCallback'] = static function () {
             $response =
-                User::getIdentity()->role === User::ROLE_BUYER_DEMO ?
+                User::getIdentity()->is([
+                    User::ROLE_BUYER_DEMO
+                ]) ?
                 ApiResponse::byResponseCode(ResponseCodes::getStatic()->NOT_AUTHENTICATED) :
                 false;
             Yii::$app->response->data = $response;

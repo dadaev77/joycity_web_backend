@@ -23,18 +23,22 @@ class SearchController extends BuyerController
         $behaviors['verbFilter']['actions']['search'] = ['get'];
         $behaviors['verbFilter']['actions']['popular'] = ['get'];
         $behaviors['verbFilter']['actions']['random'] = ['get'];
-        array_unshift($behaviors['access']['rules'], [
-            'actions' => ['@'],
-            'allow' => true,
-            'matchCallback' => fn() => User::getIdentity()->role === User::ROLE_BUYER_DEMO,
-        ]);
-        $behaviors['access']['denyCallback'] = static function () {
-            $response =
-                User::getIdentity()->role === User::ROLE_BUYER_DEMO ?
-                ApiResponse::byResponseCode(ResponseCodes::getStatic()->NOT_AUTHENTICATED) :
-                false;
-            Yii::$app->response->data = $response;
-        };
+        // array_unshift($behaviors['access']['rules'], [
+        //     'actions' => ['@'],
+        //     'allow' => true,
+        //     'matchCallback' => fn() => User::getIdentity()->is([
+        //         User::ROLE_BUYER_DEMO
+        //     ]),
+        // ]);
+        // $behaviors['access']['denyCallback'] = static function () {
+        //     $response =
+        //         User::getIdentity()->is([
+        //             User::ROLE_BUYER_DEMO
+        //         ]) ?
+        //         ApiResponse::byResponseCode(ResponseCodes::getStatic()->NOT_AUTHENTICATED) :
+        //         false;
+        //     Yii::$app->response->data = $response;
+        // };
         return $behaviors;
     }
 
@@ -85,7 +89,7 @@ class SearchController extends BuyerController
             ->asArray()
             ->all();
 
-        $categories = array_filter($categories, function($category) {
+        $categories = array_filter($categories, function ($category) {
             return (new Category())->findOne($category['id'])->getProducts()->count() > 0;
         });
 

@@ -15,6 +15,7 @@ use app\components\response\ResponseCodes;
 use yii\db\Exception;
 use yii\web\UploadedFile;
 use app\services\push\PushService;
+
 class ProfileController extends BuyerController
 {
     public function behaviors()
@@ -27,12 +28,16 @@ class ProfileController extends BuyerController
         array_unshift($behaviours['access']['rules'], [
             'actions' => ['update', 'delete', 'upload-avatar'],
             'allow' => false,
-            'matchCallback' => fn() => User::getIdentity()->role === User::ROLE_BUYER_DEMO,
+            'matchCallback' => fn() => User::getIdentity()->is([
+                User::ROLE_BUYER_DEMO
+            ]),
         ]);
 
         $behaviours['access']['denyCallback'] = static function () {
             $response =
-                User::getIdentity()->role === User::ROLE_BUYER_DEMO ?
+                User::getIdentity()->is([
+                    User::ROLE_BUYER_DEMO
+                ]) ?
                 ApiResponse::byResponseCode(ResponseCodes::getStatic()->NOT_AUTHENTICATED) :
                 false;
             Yii::$app->response->data = $response;

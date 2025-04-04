@@ -406,7 +406,7 @@ class UserController extends InternalController
             return ApiResponse::code($apiCodes->NOT_FOUND);
         }
 
-        if ($user->role === User::ROLE_BUYER) {
+        if ($user->is([User::ROLE_BUYER])) {
             return ApiResponse::info(BuyerOutputService::getEntity($id, true));
         }
 

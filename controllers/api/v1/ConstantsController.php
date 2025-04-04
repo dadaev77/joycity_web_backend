@@ -17,7 +17,6 @@ use app\models\Order;
 use app\models\OrderTracking;
 use app\models\ProductInspectionReport;
 use app\models\Rate;
-use app\models\Subcategory;
 use app\models\TypeDelivery;
 use app\models\TypeDeliveryPoint;
 use app\models\TypePackaging;
