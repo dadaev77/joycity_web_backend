@@ -149,7 +149,7 @@ class VerificationController extends ClientController
                     'Ошибка при отправке уведомления',
                     'Текст ошибки: ' . $e->getMessage(),
                     'Трассировка: ' . $e->getTraceAsString(),
-                ], 'client');
+                ], 'manager');
             }
 
             $transaction?->commit();
@@ -158,7 +158,7 @@ class VerificationController extends ClientController
                 'Запрос на верификацию успешно создан',
                 'ID запроса: ' . $newRequest->id,
                 'ID пользователя: ' . $user->id,
-            ], 'client');
+            ], 'manager');
 
             return ApiResponse::codeInfo(
                 $apiCodes->SUCCESS,
@@ -173,7 +173,7 @@ class VerificationController extends ClientController
                 'Ошибка при создании запроса на верификацию',
                 'Текст ошибки: ' . $e->getMessage(),
                 'Трассировка: ' . $e->getTraceAsString(),
-            ], 'client');
+            ], 'manager');
 
             return ApiResponse::internalError($e);
         }
