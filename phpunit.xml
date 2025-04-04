@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit bootstrap="vendor/autoload.php"
+         colors="true"
+         verbose="true"
+         stopOnFailure="false">
+    <testsuites>
+        <testsuite name="All Tests">
+            <directory>tests/unit/controllers</directory>
+        </testsuite>
+        <testsuite name="Auth Tests">
+            <file>tests/unit/controllers/AuthControllerTest.php</file>
+        </testsuite>
+        <testsuite name="Buyer Tests">
+            <directory>tests/unit/controllers/buyer</directory>
+        </testsuite>
+        <testsuite name="Client Tests">
+            <directory>tests/unit/controllers/client</directory>
+        </testsuite>
+        <testsuite name="Manager Tests">
+            <directory>tests/unit/controllers/manager</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>

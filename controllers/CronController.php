@@ -14,6 +14,7 @@ class CronController extends Controller
     private $services = [
         'rates' => 'Курсы валют',
         'distribution' => 'Распределение заказов байеров',
+        'cleanup-guest-accounts' => 'Очистка гостевых аккаунтов: Покупатель-демо и Клиент-демо',
     ];
 
     public function init()
@@ -255,6 +256,97 @@ class CronController extends Controller
         } else {
             Yii::$app->actionLog->error('Файл логов действий не найден');
             return ['status' => 'error', 'message' => 'Файл логов действий не найден'];
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/cron/cleanup-guest-accounts",
+     *     summary="Очистка гостевых аккаунтов",
+     *     @OA\Response(response="200", description="Гостевые аккаунты очищены"),
+     *     @OA\Response(response="500", description="Ошибка очистки гостевых аккаунтов")
+     * )
+     */
+    public function actionCleanupGuestAccounts()
+    {
+        try {
+            $db = Yii::$app->db;
+            $transaction = $db->beginTransaction();
+
+            // Получаем ID гостевых пользователей
+            $guestUserIds = $db->createCommand('
+                SELECT id FROM user 
+                WHERE role = :clientDemo 
+                OR role = :buyerDemo
+            ', [
+                ':clientDemo' => 'client-demo',
+                ':buyerDemo' => 'buyer-demo'
+            ])->queryColumn();
+
+            if (empty($guestUserIds)) {
+                Yii::$app->actionLog->success('Гостевые учетные записи не найдены');
+                return ['status' => 'success', 'message' => 'Гостевые учетные записи не найдены'];
+            }
+
+            $userIdsStr = implode(',', $guestUserIds);
+
+            // Удаляем связанные данные в правильном порядке
+            $tables = [
+                'feedback_buyer_link_attachment' => 'feedback_buyer_id IN (SELECT id FROM feedback_buyer WHERE buyer_id IN (' . $userIdsStr . '))',
+                'feedback_buyer' => 'buyer_id IN (' . $userIdsStr . ')',
+                'buyer_delivery_offer' => 'buyer_id IN (' . $userIdsStr . ')',
+                'buyer_offer' => 'buyer_id IN (' . $userIdsStr . ')',
+                'order_distribution' => 'current_buyer_id IN (' . $userIdsStr . ')',
+                'chats' => 'user_id IN (' . $userIdsStr . ')',
+                'order' => 'created_by IN (' . $userIdsStr . ') OR buyer_id IN (' . $userIdsStr . ')',
+                'user_link_category' => 'user_id IN (' . $userIdsStr . ')',
+                'user_link_type_delivery' => 'user_id IN (' . $userIdsStr . ')',
+                'user_link_type_packaging' => 'user_id IN (' . $userIdsStr . ')',
+                'user_settings' => 'user_id IN (' . $userIdsStr . ')',
+                'user_verification_request' => 'created_by_id IN (' . $userIdsStr . ') OR manager_id IN (' . $userIdsStr . ') OR approved_by_id IN (' . $userIdsStr . ')',
+                'notification' => 'user_id IN (' . $userIdsStr . ')',
+                'push_notification' => 'client_id IN (' . $userIdsStr . ')',
+                'user' => 'id IN (' . $userIdsStr . ')'
+            ];
+
+            $deletedCounts = [];
+            foreach ($tables as $table => $condition) {
+                $count = $db->createCommand()
+                    ->delete($table, $condition)
+                    ->execute();
+                $deletedCounts[$table] = $count;
+            }
+
+            $transaction->commit();
+
+            // Логируем результаты
+            $message = "Успешно удалено:\n";
+            foreach ($deletedCounts as $table => $count) {
+                $message .= "- Из таблицы {$table}: {$count} записей\n";
+            }
+
+            Yii::$app->actionLog->success($message);
+            Yii::$app->telegramLog->send('success', $message, 'cleanup-guest-accounts');
+
+            return [
+                'status' => 'success',
+                'message' => 'Гостевые аккаунты успешно очищены',
+                'details' => $deletedCounts
+            ];
+
+        } catch (\Exception $e) {
+            if (isset($transaction)) {
+                $transaction->rollBack();
+            }
+            
+            $errorMessage = 'Ошибка при очистке гостевых аккаунтов: ' . $e->getMessage();
+            Yii::$app->actionLog->error($errorMessage);
+            Yii::$app->telegramLog->send('error', $errorMessage, 'cleanup-guest-accounts');
+            
+            return [
+                'status' => 'error',
+                'message' => $errorMessage
+            ];
         }
     }
 }
