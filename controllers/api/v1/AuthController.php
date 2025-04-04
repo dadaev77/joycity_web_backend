@@ -492,7 +492,7 @@ class AuthController extends V1Controller implements ApiAuth
                 'Email: ' . $email,
                 'Роль: ' . $role,
                 'UUID: ' . $user->uuid
-            ]);
+            ], 'manager');
 
             return ApiResponse::code($apiCodes->SUCCESS, [
                 'access_token' => $user->access_token,
