@@ -17,8 +17,10 @@ class ClientController extends V1Controller
                 [
                     'allow' => true,
                     'matchCallback' => function () {
-                        $role = User::getIdentity()->getRole()->name;
-                        return $role === User::ROLE_CLIENT || $role === User::ROLE_CLIENT_DEMO ? true : false;
+                        return User::getIdentity()->is([
+                            User::ROLE_CLIENT,
+                            User::ROLE_CLIENT_DEMO
+                        ]);
                     },
                 ],
             ],
