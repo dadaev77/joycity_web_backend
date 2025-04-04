@@ -18,7 +18,6 @@ class BuyerController extends V1Controller
                     'allow' => true,
                     'matchCallback' => function () {
                         return true;
-
                         return User::getIdentity()->is([
                             User::ROLE_BUYER,
                             User::ROLE_BUYER_DEMO
