@@ -8,13 +8,14 @@ use app\models\Rate;
 use yii\web\Controller;
 use app\services\ExchangeRateService;
 use app\models\Heartbeat;
+use yii\db\Query;
 
 class CronController extends Controller
 {
     private $services = [
         'rates' => 'Курсы валют',
         'distribution' => 'Распределение заказов байеров',
-        'cleanup-guest-accounts' => 'Очистка гостевых аккаунтов: Покупатель-демо и Клиент-демо',
+        'cleanup-guest-accounts' => 'Очистка гостевых аккаунтов: все пользователи с ролями, содержащими "demo"',
     ];
 
     public function init()
@@ -270,63 +271,70 @@ class CronController extends Controller
     public function actionCleanupGuestAccounts()
     {
         try {
-            $db = Yii::$app->db;
-            $transaction = $db->beginTransaction();
+            $transaction = Yii::$app->db->beginTransaction();
 
-            // Получаем ID гостевых пользователей
-            $guestUserIds = $db->createCommand('
-                SELECT id FROM user 
-                WHERE role = :clientDemo 
-                OR role = :buyerDemo
-            ', [
-                ':clientDemo' => 'client-demo',
-                ':buyerDemo' => 'buyer-demo'
-            ])->queryColumn();
+            // Получаем ID всех пользователей с ролями, содержащими "demo"
+            $guestUserIds = (new Query())
+                ->select('id')
+                ->from('user')
+                ->where(['like', 'role', 'demo'])
+                ->column();
 
             if (empty($guestUserIds)) {
                 Yii::$app->actionLog->success('Гостевые учетные записи не найдены');
                 return ['status' => 'success', 'message' => 'Гостевые учетные записи не найдены'];
             }
 
-            $userIdsStr = implode(',', $guestUserIds);
+            // Экранируем ID (на случай если где-то будет использоваться implode)
+            $guestUserIds = array_map('intval', $guestUserIds);
 
-            // Удаляем связанные данные в правильном порядке
+            // Список таблиц и условий для удаления
             $tables = [
-                'feedback_buyer_link_attachment' => 'feedback_buyer_id IN (SELECT id FROM feedback_buyer WHERE buyer_id IN (' . $userIdsStr . '))',
-                'feedback_buyer' => 'buyer_id IN (' . $userIdsStr . ')',
-                'buyer_delivery_offer' => 'buyer_id IN (' . $userIdsStr . ')',
-                'buyer_offer' => 'buyer_id IN (' . $userIdsStr . ')',
-                'order_distribution' => 'current_buyer_id IN (' . $userIdsStr . ')',
-                'chats' => 'user_id IN (' . $userIdsStr . ')',
-                'order' => 'created_by IN (' . $userIdsStr . ') OR buyer_id IN (' . $userIdsStr . ')',
-                'user_link_category' => 'user_id IN (' . $userIdsStr . ')',
-                'user_link_type_delivery' => 'user_id IN (' . $userIdsStr . ')',
-                'user_link_type_packaging' => 'user_id IN (' . $userIdsStr . ')',
-                'user_settings' => 'user_id IN (' . $userIdsStr . ')',
-                'user_verification_request' => 'created_by_id IN (' . $userIdsStr . ') OR manager_id IN (' . $userIdsStr . ') OR approved_by_id IN (' . $userIdsStr . ')',
-                'notification' => 'user_id IN (' . $userIdsStr . ')',
-                'push_notification' => 'client_id IN (' . $userIdsStr . ')',
-                'user' => 'id IN (' . $userIdsStr . ')'
+                'feedback_buyer_link_attachment' => ['in', 'feedback_buyer_id', (new Query())->select('id')->from('feedback_buyer')->where(['in', 'buyer_id', $guestUserIds])],
+                'feedback_buyer' => ['in', 'buyer_id', $guestUserIds],
+                'buyer_delivery_offer' => ['in', 'buyer_id', $guestUserIds],
+                'buyer_offer' => ['in', 'buyer_id', $guestUserIds],
+                'order_distribution' => ['in', 'current_buyer_id', $guestUserIds],
+                'chats' => ['in', 'user_id', $guestUserIds],
+                'order' => ['or',
+                    ['in', 'created_by', $guestUserIds],
+                    ['in', 'buyer_id', $guestUserIds],
+                ],
+                'user_link_category' => ['in', 'user_id', $guestUserIds],
+                'user_link_type_delivery' => ['in', 'user_id', $guestUserIds],
+                'user_link_type_packaging' => ['in', 'user_id', $guestUserIds],
+                'user_verification_request' => ['or',
+                    ['in', 'created_by_id', $guestUserIds],
+                    ['in', 'manager_id', $guestUserIds],
+                    ['in', 'approved_by_id', $guestUserIds],
+                ],
+                'notification' => ['in', 'user_id', $guestUserIds],
+                'push_notification' => ['in', 'client_id', $guestUserIds],
+                'user_settings' => ['in', 'user_id', $guestUserIds],
+                'user' => ['in', 'id', $guestUserIds],
             ];
 
             $deletedCounts = [];
             foreach ($tables as $table => $condition) {
-                $count = $db->createCommand()
-                    ->delete($table, $condition)
-                    ->execute();
-                $deletedCounts[$table] = $count;
+                $deletedCounts[$table] = $this->deleteFromTable($table, $condition);
             }
 
             $transaction->commit();
 
-            // Логируем результаты
+            // Формируем лог
             $message = "Успешно удалено:\n";
+            $totalDeleted = 0;
             foreach ($deletedCounts as $table => $count) {
                 $message .= "- Из таблицы {$table}: {$count} записей\n";
+                $totalDeleted += $count;
             }
 
             Yii::$app->actionLog->success($message);
-            Yii::$app->telegramLog->send('success', $message, 'cleanup-guest-accounts');
+            Yii::$app->telegramLog->send('success', [
+                'Очистка гостевых аккаунтов',
+                'Удалены все пользователи с ролями, содержащими "demo"',
+                'Всего удалено записей: ' . $totalDeleted
+            ], 'cleanup-guest-accounts');
 
             return [
                 'status' => 'success',
@@ -334,19 +342,37 @@ class CronController extends Controller
                 'details' => $deletedCounts
             ];
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             if (isset($transaction)) {
                 $transaction->rollBack();
             }
-            
+
             $errorMessage = 'Ошибка при очистке гостевых аккаунтов: ' . $e->getMessage();
             Yii::$app->actionLog->error($errorMessage);
-            Yii::$app->telegramLog->send('error', $errorMessage, 'cleanup-guest-accounts');
-            
+            Yii::$app->telegramLog->send('error', [
+                'Ошибка при очистке гостевых аккаунтов',
+                'Детали ошибки: ' . $e->getMessage(),
+                'Время: ' . date('Y-m-d H:i:s')
+            ], 'cleanup-guest-accounts');
+
             return [
                 'status' => 'error',
                 'message' => $errorMessage
             ];
         }
+    }
+
+    /**
+     * Удаляет записи из таблицы по заданному условию
+     * 
+     * @param string $table Имя таблицы
+     * @param array $condition Условие для удаления
+     * @return int Количество удаленных записей
+     */
+    private function deleteFromTable($table, $condition)
+    {
+        return Yii::$app->db->createCommand()
+            ->delete($table, $condition)
+            ->execute();
     }
 }
