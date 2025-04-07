@@ -5,6 +5,7 @@ namespace app\controllers\api\v1;
 use app\controllers\api\V1Controller;
 use yii\filters\AccessControl;
 
+
 class InternalController extends V1Controller
 {
     public function behaviors()
@@ -16,7 +17,10 @@ class InternalController extends V1Controller
                 [
                     'allow' => true,
                     'matchCallback' => function () {
-                        return true;
+                        return \app\models\User::getIdentity()->is([
+                            \app\models\User::ROLE_ADMIN,
+                            \app\models\User::ROLE_SUPER_ADMIN,
+                        ]);
                     },
                 ],
             ],
