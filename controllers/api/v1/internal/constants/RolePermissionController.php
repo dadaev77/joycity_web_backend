@@ -40,6 +40,12 @@ class RolePermissionController extends InternalController
     public function actionDeleteRole()
     {
         $name = Yii::$app->request->post('name');
+        if (!$name) {
+            return [
+                'status' => 'error',
+                'message' => 'Имя роли не указано',
+            ];
+        }
         $role = \app\services\PermissionControlService::deleteRole($name);
         return $role;
     }
