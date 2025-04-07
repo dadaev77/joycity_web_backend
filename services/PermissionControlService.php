@@ -115,6 +115,16 @@ class PermissionControlService
         return $role->permissions;
     }
 
+    public static function deleteRole($name)
+    {
+        $role = \app\models\RoleModel::findOne(['name' => $name]);
+        if (!$role) {
+            return ['error' => 'Роль не найдена'];
+        }
+        $role->delete();
+        return ['success' => 'Роль удалена'];
+    }
+
     public function __destruct()
     {
         //

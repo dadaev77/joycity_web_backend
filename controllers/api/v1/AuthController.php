@@ -393,10 +393,10 @@ class AuthController extends V1Controller implements ApiAuth
                     $role,
                     [
                         User::ROLE_BUYER,
-                        User::ROLE_BUYER_DEMO, // demo buyer
+                        User::ROLE_BUYER_DEMO,
                         User::ROLE_CLIENT,
                         User::ROLE_FULFILLMENT,
-                        User::ROLE_CLIENT_DEMO, // demo client
+                        User::ROLE_CLIENT_DEMO,
                     ],
                     true,
                 )
