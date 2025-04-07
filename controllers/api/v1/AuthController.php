@@ -491,10 +491,9 @@ class AuthController extends V1Controller implements ApiAuth
 
             Yii::$app->telegramLog->send('success', [
                 'Успешная регистрация нового пользователя',
-                'Email: ' . $email,
                 'Роль: ' . $role,
-                'UUID: ' . $user->uuid
-            ], 'manager');
+                'UUID: ' . $user->uuid,
+            ]);
 
             return ApiResponse::code($apiCodes->SUCCESS, [
                 'access_token' => $user->access_token,
