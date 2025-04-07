@@ -48,9 +48,9 @@ class OrderController extends ClientController
             'calculate-price' => ['post'],
         ];
 
-        $behaviors['permissionFilter'] = [
-            'class' => \app\components\PermissionFilter::class,
-        ];
+        // $behaviors['permissionFilter'] = [
+        //     'class' => \app\components\PermissionFilter::class,
+        // ];
 
         return $behaviors;
     }
@@ -95,7 +95,7 @@ class OrderController extends ClientController
     public function actionCreate()
     {
         $user = User::getIdentity();
-
+        if (!$user->can('create-order')) return ['status' => 'error', 'message' => 'У вас нет прав на создание заказа'];
         $request = Yii::$app->request;
         $apiCodes = Order::apiCodes();
         $images = UploadedFile::getInstancesByName('images');
@@ -322,6 +322,7 @@ class OrderController extends ClientController
         try {
             $request = Yii::$app->request;
             $user = User::getIdentity();
+            if (!$user->can('update-order')) return ['status' => 'error', 'message' => 'У вас нет прав на обновление заказа'];
             $apiCodes = Order::apiCodes();
             $postParams = POSTHelper::getPostWithKeys([
                 'expected_quantity',
@@ -431,6 +432,7 @@ class OrderController extends ClientController
     {
         $apiCodes = Order::apiCodes();
         $user = User::getIdentity();
+        if (!$user->can('cancel-order')) return ['status' => 'error', 'message' => 'У вас нет прав на отмену заказа'];
         $order = Order::findOne(['id' => $id]);
 
         if (!$order) {
@@ -480,7 +482,6 @@ class OrderController extends ClientController
     {
         $apiCodes = Order::apiCodes();
         $user = User::getIdentity();
-        $user->can('view-order');
         $order = Order::find()
             ->select(['id', 'created_by', 'buyer_id'])
             ->where(['id' => $id])
@@ -543,8 +544,6 @@ class OrderController extends ClientController
                 'status' => Order::STATUS_GROUP_ORDER_ACTIVE,
             ]);
         }
-        // Если type не указан, показываем все заказы
-
         return ApiResponse::collection(
             OrderOutputService::getCollection(
                 $orderIds->column(),
