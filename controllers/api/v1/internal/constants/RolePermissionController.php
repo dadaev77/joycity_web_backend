@@ -55,6 +55,19 @@ class RolePermissionController extends InternalController
             $permissionName = Yii::$app->request->post('permission');
             $role = \app\models\RoleModel::findOne(['name' => $roleName]);
             $permission = \app\models\PermissionModel::findOne(['name' => $permissionName]);
+            if (!$role || !$permission) {
+                return [
+                    'status' => 'error',
+                    'message' => 'Роль или разрешение не найдены',
+                ];
+            }
+            $existingPermission = \app\models\RolePermissionModel::findOne(['role_id' => $role->id, 'permission_id' => $permission->id]);
+            if ($existingPermission) {
+                return [
+                    'status' => 'error',
+                    'message' => 'Разрешение уже существует',
+                ];
+            }
             $result = \app\services\PermissionControlService::addPermissionToRole($role->id, $permission->id);
             return $result;
         } catch (\Exception $e) {
@@ -68,8 +81,30 @@ class RolePermissionController extends InternalController
         $permissionName = Yii::$app->request->post('permission');
         $role = \app\models\RoleModel::findOne(['name' => $roleName]);
         $permission = \app\models\PermissionModel::findOne(['name' => $permissionName]);
+        if (!$role || !$permission) {
+            return [
+                'status' => 'error',
+                'message' => 'Роль или разрешение не найдены',
+            ];
+        }
+        $existingPermission = \app\models\RolePermissionModel::findOne(['role_id' => $role->id, 'permission_id' => $permission->id]);
+        if (!$existingPermission) {
+            return [
+                'status' => 'error',
+                'message' => 'Разрешение не найдено',
+            ];
+        }
         $result = \app\services\PermissionControlService::removePermissionFromRole($role->id, $permission->id);
-        return $result;
+        if (!$result) {
+            return [
+                'status' => 'error',
+                'message' => 'Не удалось удалить разрешение',
+            ];
+        }
+        return [
+            'status' => 'success',
+            'message' => 'Разрешение удалено',
+        ];
     }
 
     public function actionGetPermissions()
