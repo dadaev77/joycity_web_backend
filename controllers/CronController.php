@@ -332,10 +332,10 @@ class CronController extends Controller
 
             Yii::$app->actionLog->success($message);
             Yii::$app->telegramLog->send('success', 
-                "Очистка аккаунтов с DEMO ролями\n" .
+                "Очистка аккаунтов с определенными ролями\n" .
                 "Удалены все пользователи с role_id 4 и 7, созданные более 24 часов назад\n" .
-                "Всего удалено записей: " . $totalDeleted, 
-                'cleanup-guest-accounts');
+                "Всего удалено записей: " . $totalDeleted,
+            );
 
             return [
                 'status' => 'success',
@@ -353,8 +353,8 @@ class CronController extends Controller
             Yii::$app->telegramLog->send('error', 
                 "Ошибка при очистке аккаунтов\n" .
                 "Детали ошибки: " . $e->getMessage() . "\n" .
-                "Время: " . date('Y-m-d H:i:s'), 
-                'cleanup-guest-accounts');
+                "Время: " . date('Y-m-d H:i:s'),
+            );
 
             return [
                 'status' => 'error',
