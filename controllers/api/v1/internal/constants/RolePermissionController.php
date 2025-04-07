@@ -16,6 +16,7 @@ class RolePermissionController extends InternalController
             'description' => 'Контроллер для управления ролями и разрешениями из внутреннего API',
             'actions' => [
                 'create-role' => 'Создать новую роль',
+                'delete-role' => 'Удалить роль',
                 'create-permission' => 'Создать новое разрешение',
                 'add-permission-to-role' => 'Добавить разрешение к роли',
                 'remove-permission-from-role' => 'Удалить разрешение из роли',
@@ -34,6 +35,13 @@ class RolePermissionController extends InternalController
         } catch (\Exception $e) {
             return $e->getMessage();
         }
+    }
+
+    public function actionDeleteRole()
+    {
+        $name = Yii::$app->request->post('name');
+        $role = \app\services\PermissionControlService::deleteRole($name);
+        return $role;
     }
 
     public function actionCreatePermission()
