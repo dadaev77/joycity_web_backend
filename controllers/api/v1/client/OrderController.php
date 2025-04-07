@@ -100,11 +100,7 @@ class OrderController extends ClientController
         $apiCodes = Order::apiCodes();
         $images = UploadedFile::getInstancesByName('images');
         $product_id = $request->post('product_id');
-        $randomManager = User::find()
-            ->select(['id'])
-            ->where(['role' => User::ROLE_MANAGER])
-            ->orderBy('RAND()')
-            ->one();
+        $randomManager = $user->getRandomManager();
 
         $order = new Order();
         $order->loadDefaultValues();

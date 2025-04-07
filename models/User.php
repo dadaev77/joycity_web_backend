@@ -123,4 +123,18 @@ class User extends UserStructure implements IdentityInterface
     {
         return $this->hasOne(UserSettings::class, ['user_id' => 'id'])->one();
     }
+
+    public function getRandomManager()
+    {
+        $users = User::find()->all();
+        $users = array_filter($users, function ($user) {
+            return $user->is([self::ROLE_MANAGER]);
+        });
+        if (empty($users)) {
+            return null;
+        }
+        $randomUser = $users[array_rand($users)];
+
+        return $randomUser;
+    }
 }
