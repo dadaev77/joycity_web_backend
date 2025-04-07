@@ -263,7 +263,7 @@ class CronController extends Controller
     /**
      * @OA\Get(
      *     path="/cron/cleanup-guest-accounts",
-     *     summary="Очистка аккаунтов с определенными ролями",
+     *     summary="Очистка аккаунтов с определенными ролями через 24 часа",
      *     @OA\Response(response="200", description="Аккаунты очищены"),
      *     @OA\Response(response="500", description="Ошибка очистки аккаунтов")
      * )
@@ -273,16 +273,17 @@ class CronController extends Controller
         try {
             $transaction = Yii::$app->db->beginTransaction();
 
-            // Получаем ID всех пользователей с role_id 4 и 7
+            // Получаем ID всех пользователей с role_id 4 и 7, созданных более 24 часов назад
             $guestUserIds = (new Query())
                 ->select('id')
                 ->from('user')
                 ->where(['in', 'role_id', [4, 7]])
+                ->andWhere(['<', 'created_at', date('Y-m-d H:i:s', strtotime('-24 hours'))])
                 ->column();
 
             if (empty($guestUserIds)) {
-                Yii::$app->actionLog->success('Учетные записи с указанными ролями не найдены');
-                return ['status' => 'success', 'message' => 'Учетные записи с указанными ролями не найдены'];
+                Yii::$app->actionLog->success('Учетные записи с указанными ролями, созданные более 24 часов назад, не найдены');
+                return ['status' => 'success', 'message' => 'Учетные записи с указанными ролями, созданные более 24 часов назад, не найдены'];
             }
 
             // Экранируем ID (на случай если где-то будет использоваться implode)
@@ -330,15 +331,15 @@ class CronController extends Controller
             }
 
             Yii::$app->actionLog->success($message);
-            Yii::$app->telegramLog->send('success', [
-                'Очистка аккаунтов с определенными ролями',
-                'Удалены все пользователи с role_id 4 и 7',
-                'Всего удалено записей: ' . $totalDeleted
-            ], 'cleanup-guest-accounts');
+            Yii::$app->telegramLog->send('success', 
+                "Очистка аккаунтов с DEMO ролями\n" .
+                "Удалены все пользователи с role_id 4 и 7, созданные более 24 часов назад\n" .
+                "Всего удалено записей: " . $totalDeleted, 
+                'cleanup-guest-accounts');
 
             return [
                 'status' => 'success',
-                'message' => 'Аккаунты с указанными ролями успешно очищены',
+                'message' => 'Аккаунты с указанными ролями, созданные более 24 часов назад, успешно очищены',
                 'details' => $deletedCounts
             ];
 
@@ -349,11 +350,11 @@ class CronController extends Controller
 
             $errorMessage = 'Ошибка при очистке аккаунтов: ' . $e->getMessage();
             Yii::$app->actionLog->error($errorMessage);
-            Yii::$app->telegramLog->send('error', [
-                'Ошибка при очистке аккаунтов',
-                'Детали ошибки: ' . $e->getMessage(),
-                'Время: ' . date('Y-m-d H:i:s')
-            ], 'cleanup-guest-accounts');
+            Yii::$app->telegramLog->send('error', 
+                "Ошибка при очистке аккаунтов\n" .
+                "Детали ошибки: " . $e->getMessage() . "\n" .
+                "Время: " . date('Y-m-d H:i:s'), 
+                'cleanup-guest-accounts');
 
             return [
                 'status' => 'error',
