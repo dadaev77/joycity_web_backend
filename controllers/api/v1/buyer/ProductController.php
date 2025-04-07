@@ -3,7 +3,6 @@
 namespace app\controllers\api\v1\buyer;
 
 use app\components\ApiResponse;
-use app\components\response\ResponseCodes;
 use app\controllers\api\v1\BuyerController;
 use app\models\Attachment;
 use app\models\Product;
@@ -30,29 +29,11 @@ class ProductController extends BuyerController
         $behaviors['verbFilter']['actions']['my'] = ['get'];
         $behaviors['verbFilter']['actions']['download-excel'] = ['get'];
         $behaviors['verbFilter']['actions']['upload-excel'] = ['post'];
-        array_unshift($behaviors['access']['rules'], [
-            'actions' => ['create', 'update', 'delete'],
-            'allow' => false,
-            'matchCallback' => fn() => User::getIdentity()->is([
-                User::ROLE_BUYER_DEMO
-            ]),
-        ]);
-        $behaviors['access']['denyCallback'] = static function () {
-            $response =
-                User::getIdentity()->is([
-                    User::ROLE_BUYER_DEMO
-                ]) ?
-                ApiResponse::byResponseCode(ResponseCodes::getStatic()->NOT_AUTHENTICATED) :
-                ApiResponse::code(ResponseCodes::getStatic()->NO_ACCESS);
-            Yii::$app->response->data = $response;
-        };
 
-        // Добавляем оба действия в список разрешенных
-        $behaviors['access']['rules'][] = [
-            'actions' => ['download-excel', 'upload-excel'],
-            'allow' => true,
-            'roles' => ['@'],
-        ];
+
+        // $behaviors['permissionFilter'] = [
+        //     'class' => \app\components\PermissionFilter::class,
+        // ];
 
         return $behaviors;
     }
@@ -90,6 +71,7 @@ class ProductController extends BuyerController
         try {
             $apiCodes = Product::apiCodes();
             $user = User::getIdentity();
+            if (!$user->can('create-product')) return ApiResponse::byResponseCode($apiCodes->NO_ACCESS);
             $request = Yii::$app->request;
 
             $images = UploadedFile::getInstancesByName('images');
@@ -254,6 +236,7 @@ class ProductController extends BuyerController
     {
         $apiCodes = Product::apiCodes();
         $user = User::getIdentity();
+        if (!$user->can('update-product')) return ApiResponse::byResponseCode($apiCodes->NO_ACCESS);
         $request = Yii::$app->request;
 
         $product = Product::findOne(['id' => $id]);
@@ -445,6 +428,7 @@ class ProductController extends BuyerController
     {
         $apiCodes = Product::apiCodes();
         $user = User::getIdentity();
+        if (!$user->can('delete-product')) return ApiResponse::byResponseCode($apiCodes->NO_ACCESS);
         $product = Product::findOne(['id' => $id]);
 
         if (!$product) {

@@ -137,4 +137,9 @@ class User extends UserStructure implements IdentityInterface
 
         return $randomUser;
     }
+
+    public function isVerified(): bool
+    {
+        return $this->is_verified;
+    }
 }

@@ -95,9 +95,9 @@ class OrderController extends ClientController
     public function actionCreate()
     {
         $user = User::getIdentity();
-        if (!$user->can('create-order')) return ['status' => 'error', 'message' => 'У вас нет прав на создание заказа'];
-        $request = Yii::$app->request;
         $apiCodes = Order::apiCodes();
+        if (!$user->can('create-order') || !$user->isVerified()) return ApiResponse::byResponseCode($apiCodes->NO_ACCESS);
+        $request = Yii::$app->request;
         $images = UploadedFile::getInstancesByName('images');
         $product_id = $request->post('product_id');
         $randomManager = $user->getRandomManager();
@@ -316,10 +316,10 @@ class OrderController extends ClientController
     public function actionUpdate(int $id)
     {
         try {
-            $request = Yii::$app->request;
-            $user = User::getIdentity();
-            if (!$user->can('update-order')) return ['status' => 'error', 'message' => 'У вас нет прав на обновление заказа'];
             $apiCodes = Order::apiCodes();
+            $user = User::getIdentity();
+            if (!$user->can('update-order') || !$user->isVerified()) return ApiResponse::byResponseCode($apiCodes->NO_ACCESS);
+            $request = Yii::$app->request;
             $postParams = POSTHelper::getPostWithKeys([
                 'expected_quantity',
                 'expected_price_per_item',
@@ -428,7 +428,7 @@ class OrderController extends ClientController
     {
         $apiCodes = Order::apiCodes();
         $user = User::getIdentity();
-        if (!$user->can('cancel-order')) return ['status' => 'error', 'message' => 'У вас нет прав на отмену заказа'];
+        if (!$user->can('cancel-order') || !$user->isVerified()) return ApiResponse::byResponseCode($apiCodes->NO_ACCESS);
         $order = Order::findOne(['id' => $id]);
 
         if (!$order) {
