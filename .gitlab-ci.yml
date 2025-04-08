@@ -5,7 +5,8 @@ docker-build-stage:
   # Use the official docker image.
   image: docker:cli
   stage: build
-  tags: stage #runner for stage
+  tags: 
+    - stage #runner for stage
   variables:
     DOCKER_IMAGE_NAME: joy_server:$CI_COMMIT_REF_SLUG
   before_script:
