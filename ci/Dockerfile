@@ -12,7 +12,7 @@ RUN echo 'server:password' | chpasswd
 RUN echo 'export APACHE_RUN_USER=server' >> /etc/apache2/envvars
 RUN echo 'export APACHE_RUN_GROUP=server' >> /etc/apache2/envvars
 
-COPY ci/entrypoint.sh /usr/local/bin/backend-entrypoint
+COPY ci/files/entrypoint.sh /usr/local/bin/backend-entrypoint
 RUN chmod +x /usr/local/bin/backend-entrypoint
 
 # COPY /srv/docker/joycity/joy_server/.ssh /home/server/.ssh
@@ -24,8 +24,8 @@ RUN chown server:server /home/server/.ssh -R
 
 USER server
 
-COPY ci/apache2/default.conf /etc/apache2/sites-enabled/000-default.conf
-COPY ci/apache2/mpm_prefork.conf /etc/apache2/mods-available/mpm_prefork.conf
+COPY ci/files/apache2/default.conf /etc/apache2/sites-enabled/000-default.conf
+COPY ci/files/apache2/mpm_prefork.conf /etc/apache2/mods-available/mpm_prefork.conf
 
 WORKDIR /app
 COPY . .
