@@ -491,8 +491,19 @@ class OrderController extends ClientController
             return ApiResponse::code($apiCodes->NO_ACCESS);
         }
 
+        $orderInfo = OrderOutputService::getEntity($id);
+        
+        // Форматируем имя байера
+        if (isset($orderInfo['buyer'])) {
+            if (!empty($orderInfo['buyer']['organization_name'])) {
+                $orderInfo['buyer']['name'] = $orderInfo['buyer']['organization_name'];
+            } elseif (!empty($orderInfo['buyer']['name']) || !empty($orderInfo['buyer']['surname'])) {
+                $orderInfo['buyer']['name'] = trim($orderInfo['buyer']['name'] . ' ' . $orderInfo['buyer']['surname']);
+            }
+        }
+
         return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
-            'info' => OrderOutputService::getEntity($id),
+            'info' => $orderInfo,
         ]);
     }
 
@@ -535,18 +546,29 @@ class OrderController extends ClientController
                 'status' => Order::STATUS_GROUP_REQUEST_ACTIVE,
             ]);
         } elseif ($type === 'order') {
-            // Для типа "order" показываем все активные заказы
             $orderIds->andWhere([
                 'status' => Order::STATUS_GROUP_ORDER_ACTIVE,
             ]);
         }
-        return ApiResponse::collection(
-            OrderOutputService::getCollection(
-                $orderIds->column(),
-                false,
-                'small'
-            ),
+
+        $orders = OrderOutputService::getCollection(
+            $orderIds->column(),
+            false,
+            'small'
         );
+
+        // Форматируем имена байеров для всех заказов
+        foreach ($orders as &$order) {
+            if (isset($order['buyer'])) {
+                if (!empty($order['buyer']['organization_name'])) {
+                    $order['buyer']['name'] = $order['buyer']['organization_name'];
+                } elseif (!empty($order['buyer']['name']) || !empty($order['buyer']['surname'])) {
+                    $order['buyer']['name'] = trim($order['buyer']['name'] . ' ' . $order['buyer']['surname']);
+                }
+            }
+        }
+
+        return ApiResponse::collection($orders);
     }
 
     /**
