@@ -19,7 +19,7 @@ RUN chmod +x /usr/local/bin/backend-entrypoint
 # RUN chmod 600 /home/server/.ssh/id_ed25519
 
 RUN mkdir -p /app
-RUN chown server:server /app
+RUN chown -R server:server /app
 # RUN chown server:server /home/server/.ssh -R
 
 USER server
