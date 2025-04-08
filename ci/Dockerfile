@@ -20,7 +20,7 @@ RUN chmod +x /usr/local/bin/backend-entrypoint
 
 RUN mkdir -p /app
 RUN chown server:server /app
-RUN chown server:server /home/server/.ssh -R
+# RUN chown server:server /home/server/.ssh -R
 
 USER server
 
