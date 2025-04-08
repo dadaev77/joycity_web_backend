@@ -1,6 +1,6 @@
 #!/bin/sh
 
-chown server:server /app/entrypoint/api/attachments
+chown -R server:server /app
 echo "chown attachments done"
 
 sleep 5
