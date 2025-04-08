@@ -32,3 +32,5 @@ deploy_to_stage:
     - docker compose up -d --force-recreate joy_server
   only:
     - test
+  tags: 
+    - stage #runner for stage
