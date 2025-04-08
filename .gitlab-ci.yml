@@ -1,0 +1,33 @@
+stages:
+  - build
+  - deploy
+docker-build-stage:
+  # Use the official docker image.
+  image: docker:cli
+  stage: build
+  tags: stage #runner for stage
+  variables:
+    DOCKER_IMAGE_NAME: joy_server:$CI_COMMIT_REF_SLUG
+  before_script:
+    - unset DOCKER_HOST
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - docker build --pull -t "$DOCKER_IMAGE_NAME" --build-arg ENV_NAME=master -f ci/Dockerfile .
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "test"'
+      exists:
+        - ci/Dockerfile
+# deploy_to_prod:
+#   stage: deploy
+#   script:
+#     - /srv/joy_city/deploy/prod
+#     - docker compose up -d --force-recreate joy_server
+#   only:
+#     - master
+deploy_to_stage:
+  stage: deploy
+  script:
+    - cd /srv/docker/joycity
+    - docker compose up -d --force-recreate joy_server
+  only:
+    - test
