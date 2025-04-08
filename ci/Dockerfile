@@ -24,8 +24,8 @@ RUN chown server:server /home/server/.ssh -R
 
 USER server
 
-COPY /srv/docker/joycity/joy_server/apache2/default.conf /etc/apache2/sites-enabled/000-default.conf
-COPY /srv/docker/joycity/joy_server/apache2/mpm_prefork.conf /etc/apache2/mods-available/mpm_prefork.conf
+# COPY /srv/docker/joycity/joy_server/apache2/default.conf /etc/apache2/sites-enabled/000-default.conf
+# COPY /srv/docker/joycity/joy_server/apache2/mpm_prefork.conf /etc/apache2/mods-available/mpm_prefork.conf
 
 WORKDIR /app
 COPY . .
