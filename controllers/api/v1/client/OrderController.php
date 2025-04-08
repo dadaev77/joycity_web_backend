@@ -550,25 +550,13 @@ class OrderController extends ClientController
                 'status' => Order::STATUS_GROUP_ORDER_ACTIVE,
             ]);
         }
-
-        $orders = OrderOutputService::getCollection(
-            $orderIds->column(),
-            false,
-            'small'
+        return ApiResponse::collection(
+            OrderOutputService::getCollection(
+                $orderIds->column(),
+                false,
+                'small'
+            ),
         );
-
-        // Форматируем имена байеров для всех заказов
-        foreach ($orders as &$order) {
-            if (isset($order['buyer'])) {
-                if (!empty($order['buyer']['organization_name'])) {
-                    $order['buyer']['name'] = $order['buyer']['organization_name'];
-                } elseif (!empty($order['buyer']['name']) || !empty($order['buyer']['surname'])) {
-                    $order['buyer']['name'] = trim($order['buyer']['name'] . ' ' . $order['buyer']['surname']);
-                }
-            }
-        }
-
-        return ApiResponse::collection($orders);
     }
 
     /**

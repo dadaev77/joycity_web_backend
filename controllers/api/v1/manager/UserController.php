@@ -202,56 +202,6 @@ class UserController extends ManagerController
         );
     }
 
-    /**
-     * @param int $id
-     * @param int $markup
-     * @return array
-     */
-
-   /**
-        * @OA\Post(
-        *     path="/api/v1/manager/user/update-markup",
-        *     summary="Обновить наценку для клиента",
-        *     tags={"Manager - Users"},
-        *     @OA\RequestBody(
-        *         required=true,
-        *         @OA\JsonContent(
-        *             required={"user_id", "markup"},
-        *             @OA\Property(property="user_id", type="integer", description="ID пользователя"),
-        *             @OA\Property(property="markup", type="integer", description="Значение наценки (0-100)")
-        *         )
-        *     ),
-        *     @OA\Response(
-        *         response=200,
-        *         description="Наценка успешно обновлена",
-        *         @OA\JsonContent(
-        *             @OA\Property(property="markup", type="integer")
-        *         )
-        *     ),
-        *     @OA\Response(response=404, description="Пользователь не найден"),
-        *     @OA\Response(response=400, description="Неверное значение наценки или роль пользователя"),
-        *     @OA\Response(response=422, description="Ошибка валидации")
-        * )
-        */
-    public function actionUpdateMarkup()
-    {
-
-        $user_id = Yii::$app->request->post('user_id');
-        $markup = Yii::$app->request->post('markup');
-
-        $user = User::findOne($user_id);
-
-        if (!$user) return ApiResponse::code($this->responseCodes->NOT_FOUND, ['message' => 'User not found.']);
-        if ($user->role !== User::ROLE_CLIENT) return ApiResponse::code($this->responseCodes->BAD_REQUEST, ['message' => 'Markup can only be set for clients.']);
-
-        if (!is_numeric($markup) || $markup < 0 || $markup > 100) return ApiResponse::code($this->responseCodes->BAD_REQUEST, ['message' => 'Markup must be between 0 and 100.']);
-
-        $user->markup = (int)$markup;
-        if (!$user->save(true, ['markup'])) return ApiResponse::code($this->responseCodes->INTERNAL_ERROR, ['errors' => $user->errors], 422);
-
-        return ApiResponse::code($this->responseCodes->SUCCESS,['markup' => $user->markup]);
-    }
-
 }
 
 
