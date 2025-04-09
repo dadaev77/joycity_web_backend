@@ -184,4 +184,12 @@ class RawController extends Controller
         }
         return $response;
     }
+
+    public function actionPushMessage()
+    {
+        return 'Hello Andrey';
+
+    }
+
+
 }
