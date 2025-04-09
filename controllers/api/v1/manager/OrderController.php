@@ -348,12 +348,7 @@ class OrderController extends ManagerController
 
         // Проверка статуса заказа
         if ($order->status === Order::STATUS_BUYER_OFFER_CREATED) {
-            return \app\components\ApiResponse::byResponseCode($this->apiCodes->NO_ACCESS, ['message' => 'Невозможно изменить байера, когда заказ в статусе "Сделано предложение"']);
-        }
-
-        // Проверяем, что заказ находится в статусе ожидания предложения
-        if (!in_array($order->status, [Order::STATUS_WAITING_FOR_BUYER_OFFER, Order::STATUS_BUYER_ASSIGNED])) {
-            return \app\components\ApiResponse::byResponseCode($this->apiCodes->NO_ACCESS, ['message' => 'Изменить байера можно только в статусе "Ожидание предложения"']);
+            return ApiResponse::code($this->apiCodes->NO_ACCESS, ['message' => 'Невозможно изменить байера, когда заказ в статусе "Сделано предложение"']);
         }
 
         $buyer = \app\models\User::findOne(['id' => $buyerId, 'role' => \app\models\User::ROLE_BUYER]);
@@ -457,21 +452,16 @@ class OrderController extends ManagerController
             return ApiResponse::code($apiCodes->NO_ACCESS, ['message' => 'Невозможно изменить байера, когда заказ в статусе "Сделано предложение"']);
         }
 
-        // Проверяем, что заказ находится в статусе ожидания предложения
-        if (!in_array($order->status, [Order::STATUS_WAITING_FOR_BUYER_OFFER, Order::STATUS_BUYER_ASSIGNED])) {
-            return ApiResponse::code($apiCodes->NO_ACCESS, ['message' => 'Изменить байера можно только в статусе "Ожидание предложения"']);
-        }
-
         try {
             $order->buyer_id = $buyerId;
             $save = $order->save();
             if (!$save) return ApiResponse::codeErrors($apiCodes->ERROR_SAVE, $order->errors);
 
-
+            // Отправляем уведомление новому байеру
             $language = $buyer->getSettings()->application_language;
             PushService::sendPushNotification($buyerId, [
-                'title' => Yii::t('order', 'Новый заказ', [], $language),
-                'body' => Yii::t('order', 'Новый заказ для покупателя', ['order_id' => $order->id], $language),
+                'title' => Yii::t('order', 'new_order_for_buyer', [], $language),
+                'body' => Yii::t('order', 'new_order_for_buyer_text', ['order_id' => $order->id], $language),
             ], true);
 
             \Yii::$app->telegramLog->send('success', [
