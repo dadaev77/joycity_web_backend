@@ -33,7 +33,7 @@ class MessageJob extends BaseObject implements JobInterface
                     'zh' => $this->message,
                 ]);
             }
-
+            echo "\n" . "\033[38;5;214m" . "   [TS:TRANSLATIONS] " . json_encode($translations) . "\033[0m";
             $message->content = $translations;
             if ($message->save()) {
                 \app\services\WebsocketService::sendNotification($message->chat->metadata['participants'], [
