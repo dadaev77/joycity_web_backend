@@ -25,6 +25,15 @@ class MessageJob extends BaseObject implements JobInterface
             if (is_string($translations)) {
                 $translations = json_decode($translations, true);
             }
+
+            if ($translations == null) {
+                $translations = json_encode([
+                    'en' => $this->message,
+                    'ru' => $this->message,
+                    'zh' => $this->message,
+                ]);
+            }
+
             $message->content = $translations;
             if ($message->save()) {
                 \app\services\WebsocketService::sendNotification($message->chat->metadata['participants'], [
