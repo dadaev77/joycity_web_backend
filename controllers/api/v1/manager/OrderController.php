@@ -11,6 +11,7 @@ use app\models\User;
 use app\services\order\OrderStatusService;
 use app\services\OrderTrackingConstructorService;
 use app\services\output\OrderOutputService;
+use app\services\PushService;
 use Throwable;
 use Yii;
 
@@ -362,11 +363,15 @@ class OrderController extends ManagerController
         }
 
         $order->buyer_id = $buyerId;
-        if (!$order->save()) {
-            return \app\components\ApiResponse::byResponseCode($this->apiCodes->INTERNAL_ERROR, [
-                'errors' => $order->errors
-            ]);
-        }
+        $save = $order->save();
+        if (!$save) return ApiResponse::codeErrors($this->apiCodes->ERROR_SAVE, $order->errors);
+
+        // Отправляем уведомление новому байеру
+        $language = $buyer->getSettings()->application_language;
+        PushService::sendPushNotification($buyerId, [
+            'title' => Yii::t('order', 'new_order_for_buyer', [], $language),
+            'body' => Yii::t('order', 'new_order_for_buyer_text', ['order_id' => $order->id], $language),
+        ], true);
 
         \Yii::$app->telegramLog->send('success', [
             'Заказ обновлен менеджером',
@@ -462,6 +467,13 @@ class OrderController extends ManagerController
             $save = $order->save();
             if (!$save) return ApiResponse::codeErrors($apiCodes->ERROR_SAVE, $order->errors);
 
+
+            $language = $buyer->getSettings()->application_language;
+            PushService::sendPushNotification($buyerId, [
+                'title' => Yii::t('order', 'Новый заказ', [], $language),
+                'body' => Yii::t('order', 'Новый заказ для покупателя', ['order_id' => $order->id], $language),
+            ], true);
+
             \Yii::$app->telegramLog->send('success', [
                 'Заказ обновлен менеджером',
                 'ID заказа: ' . $order->id,
@@ -469,16 +481,7 @@ class OrderController extends ManagerController
                 'ID менеджера: ' . \Yii::$app->user->id,
             ], 'manager');
 
-            return ApiResponse::codeInfo(
-                $apiCodes->SUCCESS,
-                [
-                    'id' => $order->id,
-                    'created_at' => $order->created_at,
-                    'status' => $order->status,
-                    'buyer_id' => $order->buyer_id,
-                    'manager_id' => $order->manager_id
-                ]
-            );
+            return ApiResponse::info(OrderOutputService::getEntity($order->id));
         } catch (Throwable $e) {
             \Yii::$app->telegramLog->send('error', [
                 'Ошибка при обновлении заказа менеджером',
