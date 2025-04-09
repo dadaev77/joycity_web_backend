@@ -346,13 +346,14 @@ class AuthController extends V1Controller implements ApiAuth
                 'organization_name' => $organizationName,
                 'surname' => $surname,
                 'name' => $name,
-                'role' => 'unused',
                 'rating' => Yii::$app->params['baseRating'],
                 'phone_country_code' => $phone_country_code,
                 'telegram' => $telegram,
             ]);
 
-            $user->role_id = \app\models\RoleModel::findOne(['name' => $role])->id;
+            $roleModel = \app\models\RoleModel::findOne(['name' => $role]);
+            $user->role_id = $roleModel->id;
+            $user->role = $role;
 
             $requiredAttributes = [
                 'email',
