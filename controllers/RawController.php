@@ -187,7 +187,15 @@ class RawController extends Controller
 
     public function actionPushMessage()
     {
-        return 'Hello Andrey';
+
+
+        \app\services\push\PushService::sendPushNotification(
+            260,
+            [
+                'title' => "Тест",
+                'body' => "Тестовое сообщение",
+            ]
+        );
 
     }
 
