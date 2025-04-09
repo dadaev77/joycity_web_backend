@@ -346,13 +346,8 @@ class OrderController extends ManagerController
         }
 
         // Проверка статуса заказа
-        if ($order->status === Order::STATUS_BUYER_OFFER_CREATED) {
-            return \app\components\ApiResponse::byResponseCode($this->apiCodes->NO_ACCESS, ['message' => 'Невозможно изменить байера, когда заказ в статусе "Сделано предложение"']);
-        }
-
-        // Проверяем, что заказ находится в статусе ожидания предложения
-        if (!in_array($order->status, [Order::STATUS_WAITING_FOR_BUYER_OFFER, Order::STATUS_BUYER_ASSIGNED])) {
-            return \app\components\ApiResponse::byResponseCode($this->apiCodes->NO_ACCESS, ['message' => 'Изменить байера можно только в статусе "Ожидание предложения"']);
+        if ($order->status !== Order::STATUS_BUYER_ASSIGNED) {
+            return \app\components\ApiResponse::byResponseCode($this->apiCodes->NO_ACCESS, ['message' => 'Order cannot be updated']);
         }
 
         $buyer = \app\models\User::findOne(['id' => $buyerId, 'role' => \app\models\User::ROLE_BUYER]);
@@ -443,19 +438,7 @@ class OrderController extends ManagerController
 
         if (!$id || !$buyerId) return ApiResponse::code($this->apiCodes->NOT_FOUND, ['message' => 'Order or buyer not provided']);
         if (!$order || !$buyer) return ApiResponse::code($this->apiCodes->NOT_FOUND, ['message' => 'Order or buyer not exists']);
-        if ($order->manager_id !== $user->id) {
-            return ApiResponse::code($apiCodes->NO_ACCESS);
-        }
-
-        // Проверка статуса заказа
-        if ($order->status === Order::STATUS_BUYER_OFFER_CREATED) {
-            return ApiResponse::code($apiCodes->NO_ACCESS, ['message' => 'Невозможно изменить байера, когда заказ в статусе "Сделано предложение"']);
-        }
-
-        // Проверяем, что заказ находится в статусе ожидания предложения
-        if (!in_array($order->status, [Order::STATUS_WAITING_FOR_BUYER_OFFER, Order::STATUS_BUYER_ASSIGNED])) {
-            return ApiResponse::code($apiCodes->NO_ACCESS, ['message' => 'Изменить байера можно только в статусе "Ожидание предложения"']);
-        }
+        if ($order->manager_id !== $user->id) return ApiResponse::code($apiCodes->NO_ACCESS, ['message' => 'You have no access to this order']);
 
         try {
             $order->buyer_id = $buyerId;
