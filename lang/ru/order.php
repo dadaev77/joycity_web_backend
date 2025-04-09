@@ -30,4 +30,6 @@ return [
     'cancelled_order' => 'Заказ отменен по инициативе продавца',
     'completed' => 'Заказ выполнен успешно',
     'waiting_for_buyer_offer' => 'Заказ №{order_id} ожидает предложения от байера',
+    'buyer_changed' => 'Байер изменен',
+    'buyer_changed_text' => 'Байер изменен в заказе №{order_id}',
 ];

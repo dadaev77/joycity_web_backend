@@ -363,6 +363,16 @@ class OrderController extends ManagerController
             ]);
         }
 
+        
+        $language = $buyer->getSettings()->application_language;
+        \app\services\push\PushService::sendPushNotification(
+            $buyerId,
+            [
+                'title' => Yii::t('order', 'buyer_changed', [], $language),
+                'body' => Yii::t('order', 'buyer_changed_text', ['order_id' => $order->id], $language),
+            ]
+        );
+
         \Yii::$app->telegramLog->send('success', [
             'Заказ обновлен менеджером',
             'ID заказа: ' . $order->id,
@@ -444,6 +454,16 @@ class OrderController extends ManagerController
             $order->buyer_id = $buyerId;
             $save = $order->save();
             if (!$save) return ApiResponse::codeErrors($apiCodes->ERROR_SAVE, $order->errors);
+
+            // Отправляем push-уведомление байеру
+            $language = $buyer->getSettings()->application_language;
+            \app\services\push\PushService::sendPushNotification(
+                $buyerId,
+                [
+                    'title' => Yii::t('order', 'buyer_changed', [], $language),
+                    'body' => Yii::t('order', 'buyer_changed_text', ['order_id' => $order->id], $language),
+                ]
+            );
 
             \Yii::$app->telegramLog->send('success', [
                 'Заказ обновлен менеджером',
