@@ -30,4 +30,6 @@ return [
     'cancelled_order' => 'The order has been cancelled at the seller\'s initiative',
     'completed' => 'The order has been successfully completed',
     'waiting_for_buyer_offer' => 'Order №{order_id} is waiting for a buyer\'s offer',
+    'buyer_changed' => 'Buyer changed',
+    'buyer_changed_text' => 'Buyer changed in order #{order_id}',
 ];

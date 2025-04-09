@@ -30,4 +30,6 @@ return [
     'cancelled_order' => '订单已由卖家主动取消',
     'completed' => '订单已成功完成',
     'waiting_for_buyer_offer' => '订单 №{order_id} 等待买家报价',
+    'buyer_changed' => '买家已更改',
+    'buyer_changed_text' => '订单 #{order_id} 的买家已更改',
 ];
