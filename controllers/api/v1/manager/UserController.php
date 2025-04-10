@@ -102,7 +102,10 @@ class UserController extends ManagerController
         }
         
         $query = User::find()->where(['role' => $role, 'is_deleted' => 0]);
-        $query->select(['id', 'name', 'surname', 'uuid', 'role', 'email', 'markup', 'created_at']);
+        $query->select(['id', 'name', 'surname', 'uuid', 'role', 'email', 'markup', 'created_at', 'avatar_id']);
+        
+        // Загружаем аватары пользователей
+        $query->with(['avatar']);
 
         // Получаем параметры сортировки
         $sort = Yii::$app->request->get('sort');
@@ -174,7 +177,8 @@ class UserController extends ManagerController
     )
     {
         $queryBuilder = User::find()
-            ->select(['id', 'name', 'surname', 'uuid', 'role', 'email', 'markup', 'created_at'])
+            ->select(['id', 'name', 'surname', 'uuid', 'role', 'email', 'markup', 'created_at', 'avatar_id'])
+            ->with(['avatar'])
             ->where(['or',
                 ['like', 'email', $query],
                 ['like', 'surname', $query],
