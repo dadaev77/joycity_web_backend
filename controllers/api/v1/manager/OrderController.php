@@ -346,6 +346,13 @@ class OrderController extends ManagerController
             return \app\components\ApiResponse::byResponseCode($this->apiCodes->NOT_FOUND, ['message' => 'Order not found']);
         }
 
+        \Yii::$app->telegramLog->send('info', [
+            'Попытка изменить байера',
+            'ID заказа: ' . $order->id,
+            'Текущий статус: ' . $order->status,
+            'ID менеджера: ' . \Yii::$app->user->id,
+        ], 'manager');
+
         // Проверка статуса заказа
         if (!in_array($order->status, [
             Order::STATUS_CREATED,
