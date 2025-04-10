@@ -61,7 +61,7 @@ class UserController extends ManagerController
      *     @OA\Parameter(
      *         name="sort",
      *         in="query",
-     *         description="Поле для сортировки (name,surname или markup)",
+     *         description="Поле для сортировки (name,surname, markup или created_at)",
      *         @OA\Schema(type="string")
      *     ),
      *     @OA\Parameter(
@@ -102,7 +102,7 @@ class UserController extends ManagerController
         }
         
         $query = User::find()->where(['role' => $role, 'is_deleted' => 0]);
-        $query->select(['id', 'name', 'surname', 'uuid', 'role', 'email', 'markup']);
+        $query->select(['id', 'name', 'surname', 'uuid', 'role', 'email', 'markup', 'created_at']);
 
         // Получаем параметры сортировки
         $sort = Yii::$app->request->get('sort');
@@ -119,6 +119,9 @@ class UserController extends ManagerController
                     'name' => $direction,
                     'surname' => SORT_ASC // Всегда сортируем фамилии по возрастанию для лучшей читаемости
                 ]);
+            } elseif ($sort === 'created_at') {
+                // Сортировка по дате регистрации
+                $query->orderBy(['created_at' => $order === 'desc' ? SORT_DESC : SORT_ASC]);
             }
         } else {
             $query->orderBy(['id' => SORT_DESC]); // Дефолтная сортировка
@@ -171,7 +174,7 @@ class UserController extends ManagerController
     )
     {
         $queryBuilder = User::find()
-            ->select(['id', 'name', 'surname', 'uuid', 'role', 'email', 'markup'])
+            ->select(['id', 'name', 'surname', 'uuid', 'role', 'email', 'markup', 'created_at'])
             ->where(['or',
                 ['like', 'email', $query],
                 ['like', 'surname', $query],
