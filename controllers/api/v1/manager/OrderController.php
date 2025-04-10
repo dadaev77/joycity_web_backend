@@ -11,7 +11,6 @@ use app\models\User;
 use app\services\order\OrderStatusService;
 use app\services\OrderTrackingConstructorService;
 use app\services\output\OrderOutputService;
-use app\services\chat\ChatService;
 use Throwable;
 use Yii;
 
@@ -364,28 +363,6 @@ class OrderController extends ManagerController
             ]);
         }
 
-        // Создаем групповой чат для заказа
-        \app\services\chat\ChatService::CreateGroupChat(
-            'Order ' . $order->id,
-            \Yii::$app->user->id,
-            $order->id,
-            [
-                'deal_type' => 'order',
-                'participants' => [$order->created_by, $order->manager_id, $order->buyer_id],
-                'group_name' => 'client_buyer_manager',
-            ],
-            true
-        );
-        
-        $language = $buyer->getSettings()->application_language;
-        \app\services\push\PushService::sendPushNotification(
-            $buyerId,
-            [
-                'title' => Yii::t('order', 'buyer_changed', [], $language),
-                'body' => Yii::t('order', 'buyer_changed_text', ['order_id' => $order->id], $language),
-            ]
-        );
-
         \Yii::$app->telegramLog->send('success', [
             'Заказ обновлен менеджером',
             'ID заказа: ' . $order->id,
@@ -467,29 +444,6 @@ class OrderController extends ManagerController
             $order->buyer_id = $buyerId;
             $save = $order->save();
             if (!$save) return ApiResponse::codeErrors($apiCodes->ERROR_SAVE, $order->errors);
-
-            // Создаем групповой чат для заказа
-            ChatService::CreateGroupChat(
-                'Order ' . $order->id,
-                $user->id,
-                $order->id,
-                [
-                    'deal_type' => 'order',
-                    'participants' => [$order->created_by, $order->manager_id, $order->buyer_id],
-                    'group_name' => 'client_buyer_manager',
-                ],
-                true
-            );
-
-            // Отправляем push-уведомление байеру
-            $language = $buyer->getSettings()->application_language;
-            \app\services\push\PushService::sendPushNotification(
-                $buyerId,
-                [
-                    'title' => Yii::t('order', 'buyer_changed', [], $language),
-                    'body' => Yii::t('order', 'buyer_changed_text', ['order_id' => $order->id], $language),
-                ]
-            );
 
             \Yii::$app->telegramLog->send('success', [
                 'Заказ обновлен менеджером',
