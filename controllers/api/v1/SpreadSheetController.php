@@ -51,7 +51,7 @@ class SpreadSheetController extends V1Controller
     public function actionDownloadExcel()
     {
         try {
-            $filePath = Yii::getAlias('@app/data/templates/test_order_data.xlsx');
+            $filePath = Yii::getAlias('@app/data/templates/order_template.xlsx');
             if (!file_exists($filePath)) {
                 return $this->asJson([
                     'success' => false,
