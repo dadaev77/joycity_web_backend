@@ -61,28 +61,20 @@ class ProductExcelService
 
     private function processProductData($row, $worksheet)
     {
-        // Получаем значения из Excel
+        // Получаем значения из Excel в соответствии с шаблоном
+        $photoUrl = trim($worksheet->getCell('A' . $row)->getValue());
         $name = trim($worksheet->getCell('B' . $row)->getValue());
         $category = trim($worksheet->getCell('C' . $row)->getValue());
         $subcategory = trim($worksheet->getCell('D' . $row)->getValue());
         $description = trim($worksheet->getCell('E' . $row)->getValue());
-        $range1Min = (int)$worksheet->getCell('F' . $row)->getValue();
-        $range1Max = (int)$worksheet->getCell('G' . $row)->getValue();
-        $range1Price = (float)$worksheet->getCell('H' . $row)->getValue();
-        $range2Min = (int)$worksheet->getCell('I' . $row)->getValue();
-        $range2Max = (int)$worksheet->getCell('J' . $row)->getValue();
-        $range2Price = (float)$worksheet->getCell('K' . $row)->getValue();
-        $range3Min = (int)$worksheet->getCell('L' . $row)->getValue();
-        $range3Max = (int)$worksheet->getCell('M' . $row)->getValue();
-        $range3Price = (float)$worksheet->getCell('N' . $row)->getValue();
-        $range4Min = (int)$worksheet->getCell('O' . $row)->getValue();
-        $range4Max = (int)$worksheet->getCell('P' . $row)->getValue();
-        $range4Price = (float)$worksheet->getCell('Q' . $row)->getValue();
-        $height = (float)$worksheet->getCell('R' . $row)->getValue();
-        $width = (float)$worksheet->getCell('S' . $row)->getValue();
-        $depth = (float)$worksheet->getCell('T' . $row)->getValue();
-        $weight = (float)$worksheet->getCell('U' . $row)->getValue();
-        $photoUrl = trim($worksheet->getCell('A' . $row)->getValue());
+        $quantity = (int)$worksheet->getCell('F' . $row)->getValue();
+        $price = (float)$worksheet->getCell('G' . $row)->getValue();
+        $deliveryType = trim($worksheet->getCell('H' . $row)->getValue());
+        $deliveryPoint = trim($worksheet->getCell('I' . $row)->getValue());
+        $address = trim($worksheet->getCell('J' . $row)->getValue());
+        $packagingType = trim($worksheet->getCell('K' . $row)->getValue());
+        $packagingQuantity = (int)$worksheet->getCell('L' . $row)->getValue();
+        $deepInspection = strtolower($worksheet->getCell('M' . $row)->getValue()) === 'да';
 
         // Получаем ID подкатегории
         $subcategoryId = $this->getSubcategoryId($category, $subcategory);
@@ -104,27 +96,16 @@ class ProductExcelService
             'description_en' => $description,
             'description_zh' => $description,
             'subcategory_id' => $subcategoryId,
-            'range_1_min' => $range1Min,
-            'range_1_max' => $range1Max,
-            'range_1_price' => $range1Price,
-            'range_2_min' => $range2Min ?: null,
-            'range_2_max' => $range2Max ?: null,
-            'range_2_price' => $range2Price ?: null,
-            'range_3_min' => $range3Min ?: null,
-            'range_3_max' => $range3Max ?: null,
-            'range_3_price' => $range3Price ?: null,
-            'range_4_min' => $range4Min ?: null,
-            'range_4_max' => $range4Max ?: null,
-            'range_4_price' => $range4Price ?: null,
-            'product_height' => $height,
-            'product_width' => $width,
-            'product_depth' => $depth,
-            'product_weight' => $weight,
             'buyer_id' => Yii::$app->user->id,
-            'is_deleted' => 0,
-            'rating' => 0,
-            'feedback_count' => 0,
-            'currency' => 'RUB'
+            'currency' => 'RUB',
+            'range_1_min' => 1,
+            'range_1_max' => $quantity,
+            'range_1_price' => $price,
+            'product_height' => 0,
+            'product_width' => 0,
+            'product_depth' => 0,
+            'product_weight' => 0,
+            'is_deleted' => 0
         ];
 
         return [
