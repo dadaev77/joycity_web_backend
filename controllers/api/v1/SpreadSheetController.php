@@ -11,6 +11,7 @@ use app\services\product\ProductExcelService;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx as WriterXlsx;
 use yii\web\UploadedFile;
+use yii\web\Response;
 
 use Yii;
 
@@ -36,6 +37,10 @@ class SpreadSheetController extends V1Controller
         $behaviors['verbFilter']['actions']['download-test-excel'] = ['get'];
         $behaviors['verbFilter']['actions']['download-product-excel'] = ['get'];
         $behaviors['verbFilter']['actions']['upload-product-excel'] = ['post'];
+        
+        // Добавляем поддержку multipart/form-data
+        $behaviors['contentNegotiator']['formats']['multipart/form-data'] = Response::FORMAT_JSON;
+        
         return $behaviors;
     }
 
@@ -195,6 +200,12 @@ class SpreadSheetController extends V1Controller
      */
     public function actionUploadProductExcel()
     {
+        // Отладочная информация
+        Yii::info('Запрос на загрузку файла с товарами');
+        Yii::info('$_FILES: ' . print_r($_FILES, true));
+        Yii::info('$_POST: ' . print_r($_POST, true));
+        Yii::info('Content-Type: ' . (isset($_SERVER['CONTENT_TYPE']) ? $_SERVER['CONTENT_TYPE'] : 'не указан'));
+        
         $file = UploadedFile::getInstanceByName('file');
 
         if (!$file) ApiResponse::byResponseCode(ResponseCodes::getStatic()->BAD_REQUEST, [

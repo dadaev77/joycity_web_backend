@@ -160,9 +160,7 @@ class ProductExcelService
     public function processExcelFile($file)
     {
         try {
-            if (!in_array($file->type, $this->allowedTypes)) {
-                throw new \Exception('Неверный формат файла. Поддерживаются только Excel файлы (.xlsx, .xls, .csv)');
-            }
+            if (!in_array($file->type, $this->allowedTypes)) throw new \Exception('Неверный формат файла. Поддерживаются только Excel файлы (.xlsx, .xls, .csv)');
             
             $reader = IOFactory::createReaderForFile($file->tempName);
             $reader->setReadDataOnly(true);
