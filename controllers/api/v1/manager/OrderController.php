@@ -11,6 +11,7 @@ use app\models\User;
 use app\services\order\OrderStatusService;
 use app\services\OrderTrackingConstructorService;
 use app\services\output\OrderOutputService;
+use app\services\ChatService;
 use Throwable;
 use Yii;
 
@@ -444,6 +445,17 @@ class OrderController extends ManagerController
             $order->buyer_id = $buyerId;
             $save = $order->save();
             if (!$save) return ApiResponse::codeErrors($apiCodes->ERROR_SAVE, $order->errors);
+
+            ChatService::CreateGroupChat(
+                'Order ' . $order->id,
+                $user->id,
+                $order->id,
+                [
+                    'deal_type' => 'order',
+                    'participants' => [$order->created_by, $order->manager_id, $buyerId],
+                    'group_name' => 'client_buyer_manager',
+                ]
+            );
 
             \Yii::$app->telegramLog->send('success', [
                 'Заказ обновлен менеджером',

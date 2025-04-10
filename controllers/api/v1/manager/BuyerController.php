@@ -4,6 +4,7 @@ namespace app\controllers\api\v1\manager;
 
 use app\controllers\api\v1\ManagerController;
 use app\components\response\ResponseCodes;
+use app\services\ChatService;
 
 
 class BuyerController extends ManagerController
@@ -86,6 +87,17 @@ class BuyerController extends ManagerController
                 'errors' => $order->errors
             ]);
         }
+
+        ChatService::CreateGroupChat(
+            'Order ' . $order->id,
+            \Yii::$app->user->id,
+            $order->id,
+            [
+                'deal_type' => 'order',
+                'participants' => [$order->created_by, $order->manager_id, $buyerId],
+                'group_name' => 'client_buyer_manager',
+            ]
+        );
 
         \Yii::$app->telegramLog->send('success', [
             'Заказ обновлен менеджером',
