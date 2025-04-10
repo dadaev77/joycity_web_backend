@@ -1,6 +1,7 @@
 <?php
 
 use app\models\Order;
+use app\models\Product;
 
 
 // Функции валидации для разных типов данных
@@ -159,6 +160,70 @@ return [
             'expected_quantity' => ['min' => 1],
             'expected_price_per_item' => ['min' => 0],
             'expected_packaging_quantity' => ['min' => 1]
+        ]
+    ],
+    'Product' => [
+        'validators' => [
+            'subcategory' => function($category, $subcategory) {
+                if (is_numeric($subcategory)) {
+                    return (int)$subcategory;
+                }
+
+                // Сначала найдем категорию
+                $categoryModel = \app\models\Category::find()
+                    ->where([
+                        'or',
+                        ['en_name' => $category],
+                        ['ru_name' => $category],
+                        ['zh_name' => $category]
+                    ])
+                    ->andWhere(['is_deleted' => 0])
+                    ->one();
+
+                if (!$categoryModel) {
+                    return null;
+                }
+
+                // Затем найдем подкатегорию для этой категории
+                $subcategoryModel = \app\models\Category::find()
+                    ->where(['parent_id' => $categoryModel->id])
+                    ->andWhere([
+                        'or',
+                        ['en_name' => $subcategory],
+                        ['ru_name' => $subcategory],
+                        ['zh_name' => $subcategory]
+                    ])
+                    ->andWhere(['is_deleted' => 0])
+                    ->one();
+
+                return $subcategoryModel ? $subcategoryModel->id : null;
+            }
+        ],
+        'required_fields' => [
+            'name_ru' => 'Название товара обязательно для заполнения',
+            'description_ru' => 'Описание товара обязательно для заполнения',
+            'subcategory_id' => 'Необходимо указать подкатегорию товара',
+            'range_1_min' => 'Минимальное количество для первого диапазона должно быть больше 0',
+            'range_1_max' => 'Максимальное количество для первого диапазона должно быть больше минимального',
+            'range_1_price' => 'Цена для первого диапазона должна быть больше или равна 0'
+        ],
+        'numeric_constraints' => [
+            'range_1_min' => ['min' => 1],
+            'range_1_max' => ['min' => 1],
+            'range_1_price' => ['min' => 0],
+            'range_2_min' => ['min' => 1],
+            'range_2_max' => ['min' => 1],
+            'range_2_price' => ['min' => 0],
+            'range_3_min' => ['min' => 1],
+            'range_3_max' => ['min' => 1],
+            'range_3_price' => ['min' => 0],
+            'range_4_min' => ['min' => 1],
+            'range_4_max' => ['min' => 1],
+            'range_4_price' => ['min' => 0],
+            'product_height' => ['min' => 0],
+            'product_width' => ['min' => 0],
+            'product_depth' => ['min' => 0],
+            'product_weight' => ['min' => 0]
         ]
     ]
 ];

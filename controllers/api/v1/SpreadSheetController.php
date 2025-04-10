@@ -7,6 +7,7 @@ use app\components\response\ResponseCodes;
 
 use app\controllers\api\V1Controller;
 use app\services\order\OrderExcelService;
+use app\services\product\ProductExcelService;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx as WriterXlsx;
 use yii\web\UploadedFile;
@@ -17,11 +18,13 @@ use Yii;
 class SpreadSheetController extends V1Controller
 {
     private $orderExcelService;
+    private $productExcelService;
 
     public function __construct($id, $module, $config = [])
     {
         parent::__construct($id, $module, $config);
         $this->orderExcelService = new OrderExcelService();
+        $this->productExcelService = new ProductExcelService();
     }
 
     public function behaviors()
@@ -31,6 +34,8 @@ class SpreadSheetController extends V1Controller
         $behaviors['verbFilter']['actions']['upload-excel'] = ['post'];
         $behaviors['verbFilter']['actions']['generate-test-excel'] = ['get'];
         $behaviors['verbFilter']['actions']['download-test-excel'] = ['get'];
+        $behaviors['verbFilter']['actions']['download-product-excel'] = ['get'];
+        $behaviors['verbFilter']['actions']['upload-product-excel'] = ['post'];
         return $behaviors;
     }
 
@@ -59,6 +64,41 @@ class SpreadSheetController extends V1Controller
                 ]);
             }
             return Yii::$app->response->sendFile($filePath, 'order_template.xlsx', [
+                'mimeType' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            ]);
+        } catch (\Exception $e) {
+            return $this->asJson([
+                'success' => false,
+                'message' => 'Внутренняя ошибка сервера: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/v1/spread-sheet/download-product-excel",
+     *     summary="Скачать шаблон Excel для загрузки товаров",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Файл шаблона Excel"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Ошибка сервера"
+     *     )
+     * )
+     */
+    public function actionDownloadProductExcel()
+    {
+        try {
+            $filePath = Yii::getAlias('@app/data/templates/product_template.xlsx');
+            if (!file_exists($filePath)) {
+                return $this->asJson([
+                    'success' => false,
+                    'message' => 'Файл шаблона не найден'
+                ]);
+            }
+            return Yii::$app->response->sendFile($filePath, 'product_template.xlsx', [
                 'mimeType' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
             ]);
         } catch (\Exception $e) {
@@ -111,6 +151,58 @@ class SpreadSheetController extends V1Controller
 
         // SpreadSheet Service
         $result = $this->orderExcelService->processExcelFile($file);
+
+        if (!$result['success']) ApiResponse::byResponseCode(ResponseCodes::getStatic()->BAD_REQUEST, [
+            'message' => $result['message'],
+            'errors' => $result['errors'] ?? [],
+            'debug_info' => $result['debug_info'] ?? null
+        ], 422);
+
+        return $this->asJson($result);
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/v1/spread-sheet/upload-product-excel",
+     *     summary="Загрузить Excel файл с товарами",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *             @OA\Schema(
+     *                 @OA\Property(
+     *                     property="file",
+     *                     type="string",
+     *                     format="binary",
+     *                     description="Excel файл с товарами"
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Файл успешно обработан"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Ошибка в данных"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Ошибка сервера"
+     *     )
+     * )
+     */
+    public function actionUploadProductExcel()
+    {
+        $file = UploadedFile::getInstanceByName('file');
+
+        if (!$file) ApiResponse::byResponseCode(ResponseCodes::getStatic()->BAD_REQUEST, [
+            'message' => 'Файл не был загружен'
+        ], 422);
+
+        // ProductExcelService
+        $result = $this->productExcelService->processExcelFile($file);
 
         if (!$result['success']) ApiResponse::byResponseCode(ResponseCodes::getStatic()->BAD_REQUEST, [
             'message' => $result['message'],
