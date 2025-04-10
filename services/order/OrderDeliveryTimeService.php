@@ -43,6 +43,16 @@ class OrderDeliveryTimeService
         // Вычисляем оставшиеся дни
         $remainingDays = $typeDelivery->delivery_time_days - $daysPassed;
 
+        // Если время доставки отрицательное, сохраняем его в delivery_delay_days
+        if ($remainingDays < 0) {
+            $order->delivery_delay_days = abs($remainingDays);
+            $order->save();
+            return 0; // Возвращаем 0 для timeDelivery
+        } else {
+            $order->delivery_delay_days = 0; // Сбрасываем задержку, если она была
+            $order->save();
+        }
+
         return $remainingDays;
     }
 
