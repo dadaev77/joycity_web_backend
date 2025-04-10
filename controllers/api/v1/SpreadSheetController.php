@@ -186,15 +186,23 @@ class SpreadSheetController extends V1Controller
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Файл успешно обработан"
+     *         description="Файл успешно обработан",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Файл успешно обработан"),
+     *             @OA\Property(property="processed_rows", type="integer", example=10),
+     *             @OA\Property(property="created_products", type="integer", example=8),
+     *             @OA\Property(property="errors", type="array", @OA\Items(type="string"))
+     *         )
      *     ),
      *     @OA\Response(
-     *         response=400,
-     *         description="Ошибка в данных"
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Ошибка сервера"
+     *         response=422,
+     *         description="Ошибка валидации",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Ошибка при обработке файла"),
+     *             @OA\Property(property="errors", type="array", @OA\Items(type="string"))
+     *         )
      *     )
      * )
      */
@@ -208,18 +216,25 @@ class SpreadSheetController extends V1Controller
         
         $file = UploadedFile::getInstanceByName('file');
 
-        if (!$file) ApiResponse::byResponseCode(ResponseCodes::getStatic()->BAD_REQUEST, [
-            'message' => 'Файл не был загружен'
-        ], 422);
+        if (!$file) {
+            return $this->asJson([
+                'success' => false,
+                'message' => 'Файл не был загружен',
+                'errors' => ['Файл не был загружен']
+            ]);
+        }
 
         // ProductExcelService
         $result = $this->productExcelService->processExcelFile($file);
 
-        if (!$result['success']) ApiResponse::byResponseCode(ResponseCodes::getStatic()->BAD_REQUEST, [
-            'message' => $result['message'],
-            'errors' => $result['errors'] ?? [],
-            'debug_info' => $result['debug_info'] ?? null
-        ], 422);
+        if (!$result['success']) {
+            return $this->asJson([
+                'success' => false,
+                'message' => $result['message'],
+                'errors' => $result['errors'] ?? [],
+                'debug_info' => $result['debug_info'] ?? null
+            ]);
+        }
 
         return $this->asJson($result);
     }
