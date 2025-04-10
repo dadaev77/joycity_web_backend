@@ -12,6 +12,7 @@ use app\services\order\OrderStatusService;
 use app\services\OrderTrackingConstructorService;
 use app\services\output\OrderOutputService;
 use app\services\chats\ChatService;
+use app\models\BuyerOffer;
 use Throwable;
 use Yii;
 
@@ -373,6 +374,19 @@ class OrderController extends ManagerController
             return \app\components\ApiResponse::byResponseCode($this->apiCodes->INTERNAL_ERROR, [
                 'errors' => $order->errors
             ]);
+        }
+
+        // Находим и архивируем старые чаты для этого заказа
+        $oldChats = \app\models\Chat::find()->where(['order_id' => $order->id, 'status' => 'active'])->all();
+        foreach ($oldChats as $oldChat) {
+            ChatService::archiveChat($oldChat->id);
+        }
+
+        // Находим и удаляем старые предложения от байера
+        $oldBuyerOffers = BuyerOffer::find()->where(['order_id' => $order->id])->all();
+        foreach ($oldBuyerOffers as $oldBuyerOffer) {
+            $oldBuyerOffer->status = BuyerOffer::STATUS_DECLINED;
+            $oldBuyerOffer->save();
         }
 
         ChatService::CreateGroupChat(

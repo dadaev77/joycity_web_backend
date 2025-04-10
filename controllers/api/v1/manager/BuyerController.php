@@ -5,6 +5,7 @@ namespace app\controllers\api\v1\manager;
 use app\controllers\api\v1\ManagerController;
 use app\components\response\ResponseCodes;
 use app\services\chats\ChatService;
+use app\models\BuyerOffer;
 
 
 class BuyerController extends ManagerController
@@ -86,6 +87,19 @@ class BuyerController extends ManagerController
             return \app\components\ApiResponse::byResponseCode($this->apiCodes->BAD_REQUEST, [
                 'errors' => $order->errors
             ]);
+        }
+
+        // Находим и архивируем старые чаты для этого заказа
+        $oldChats = \app\models\Chat::find()->where(['order_id' => $order->id, 'status' => 'active'])->all();
+        foreach ($oldChats as $oldChat) {
+            ChatService::archiveChat($oldChat->id);
+        }
+
+        // Находим и удаляем старые предложения от байера
+        $oldBuyerOffers = BuyerOffer::find()->where(['order_id' => $order->id])->all();
+        foreach ($oldBuyerOffers as $oldBuyerOffer) {
+            $oldBuyerOffer->status = BuyerOffer::STATUS_DECLINED;
+            $oldBuyerOffer->save();
         }
 
         ChatService::CreateGroupChat(
