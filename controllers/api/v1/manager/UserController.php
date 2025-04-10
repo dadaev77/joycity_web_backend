@@ -157,10 +157,18 @@ class UserController extends ManagerController
             );
         }
 
+        // Преобразуем пользователей для включения пути к аватару
+        $formattedUsers = [];
+        foreach ($users as $user) {
+            $userData = $user->toArray();
+            $userData['avatar'] = $user->avatar ? $user->avatar->path : null;
+            $formattedUsers[] = $userData;
+        }
+
         return ApiResponse::code(
             $this->responseCodes->SUCCESS,
             [
-                'items' => $users,
+                'items' => $formattedUsers,
                 'total_count' => $totalUsers,
                 'total_pages' => $pages,
                 'current_page' => $page,
@@ -197,10 +205,18 @@ class UserController extends ManagerController
 
         if ( count($users) < 1 ) return ApiResponse::code($this->responseCodes->NOT_FOUND,['message' => 'No users found for the specified query.'],404);
 
+        // Преобразуем пользователей для включения пути к аватару
+        $formattedUsers = [];
+        foreach ($users as $user) {
+            $userData = $user->toArray();
+            $userData['avatar'] = $user->avatar ? $user->avatar->path : null;
+            $formattedUsers[] = $userData;
+        }
+
         return ApiResponse::code(
             $this->responseCodes->SUCCESS,
             [
-                'items' => $users,
+                'items' => $formattedUsers,
                 'total_count' => $totalUsers,
                 'total_pages' => $pages,
                 'current_page' => $page,
