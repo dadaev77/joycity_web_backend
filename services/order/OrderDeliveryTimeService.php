@@ -43,7 +43,7 @@ class OrderDeliveryTimeService
         // Вычисляем оставшиеся дни
         $remainingDays = $typeDelivery->delivery_time_days - $daysPassed;
 
-        return max(0, $remainingDays);
+        return $remainingDays;
     }
 
     /**

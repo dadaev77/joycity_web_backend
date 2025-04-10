@@ -218,6 +218,9 @@ class OrderOutputService extends OutputService
                 $tempInfo[$key] = $value;
                 if ($key === 'typeDeliveryPoint') {
                     $tempInfo['timeDelivery'] = $timeDelivery;
+                    if ($timeDelivery !== null && $timeDelivery < 0) {
+                        $tempInfo['status'] = "Дней задержки заказа: " . abs($timeDelivery);
+                    }
                 }
             }
             $info = $tempInfo;
