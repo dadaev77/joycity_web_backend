@@ -22,11 +22,13 @@ class MessageJob extends BaseObject implements JobInterface
 
             $message = \app\models\Message::findOne($this->messageId);
             $translations = \app\services\TranslationService::translate($this->data);
+            echo "\n" . "\033[38;5;214m" . "   [TS:TRANSLATIONS] CHAT GPT RAW RESPONSE: " . json_encode($translations) . "\033[0m";
             if (is_string($translations)) {
                 $translations = json_decode($translations, true);
             }
 
             if ($translations == null) {
+                echo "\n" . "\033[31m" . "   [TS:ERROR] CHAT GPT NULL RESPONSE [TS:ERROR]\033[0m";
                 $translations = json_encode([
                     'en' => $this->message,
                     'ru' => $this->message,
