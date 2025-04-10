@@ -185,14 +185,24 @@ class RawController extends Controller
         return $response;
     }
 
-    public function actionPushMessage()
+    public function actionPushTest()
     {
-        \app\services\push\PushService::sendPushNotification(
-            340,
-            [
-                'title' => "Тест",
-                'body' => "Тестовое сообщение",
-            ]
-        );
+        try {
+            $user = \app\models\User::findOne(340);
+            $pushTokens = $user->pushTokens;
+            foreach ($pushTokens as $pushToken) {
+                \app\services\push\FirebaseService::sendPushNotification(
+                    $user->id,
+                    [
+                        'title' => "Тест",
+                        'body' => "Тестовое сообщение",
+                    ],
+                    $pushToken->push_token,
+                    $pushToken->operating_system
+                );
+            }
+        } catch (\Exception $e) {
+            return $e->getMessage();
+        }
     }
 }
