@@ -202,7 +202,10 @@ class RawController extends Controller
                 );
             }
         } catch (\Exception $e) {
-            return $e->getMessage();
+            var_dump([
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
         }
     }
 }
