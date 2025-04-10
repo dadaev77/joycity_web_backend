@@ -4,12 +4,7 @@ namespace app\services\order;
 
 use app\models\Order;
 use app\models\User;
-use app\models\TypeDelivery;
-use app\models\TypeDeliveryPoint;
-use app\models\DeliveryPointAddress;
-use app\models\TypePackaging;
 use app\models\Category;
-use app\models\Subcategory;
 use app\services\TranslationService;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Yii;
@@ -17,6 +12,11 @@ use Yii;
 class OrderExcelService
 {
     private $validators;
+    protected $allowedTypes = [
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'application/vnd.ms-excel',
+        'text/csv'
+    ];
 
     public function __construct()
     {
@@ -52,7 +52,8 @@ class OrderExcelService
 
         // Сначала найдем категорию
         $categoryModel = Category::find()
-            ->where(['or',
+            ->where([
+                'or',
                 ['en_name' => $category],
                 ['ru_name' => $category],
                 ['zh_name' => $category]
@@ -67,7 +68,8 @@ class OrderExcelService
         // Затем найдем подкатегорию для этой категории
         $subcategoryModel = Category::find()
             ->where(['parent_id' => $categoryModel->id])
-            ->andWhere(['or',
+            ->andWhere([
+                'or',
                 ['en_name' => $subcategory],
                 ['ru_name' => $subcategory],
                 ['zh_name' => $subcategory]
@@ -159,8 +161,20 @@ class OrderExcelService
         ];
 
         // Переводим название и описание на другие языки
-        $translation = TranslationService::translateProductAttributes($productName, $description);
-        $translations = $translation->result;
+        $translations = [
+            'ru' => [
+                'name' => $productName,
+                'description' => $description
+            ],
+            'en' => [
+                'name' => $productName,
+                'description' => $description
+            ],
+            'zh' => [
+                'name' => $productName,
+                'description' => $description
+            ]
+        ];
 
         foreach ($translations as $key => $value) {
             if ($key !== 'ru') {
@@ -178,83 +192,25 @@ class OrderExcelService
     public function processExcelFile($file)
     {
         try {
-            Yii::info('Начало обработки Excel файла: ' . $file['name']);
-            
-            // Проверяем, что файл был загружен
-            if (!isset($file['tmp_name']) || !is_uploaded_file($file['tmp_name'])) {
-                Yii::error('Файл не был корректно загружен');
-                return [
-                    'success' => false,
-                    'message' => 'Файл не был корректно загружен'
-                ];
-            }
 
-            // Проверяем, что файл существует и доступен для чтения
-            if (!file_exists($file['tmp_name']) || !is_readable($file['tmp_name'])) {
-                Yii::error('Файл не существует или недоступен для чтения: ' . $file['tmp_name']);
-                return [
-                    'success' => false,
-                    'message' => 'Файл недоступен для чтения'
-                ];
-            }
-
-            Yii::info('Размер загруженного файла: ' . filesize($file['tmp_name']) . ' байт');
-            
-            // Увеличиваем лимиты для обработки больших файлов
-            set_time_limit(300);
-            ini_set('memory_limit', '256M');
-
-            // Проверка типа файла
-            $allowedTypes = [
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                'application/vnd.ms-excel',
-                'text/csv'
-            ];
-
-            if (!in_array($file['type'], $allowedTypes)) {
-                Yii::error('Неверный тип файла: ' . $file['type']);
-                return [
-                    'success' => false,
-                    'message' => 'Неверный формат файла. Поддерживаются только Excel файлы (.xlsx, .xls, .csv)'
-                ];
-            }
-
-            Yii::info('Создание читателя Excel');
-            $reader = IOFactory::createReaderForFile($file['tmp_name']);
+            if (!in_array($file->type, $this->allowedTypes)) throw new \Exception('Неверный формат файла. Поддерживаются только Excel файлы (.xlsx, .xls, .csv)');
+            $reader = IOFactory::createReaderForFile($file->tempName);
             $reader->setReadDataOnly(true);
-            
-            Yii::info('Загрузка файла в память');
-            $spreadsheet = $reader->load($file['tmp_name']);
+            $spreadsheet = $reader->load($file->tempName);
             $worksheet = $spreadsheet->getActiveSheet();
-            
-            Yii::info('Количество строк в файле: ' . $worksheet->getHighestRow());
 
-            // Начинаем транзакцию
             $transaction = Yii::$app->db->beginTransaction();
-
             $successCount = 0;
             $errors = [];
             $processedRows = 0;
 
-            // Обрабатываем каждую строку, начиная со второй (пропускаем заголовки)
             for ($row = 2; $row <= $worksheet->getHighestRow(); $row++) {
                 try {
-                    // Получаем название товара для проверки, не пустая ли строка
                     $productName = trim($worksheet->getCell('B' . $row)->getValue());
-
-                    if (empty($productName)) {
-                        Yii::info("Пропуск пустой строки {$row}");
-                        continue;
-                    }
-
+                    if (empty($productName)) continue;
                     $processedRows++;
-                    Yii::info("Обработка строки {$row}: {$productName}");
-
-                    // Обрабатываем данные строки
                     $result = $this->processOrderData($row, $worksheet);
-
                     if (!$result['success']) {
-                        Yii::warning("Ошибки в строке {$row}: " . json_encode($result['errors']));
                         $errors[] = [
                             'row' => $row,
                             'errors' => $result['errors']
@@ -262,12 +218,10 @@ class OrderExcelService
                         continue;
                     }
 
-                    // Создаем новый заказ
                     $order = new Order();
                     $order->load($result['data'], '');
 
                     if (!$order->save()) {
-                        Yii::error("Ошибка сохранения заказа в строке {$row}: " . json_encode($order->getFirstErrors()));
                         $errors[] = [
                             'row' => $row,
                             'errors' => $order->getFirstErrors()
@@ -276,9 +230,7 @@ class OrderExcelService
                     }
 
                     $successCount++;
-                    Yii::info("Успешно создан заказ в строке {$row}");
                 } catch (\Exception $e) {
-                    Yii::error("Ошибка обработки строки {$row}: " . $e->getMessage());
                     $errors[] = [
                         'row' => $row,
                         'errors' => ['general' => $e->getMessage()]
@@ -288,7 +240,6 @@ class OrderExcelService
 
             if (empty($errors)) {
                 $transaction->commit();
-                Yii::info("Успешно обработан файл. Создано заказов: {$successCount}");
                 return [
                     'success' => true,
                     'message' => "Успешно создано заказов: {$successCount}",
@@ -300,7 +251,6 @@ class OrderExcelService
                 ];
             } else {
                 $transaction->rollBack();
-                Yii::error("Ошибки при обработке файла: " . json_encode($errors));
                 return [
                     'success' => false,
                     'message' => 'Обнаружены ошибки при создании заказов',
@@ -325,4 +275,4 @@ class OrderExcelService
             ];
         }
     }
-} 
+}

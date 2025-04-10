@@ -2,11 +2,17 @@
 
 namespace app\controllers\api\v1;
 
+use app\components\ApiResponse;
+use app\components\response\ResponseCodes;
+
 use app\controllers\api\V1Controller;
 use app\services\order\OrderExcelService;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx as WriterXlsx;
+use yii\web\UploadedFile;
+
 use Yii;
+
 
 class SpreadSheetController extends V1Controller
 {
@@ -45,23 +51,17 @@ class SpreadSheetController extends V1Controller
     public function actionDownloadExcel()
     {
         try {
-            Yii::info('Запрос на скачивание шаблона Excel');
             $filePath = Yii::getAlias('@app/data/templates/test_order_data.xlsx');
-
             if (!file_exists($filePath)) {
-                Yii::error('Файл шаблона не найден: ' . $filePath);
                 return $this->asJson([
                     'success' => false,
                     'message' => 'Файл шаблона не найден'
                 ]);
             }
-
-            Yii::info('Отправка файла шаблона');
             return Yii::$app->response->sendFile($filePath, 'order_template.xlsx', [
                 'mimeType' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
             ]);
         } catch (\Exception $e) {
-            Yii::error("Ошибка при отправке шаблона Excel: " . $e->getMessage() . "\n" . $e->getTraceAsString());
             return $this->asJson([
                 'success' => false,
                 'message' => 'Внутренняя ошибка сервера: ' . $e->getMessage()
@@ -103,40 +103,22 @@ class SpreadSheetController extends V1Controller
      */
     public function actionUploadExcel()
     {
-        try {
-            Yii::info('Получен запрос на загрузку Excel файла');
-            
-            if (empty($_FILES['file'])) {
-                Yii::warning('Файл не был загружен');
-                return $this->asJson([
-                    'success' => false,
-                    'message' => 'Файл не был загружен'
-                ]);
-            }
+        $file = UploadedFile::getInstanceByName('file');
 
-            Yii::info('Начало обработки файла: ' . $_FILES['file']['name']);
-            $result = $this->orderExcelService->processExcelFile($_FILES['file']);
+        if (!$file) ApiResponse::byResponseCode(ResponseCodes::getStatic()->BAD_REQUEST, [
+            'message' => 'Файл не был загружен'
+        ], 422);
 
-            if (!$result['success']) {
-                Yii::warning('Ошибки при обработке файла: ' . json_encode($result));
-                return $this->asJson([
-                    'success' => false,
-                    'message' => $result['message'],
-                    'errors' => $result['errors'] ?? [],
-                    'debug_info' => $result['debug_info'] ?? null
-                ]);
-            }
+        // SpreadSheet Service
+        $result = $this->orderExcelService->processExcelFile($file);
 
-            Yii::info('Файл успешно обработан: ' . json_encode($result));
-            return $this->asJson($result);
-        } catch (\Throwable $e) {
-            Yii::error('Критическая ошибка при обработке Excel файла: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
-            return $this->asJson([
-                'success' => false,
-                'message' => 'Ошибка при обработке Excel файла',
-                'error' => YII_DEBUG ? $e->getMessage() : 'Внутренняя ошибка сервера'
-            ]);
-        }
+        if (!$result['success']) ApiResponse::byResponseCode(ResponseCodes::getStatic()->BAD_REQUEST, [
+            'message' => $result['message'],
+            'errors' => $result['errors'] ?? [],
+            'debug_info' => $result['debug_info'] ?? null
+        ], 422);
+
+        return $this->asJson($result);
     }
 
     /**
@@ -157,7 +139,7 @@ class SpreadSheetController extends V1Controller
     {
         try {
             Yii::info('Запрос на создание тестового Excel файла');
-            
+
             // Создаем новый Excel-файл
             $spreadsheet = new Spreadsheet();
 
@@ -274,7 +256,7 @@ class SpreadSheetController extends V1Controller
             $writer->save($tempFile);
 
             Yii::info('Тестовый Excel файл успешно создан');
-            
+
             $response = Yii::$app->response;
             $response->headers->set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
             $response->headers->set('Content-Disposition', 'attachment; filename="test_order_data.xlsx"');
