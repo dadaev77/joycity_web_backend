@@ -347,7 +347,11 @@ class OrderController extends ManagerController
         }
 
         // Проверка статуса заказа
-        if ($order->status !== Order::STATUS_BUYER_ASSIGNED) {
+        if (!in_array($order->status, [
+            Order::STATUS_CREATED,
+            Order::STATUS_BUYER_ASSIGNED,
+            Order::STATUS_BUYER_OFFER_CREATED
+        ])) {
             return \app\components\ApiResponse::byResponseCode($this->apiCodes->NO_ACCESS, ['message' => 'Order cannot be updated']);
         }
 
@@ -363,6 +367,17 @@ class OrderController extends ManagerController
                 'errors' => $order->errors
             ]);
         }
+
+        ChatService::CreateGroupChat(
+            'Order ' . $order->id,
+            \Yii::$app->user->id,
+            $order->id,
+            [
+                'deal_type' => 'order',
+                'participants' => [$order->created_by, $order->manager_id, $buyerId],
+                'group_name' => 'client_buyer_manager',
+            ]
+        );
 
         \Yii::$app->telegramLog->send('success', [
             'Заказ обновлен менеджером',
