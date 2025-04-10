@@ -11,7 +11,7 @@ use app\models\User;
 use app\services\order\OrderStatusService;
 use app\services\OrderTrackingConstructorService;
 use app\services\output\OrderOutputService;
-use app\services\ChatService;
+use app\services\chats\ChatService;
 use Throwable;
 use Yii;
 

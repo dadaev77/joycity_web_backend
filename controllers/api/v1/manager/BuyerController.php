@@ -4,7 +4,7 @@ namespace app\controllers\api\v1\manager;
 
 use app\controllers\api\v1\ManagerController;
 use app\components\response\ResponseCodes;
-use app\services\ChatService;
+use app\services\chats\ChatService;
 
 
 class BuyerController extends ManagerController
