@@ -62,7 +62,7 @@ class ProductExcelService
     private function processProductData($row, $worksheet)
     {
         // Получаем значения из Excel
-        $productName = trim($worksheet->getCell('B' . $row)->getValue());
+        $name = trim($worksheet->getCell('B' . $row)->getValue());
         $category = trim($worksheet->getCell('C' . $row)->getValue());
         $subcategory = trim($worksheet->getCell('D' . $row)->getValue());
         $description = trim($worksheet->getCell('E' . $row)->getValue());
@@ -78,32 +78,31 @@ class ProductExcelService
         $range4Min = (int)$worksheet->getCell('O' . $row)->getValue();
         $range4Max = (int)$worksheet->getCell('P' . $row)->getValue();
         $range4Price = (float)$worksheet->getCell('Q' . $row)->getValue();
-        $productHeight = (float)$worksheet->getCell('R' . $row)->getValue();
-        $productWidth = (float)$worksheet->getCell('S' . $row)->getValue();
-        $productDepth = (float)$worksheet->getCell('T' . $row)->getValue();
-        $productWeight = (float)$worksheet->getCell('U' . $row)->getValue();
+        $height = (float)$worksheet->getCell('R' . $row)->getValue();
+        $width = (float)$worksheet->getCell('S' . $row)->getValue();
+        $depth = (float)$worksheet->getCell('T' . $row)->getValue();
+        $weight = (float)$worksheet->getCell('U' . $row)->getValue();
         $photoUrl = trim($worksheet->getCell('A' . $row)->getValue());
 
-        // Получаем ID для связанных таблиц
+        // Получаем ID подкатегории
         $subcategoryId = $this->getSubcategoryId($category, $subcategory);
-
-        // Проверяем наличие всех необходимых ID
-        $errors = [];
         if ($subcategoryId === null) {
-            $errors['subcategory_id'] = "Неверная подкатегория: {$subcategory} для категории {$category}";
-        }
-
-        if (!empty($errors)) {
             return [
                 'success' => false,
-                'errors' => $errors
+                'errors' => [
+                    'subcategory' => "Неверная подкатегория: {$subcategory} для категории {$category}"
+                ]
             ];
         }
 
         // Формируем данные для создания товара
         $productData = [
-            'name_ru' => $productName,
+            'name_ru' => $name,
+            'name_en' => $name,
+            'name_zh' => $name,
             'description_ru' => $description,
+            'description_en' => $description,
+            'description_zh' => $description,
             'subcategory_id' => $subcategoryId,
             'range_1_min' => $range1Min,
             'range_1_max' => $range1Max,
@@ -117,38 +116,16 @@ class ProductExcelService
             'range_4_min' => $range4Min ?: null,
             'range_4_max' => $range4Max ?: null,
             'range_4_price' => $range4Price ?: null,
-            'product_height' => $productHeight,
-            'product_width' => $productWidth,
-            'product_depth' => $productDepth,
-            'product_weight' => $productWeight,
+            'product_height' => $height,
+            'product_width' => $width,
+            'product_depth' => $depth,
+            'product_weight' => $weight,
             'buyer_id' => Yii::$app->user->id,
             'is_deleted' => 0,
             'rating' => 0,
-            'feedback_count' => 0
+            'feedback_count' => 0,
+            'currency' => 'RUB'
         ];
-
-        // Переводим название и описание на другие языки
-        $translations = [
-            'ru' => [
-                'name' => $productName,
-                'description' => $description
-            ],
-            'en' => [
-                'name' => $productName,
-                'description' => $description
-            ],
-            'zh' => [
-                'name' => $productName,
-                'description' => $description
-            ]
-        ];
-
-        foreach ($translations as $key => $value) {
-            if ($key !== 'ru') {
-                $productData["name_$key"] = $value['name'];
-                $productData["description_$key"] = $value['description'];
-            }
-        }
 
         return [
             'success' => true,
