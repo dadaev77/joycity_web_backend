@@ -146,7 +146,10 @@ class ProductExcelService
                     }
 
                     $product = new Product();
-                    $product->load($result['data'], '');
+                    // Используем безопасное присваивание для всех полей
+                    foreach ($result['data'] as $attribute => $value) {
+                        $product->$attribute = $value;
+                    }
 
                     if (!$product->save()) {
                         $errors[] = [
