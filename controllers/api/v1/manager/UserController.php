@@ -106,7 +106,8 @@ class UserController extends ManagerController
                 'name' => 'name',
                 'surname' => 'surname',
                 'markup' => 'markup',
-                'created_at' => 'created_at'
+                'created_at' => 'created_at',
+                'organization_name' => 'organization_name'
             ];
 
             $query = User::find();
@@ -126,6 +127,7 @@ class UserController extends ManagerController
                     'id' => $user->id,
                     'name' => $user->name,
                     'surname' => $user->surname,
+                    'organization_name' => $user->organization_name ?? null,
                     'uuid' => $user->uuid,
                     'role' => $user->role,
                     'email' => $user->email,
@@ -134,6 +136,8 @@ class UserController extends ManagerController
                     'phone' => $user->phone_number,
                     'telegarm' => $user->telegram ?? null,
                 ];
+
+
                 if ($user->avatar) $userdd['avatar'] = $_ENV['APP_URL'] . $user->avatar->path;
                 $formattedUsers[] = $userdd;
             }
