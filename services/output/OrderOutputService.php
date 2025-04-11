@@ -218,7 +218,16 @@ class OrderOutputService extends OutputService
                 $tempInfo[$key] = $value;
                 if ($key === 'typeDeliveryPoint') {
                     $tempInfo['timeDelivery'] = $timeDelivery;
-                    if ($model->delivery_delay_days > 0) {
+                    if ($model->status === Order::STATUS_DELIVERY_DELAYED) {
+                        $tempInfo['status'] = "Задержка доставки";
+                        if ($model->delivery_delay_days > 0) {
+                            $tempInfo['status'] .= " (Дней задержки: " . $model->delivery_delay_days . ")";
+                        }
+                        if ($model->delivery_start_date) {
+                            $expectedEndDate = date('Y-m-d', strtotime($model->delivery_start_date . ' + ' . $model->delivery_days_expected . ' days'));
+                            $tempInfo['status'] .= " (Ожидаемое завершение: " . $expectedEndDate . ")";
+                        }
+                    } elseif ($model->delivery_delay_days > 0) {
                         $tempInfo['status'] = "Дней задержки заказа: " . $model->delivery_delay_days;
                     }
                 }

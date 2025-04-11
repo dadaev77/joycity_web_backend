@@ -42,6 +42,7 @@ class Order extends OrderStructure
     public const STATUS_CANCELLED_REQUEST = 'cancelled_request';
     public const STATUS_CANCELLED_ORDER = 'cancelled_order';
     public const STATUS_COMPLETED = 'completed';
+    public const STATUS_DELIVERY_DELAYED = 'delivery_delayed';
 
     public const STATUS_GROUP_ALLOWED = [
         self::STATUS_CREATED,
@@ -105,6 +106,7 @@ class Order extends OrderStructure
         self::STATUS_FULLY_PAID,
         self::STATUS_CANCELLED_ORDER,
         self::STATUS_COMPLETED,
+        self::STATUS_DELIVERY_DELAYED,
     ];
 
     public const STATUS_GROUP_ORDER_ACTIVE = [
@@ -154,6 +156,7 @@ class Order extends OrderStructure
         self::STATUS_FULLY_PAID,
         self::STATUS_CANCELLED_ORDER,
         self::STATUS_COMPLETED,
+        self::STATUS_DELIVERY_DELAYED,
     ];
 
 
@@ -209,6 +212,7 @@ class Order extends OrderStructure
             self::STATUS_CANCELLED_REQUEST => 'Отмененная заявка',
             self::STATUS_CANCELLED_ORDER => 'Отмененная сделка',
             self::STATUS_COMPLETED => 'Завершена',
+            self::STATUS_DELIVERY_DELAYED => 'Задержка доставки',
         ];
 
         return $keys[strtolower($status)] ?? 'Неизвестный статус';
