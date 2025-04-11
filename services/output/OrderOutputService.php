@@ -227,8 +227,11 @@ class OrderOutputService extends OutputService
                             $expectedEndDate = date('Y-m-d', strtotime($model->delivery_start_date . ' + ' . $model->delivery_days_expected . ' days'));
                             $tempInfo['status'] .= " (Ожидаемое завершение: " . $expectedEndDate . ")";
                         }
-                    } elseif ($model->delivery_delay_days > 0) {
-                        $tempInfo['status'] = "Дней задержки заказа: " . $model->delivery_delay_days;
+                    } elseif ($model->delivery_delay_days < 0) {
+                        $tempInfo['deliveryDelay'] = [
+                            'days' => $model->delivery_delay_days,
+                            'message' => 'Задержка доставки'
+                        ];
                     }
                 }
             }
