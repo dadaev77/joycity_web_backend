@@ -54,8 +54,6 @@ class OrderExcelService
         $categoryModel = Category::find()
             ->where([
                 'or',
-            ->where([
-                'or',
                 ['en_name' => $category],
                 ['ru_name' => $category],
                 ['zh_name' => $category]
@@ -70,8 +68,6 @@ class OrderExcelService
         // Затем найдем подкатегорию для этой категории
         $subcategoryModel = Category::find()
             ->where(['parent_id' => $categoryModel->id])
-            ->andWhere([
-                'or',
             ->andWhere([
                 'or',
                 ['en_name' => $subcategory],
@@ -197,7 +193,10 @@ class OrderExcelService
     {
         try {
 
-            if (!in_array($file->type, $this->allowedTypes)) throw new \Exception('Неверный формат файла. Поддерживаются только Excel файлы (.xlsx, .xls, .csv)');
+            if (!in_array(
+                $file->type,
+                $this->allowedTypes
+            )) throw new \Exception('Неверный формат файла. Поддерживаются только Excel файлы (.xlsx, .xls, .csv)');
             $reader = IOFactory::createReaderForFile($file->tempName);
             $reader->setReadDataOnly(true);
             $spreadsheet = $reader->load($file->tempName);
@@ -279,6 +278,4 @@ class OrderExcelService
             ];
         }
     }
-}
-
 }
