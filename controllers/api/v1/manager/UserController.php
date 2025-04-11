@@ -10,7 +10,7 @@ use Yii;
 
 class UserController extends ManagerController
 {
-    protected $allowedRoles = ['client', 'buyer', 'manager', 'fulfillment', 'unused'];
+    protected $allowedRoles = ['client', 'buyer', 'manager', 'fulfillment'];
 
     protected $responseCodes;
 
@@ -97,12 +97,11 @@ class UserController extends ManagerController
         int $page = 1,
         string $sort,
         string $order = 'asc',
-        string $query = ''
     ) {
 
         if (!in_array($role, $this->allowedRoles)) return ApiResponse::byResponseCode(ResponseCodes::getStatic()->BAD_REQUEST);
-        try {
 
+        try {
             $sortQueries = [
                 'name' => 'name',
                 'surname' => 'surname',
@@ -111,28 +110,49 @@ class UserController extends ManagerController
             ];
 
             $query = User::find();
+
             $query->where(['is_deleted' => false]);
+            $query->andWhere(['role' => $role]);
+
             if ($sort) {
-                $query->orderBy([$sortQueries[$sort] => $order]);
+                $query->orderBy([$sortQueries[$sort] => $order == 'asc' ? SORT_ASC : SORT_DESC]);
             }
 
+            $query->offset(($page - 1) * $limit)->limit($limit);
 
+            $formattedUsers = [];
 
-            return $query->all();
+            foreach ($query->all() as $user) {
+                $formattedUsers[] = [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'surname' => $user->surname,
+                    'markup' => $user->markup,
+                    'created_at' => $user->created_at,
+                    'role' => $user->role,
+                ];
+            }
 
+            $totalUsers = $query->count();
+            $pages = ceil($totalUsers / $limit);
 
-            // return ApiResponse::code(
-            //     $this->responseCodes->SUCCESS,
-            //     [
-            //         'items' => $formattedUsers,
-            //         'total_count' => $totalUsers,
-            //         'total_pages' => $pages,
-            //         'current_page' => $page,
-            //         'limit' => $limit
-            //     ]
-            // );
+            if ($page > $pages) return ApiResponse::byResponseCode(ResponseCodes::getStatic()->NOT_FOUND);
+
+            return ApiResponse::code(
+                $this->responseCodes->SUCCESS,
+                [
+                    'items' => $formattedUsers,
+                    'total_count' => $totalUsers,
+                    'total_pages' => $pages,
+                    'current_page' => $page,
+                    'limit' => $limit
+                ]
+            );
         } catch (\Exception $e) {
-            return $e->getMessage();
+            return ApiResponse::byResponseCode(ResponseCodes::getStatic()->INTERNAL_SERVER_ERROR, [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
         }
     }
 }
