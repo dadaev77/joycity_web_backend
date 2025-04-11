@@ -119,18 +119,23 @@ class UserController extends ManagerController
             }
 
             $query->offset(($page - 1) * $limit)->limit($limit);
-
+            $users = $query->all();
             $formattedUsers = [];
-
-            foreach ($query->all() as $user) {
-                $formattedUsers[] = [
+            foreach ($users as $user) {
+                $userdd =  [
                     'id' => $user->id,
                     'name' => $user->name,
                     'surname' => $user->surname,
+                    'uuid' => $user->uuid,
+                    'role' => $user->role,
+                    'email' => $user->email,
                     'markup' => $user->markup,
                     'created_at' => $user->created_at,
-                    'role' => $user->role,
+                    'phone' => $user->phone,
+                    'telegarm' => $user->telegarm,
                 ];
+                if ($user->avatar) $userdd['avatar'] = $_ENV['APP_URL'] . $user->avatar->path;
+                $formattedUsers[] = $userdd;
             }
 
             $totalUsers = $query->count();
