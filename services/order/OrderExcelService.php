@@ -54,6 +54,8 @@ class OrderExcelService
         $categoryModel = Category::find()
             ->where([
                 'or',
+            ->where([
+                'or',
                 ['en_name' => $category],
                 ['ru_name' => $category],
                 ['zh_name' => $category]
@@ -68,6 +70,8 @@ class OrderExcelService
         // Затем найдем подкатегорию для этой категории
         $subcategoryModel = Category::find()
             ->where(['parent_id' => $categoryModel->id])
+            ->andWhere([
+                'or',
             ->andWhere([
                 'or',
                 ['en_name' => $subcategory],
@@ -275,4 +279,6 @@ class OrderExcelService
             ];
         }
     }
+}
+
 }

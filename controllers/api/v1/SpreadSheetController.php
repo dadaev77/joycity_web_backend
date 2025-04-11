@@ -11,7 +11,6 @@ use app\services\product\ProductExcelService;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx as WriterXlsx;
 use yii\web\UploadedFile;
-use yii\web\Response;
 
 use Yii;
 
@@ -37,10 +36,10 @@ class SpreadSheetController extends V1Controller
         $behaviors['verbFilter']['actions']['download-test-excel'] = ['get'];
         $behaviors['verbFilter']['actions']['download-product-excel'] = ['get'];
         $behaviors['verbFilter']['actions']['upload-product-excel'] = ['post'];
-        
+
         // Добавляем поддержку multipart/form-data
         $behaviors['contentNegotiator']['formats']['multipart/form-data'] = Response::FORMAT_JSON;
-        
+
         return $behaviors;
     }
 
@@ -61,7 +60,7 @@ class SpreadSheetController extends V1Controller
     public function actionDownloadExcel()
     {
         try {
-            $filePath = Yii::getAlias('@app/data/templates/order_template.xlsx');
+            $filePath = Yii::getAlias('@app/data/templates/test_order_data.xlsx');
             if (!file_exists($filePath)) {
                 return $this->asJson([
                     'success' => false,
@@ -69,41 +68,6 @@ class SpreadSheetController extends V1Controller
                 ]);
             }
             return Yii::$app->response->sendFile($filePath, 'order_template.xlsx', [
-                'mimeType' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-            ]);
-        } catch (\Exception $e) {
-            return $this->asJson([
-                'success' => false,
-                'message' => 'Внутренняя ошибка сервера: ' . $e->getMessage()
-            ]);
-        }
-    }
-
-    /**
-     * @OA\Get(
-     *     path="/api/v1/spread-sheet/download-product-excel",
-     *     summary="Скачать шаблон Excel для загрузки товаров",
-     *     @OA\Response(
-     *         response=200,
-     *         description="Файл шаблона Excel"
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Ошибка сервера"
-     *     )
-     * )
-     */
-    public function actionDownloadProductExcel()
-    {
-        try {
-            $filePath = Yii::getAlias('@app/data/templates/product_template.xlsx');
-            if (!file_exists($filePath)) {
-                return $this->asJson([
-                    'success' => false,
-                    'message' => 'Файл шаблона не найден'
-                ]);
-            }
-            return Yii::$app->response->sendFile($filePath, 'product_template.xlsx', [
                 'mimeType' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
             ]);
         } catch (\Exception $e) {
@@ -149,7 +113,6 @@ class SpreadSheetController extends V1Controller
     public function actionUploadExcel()
     {
         $file = UploadedFile::getInstanceByName('file');
-
         if (!$file) ApiResponse::byResponseCode(ResponseCodes::getStatic()->BAD_REQUEST, [
             'message' => 'Файл не был загружен'
         ], 422);
@@ -162,79 +125,6 @@ class SpreadSheetController extends V1Controller
             'errors' => $result['errors'] ?? [],
             'debug_info' => $result['debug_info'] ?? null
         ], 422);
-
-        return $this->asJson($result);
-    }
-
-    /**
-     * @OA\Post(
-     *     path="/api/v1/spread-sheet/upload-product-excel",
-     *     summary="Загрузить Excel файл с товарами",
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\MediaType(
-     *             mediaType="multipart/form-data",
-     *             @OA\Schema(
-     *                 @OA\Property(
-     *                     property="file",
-     *                     type="string",
-     *                     format="binary",
-     *                     description="Excel файл с товарами"
-     *                 )
-     *             )
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Файл успешно обработан",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Файл успешно обработан"),
-     *             @OA\Property(property="processed_rows", type="integer", example=10),
-     *             @OA\Property(property="created_products", type="integer", example=8),
-     *             @OA\Property(property="errors", type="array", @OA\Items(type="string"))
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=422,
-     *         description="Ошибка валидации",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Ошибка при обработке файла"),
-     *             @OA\Property(property="errors", type="array", @OA\Items(type="string"))
-     *         )
-     *     )
-     * )
-     */
-    public function actionUploadProductExcel()
-    {
-        // Отладочная информация
-        Yii::info('Запрос на загрузку файла с товарами');
-        Yii::info('$_FILES: ' . print_r($_FILES, true));
-        Yii::info('$_POST: ' . print_r($_POST, true));
-        Yii::info('Content-Type: ' . (isset($_SERVER['CONTENT_TYPE']) ? $_SERVER['CONTENT_TYPE'] : 'не указан'));
-        
-        $file = UploadedFile::getInstanceByName('file');
-
-        if (!$file) {
-            return $this->asJson([
-                'success' => false,
-                'message' => 'Файл не был загружен',
-                'errors' => ['Файл не был загружен']
-            ]);
-        }
-
-        // ProductExcelService
-        $result = $this->productExcelService->processExcelFile($file);
-
-        if (!$result['success']) {
-            return $this->asJson([
-                'success' => false,
-                'message' => $result['message'],
-                'errors' => $result['errors'] ?? [],
-                'debug_info' => $result['debug_info'] ?? null
-            ]);
-        }
 
         return $this->asJson($result);
     }
@@ -306,11 +196,11 @@ class SpreadSheetController extends V1Controller
             $sheet2->setTitle('Справочники');
 
             // Получаем данные из базы данных
-            $categories = Category::find()->select(['ru_name'])->column();
-            $deliveryTypes = TypeDelivery::find()->select(['ru_name'])->column();
-            $deliveryPoints = TypeDeliveryPoint::find()->select(['ru_name'])->column();
-            $addresses = DeliveryPointAddress::find()->select(['ru_name'])->column();
-            $packagingTypes = TypePackaging::find()->select(['ru_name'])->column();
+            $categories = \app\models\Category::find()->select(['ru_name'])->column();
+            $deliveryTypes = \app\models\TypeDelivery::find()->select(['ru_name'])->column();
+            $deliveryPoints = \app\models\TypeDeliveryPoint::find()->select(['ru_name'])->column();
+            $addresses = \app\models\DeliveryPointAddress::find()->select(['ru_name'])->column();
+            $packagingTypes = \app\models\TypePackaging::find()->select(['ru_name'])->column();
 
             // Заполняем справочники
             $sheet2->setCellValue('A1', 'Категории');
