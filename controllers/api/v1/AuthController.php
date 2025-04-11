@@ -353,6 +353,7 @@ class AuthController extends V1Controller implements ApiAuth
 
             $roleModel = \app\models\RoleModel::findOne(['name' => $role]);
             $user->role_id = $roleModel->id;
+            $user->role = $role;
 
             $requiredAttributes = [
                 'email',

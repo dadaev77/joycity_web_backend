@@ -10,7 +10,7 @@ use Yii;
 
 class UserController extends ManagerController
 {
-    protected $allowedRoles = ['client', 'buyer', 'manager', 'fulfillment'];
+    protected $allowedRoles = ['client', 'buyer', 'manager', 'fulfillment', 'unused'];
 
     protected $responseCodes;
 
@@ -101,56 +101,38 @@ class UserController extends ManagerController
     ) {
 
         if (!in_array($role, $this->allowedRoles)) return ApiResponse::byResponseCode(ResponseCodes::getStatic()->BAD_REQUEST);
+        try {
 
-        $sortQueries = [
-            'name' => 'name',
-            'surname' => 'surname',
-            'markup' => 'markup',
-            'created_at' => 'created_at'
-        ];
-
-        if (!isset($sortQueries[$sort])) return ApiResponse::byResponseCode(ResponseCodes::getStatic()->BAD_REQUEST);
-
-        $query = User::find()
-            ->where(['role' => $role])
-            ->andWhere(['is_deleted' => false])
-            ->orderBy([$sortQueries[$sort] => $order]);
-
-        $totalUsers = $query->count();
-        $pages = ceil($totalUsers / $limit);
-        $users = $query->offset(($page - 1) * $limit)->limit($limit)->all();
-
-        if ($page > $pages) return ApiResponse::byResponseCode(ResponseCodes::getStatic()->BAD_REQUEST);
-
-        $formattedUsers = [];
-        foreach ($users as $user) {
-            $userFF = [
-                'id' => $user->id,
-                'name' => $user->name,
-                'surname' => $user->surname,
-                'uuid' => $user->uuid,
-                'role' => $user->role,
-                'email' => $user->email,
-                'markup' => $user->markup,
-                'created_at' => $user->created_at,
-                'telegram' => $user->telegram,
-                'phone' => $user->phone_number,
+            $sortQueries = [
+                'name' => 'name',
+                'surname' => 'surname',
+                'markup' => 'markup',
+                'created_at' => 'created_at'
             ];
-            if ($user->avatar) {
-                $userFF['avatar'] = $_ENV['APP_URL'] . $user->avatar->path;
-            }
-            $formattedUsers[] = $userFF;
-        }
 
-        return ApiResponse::code(
-            $this->responseCodes->SUCCESS,
-            [
-                'items' => $formattedUsers,
-                'total_count' => $totalUsers,
-                'total_pages' => $pages,
-                'current_page' => $page,
-                'limit' => $limit
-            ]
-        );
+            $query = User::find();
+            $query->where(['is_deleted' => false]);
+            if ($sort) {
+                $query->orderBy([$sortQueries[$sort] => $order]);
+            }
+
+
+
+            return $query->all();
+
+
+            // return ApiResponse::code(
+            //     $this->responseCodes->SUCCESS,
+            //     [
+            //         'items' => $formattedUsers,
+            //         'total_count' => $totalUsers,
+            //         'total_pages' => $pages,
+            //         'current_page' => $page,
+            //         'limit' => $limit
+            //     ]
+            // );
+        } catch (\Exception $e) {
+            return $e->getMessage();
+        }
     }
 }
