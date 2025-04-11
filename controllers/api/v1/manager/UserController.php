@@ -154,7 +154,7 @@ class UserController extends ManagerController
                 ]
             );
         } catch (\Exception $e) {
-            return ApiResponse::byResponseCode(ResponseCodes::getStatic()->INTERNAL_SERVER_ERROR, [
+            return ApiResponse::byResponseCode(ResponseCodes::getStatic()->INTERNAL_ERROR, [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
