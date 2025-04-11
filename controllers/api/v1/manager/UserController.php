@@ -116,11 +116,6 @@ class UserController extends ManagerController
             ->andWhere(['is_deleted' => false])
             ->orderBy([$sortQueries[$sort] => $order]);
 
-        if ($query) {
-            $query->andWhere(['like', 'name', $query])
-                ->orWhere(['like', 'surname', $query]);
-        }
-
         $totalUsers = $query->count();
         $pages = ceil($totalUsers / $limit);
         $users = $query->offset(($page - 1) * $limit)->limit($limit)->all();
