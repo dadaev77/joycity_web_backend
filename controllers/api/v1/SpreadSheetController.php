@@ -37,9 +37,6 @@ class SpreadSheetController extends V1Controller
         $behaviors['verbFilter']['actions']['download-product-excel'] = ['get'];
         $behaviors['verbFilter']['actions']['upload-product-excel'] = ['post'];
 
-        // Добавляем поддержку multipart/form-data
-        $behaviors['contentNegotiator']['formats']['multipart/form-data'] = Response::FORMAT_JSON;
-
         return $behaviors;
     }
 
