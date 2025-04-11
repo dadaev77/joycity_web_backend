@@ -97,6 +97,7 @@ class UserController extends ManagerController
         int $page = 1,
         string $sort,
         string $order = 'asc',
+        string $query = ''
     ) {
 
         if (!in_array($role, $this->allowedRoles)) return ApiResponse::byResponseCode(ResponseCodes::getStatic()->BAD_REQUEST);
@@ -115,6 +116,10 @@ class UserController extends ManagerController
             ->andWhere(['is_deleted' => false])
             ->orderBy([$sortQueries[$sort] => $order]);
 
+        if ($query) {
+            $query->andWhere(['like', 'name', $query])
+                ->orWhere(['like', 'surname', $query]);
+        }
 
         $totalUsers = $query->count();
         $pages = ceil($totalUsers / $limit);
