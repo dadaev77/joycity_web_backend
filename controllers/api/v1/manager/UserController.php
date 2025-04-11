@@ -112,13 +112,15 @@ class UserController extends ManagerController
 
         $query = User::find()
             ->where(['role' => $role])
+            ->andWhere(['is_deleted' => false])
             ->orderBy([$sortQueries[$sort] => $order]);
 
 
         $totalUsers = $query->count();
         $pages = ceil($totalUsers / $limit);
-
         $users = $query->offset(($page - 1) * $limit)->limit($limit)->all();
+
+        if ($page > $pages) return ApiResponse::byResponseCode(ResponseCodes::getStatic()->BAD_REQUEST);
 
         $formattedUsers = [];
         foreach ($users as $user) {
