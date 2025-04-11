@@ -192,7 +192,6 @@ class OrderExcelService
     public function processExcelFile($file)
     {
         try {
-
             if (!in_array(
                 $file->type,
                 $this->allowedTypes
