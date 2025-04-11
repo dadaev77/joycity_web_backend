@@ -225,7 +225,6 @@ class OrderOutputService extends OutputService
             $info['chats'] = [];
 
             unset(
-
                 $info['productStockReport']['attachmentsSmallSize'],
                 $info['productStockReport']['attachmentsMediumSize'],
                 $info['productStockReport']['attachmentsLargeSize'],

@@ -59,23 +59,10 @@ class SpreadSheetController extends V1Controller
      */
     public function actionDownloadExcel()
     {
-        try {
-            $filePath = Yii::getAlias('@app/data/templates/test_order_data.xlsx');
-            if (!file_exists($filePath)) {
-                return $this->asJson([
-                    'success' => false,
-                    'message' => 'Файл шаблона не найден'
-                ]);
-            }
-            return Yii::$app->response->sendFile($filePath, 'order_template.xlsx', [
-                'mimeType' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-            ]);
-        } catch (\Exception $e) {
-            return $this->asJson([
-                'success' => false,
-                'message' => 'Внутренняя ошибка сервера: ' . $e->getMessage()
-            ]);
-        }
+        //
+        return ApiResponse::byResponseCode(ResponseCodes::getStatic()->SUCCESS, [
+            'file' => $_ENV['APP_URL'] . '/templates/order_template.xlsx'
+        ]);
     }
 
     /**
