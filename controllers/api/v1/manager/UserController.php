@@ -91,126 +91,53 @@ class UserController extends ManagerController
      *     )
      * )
      */
-    public function actionIndex(string $role, int $limit = 10, int $page = 1, int $id = null)
-    {
-        if (!in_array($role, $this->allowedRoles)) {
-            return ApiResponse::code(
-                $this->responseCodes->BAD_REQUEST,
-                ['message' => 'Invalid role.'],
-                422
-            );
-        }
-        
-        $query = User::find()->where(['role' => $role, 'is_deleted' => 0]);
-        $query->select(['id', 'name', 'surname', 'uuid', 'role', 'email', 'markup', 'created_at', 'avatar_id']);
-        
-        // Загружаем аватары пользователей
-        $query->with(['avatar']);
-
-        // Получаем параметры сортировки
-        $sort = Yii::$app->request->get('sort');
-        $order = Yii::$app->request->get('order', 'asc');
-        
-        // Применяем сортировку
-        if ($sort) {
-            if ($sort === 'markup') {
-                $query->orderBy(['markup' => $order === 'desc' ? SORT_DESC : SORT_ASC]);
-            } elseif ($sort === 'name,surname') {
-                // Сначала сортируем по имени, затем по фамилии
-                $direction = $order === 'desc' ? SORT_DESC : SORT_ASC;
-                $query->orderBy([
-                    'name' => $direction,
-                    'surname' => SORT_ASC // Всегда сортируем фамилии по возрастанию для лучшей читаемости
-                ]);
-            } elseif ($sort === 'created_at') {
-                // Сортировка по дате регистрации
-                $query->orderBy(['created_at' => $order === 'desc' ? SORT_DESC : SORT_ASC]);
-            }
-        } else {
-            $query->orderBy(['id' => SORT_DESC]); // Дефолтная сортировка
-        }
-
-        $totalUsers = $query->count(); 
-        $pages = ceil($totalUsers / $limit);
-        
-        $users = $query
-            ->offset(($page - 1) * $limit)
-            ->limit($limit)
-            ->all();
-
-        if ($id) {
-            $user = User::findOne($id);
-            if (!$user) {
-                return ApiResponse::code($this->responseCodes->NOT_FOUND, ['message' => 'User not found.']);
-            }
-            return ApiResponse::code(
-                $this->responseCodes->SUCCESS,
-                ['info' => $user]
-            );
-        }
-
-        if (count($users) < 1) {
-            return ApiResponse::code(
-                $this->responseCodes->NOT_FOUND,
-                ['message' => 'No users found for the specified role.'],
-                404
-            );
-        }
-
-        // Преобразуем пользователей для включения пути к аватару
-        $formattedUsers = [];
-        foreach ($users as $user) {
-            $userData = $user->toArray();
-            $userData['avatar'] = $user->avatar ? $user->avatar->path : null;
-            $formattedUsers[] = $userData;
-        }
-
-        return ApiResponse::code(
-            $this->responseCodes->SUCCESS,
-            [
-                'items' => $formattedUsers,
-                'total_count' => $totalUsers,
-                'total_pages' => $pages,
-                'current_page' => $page,
-                'limit' => $limit
-            ]   
-        );
-    }
-
-
-    public function actionSearch(
-        string $query,
+    public function actionIndex(
+        string $role,
         int $limit = 10,
-        int $page = 1
-    )
-    {
-        $queryBuilder = User::find()
-            ->select(['id', 'name', 'surname', 'uuid', 'role', 'email', 'markup', 'created_at', 'avatar_id'])
-            ->with(['avatar'])
-            ->where(['or',
-                ['like', 'email', $query],
-                ['like', 'surname', $query],
-                ['like', 'name', $query],
-                ['like', 'uuid', $query]
-            ])
-            ->andWhere(['is_deleted' => 0]);
+        int $page = 1,
+        string $sort,
+        string $order = 'asc',
+    ) {
 
-        $totalUsers = $queryBuilder->count();
+        if (!in_array($role, $this->allowedRoles)) return ApiResponse::byResponseCode(ResponseCodes::getStatic()->BAD_REQUEST);
+
+        $sortQueries = [
+            'name' => 'name',
+            'surname' => 'surname',
+            'markup' => 'markup',
+            'created_at' => 'created_at'
+        ];
+
+        if (!isset($sortQueries[$sort])) return ApiResponse::byResponseCode(ResponseCodes::getStatic()->BAD_REQUEST);
+
+        $query = User::find()
+            ->where(['role' => $role])
+            ->orderBy([$sortQueries[$sort] => $order]);
+
+
+        $totalUsers = $query->count();
         $pages = ceil($totalUsers / $limit);
 
-        $users = $queryBuilder
-            ->limit($limit)
-            ->offset(($page - 1) * $limit)
-            ->all();
+        $users = $query->offset(($page - 1) * $limit)->limit($limit)->all();
 
-        if ( count($users) < 1 ) return ApiResponse::code($this->responseCodes->NOT_FOUND,['message' => 'No users found for the specified query.'],404);
-
-        // Преобразуем пользователей для включения пути к аватару
         $formattedUsers = [];
         foreach ($users as $user) {
-            $userData = $user->toArray();
-            $userData['avatar'] = $user->avatar ? $user->avatar->path : null;
-            $formattedUsers[] = $userData;
+            $userFF = [
+                'id' => $user->id,
+                'name' => $user->name,
+                'surname' => $user->surname,
+                'uuid' => $user->uuid,
+                'role' => $user->role,
+                'email' => $user->email,
+                'markup' => $user->markup,
+                'created_at' => $user->created_at,
+                'telegram' => $user->telegram,
+                'phone' => $user->phone_number,
+            ];
+            if ($user->avatar) {
+                $userFF['avatar'] = $_ENV['APP_URL'] . $user->avatar->path;
+            }
+            $formattedUsers[] = $userFF;
         }
 
         return ApiResponse::code(
@@ -224,8 +151,4 @@ class UserController extends ManagerController
             ]
         );
     }
-
 }
-
-
-
