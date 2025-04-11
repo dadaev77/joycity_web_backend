@@ -131,8 +131,8 @@ class UserController extends ManagerController
                     'email' => $user->email,
                     'markup' => $user->markup,
                     'created_at' => $user->created_at,
-                    'phone' => $user->phone,
-                    'telegarm' => $user->telegarm,
+                    'phone' => $user->phone_number,
+                    'telegarm' => $user->telegram ?? null,
                 ];
                 if ($user->avatar) $userdd['avatar'] = $_ENV['APP_URL'] . $user->avatar->path;
                 $formattedUsers[] = $userdd;
