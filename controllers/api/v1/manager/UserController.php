@@ -29,67 +29,23 @@ class UserController extends ManagerController
         return $behaviours;
     }
     /**
-     * @OA\Get(
-     *     path="/api/v1/manager/user",
-     *     summary="Получить список пользователей с сортировкой",
-     *     tags={"Manager - Users"},
-     *     @OA\Parameter(
-     *         name="role",
-     *         in="query",
-     *         required=true,
-     *         description="Роль пользователя (client, buyer, manager, fulfillment)",
-     *         @OA\Schema(type="string")
-     *     ),
-     *     @OA\Parameter(
-     *         name="limit",
-     *         in="query",
-     *         description="Количество записей на странице",
-     *         @OA\Schema(type="integer", default=10)
-     *     ),
-     *     @OA\Parameter(
-     *         name="page",
-     *         in="query",
-     *         description="Номер страницы",
-     *         @OA\Schema(type="integer", default=1)
-     *     ),
-     *     @OA\Parameter(
-     *         name="id",
-     *         in="query",
-     *         description="ID пользователя для получения информации о конкретном пользователе",
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\Parameter(
-     *         name="sort",
-     *         in="query",
-     *         description="Поле для сортировки (name,surname, markup или created_at)",
-     *         @OA\Schema(type="string")
-     *     ),
-     *     @OA\Parameter(
-     *         name="order",
-     *         in="query",
-     *         description="Порядок сортировки (asc или desc)",
-     *         @OA\Schema(type="string", default="asc")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Успешный ответ",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="items", type="array", @OA\Items(type="object")),
-     *             @OA\Property(property="total_count", type="integer"),
-     *             @OA\Property(property="total_pages", type="integer"),
-     *             @OA\Property(property="current_page", type="integer"),
-     *             @OA\Property(property="limit", type="integer")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="Пользователи не найдены"
-     *     ),
-     *     @OA\Response(
-     *         response=422,
-     *         description="Неверная роль"
-     *     )
-     * )
+     * @param string $role
+     * @param int $limit
+     * @param int $page
+     * @param string $sort
+     * @param string $order
+     * @return ApiResponse
+     * 
+     * 1. При сортировке name:
+     * 1.1. Если role == client, то сортируем по имени, потом по фамилии, потом по id.
+     * 1.2. Если role != client, то сортируем по названию организации, потом по id.
+     * 2. При сортировке created_at сортируем по created_at, потом по id.
+     * 3. При сортировке  markup сортируем по наценке, потом по id.
+     * 4. Применять везде order, в зависимости от входного asc/desc.
+     * 5. Применять query, если он есть, то (непустая строка)
+     * 5.1. Если role == client, то ищем по вхождению по имени, потом по фамилии.
+     * 5.2. Если role != client, то ищем по вхождению по названию организации.
+     * 
      */
     public function actionIndex(
         string $role,
@@ -97,6 +53,7 @@ class UserController extends ManagerController
         int $page = 1,
         string $sort,
         string $order = 'asc',
+        string $query = ''
     ) {
 
         if (!in_array($role, $this->allowedRoles)) return ApiResponse::byResponseCode(ResponseCodes::getStatic()->BAD_REQUEST);
@@ -109,14 +66,31 @@ class UserController extends ManagerController
                 'created_at' => 'created_at',
                 'organization_name' => 'organization_name'
             ];
-
             $query = User::find();
-
             $query->where(['is_deleted' => false]);
-            $query->andWhere(['role' => $role]);
 
-            if ($sort) {
-                $query->orderBy([$sortQueries[$sort] => $order == 'asc' ? SORT_ASC : SORT_DESC]);
+            if ($sort == 'name') {
+                if ($role == 'client') {
+                    $query->orderBy(['name' => $order == 'asc' ? SORT_ASC : SORT_DESC, 'surname' => $order == 'asc' ? SORT_ASC : SORT_DESC, 'id' => $order == 'asc' ? SORT_ASC : SORT_DESC]);
+                } else {
+                    $query->orderBy(['organization_name' => $order == 'asc' ? SORT_ASC : SORT_DESC, 'id' => $order == 'asc' ? SORT_ASC : SORT_DESC]);
+                }
+            }
+
+            if ($sort == 'created_at') {
+                $query->orderBy(['created_at' => $order == 'asc' ? SORT_ASC : SORT_DESC, 'id' => $order == 'asc' ? SORT_ASC : SORT_DESC]);
+            }
+
+            if ($sort && $sort == 'markup') {
+                $query->orderBy(['markup' => $order == 'asc' ? SORT_ASC : SORT_DESC, 'id' => $order == 'asc' ? SORT_ASC : SORT_DESC]);
+            }
+
+            if (!empty($query)) {
+                if ($role == 'client') {
+                    $query->andWhere(['or', ['like', 'name', $query], ['like', 'surname', $query]]);
+                } else {
+                    $query->andWhere(['like', 'organization_name', $query]);
+                }
             }
 
             $query->offset(($page - 1) * $limit)->limit($limit);
@@ -134,19 +108,14 @@ class UserController extends ManagerController
                     'markup' => $user->markup,
                     'created_at' => $user->created_at,
                     'phone' => $user->phone_number,
-                    'telegarm' => $user->telegram ?? null,
+                    'telegram' => $user->telegram ?? null,
                 ];
-
-
                 if ($user->avatar) $userdd['avatar'] = $_ENV['APP_URL'] . $user->avatar->path;
                 $formattedUsers[] = $userdd;
             }
-
             $totalUsers = $query->count();
             $pages = ceil($totalUsers / $limit);
-
             if ($page > $pages) return ApiResponse::byResponseCode(ResponseCodes::getStatic()->NOT_FOUND);
-
             return ApiResponse::code(
                 $this->responseCodes->SUCCESS,
                 [
