@@ -52,121 +52,117 @@ class UserController extends ManagerController
         string $role,
         int $limit = 10,
         int $page = 1,
-        string $sort,
+        string $sort = 'created_at',
         string $order = 'asc',
         string $query = ''
     ) {
+        // Проверка роли
         if (!in_array($role, $this->allowedRoles)) {
             return ApiResponse::byResponseCode(ResponseCodes::getStatic()->BAD_REQUEST);
         }
 
         try {
+            $queryBuilder = \app\models\User::find()
+                ->select([
+                    'id',
+                    'name',
+                    'surname',
+                    'organization_name',
+                    'uuid',
+                    'role',
+                    'email',
+                    'markup',
+                    'created_at',
+                    'phone_number AS phone',
+                    'telegram',
+                ])
+                ->where(['is_deleted' => false, 'role' => $role])
+                ->asArray();
+
+            if (!empty($query)) {
+                if ($role === 'client') {
+                    $queryBuilder->andWhere([
+                        'or',
+                        ['like', 'name', $query],
+                        ['like', 'surname', $query],
+                    ]);
+                } else {
+                    $queryBuilder->andWhere(['like', 'organization_name', $query]);
+                }
+            }
+
+            $orderDirection = ($order === 'asc') ? SORT_ASC : SORT_DESC;
+            if ($sort === 'name') {
+                if ($role === 'client') {
+                    $queryBuilder->orderBy([
+                        'name' => $orderDirection,
+                        'surname' => $orderDirection,
+                        'id' => $orderDirection,
+                    ]);
+                } else {
+                    $queryBuilder->orderBy([
+                        'organization_name' => $orderDirection,
+                        'id' => $orderDirection,
+                    ]);
+                }
+            } elseif ($sort === 'created_at') {
+                $queryBuilder->orderBy([
+                    'created_at' => $orderDirection,
+                    'id' => $orderDirection,
+                ]);
+            } elseif ($sort === 'markup') {
+                $queryBuilder->orderBy([
+                    'markup' => $orderDirection,
+                    'id' => $orderDirection,
+                ]);
+            } else {
+                $queryBuilder->orderBy(['id' => SORT_ASC]);
+            }
+
             $offset = ($page - 1) * $limit;
-            $params = [':is_deleted' => false];
+            $queryBuilder->limit($limit)->offset($offset);
 
-            $sql = "SELECT * FROM user WHERE is_deleted = :is_deleted and role = :role";
-            if (!empty($query)) {
-                if ($role == 'client') {
-                    $sql .= " AND (name LIKE :query OR surname LIKE :query)";
-                    $params[':query'] = "%{$query}%";
-                } else {
-                    $sql .= " AND organization_name LIKE :query";
-                    $params[':query'] = "%{$query}%";
-                }
-            }
-            $sql .= " ORDER BY ";
-            if ($sort == 'name') {
-                if ($role == 'client') {
-                    $sql .= "name " . ($order == 'asc' ? 'ASC' : 'DESC') . ", 
-                            surname " . ($order == 'asc' ? 'ASC' : 'DESC') . ", 
-                            id " . ($order == 'asc' ? 'ASC' : 'DESC');
-                } else {
-                    $sql .= "organization_name " . ($order == 'asc' ? 'ASC' : 'DESC') . ", 
-                            id " . ($order == 'asc' ? 'ASC' : 'DESC');
-                }
-            } elseif ($sort == 'created_at') {
-                $sql .= "created_at " . ($order == 'asc' ? 'ASC' : 'DESC') . ", 
-                        id " . ($order == 'asc' ? 'ASC' : 'DESC');
-            } elseif ($sort == 'markup') {
-                $sql .= "markup " . ($order == 'asc' ? 'ASC' : 'DESC') . ", 
-                        id " . ($order == 'asc' ? 'ASC' : 'DESC');
-            }
+            $totalUsers = (clone $queryBuilder)->select('COUNT(*)')->scalar();
 
-            $sql .= " LIMIT :limit OFFSET :offset";
-            $params[':limit'] = $limit;
-            $params[':offset'] = $offset;
-            $params[':role'] = $role;
-
-            $users = Yii::$app->db->createCommand($sql)
-                ->bindValues($params)
-                ->queryAll();
-
-            $countSql = "SELECT COUNT(*) as count FROM user WHERE is_deleted = :is_deleted";
-            if (!empty($query)) {
-                if ($role == 'client') {
-                    $countSql .= " AND (name LIKE :query OR surname LIKE :query)";
-                } else {
-                    $countSql .= " AND organization_name LIKE :query";
-                }
-            }
-
-            $totalUsers = Yii::$app->db->createCommand($countSql)
-                ->bindValues(array_filter($params, function ($key) {
-                    return $key !== ':limit' && $key !== ':offset';
-                }, ARRAY_FILTER_USE_KEY))
-                ->queryScalar();
+            $users = $queryBuilder->all();
 
             $pages = ceil($totalUsers / $limit);
-            if ($page > $pages) {
+            if ($page > $pages && $totalUsers > 0) {
                 return ApiResponse::byResponseCode(ResponseCodes::getStatic()->NOT_FOUND);
             }
 
             $formattedUsers = [];
             foreach ($users as $user) {
-
-                $userData = [
-                    'id' => $user['id'],
+                $formattedUsers[] = [
+                    'id' => (int)$user['id'],
                     'name' => $user['name'],
                     'surname' => $user['surname'],
-                    'organization_name' => $user['organization_name'] ?? null,
+                    'organization_name' => $user['organization_name'],
                     'uuid' => $user['uuid'],
                     'role' => $user['role'],
                     'email' => $user['email'],
-                    'markup' => $user['markup'],
+                    'markup' => (float)$user['markup'],
                     'created_at' => $user['created_at'],
-                    'phone' => $user['phone_number'],
-                    'telegram' => $user['telegram'] ?? null,
+                    'phone' => $user['phone'],
+                    'telegram' => $user['telegram'],
                 ];
-
-
-                // if (isset($user['id'])) {
-                //     $avatarSql = "SELECT path FROM file WHERE entity_type = 'user' AND entity_id = :user_id LIMIT 1";
-                //     $avatar = Yii::$app->db->createCommand($avatarSql)
-                //         ->bindValue(':user_id', $user['id'])
-                //         ->queryOne();
-
-                //     if ($avatar) {
-                //         $userData['avatar'] = $_ENV['APP_URL'] . $avatar['path'];
-                //     }
-                // }
-
-                $formattedUsers[] = $userData;
             }
 
+            unset($users);
+
             return ApiResponse::code(
-                $this->responseCodes->SUCCESS,
+                ResponseCodes::getStatic()->SUCCESS,
                 [
                     'items' => $formattedUsers,
-                    'total_count' => $totalUsers,
-                    'total_pages' => $pages,
+                    'total_count' => (int)$totalUsers,
+                    'total_pages' => (int)$pages,
                     'current_page' => $page,
-                    'limit' => $limit
+                    'limit' => $limit,
                 ]
             );
         } catch (\Exception $e) {
             return ApiResponse::byResponseCode(ResponseCodes::getStatic()->INTERNAL_ERROR, [
                 'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
             ]);
         }
     }
