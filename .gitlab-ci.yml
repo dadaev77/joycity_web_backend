@@ -30,6 +30,7 @@ deploy_to_stage:
   script:
     - cd /srv/docker/joycity
     - docker compose up -d --force-recreate joy_server
+    - docker system prune -af
   only:
     - test
   tags: 
