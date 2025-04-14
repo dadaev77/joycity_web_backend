@@ -40,6 +40,7 @@ use app\services\RateService;
  * @property ProductLinkAttachment[] $productLinkAttachments
  * @property Attachment[] $attachments
  * @property Subcategory $subcategory
+ * @property Article[] $articles
  */
 class Product extends Base
 {
@@ -258,5 +259,15 @@ class Product extends Base
     public function getCategory()
     {
         return $this->hasOne(\app\models\Category::class, ['id' => 'parent_id']);
+    }
+
+    /**
+     * Gets query for [[Articles]].
+     *
+     * @return ActiveQuery
+     */
+    public function getArticles()
+    {
+        return $this->hasMany(Article::class, ['product_id' => 'id']);
     }
 }

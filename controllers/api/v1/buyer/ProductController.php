@@ -15,6 +15,10 @@ use Throwable;
 use Yii;
 use app\services\TranslationService;
 use yii\web\UploadedFile;
+use app\components\response\ApiResponse as ResponseApiResponse;
+use app\components\response\ResponseCodesModels;
+use app\models\Article;
+use app\models\Colour;
 
 
 class ProductController extends BuyerController
@@ -68,24 +72,15 @@ class ProductController extends BuyerController
      */
     public function actionCreate()
     {
+        $apiCodes = Product::apiCodes();
+        $user = User::getIdentity();
+        if (!$user->can('create-product')) return ApiResponse::byResponseCode($apiCodes->NO_ACCESS);
+        $request = Yii::$app->request;
+
         try {
-            $apiCodes = Product::apiCodes();
-            $user = User::getIdentity();
-            if (!$user->can('create-product')) return ApiResponse::byResponseCode($apiCodes->NO_ACCESS);
-            $request = Yii::$app->request;
-
-            $images = UploadedFile::getInstancesByName('images');
-
-            if (!$images) {
-                return ApiResponse::codeErrors($apiCodes->NOT_VALID, [
-                    'images' => 'Param `images` is empty',
-                ]);
-            }
-
             $transaction = Yii::$app->db->beginTransaction();
 
             $product = new Product();
-
             $product->load(
                 array_diff_key(
                     $request->post(),
@@ -94,6 +89,7 @@ class ProductController extends BuyerController
                         'feedback_count',
                         'buyer_id',
                         'is_deleted',
+                        'articles',
                     ]),
                 ),
                 '',
@@ -110,6 +106,7 @@ class ProductController extends BuyerController
                 $product->{"name_$lang"} = $value['name'];
                 $product->{"description_$lang"} = $value['description'];
             }
+
             // set buyer id
             $product->buyer_id = $user->id;
             // set currency from user settings
@@ -131,65 +128,53 @@ class ProductController extends BuyerController
                 return $productSave->apiResponse;
             }
 
-            $attachmentSaveResponse = AttachmentService::writeFilesCollection(
-                $images,
-            );
+            // Создаем артикулы
+            $articles = $request->post('articles', []);
+            foreach ($articles as $articleData) {
+                $article = new Article();
+                $article->product_id = $product->id;
+                $article->colour_id = $articleData['colour_id'];
+                $article->size = $articleData['size'];
+                $article->count = $articleData['count'];
+                $article->image_link_colour = $articleData['image_link_colour'] ?? [];
 
-            if (!$attachmentSaveResponse->success) {
-                return ApiResponse::transactionCodeErrors(
-                    $transaction,
-                    $apiCodes->INTERNAL_ERROR,
-                    ['images' => 'Failed to save images'],
-                );
+                if (!$article->save()) {
+                    $transaction->rollBack();
+                    return ApiResponse::byResponseCode($apiCodes->ERROR_SAVE, [
+                        'errors' => $article->getFirstErrors(),
+                    ]);
+                }
             }
 
-            \Yii::$app->telegramLog->send(
-                'info',
-                [
-                    'Изображения при создании товара загружены',
-                    "Товар: {$product->id}",
-                    "Пользователь: {$user->name} (ID: {$user->id})",
-                ],
-                'buyer'
-            );
+            // Обработка изображений
+            $attachmentsToLink = [];
+            $images = UploadedFile::getInstancesByName('images');
 
-            $product->linkAll('attachments', $attachmentSaveResponse->result, [
-                'type' => ProductLinkAttachment::TYPE_DEFAULT,
+            if ($images) {
+                $attachmentSaveResponse = AttachmentService::writeFilesCollection($images);
+
+                if (!$attachmentSaveResponse->success) {
+                    $transaction->rollBack();
+                    return ApiResponse::byResponseCode($apiCodes->INTERNAL_ERROR, ['errors' => ['images' => 'Failed to save images']]);
+                }
+
+                $attachmentsToLink = array_merge($attachmentsToLink, $attachmentSaveResponse->result);
+            }
+
+            $transaction->commit();
+
+            // Загружаем артикулы с форматированным номером
+            $product->refresh();
+            $articles = $product->articles;
+
+            return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
+                'product' => $product,
+                'articles' => $articles,
             ]);
-
-            $transaction?->commit();
-
-            \app\services\TranslationService::translateAttributes(
-                $request->post('name'),
-                $request->post('description'),
-                'product',
-                $product->id
-            );
-
-            \Yii::$app->telegramLog->send('info', [
-                'Товар создан',
-                "ID товара: {$product->id}",
-                "Название: {$request->post('name')}",
-                "Описание: {$request->post('description')}",
-                "Пользователь: {$user->name} (ID: {$user->id})",
-            ], 'buyer');
-
-
-            return ApiResponse::info(
-                ProductOutputService::getEntity(
-                    $product->id,
-                    'small'
-                ),
-            );
-        } catch (Throwable $e) {
-            Yii::$app->telegramLog->send('error', [
-                'Ошибка при создании товара: ' . $e->getMessage(),
-                'Текст ошибки: ' . $e->getMessage(),
-                'Трассировка: ' . $e->getTraceAsString(),
-            ]);
-
-            isset($transaction) && $transaction->rollBack();
-            return ApiResponse::internalError($e);
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+            \Yii::$app->telegramLog->send('error', 'Ошибка при создании товара: ' . $e->getMessage());
+            return ApiResponse::byResponseCode($apiCodes->INTERNAL_ERROR);
         }
     }
 
@@ -232,7 +217,7 @@ class ProductController extends BuyerController
      *     )
      * )
      */
-    public function actionUpdate(int $id)
+    public function actionUpdate($id)
     {
         $apiCodes = Product::apiCodes();
         $user = User::getIdentity();
@@ -240,8 +225,6 @@ class ProductController extends BuyerController
         $request = Yii::$app->request;
 
         $product = Product::findOne(['id' => $id]);
-        $repeatImagesToKeep = $request->post('repeat_images_to_keep');
-
         if (!$product) {
             return ApiResponse::code($apiCodes->NOT_FOUND);
         }
@@ -265,6 +248,7 @@ class ProductController extends BuyerController
                     'range_2_price',
                     'range_3_price',
                     'range_4_price',
+                    'articles',
                 ])
             );
 
@@ -311,53 +295,39 @@ class ProductController extends BuyerController
                 ]);
             }
 
-            // Обработка изображений
-            $attachmentsToLink = [];
-            $images = UploadedFile::getInstancesByName('images');
+            // Обновляем артикулы
+            $articles = $request->post('articles', []);
+            Article::deleteAll(['product_id' => $product->id]);
+            foreach ($articles as $articleData) {
+                $article = new Article();
+                $article->product_id = $product->id;
+                $article->colour_id = $articleData['colour_id'];
+                $article->size = $articleData['size'];
+                $article->count = $articleData['count'];
+                $article->image_link_colour = $articleData['image_link_colour'] ?? [];
 
-            if ($images) {
-                $attachmentSaveResponse = AttachmentService::writeFilesCollection($images);
-
-                if (!$attachmentSaveResponse->success) {
-                    $transaction?->rollBack();
-                    return ApiResponse::byResponseCode($apiCodes->INTERNAL_ERROR, ['errors' => ['images' => 'Failed to save images']]);
-                }
-
-                $attachmentsToLink = array_merge($attachmentsToLink, $attachmentSaveResponse->result);
-            }
-
-            // Обработка повторяющихся изображений
-            if ($repeatImagesToKeep) {
-                $repeatProduct = Product::findOne(['id' => $request->post('repeat_product_id')]);
-
-                if ($repeatProduct && $repeatProduct->buyer_id === $user->id) {
-                    $attachmentsToKeep = Attachment::find()
-                        ->joinWith(['productLinkAttachments' => fn($q) => $q->where(['product_id' => $repeatProduct->id])])
-                        ->where(['attachment.id' => $repeatImagesToKeep])
-                        ->all();
-
-                    $attachmentsToLink = array_merge($attachmentsToLink, $attachmentsToKeep);
+                if (!$article->save()) {
+                    $transaction->rollBack();
+                    return ApiResponse::byResponseCode($apiCodes->ERROR_SAVE, [
+                        'errors' => $article->getFirstErrors(),
+                    ]);
                 }
             }
 
-            if ($attachmentsToLink) {
-                $product->linkAll('attachments', $attachmentsToLink, ['type' => ProductLinkAttachment::TYPE_DEFAULT]);
-            }
+            $transaction->commit();
 
-            $transaction?->commit();
+            // Загружаем артикулы с форматированным номером
+            $product->refresh();
+            $articles = $product->articles;
 
-            \app\services\TranslationService::translateAttributes(
-                $request->post('name'),
-                $request->post('description'),
-                'product',
-                $id
-            );
-
-            return ApiResponse::info(ProductOutputService::getEntity($id, 'small'));
-        } catch (Throwable $e) {
-            Yii::$app->telegramLog->send('error', 'Ошибка при обновлении продукта: ' . $e->getMessage());
-            $transaction?->rollBack();
-            return ApiResponse::internalError($e);
+            return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
+                'product' => $product,
+                'articles' => $articles,
+            ]);
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+            \Yii::$app->telegramLog->send('error', 'Ошибка при обновлении товара: ' . $e->getMessage());
+            return ApiResponse::byResponseCode($apiCodes->INTERNAL_ERROR);
         }
     }
 
@@ -382,20 +352,27 @@ class ProductController extends BuyerController
      *     )
      * )
      */
-    public function actionView(int $id)
+    public function actionView($id)
     {
         $apiCodes = Product::apiCodes();
-        $isset = Product::isset(['id' => $id]);
+        $user = User::getIdentity();
+        if (!$user->can('view-product')) return ApiResponse::byResponseCode($apiCodes->NO_ACCESS);
 
-        if (!$isset) {
-            return ApiResponse::byResponseCode($apiCodes->NOT_FOUND);
+        $product = Product::findOne(['id' => $id]);
+        if (!$product) {
+            return ApiResponse::code($apiCodes->NOT_FOUND);
         }
 
+        if ($product->buyer_id !== $user->id) {
+            return ApiResponse::code($apiCodes->NO_ACCESS);
+        }
+
+        // Загружаем артикулы с форматированным номером
+        $articles = $product->articles;
+
         return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
-            'info' => ProductOutputService::getEntity(
-                $id,
-                'small'
-            ),
+            'product' => $product,
+            'articles' => $articles,
         ]);
     }
 
@@ -424,30 +401,43 @@ class ProductController extends BuyerController
      *     )
      * )
      */
-    public function actionDelete(int $id)
+    public function actionDelete($id)
     {
         $apiCodes = Product::apiCodes();
         $user = User::getIdentity();
         if (!$user->can('delete-product')) return ApiResponse::byResponseCode($apiCodes->NO_ACCESS);
-        $product = Product::findOne(['id' => $id]);
 
+        $product = Product::findOne(['id' => $id]);
         if (!$product) {
-            return ApiResponse::byResponseCode($apiCodes->NOT_FOUND);
+            return ApiResponse::code($apiCodes->NOT_FOUND);
         }
 
         if ($product->buyer_id !== $user->id) {
-            return ApiResponse::byResponseCode($apiCodes->NO_ACCESS);
+            return ApiResponse::code($apiCodes->NO_ACCESS);
         }
 
-        $product->is_deleted = 1;
+        try {
+            $transaction = Yii::$app->db->beginTransaction();
 
-        if (!$product->save()) {
-            return ApiResponse::byResponseCode($apiCodes->ERROR_SAVE, [
-                'errors' => $product->getFirstErrors(),
-            ]);
+            // Удаляем все артикулы товара
+            Article::deleteAll(['product_id' => $product->id]);
+
+            // Удаляем товар
+            $product->is_deleted = 1;
+            if (!$product->save()) {
+                $transaction->rollBack();
+                return ApiResponse::byResponseCode($apiCodes->ERROR_SAVE, [
+                    'errors' => $product->getFirstErrors(),
+                ]);
+            }
+
+            $transaction->commit();
+            return ApiResponse::byResponseCode($apiCodes->SUCCESS);
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+            \Yii::$app->telegramLog->send('error', 'Ошибка при удалении товара: ' . $e->getMessage());
+            return ApiResponse::byResponseCode($apiCodes->INTERNAL_ERROR);
         }
-
-        return ApiResponse::byResponseCode($apiCodes->SUCCESS);
     }
 
     /**
@@ -467,22 +457,20 @@ class ProductController extends BuyerController
      *     )
      * )
      */
-    public function actionMy(int $offset = 0)
+    public function actionMy()
     {
         $apiCodes = Product::apiCodes();
         $user = User::getIdentity();
-        $idsCollection = Product::find()
-            ->select('id')
+        if (!$user->can('view-product')) return ApiResponse::byResponseCode($apiCodes->NO_ACCESS);
+
+        $products = Product::find()
             ->where(['buyer_id' => $user->id])
-            ->offset($offset)
-            ->limit(20)
-            ->column();
+            ->andWhere(['is_deleted' => 0])
+            ->with('articles')
+            ->all();
 
         return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
-            'collection' => ProductOutputService::getCollection(
-                $idsCollection,
-                'small'
-            ),
+            'products' => $products,
         ]);
     }
 
