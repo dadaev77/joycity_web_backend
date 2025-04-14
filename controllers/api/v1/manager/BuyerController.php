@@ -78,13 +78,6 @@ class BuyerController extends ManagerController
         $chat_with_buyer->status = 'archived';
         $chat_with_buyer->save();
 
-        return [
-            'buyerChat' => $chat_with_buyer,
-        ];
-
-        die();
-
-
         $oldBuyerOffers = BuyerOffer::find()->where(['order_id' => $order->id])->all();
         foreach ($oldBuyerOffers as $oldBuyerOffer) {
             $oldBuyerOffer->status = BuyerOffer::STATUS_DECLINED;
