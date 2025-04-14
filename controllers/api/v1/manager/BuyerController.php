@@ -65,18 +65,25 @@ class BuyerController extends ManagerController
         $order->buyer_id = $buyerId;
 
         $chats = \app\models\Chat::find()->where(['order_id' => $order->id])->all();
-        $buyerChats = array_filter($chats, function ($chat) {
-            $groupName = $chat->metadata['group_name'];
-            if ($groupName == 'client_buyer_manager') {
-                return $chat;
+
+        $chat_with_buyer = null;
+        foreach ($chats as $chat) {
+            if ($chat->metadata['group_name'] == 'client_buyer_manager') {
+                $chat_with_buyer = $chat;
             }
-            return null;
-        });
+        }
+
+        if (!$chat_with_buyer) return \app\components\ApiResponse::byResponseCode($this->apiCodes->NOT_FOUND);
+
+        $chat_with_buyer->status = 'archived';
+        $chat_with_buyer->save();
+
         return [
-            'buyerChats' => $buyerChats,
+            'buyerChat' => $chat_with_buyer,
         ];
+
         die();
-        $result = \app\services\chats\ChatService::archiveChat($buyerChats[1]->id);
+
 
         $oldBuyerOffers = BuyerOffer::find()->where(['order_id' => $order->id])->all();
         foreach ($oldBuyerOffers as $oldBuyerOffer) {
