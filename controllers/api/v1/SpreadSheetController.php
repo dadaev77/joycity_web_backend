@@ -56,7 +56,6 @@ class SpreadSheetController extends V1Controller
      */
     public function actionDownloadExcel()
     {
-        //
         return ApiResponse::byResponseCode(ResponseCodes::getStatic()->SUCCESS, [
             'file' => $_ENV['APP_URL'] . '/templates/order_template.xlsx'
         ]);
@@ -96,6 +95,7 @@ class SpreadSheetController extends V1Controller
      */
     public function actionUploadExcel()
     {
+        Yii::$app->actionLog->info(json_encode($_POST));
         $file = UploadedFile::getInstanceByName('file');
         if (!$file) ApiResponse::byResponseCode(ResponseCodes::getStatic()->BAD_REQUEST, [
             'message' => 'Файл не был загружен'
