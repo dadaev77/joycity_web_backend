@@ -182,7 +182,7 @@ class UserController extends ManagerController
                 'created_at' => $user->created_at,
                 'phone' => $user->phone_number,
                 'telegram' => $user->telegram,
-                'avatar' => $user->avatar ? $_ENV['APP_URL'] . $user->avatar->path : null,
+                'avatar' => $user->avatar ? $user->avatar->path : null,
             ]
         ]);
     }
