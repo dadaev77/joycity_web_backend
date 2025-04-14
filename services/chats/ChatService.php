@@ -232,6 +232,7 @@ class ChatService
         }
 
         $chat->status = 'archived'; // Изменяем статус на 'archived'
+        $chat->is_deleted = true; // Устанавливаем флаг удаления
         if (!$chat->save()) {
             throw new \yii\db\Exception('Ошибка при архивировании чата: ' . json_encode($chat->getErrors()));
         }
