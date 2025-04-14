@@ -75,7 +75,6 @@ class BuyerController extends ManagerController
         $order->buyer_id = $buyerId;
 
         if (!$order->save()) {
-
             \Yii::$app->telegramLog->send('error', [
                 'Ошибка при обновлении заказа менеджером',
                 'Текст ошибки: ' . json_encode($order->errors),
@@ -89,11 +88,12 @@ class BuyerController extends ManagerController
             ]);
         }
 
-        // Находим и архивируем старые чаты для этого заказа
+        // Находим и архивируем только чаты с байером для этого заказа
         $oldChats = \app\models\Chat::find()
             ->where([
                 'order_id' => $order->id,
-                'status' => 'active'
+                'deal_type' => 'order',
+                'group_name' => 'client_buyer_manager'
             ])
             ->all();
             

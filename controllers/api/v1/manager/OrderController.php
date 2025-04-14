@@ -371,16 +371,25 @@ class OrderController extends ManagerController
 
         $order->buyer_id = $buyerId;
         if (!$order->save()) {
-            return \app\components\ApiResponse::byResponseCode($this->apiCodes->INTERNAL_ERROR, [
+            \Yii::$app->telegramLog->send('error', [
+                'Ошибка при обновлении заказа менеджером',
+                'Текст ошибки: ' . json_encode($order->errors),
+                'ID заказа: ' . $order->id,
+                'ID продавца: ' . $buyerId,
+                'ID менеджера: ' . \Yii::$app->user->id,
+            ], 'manager');
+
+            return \app\components\ApiResponse::byResponseCode($this->apiCodes->BAD_REQUEST, [
                 'errors' => $order->errors
             ]);
         }
 
-        // Находим и архивируем старые чаты для этого заказа
+        // Находим и архивируем только чаты с байером для этого заказа
         $oldChats = \app\models\Chat::find()
             ->where([
                 'order_id' => $order->id,
-                'status' => 'active'
+                'deal_type' => 'order',
+                'group_name' => 'client_buyer_manager'
             ])
             ->all();
             
