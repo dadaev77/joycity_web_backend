@@ -47,11 +47,9 @@ class BuyerController extends ManagerController
             ->select(['id', 'organization_name', 'phone_number', 'role'])
             ->where(['id' => $id, 'role' => \app\models\User::ROLE_BUYER])
             ->one();
-
         if (!$buyer) {
             return \app\components\ApiResponse::byResponseCode($this->apiCodes->NOT_FOUND);
         }
-
         return \app\components\ApiResponse::byResponseCode($this->apiCodes->SUCCESS, [
             'user' => $buyer,
         ]);
@@ -61,6 +59,7 @@ class BuyerController extends ManagerController
     {
         $post = \Yii::$app->request->post();
         $buyerId = $post['buyer_id'];
+
 
         $order = \app\models\Order::findOne(['id' => $id]);
         if (!$order) {
@@ -88,25 +87,29 @@ class BuyerController extends ManagerController
             ]);
         }
 
-        // Находим и архивируем только чаты с байером для этого заказа
-        $oldChats = \app\models\Chat::find()
-            ->where([
-                'order_id' => $order->id,
-                'type' => 'group',
-                'role' => 'buyer'
-            ])
-            ->all();
-            
-        foreach ($oldChats as $oldChat) {
-            $oldChat->status = 'archived';
-            $oldChat->save();
-        }
+        $chats = \app\models\Chat::find()->where(['order_id' => $order->id])->all();
+        $buyerChats = array_filter($chats, function ($chat) {
+            $groupName = $chat->metadata['group_name'];
+            if ($groupName == 'client_buyer_manager') {
+                return $chat;
+            }
+            return null;
+        });
 
-        // Находим и удаляем старые предложения от байера
+        $result = \app\services\chats\ChatService::archiveChat($buyerChats[1]->id);
         $oldBuyerOffers = BuyerOffer::find()->where(['order_id' => $order->id])->all();
+
         foreach ($oldBuyerOffers as $oldBuyerOffer) {
             $oldBuyerOffer->status = BuyerOffer::STATUS_DECLINED;
             $oldBuyerOffer->save();
+        }
+
+        $orderStatus = \app\services\order\OrderStatusService::waitingForBuyerOffer($order->id);
+        if (!$orderStatus->success) {
+            \Yii::$app->telegramLog->send('error', 'Ошибка при установке статуса заказа на ожидание предложения от байера: ' . json_encode($orderStatus->reason));
+            return \app\components\ApiResponse::byResponseCode($this->apiCodes->BAD_REQUEST, [
+                'errors' => $orderStatus->reason,
+            ]);
         }
 
         ChatService::CreateGroupChat(
