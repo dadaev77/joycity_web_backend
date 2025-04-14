@@ -510,7 +510,7 @@ class OrderController extends ManagerController
                     'manager_id' => $order->manager_id
                 ]
             );
-        } catch (Throwable $e) {
+        } catch (\Throwable $e) {
             \Yii::$app->telegramLog->send('error', [
                 'Ошибка при обновлении заказа менеджером',
                 'Текст ошибки: ' . $e->getMessage(),

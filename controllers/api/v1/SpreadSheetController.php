@@ -96,20 +96,19 @@ class SpreadSheetController extends V1Controller
     public function actionUploadExcel()
     {
         $file = UploadedFile::getInstanceByName('file');
+        if (!$file) ApiResponse::byResponseCode(ResponseCodes::getStatic()->BAD_REQUEST, ['message' => 'Файл не был загружен'], 422);
 
-        if (!$file) ApiResponse::byResponseCode(ResponseCodes::getStatic()->BAD_REQUEST, [
-            'message' => 'Файл не был загружен'
-        ], 422);
+        // validate fields from excel file 
+        $errors = $this->validateFields($file);
+        if ($errors) ApiResponse::byResponseCode(ResponseCodes::getStatic()->BAD_REQUEST, ['message' => 'ошибка валидации полей файла'], 422);
 
         // SpreadSheet Service
         $result = $this->orderExcelService->processExcelFile($file);
-
         if (!$result['success']) ApiResponse::byResponseCode(ResponseCodes::getStatic()->BAD_REQUEST, [
             'message' => $result['message'],
             'errors' => $result['errors'] ?? [],
             'debug_info' => $result['debug_info'] ?? null
         ], 422);
-
         return $this->asJson($result);
     }
 
@@ -284,5 +283,12 @@ class SpreadSheetController extends V1Controller
             $validation->setShowDropDown(true);
             $validation->setFormula1($range);
         }
+    }
+
+    private function validateFields()
+    {
+        // парсим файл
+        // проверяем наличие всех необходимых полей
+        // возвращаем ошибки
     }
 }

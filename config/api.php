@@ -197,6 +197,7 @@ $config = [
                 'sign-up' => 'api/v1/auth/register',
 
                 // Специальные правила для settings
+                'api/v1/manager/user/<id:\d+>' => 'api/v1/manager/user/view',
                 'api/v1/manager/settings/charges/update' => 'api/v1/manager/settings/charges-update',
 
                 'api/v1/<controller>/<id:\d+>/<action>' =>

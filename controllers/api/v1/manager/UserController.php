@@ -25,7 +25,7 @@ class UserController extends ManagerController
         $behaviours = parent::behaviors();
         $behaviours['verbFilter']['actions']['index'] = ['get'];
         $behaviours['verbFilter']['actions']['search'] = ['get'];
-        $behaviours['verbFilter']['actions']['update-markup'] = ['post'];
+        $behaviours['verbFilter']['actions']['update-markup'] = ['put'];
         return $behaviours;
     }
     /**
@@ -163,5 +163,31 @@ class UserController extends ManagerController
                 'trace' => $e->getTraceAsString()
             ]);
         }
+    }
+
+    public function actionView(int $id)
+    {
+        $user = User::findOne($id);
+        if (!$user) return ApiResponse::byResponseCode(ResponseCodes::getStatic()->NOT_FOUND);
+        return ApiResponse::code($this->responseCodes->SUCCESS, [
+            'user' => $user
+        ]);
+    }
+
+    public function actionUpdateMarkup()
+    {
+        $user_id = Yii::$app->request->post('user_id');
+        $markup = Yii::$app->request->post('markup');
+
+        $user = User::findOne($user_id);
+        if (!$user) return ApiResponse::byResponseCode(ResponseCodes::getStatic()->NOT_FOUND);
+
+        $user->markup = $markup;
+
+        $user->save();
+
+        return ApiResponse::code($this->responseCodes->SUCCESS, [
+            'user' => $user
+        ]);
     }
 }
