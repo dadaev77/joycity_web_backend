@@ -170,7 +170,20 @@ class UserController extends ManagerController
         $user = User::findOne($id);
         if (!$user) return ApiResponse::byResponseCode(ResponseCodes::getStatic()->NOT_FOUND);
         return ApiResponse::code($this->responseCodes->SUCCESS, [
-            'user' => $user
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'surname' => $user->surname,
+                'organization_name' => $user->organization_name,
+                'uuid' => $user->uuid,
+                'role' => $user->role,
+                'email' => $user->email,
+                'markup' => $user->markup,
+                'created_at' => $user->created_at,
+                'phone' => $user->phone_number,
+                'telegram' => $user->telegram,
+                'avatar' => $user->avatar ? $_ENV['APP_URL'] . $user->avatar->path : null,
+            ]
         ]);
     }
 
@@ -187,7 +200,20 @@ class UserController extends ManagerController
         $user->save();
 
         return ApiResponse::code($this->responseCodes->SUCCESS, [
-            'user' => $user
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'surname' => $user->surname,
+                'organization_name' => $user->organization_name,
+                'uuid' => $user->uuid,
+                'role' => $user->role,
+                'email' => $user->email,
+                'markup' => $user->markup,
+                'created_at' => $user->created_at,
+                'phone' => $user->phone_number,
+                'telegram' => $user->telegram,
+                'avatar' => $user->avatar ? $_ENV['APP_URL'] . $user->avatar->path : null,
+            ]
         ]);
     }
 }
