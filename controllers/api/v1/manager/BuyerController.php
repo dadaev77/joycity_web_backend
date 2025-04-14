@@ -57,35 +57,12 @@ class BuyerController extends ManagerController
 
     public function actionUpdateOrder($id)
     {
-        $post = \Yii::$app->request->post();
-        $buyerId = $post['buyer_id'];
-
-
+        $buyerId = \Yii::$app->request->post('buyer_id');
         $order = \app\models\Order::findOne(['id' => $id]);
-        if (!$order) {
-            return \app\components\ApiResponse::byResponseCode($this->apiCodes->NOT_FOUND, ['message' => 'Order not found']);
-        }
-
         $buyer = \app\models\User::findOne(['id' => $buyerId, 'role' => \app\models\User::ROLE_BUYER]);
-        if (!$buyer) {
-            return \app\components\ApiResponse::byResponseCode($this->apiCodes->NOT_FOUND, ['message' => 'Buyer not found']);
-        }
 
+        if (!$order || !$buyer) return \app\components\ApiResponse::byResponseCode($this->apiCodes->NOT_FOUND);
         $order->buyer_id = $buyerId;
-
-        if (!$order->save()) {
-            \Yii::$app->telegramLog->send('error', [
-                'Ошибка при обновлении заказа менеджером',
-                'Текст ошибки: ' . json_encode($order->errors),
-                'ID заказа: ' . $order->id,
-                'ID продавца: ' . $buyerId,
-                'ID менеджера: ' . \Yii::$app->user->id,
-            ], 'manager');
-
-            return \app\components\ApiResponse::byResponseCode($this->apiCodes->BAD_REQUEST, [
-                'errors' => $order->errors
-            ]);
-        }
 
         $chats = \app\models\Chat::find()->where(['order_id' => $order->id])->all();
         $buyerChats = array_filter($chats, function ($chat) {
@@ -95,10 +72,13 @@ class BuyerController extends ManagerController
             }
             return null;
         });
-
+        return [
+            'buyerChats' => $buyerChats,
+        ];
+        die();
         $result = \app\services\chats\ChatService::archiveChat($buyerChats[1]->id);
-        $oldBuyerOffers = BuyerOffer::find()->where(['order_id' => $order->id])->all();
 
+        $oldBuyerOffers = BuyerOffer::find()->where(['order_id' => $order->id])->all();
         foreach ($oldBuyerOffers as $oldBuyerOffer) {
             $oldBuyerOffer->status = BuyerOffer::STATUS_DECLINED;
             $oldBuyerOffer->save();
@@ -122,6 +102,20 @@ class BuyerController extends ManagerController
                 'group_name' => 'client_buyer_manager',
             ]
         );
+
+        if (!$order->save()) {
+            \Yii::$app->telegramLog->send('error', [
+                'Ошибка при обновлении заказа менеджером',
+                'Текст ошибки: ' . json_encode($order->errors),
+                'ID заказа: ' . $order->id,
+                'ID продавца: ' . $buyerId,
+                'ID менеджера: ' . \Yii::$app->user->id,
+            ], 'manager');
+
+            return \app\components\ApiResponse::byResponseCode($this->apiCodes->BAD_REQUEST, [
+                'errors' => $order->errors
+            ]);
+        }
 
         \Yii::$app->telegramLog->send('success', [
             'Заказ обновлен менеджером',
