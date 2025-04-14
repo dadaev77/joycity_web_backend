@@ -388,8 +388,8 @@ class OrderController extends ManagerController
         $oldChats = \app\models\Chat::find()
             ->where([
                 'order_id' => $order->id,
-                'deal_type' => 'order',
-                'group_name' => 'client_buyer_manager'
+                'type' => 'group',
+                'role' => 'buyer'
             ])
             ->all();
             
