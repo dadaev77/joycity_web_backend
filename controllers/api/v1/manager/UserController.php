@@ -64,10 +64,7 @@ class UserController extends ManagerController
             $offset = ($page - 1) * $limit;
             $params = [':is_deleted' => false];
 
-            // Базовый SQL запрос
-            $sql = "SELECT * FROM user WHERE is_deleted = :is_deleted";
-
-            // Добавляем поиск по query если он есть
+            $sql = "SELECT * FROM user WHERE is_deleted = :is_deleted and role = :role";
             if (!empty($query)) {
                 if ($role == 'client') {
                     $sql .= " AND (name LIKE :query OR surname LIKE :query)";
@@ -77,8 +74,6 @@ class UserController extends ManagerController
                     $params[':query'] = "%{$query}%";
                 }
             }
-
-            // Добавляем сортировку
             $sql .= " ORDER BY ";
             if ($sort == 'name') {
                 if ($role == 'client') {
@@ -97,17 +92,15 @@ class UserController extends ManagerController
                         id " . ($order == 'asc' ? 'ASC' : 'DESC');
             }
 
-            // Добавляем пагинацию
             $sql .= " LIMIT :limit OFFSET :offset";
             $params[':limit'] = $limit;
             $params[':offset'] = $offset;
+            $params[':role'] = $role;
 
-            // Выполняем запрос для получения данных
             $users = Yii::$app->db->createCommand($sql)
                 ->bindValues($params)
                 ->queryAll();
 
-            // Считаем общее количество записей
             $countSql = "SELECT COUNT(*) as count FROM user WHERE is_deleted = :is_deleted";
             if (!empty($query)) {
                 if ($role == 'client') {
@@ -130,6 +123,7 @@ class UserController extends ManagerController
 
             $formattedUsers = [];
             foreach ($users as $user) {
+
                 $userData = [
                     'id' => $user['id'],
                     'name' => $user['name'],
@@ -144,7 +138,7 @@ class UserController extends ManagerController
                     'telegram' => $user['telegram'] ?? null,
                 ];
 
-                // // Получаем аватар для пользователя, если есть
+
                 // if (isset($user['id'])) {
                 //     $avatarSql = "SELECT path FROM file WHERE entity_type = 'user' AND entity_id = :user_id LIMIT 1";
                 //     $avatar = Yii::$app->db->createCommand($avatarSql)
