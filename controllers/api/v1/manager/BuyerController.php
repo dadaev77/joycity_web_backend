@@ -90,9 +90,16 @@ class BuyerController extends ManagerController
         }
 
         // Находим и архивируем старые чаты для этого заказа
-        $oldChats = \app\models\Chat::find()->where(['order_id' => $order->id, 'status' => 'active'])->all();
+        $oldChats = \app\models\Chat::find()
+            ->where([
+                'order_id' => $order->id,
+                'status' => 'active'
+            ])
+            ->all();
+            
         foreach ($oldChats as $oldChat) {
-            ChatService::archiveChat($oldChat->id);
+            $oldChat->status = 'archived';
+            $oldChat->save();
         }
 
         // Находим и удаляем старые предложения от байера
