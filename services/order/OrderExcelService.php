@@ -82,20 +82,19 @@ class OrderExcelService
 
     private function processOrderData($row, $worksheet)
     {
-        // Получаем значения из Excel
-        $productName = trim($worksheet->getCell('B' . $row)->getValue());
-        $category = trim($worksheet->getCell('C' . $row)->getValue());
-        $subcategory = trim($worksheet->getCell('D' . $row)->getValue());
-        $description = trim($worksheet->getCell('E' . $row)->getValue());
+        $productName = is_string($worksheet->getCell('B' . $row)->getValue()) ? trim($worksheet->getCell('B' . $row)->getValue()) : $worksheet->getCell('B' . $row)->getValue();
+        $category = is_string($worksheet->getCell('C' . $row)->getValue()) ? trim($worksheet->getCell('C' . $row)->getValue()) : $worksheet->getCell('C' . $row)->getValue();
+        $subcategory = is_string($worksheet->getCell('D' . $row)->getValue()) ? trim($worksheet->getCell('D' . $row)->getValue()) : $worksheet->getCell('D' . $row)->getValue();
+        $description = is_string($worksheet->getCell('E' . $row)->getValue()) ? trim($worksheet->getCell('E' . $row)->getValue()) : $worksheet->getCell('E' . $row)->getValue();
         $quantity = (int)$worksheet->getCell('F' . $row)->getValue();
         $price = (float)$worksheet->getCell('G' . $row)->getValue();
-        $deliveryType = trim($worksheet->getCell('H' . $row)->getValue());
-        $deliveryPoint = trim($worksheet->getCell('I' . $row)->getValue());
-        $address = trim($worksheet->getCell('J' . $row)->getValue());
-        $packagingType = trim($worksheet->getCell('K' . $row)->getValue());
+        $deliveryType = is_string($worksheet->getCell('H' . $row)->getValue()) ? trim($worksheet->getCell('H' . $row)->getValue()) : $worksheet->getCell('H' . $row)->getValue();
+        $deliveryPoint = is_string($worksheet->getCell('I' . $row)->getValue()) ? trim($worksheet->getCell('I' . $row)->getValue()) : $worksheet->getCell('I' . $row)->getValue();
+        $address = is_string($worksheet->getCell('J' . $row)->getValue()) ? trim($worksheet->getCell('J' . $row)->getValue()) : $worksheet->getCell('J' . $row)->getValue();
+        $packagingType = is_string($worksheet->getCell('K' . $row)->getValue()) ? trim($worksheet->getCell('K' . $row)->getValue()) : $worksheet->getCell('K' . $row)->getValue();
         $packagingQuantity = (int)$worksheet->getCell('L' . $row)->getValue();
         $deepInspection = strtolower($worksheet->getCell('M' . $row)->getValue()) === 'да';
-        $photoUrl = trim($worksheet->getCell('A' . $row)->getValue());
+        $photoUrl = is_string($worksheet->getCell('A' . $row)->getValue()) ? trim($worksheet->getCell('A' . $row)->getValue()) : $worksheet->getCell('A' . $row)->getValue();
 
         // Получаем ID для связанных таблиц
         $typeDeliveryId = $this->getTypeDeliveryId($deliveryType);
@@ -207,37 +206,31 @@ class OrderExcelService
             $processedRows = 0;
 
             for ($row = 2; $row <= $worksheet->getHighestRow(); $row++) {
-                try {
-                    $productName = trim($worksheet->getCell('B' . $row)->getValue());
-                    if (empty($productName)) continue;
-                    $processedRows++;
-                    $result = $this->processOrderData($row, $worksheet);
-                    if (!$result['success']) {
-                        $errors[] = [
-                            'row' => $row,
-                            'errors' => $result['errors']
-                        ];
-                        continue;
-                    }
-
-                    $order = new Order();
-                    $order->load($result['data'], '');
-
-                    if (!$order->save()) {
-                        $errors[] = [
-                            'row' => $row,
-                            'errors' => $order->getFirstErrors()
-                        ];
-                        continue;
-                    }
-
-                    $successCount++;
-                } catch (\Exception $e) {
+                $productName = $worksheet->getCell('B' . $row)->getValue();
+                if (empty($productName)) continue;
+                $processedRows++;
+                $result = $this->processOrderData($row, $worksheet);
+                if (!$result['success']) {
                     $errors[] = [
                         'row' => $row,
-                        'errors' => ['general' => $e->getMessage()]
+                        'errors' => $result['errors']
                     ];
+                    continue;
                 }
+
+                $order = new Order();
+                $order->load($result['data'], '');
+
+                if (!$order->save()) {
+
+                    $errors[] = [
+                        'row' => $row,
+                        'errors' => $order->getFirstErrors()
+                    ];
+                    continue;
+                }
+
+                $successCount++;
             }
 
             if (empty($errors)) {
@@ -268,6 +261,7 @@ class OrderExcelService
             if (isset($transaction)) {
                 $transaction->rollBack();
             }
+
             Yii::error('Критическая ошибка при обработке Excel файла: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
 
             return [

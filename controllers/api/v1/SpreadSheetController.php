@@ -95,10 +95,8 @@ class SpreadSheetController extends V1Controller
      */
     public function actionUploadExcel()
     {
-        Yii::$app->actionLog->info(json_encode(Yii::$app->request->post()));
-        Yii::$app->telegramLog->send('info', json_encode(Yii::$app->request->post()));
-
         $file = UploadedFile::getInstanceByName('file');
+
         if (!$file) ApiResponse::byResponseCode(ResponseCodes::getStatic()->BAD_REQUEST, [
             'message' => 'Файл не был загружен'
         ], 422);
