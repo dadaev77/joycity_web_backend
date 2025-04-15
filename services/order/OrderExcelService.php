@@ -11,6 +11,7 @@ use app\services\notification\NotificationConstructor;
 use app\services\order\OrderDistributionService;
 use app\services\order\OrderStatusService;
 use app\services\push\PushService;
+use app\services\AttachmentService;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Yii;
 use yii\base\Exception;
@@ -239,6 +240,21 @@ class OrderExcelService
                         'errors' => $order->getFirstErrors()
                     ];
                     continue;
+                }
+
+                // Обработка изображения по ссылке
+                if (!empty($order->link_tz)) {
+                    $attachmentResponse = AttachmentService::writeFileWithModelByPath($order->link_tz);
+                    if (!$attachmentResponse->success) {
+                        \Yii::$app->telegramLog->send('error', [
+                            'Ошибка сохранения изображения по ссылке',
+                            "Заказ №{$order->id}",
+                            "Ссылка: {$order->link_tz}",
+                            json_encode($attachmentResponse->reason),
+                        ], 'client');
+                        throw new Exception('Image save error: ' . json_encode($attachmentResponse->reason));
+                    }
+                    $order->linkAll('attachments', [$attachmentResponse->result]);
                 }
 
                 // Создаем чат для заказа
