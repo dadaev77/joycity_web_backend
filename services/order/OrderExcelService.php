@@ -403,21 +403,33 @@ class OrderExcelService
             if (!in_array(
                 $file->type,
                 $this->allowedTypes
-            )) throw new \Exception('Неверный формат файла. Поддерживаются только Excel файлы (.xlsx, .xls, .csv)');
+            )) {
+                throw new \Exception('Неверный формат файла. Поддерживаются только Excel файлы (.xlsx, .xls, .csv)');
+            }
+
             $reader = IOFactory::createReaderForFile($file->tempName);
             $reader->setReadDataOnly(true);
             $spreadsheet = $reader->load($file->tempName);
             $worksheet = $spreadsheet->getActiveSheet();
 
-            $transaction = Yii::$app->db->beginTransaction();
-            $successCount = 0;
             $errors = [];
             $processedRows = 0;
 
+            // Сначала собираем все ошибки валидации
             for ($row = 2; $row <= $worksheet->getHighestRow(); $row++) {
                 $productName = $worksheet->getCell('B' . $row)->getValue();
                 if (empty($productName)) continue;
                 $processedRows++;
+
+                $validationErrors = $this->validateRowData($row, $worksheet);
+                if (!empty($validationErrors)) {
+                    $errors[] = [
+                        'row' => $row,
+                        'errors' => $validationErrors
+                    ];
+                    continue;
+                }
+
                 $result = $this->processOrderData($row, $worksheet);
                 if (!$result['success']) {
                     $errors[] = [
@@ -427,72 +439,86 @@ class OrderExcelService
                     continue;
                 }
 
-                $order = new Order();
-                $order->load($result['data'], '');
-
-                if (!$order->save()) {
-                    $errors[] = [
-                        'row' => $row,
-                        'errors' => $order->getFirstErrors()
-                    ];
-                    continue;
-                }
-
-                // Обработка изображения по ссылке
-                if (!empty($order->link_tz)) {
-                    $attachments = $this->downloadAndSaveImage($order->link_tz, $order->id);
-                    if (!$attachments) {
+                // Проверяем URL изображения, если он есть
+                $photoUrl = $worksheet->getCell('A' . $row)->getValue();
+                if (!empty($photoUrl)) {
+                    if (!filter_var($photoUrl, FILTER_VALIDATE_URL)) {
                         $errors[] = [
                             'row' => $row,
-                            'errors' => ['link_tz' => 'Не удалось загрузить изображение по указанной ссылке']
+                            'errors' => ['link_tz' => 'Некорректный URL изображения']
                         ];
-                        $transaction->rollBack();
-                        return [
-                            'success' => false,
-                            'message' => 'Обнаружены ошибки при создании заказов',
-                            'errors' => $errors,
-                            'debug_info' => [
-                                'total_rows' => $worksheet->getHighestRow(),
-                                'processed_rows' => $processedRows,
-                                'error_count' => count($errors)
-                            ]
-                        ];
+                        continue;
                     }
-                    $order->linkAll('attachments', $attachments);
                 }
-
-                // Создаем чат для заказа
-                ChatService::CreateGroupChat('Order ' . $order->id, $order->created_by, $order->id, [
-                    'deal_type' => 'order',
-                    'participants' => [$order->created_by, $result['manager_id']],
-                    'group_name' => 'client_manager',
-                ], true);
-
-                // Создаем задачу на распределение
-                $distribution = OrderDistributionService::createDistributionTask($order->id);
-                if (!$distribution->success) {
-                    \Yii::$app->telegramLog->send('error', [
-                        'Ошибка создания задачи на распределение',
-                        $distribution->reason,
-                    ], 'client');
-                    throw new Exception('Distribution error: ' . $distribution->reason);
-                }
-
-                if (!\app\controllers\CronController::actionCreate($distribution->result->id)) {
-                    \Yii::$app->telegramLog->send('error', [
-                        'Ошибка создания задачи cron для распределения заказа',
-                        $distribution->result->id,
-                    ], 'client');
-                    throw new Exception('Cron task creation error: ' . $distribution->result->id);
-                }
-
-                // Отправляем уведомление менеджеру
-                NotificationConstructor::orderOrderCreated($result['manager_id'], $order->id);
-
-                $successCount++;
             }
 
-            if (empty($errors)) {
+            // Если есть ошибки валидации, возвращаем их сразу
+            if (!empty($errors)) {
+                return [
+                    'success' => false,
+                    'message' => 'Обнаружены ошибки при валидации данных',
+                    'errors' => $errors,
+                    'debug_info' => [
+                        'total_rows' => $worksheet->getHighestRow(),
+                        'processed_rows' => $processedRows,
+                        'error_count' => count($errors)
+                    ]
+                ];
+            }
+
+            // Если валидация прошла успешно, начинаем создание заказов
+            $transaction = Yii::$app->db->beginTransaction();
+            $successCount = 0;
+
+            try {
+                for ($row = 2; $row <= $worksheet->getHighestRow(); $row++) {
+                    $productName = $worksheet->getCell('B' . $row)->getValue();
+                    if (empty($productName)) continue;
+
+                    $result = $this->processOrderData($row, $worksheet);
+                    if (!$result['success']) {
+                        throw new \Exception('Ошибка обработки данных в строке ' . $row . ': ' . json_encode($result['errors']));
+                    }
+
+                    $order = new Order();
+                    $order->load($result['data'], '');
+
+                    if (!$order->save()) {
+                        throw new \Exception('Ошибка сохранения заказа в строке ' . $row . ': ' . json_encode($order->getFirstErrors()));
+                    }
+
+                    // Обработка изображения по ссылке
+                    if (!empty($order->link_tz)) {
+                        $attachments = $this->downloadAndSaveImage($order->link_tz, $order->id);
+                        if (!$attachments) {
+                            throw new \Exception('Не удалось загрузить изображение по указанной ссылке в строке ' . $row);
+                        }
+                        $order->linkAll('attachments', $attachments);
+                    }
+
+                    // Создаем чат для заказа
+                    ChatService::CreateGroupChat('Order ' . $order->id, $order->created_by, $order->id, [
+                        'deal_type' => 'order',
+                        'participants' => [$order->created_by, $result['manager_id']],
+                        'group_name' => 'client_manager',
+                    ], true);
+
+                    // Создаем задачу на распределение
+                    $distribution = OrderDistributionService::createDistributionTask($order->id);
+                    if (!$distribution->success) {
+                        throw new \Exception('Ошибка создания задачи на распределение в строке ' . $row . ': ' . $distribution->reason);
+                    }
+
+                    if (!\app\controllers\CronController::actionCreate($distribution->result->id)) {
+                        throw new \Exception('Ошибка создания задачи cron для распределения заказа в строке ' . $row);
+                    }
+
+                    // Отправляем уведомление менеджеру
+                    NotificationConstructor::orderOrderCreated($result['manager_id'], $order->id);
+
+                    $successCount++;
+                }
+
                 $transaction->commit();
                 return [
                     'success' => true,
@@ -503,26 +529,22 @@ class OrderExcelService
                         'success_count' => $successCount
                     ]
                 ];
-            } else {
+            } catch (\Throwable $e) {
                 $transaction->rollBack();
+                Yii::error('Ошибка при создании заказов: ' . $e->getMessage());
                 return [
                     'success' => false,
-                    'message' => 'Обнаружены ошибки при создании заказов',
-                    'errors' => $errors,
+                    'message' => 'Ошибка при создании заказов',
+                    'error' => YII_DEBUG ? $e->getMessage() : 'Внутренняя ошибка сервера',
                     'debug_info' => [
                         'total_rows' => $worksheet->getHighestRow(),
                         'processed_rows' => $processedRows,
-                        'error_count' => count($errors)
+                        'error_row' => $row ?? null
                     ]
                 ];
             }
         } catch (\Throwable $e) {
-            if (isset($transaction)) {
-                $transaction->rollBack();
-            }
-
-            Yii::error('Критическая ошибка при обработке Excel файла: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
-
+            Yii::error('Ошибка при обработке Excel файла: ' . $e->getMessage());
             return [
                 'success' => false,
                 'message' => 'Ошибка при обработке Excel файла',
