@@ -221,31 +221,82 @@ class OrderExcelService
             $extension = str_replace('image/', '', $mimeType);
             if ($extension === 'jpeg') $extension = 'jpg';
 
-            // Генерируем уникальное имя файла
-            $fileName = uniqid('order_' . $orderId . '_', true) . '.' . $extension;
-            $relativePath = '/attachments/' . $fileName;
-            $fullPath = \Yii::getAlias('@webroot') . $relativePath;
-
-            // Сохраняем файл
-            if (!file_put_contents($fullPath, $fileContent)) {
+            // Проверяем допустимое расширение
+            $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'heic', 'webp'];
+            if (!in_array($extension, $allowedExtensions)) {
                 return false;
             }
 
-            // Создаем запись в таблице attachment
-            $attachment = new \app\models\Attachment([
-                'path' => $relativePath,
-                'size' => strlen($fileContent),
-                'extension' => $extension,
-                'mime_type' => $mimeType,
-                'img_size' => 'original'
-            ]);
+            $attachments = [];
+            $sizes = [
+                'small' => 256,
+                'medium' => 512,
+                'large' => 1024,
+                'xlarge' => 2048
+            ];
 
-            if (!$attachment->save()) {
-                unlink($fullPath); // Удаляем файл, если не удалось сохранить запись
-                return false;
+            foreach ($sizes as $sizeLabel => $size) {
+                // Генерируем уникальное имя файла
+                $fileName = Yii::$app->security->generateRandomString(16) . '_' . $sizeLabel . '.' . $extension;
+                $relativePath = '/attachments/' . $fileName;
+                $fullPath = \Yii::getAlias('@webroot') . $relativePath;
+
+                // Создаем изображение нужного размера
+                $image = new \Imagick();
+                $image->readImageBlob($fileContent);
+                $image->autoOrient();
+                
+                $originalWidth = $image->getImageWidth();
+                $originalHeight = $image->getImageHeight();
+                
+                $scale = min($size / $originalWidth, $size / $originalHeight);
+                $newWidth = (int)($originalWidth * $scale);
+                $newHeight = (int)($originalHeight * $scale);
+                
+                $canvas = new \Imagick();
+                $canvas->newImage($size, $size, new \ImagickPixel('white'));
+                $canvas->setImageFormat('webp');
+                
+                $image->resizeImage($newWidth, $newHeight, \Imagick::FILTER_LANCZOS, 1);
+                $canvas->compositeImage($image, \Imagick::COMPOSITE_OVER, 
+                    (int)(($size - $newWidth) / 2), 
+                    (int)(($size - $newHeight) / 2)
+                );
+                
+                $canvas->writeImage($fullPath);
+                $image->destroy();
+                $canvas->destroy();
+
+                chmod($fullPath, 0666);
+
+                // Проверяем, существует ли файл
+                if (!file_exists($fullPath)) {
+                    return false;
+                }
+
+                // Создаем запись в таблице attachment
+                $attachment = new \app\models\Attachment([
+                    'path' => $relativePath,
+                    'size' => filesize($fullPath),
+                    'extension' => $extension,
+                    'mime_type' => $mimeType,
+                    'img_size' => $sizeLabel
+                ]);
+
+                if (!$attachment->validate()) {
+                    unlink($fullPath);
+                    return false;
+                }
+
+                if (!$attachment->save()) {
+                    unlink($fullPath);
+                    return false;
+                }
+
+                $attachments[] = $attachment;
             }
 
-            return $attachment;
+            return $attachments;
         } catch (\Exception $e) {
             \Yii::error('Ошибка при загрузке изображения: ' . $e->getMessage());
             return false;
@@ -295,8 +346,8 @@ class OrderExcelService
 
                 // Обработка изображения по ссылке
                 if (!empty($order->link_tz)) {
-                    $attachment = $this->downloadAndSaveImage($order->link_tz, $order->id);
-                    if (!$attachment) {
+                    $attachments = $this->downloadAndSaveImage($order->link_tz, $order->id);
+                    if (!$attachments) {
                         \Yii::$app->telegramLog->send('error', [
                             'Ошибка сохранения изображения по ссылке',
                             "Заказ №{$order->id}",
@@ -304,7 +355,7 @@ class OrderExcelService
                         ], 'client');
                         throw new Exception('Image save error');
                     }
-                    $order->linkAll('attachments', [$attachment]);
+                    $order->linkAll('attachments', $attachments);
                 }
 
                 // Создаем чат для заказа
