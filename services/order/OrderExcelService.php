@@ -6,8 +6,15 @@ use app\models\Order;
 use app\models\User;
 use app\models\Category;
 use app\services\TranslationService;
+use app\services\chats\ChatService;
+use app\services\notification\NotificationConstructor;
+use app\services\order\OrderDistributionService;
+use app\services\order\OrderStatusService;
+use app\services\push\PushService;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Yii;
+use yii\base\Exception;
+use yii\web\UploadedFile;
 
 class OrderExcelService
 {
@@ -82,6 +89,9 @@ class OrderExcelService
 
     private function processOrderData($row, $worksheet)
     {
+        $user = User::getIdentity();
+        $randomManager = $user->getRandomManager();
+
         $productName = is_string($worksheet->getCell('B' . $row)->getValue()) ? trim($worksheet->getCell('B' . $row)->getValue()) : $worksheet->getCell('B' . $row)->getValue();
         $category = is_string($worksheet->getCell('C' . $row)->getValue()) ? trim($worksheet->getCell('C' . $row)->getValue()) : $worksheet->getCell('C' . $row)->getValue();
         $subcategory = is_string($worksheet->getCell('D' . $row)->getValue()) ? trim($worksheet->getCell('D' . $row)->getValue()) : $worksheet->getCell('D' . $row)->getValue();
@@ -142,10 +152,10 @@ class OrderExcelService
             'delivery_point_address_id' => $deliveryPointAddressId,
             'is_need_deep_inspection' => $deepInspection ? 1 : 0,
             'link_tz' => $photoUrl,
-            'created_by' => Yii::$app->user->id,
+            'created_by' => $user->id,
             'created_at' => date('Y-m-d H:i:s'),
-            'status' => 'created',
-            'currency' => User::getIdentity()->settings->currency,
+            'status' => Order::STATUS_CREATED,
+            'currency' => $user->settings->currency,
             'price_product' => 0,
             'price_inspection' => 0,
             'price_packaging' => 0,
@@ -156,7 +166,8 @@ class OrderExcelService
             'waybill_isset' => 0,
             'client_waybill_isset' => 0,
             'delivery_days_expected' => 0,
-            'delivery_delay_days' => 0
+            'delivery_delay_days' => 0,
+            'manager_id' => $randomManager->id
         ];
 
         // Переводим название и описание на другие языки
@@ -184,7 +195,8 @@ class OrderExcelService
 
         return [
             'success' => true,
-            'data' => $orderData
+            'data' => $orderData,
+            'manager_id' => $randomManager->id
         ];
     }
 
@@ -222,13 +234,40 @@ class OrderExcelService
                 $order->load($result['data'], '');
 
                 if (!$order->save()) {
-
                     $errors[] = [
                         'row' => $row,
                         'errors' => $order->getFirstErrors()
                     ];
                     continue;
                 }
+
+                // Создаем чат для заказа
+                ChatService::CreateGroupChat('Order ' . $order->id, $order->created_by, $order->id, [
+                    'deal_type' => 'order',
+                    'participants' => [$order->created_by, $result['manager_id']],
+                    'group_name' => 'client_manager',
+                ], true);
+
+                // Создаем задачу на распределение
+                $distribution = OrderDistributionService::createDistributionTask($order->id);
+                if (!$distribution->success) {
+                    \Yii::$app->telegramLog->send('error', [
+                        'Ошибка создания задачи на распределение',
+                        $distribution->reason,
+                    ], 'client');
+                    throw new Exception('Distribution error: ' . $distribution->reason);
+                }
+
+                if (!\app\controllers\CronController::actionCreate($distribution->result->id)) {
+                    \Yii::$app->telegramLog->send('error', [
+                        'Ошибка создания задачи cron для распределения заказа',
+                        $distribution->result->id,
+                    ], 'client');
+                    throw new Exception('Cron task creation error: ' . $distribution->result->id);
+                }
+
+                // Отправляем уведомление менеджеру
+                NotificationConstructor::orderOrderCreated($result['manager_id'], $order->id);
 
                 $successCount++;
             }
