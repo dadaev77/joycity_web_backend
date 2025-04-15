@@ -88,8 +88,73 @@ class OrderExcelService
         return $subcategoryModel ? $subcategoryModel->id : null;
     }
 
+    private function validateRowData($row, $worksheet)
+    {
+        $errors = [];
+        
+        // Проверка обязательных полей
+        $requiredFields = [
+            'B' => 'Название товара',
+            'C' => 'Категория',
+            'D' => 'Подкатегория',
+            'F' => 'Количество',
+            'G' => 'Цена',
+            'H' => 'Тип доставки',
+            'I' => 'Пункт доставки',
+            'J' => 'Адрес доставки',
+            'K' => 'Тип упаковки',
+            'L' => 'Количество упаковки'
+        ];
+
+        foreach ($requiredFields as $column => $fieldName) {
+            $value = $worksheet->getCell($column . $row)->getValue();
+            if (empty($value)) {
+                $errors[] = "Поле '{$fieldName}' (колонка {$column}) не может быть пустым";
+            }
+        }
+
+        // Проверка числовых полей
+        $numericFields = [
+            'F' => 'Количество',
+            'G' => 'Цена',
+            'L' => 'Количество упаковки'
+        ];
+
+        foreach ($numericFields as $column => $fieldName) {
+            $value = $worksheet->getCell($column . $row)->getValue();
+            if (!is_numeric($value) || $value <= 0) {
+                $errors[] = "Поле '{$fieldName}' (колонка {$column}) должно быть положительным числом";
+            }
+        }
+
+        // Проверка URL изображения (если указан)
+        $photoUrl = $worksheet->getCell('A' . $row)->getValue();
+        if (!empty($photoUrl)) {
+            if (!filter_var($photoUrl, FILTER_VALIDATE_URL)) {
+                $errors[] = "Некорректный URL изображения в колонке A";
+            }
+        }
+
+        // Проверка значения глубокой инспекции
+        $deepInspection = strtolower($worksheet->getCell('M' . $row)->getValue());
+        if (!empty($deepInspection) && !in_array($deepInspection, ['да', 'нет'])) {
+            $errors[] = "Поле 'Глубокая инспекция' (колонка M) должно содержать 'да' или 'нет'";
+        }
+
+        return $errors;
+    }
+
     private function processOrderData($row, $worksheet)
     {
+        // Валидация данных строки
+        $validationErrors = $this->validateRowData($row, $worksheet);
+        if (!empty($validationErrors)) {
+            return [
+                'success' => false,
+                'errors' => $validationErrors
+            ];
+        }
+
         $user = User::getIdentity();
         $randomManager = $user->getRandomManager();
 
