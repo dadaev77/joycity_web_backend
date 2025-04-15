@@ -201,6 +201,57 @@ class OrderExcelService
         ];
     }
 
+    private function downloadAndSaveImage($url, $orderId)
+    {
+        try {
+            $fileContent = file_get_contents($url);
+            if ($fileContent === false) {
+                return false;
+            }
+
+            $finfo = new \finfo(FILEINFO_MIME_TYPE);
+            $mimeType = $finfo->buffer($fileContent);
+            
+            // Проверяем, что это изображение
+            if (!str_starts_with($mimeType, 'image/')) {
+                return false;
+            }
+
+            // Определяем расширение файла
+            $extension = str_replace('image/', '', $mimeType);
+            if ($extension === 'jpeg') $extension = 'jpg';
+
+            // Генерируем уникальное имя файла
+            $fileName = uniqid('order_' . $orderId . '_', true) . '.' . $extension;
+            $relativePath = '/attachments/' . $fileName;
+            $fullPath = \Yii::getAlias('@webroot') . $relativePath;
+
+            // Сохраняем файл
+            if (!file_put_contents($fullPath, $fileContent)) {
+                return false;
+            }
+
+            // Создаем запись в таблице attachment
+            $attachment = new \app\models\Attachment([
+                'path' => $relativePath,
+                'size' => strlen($fileContent),
+                'extension' => $extension,
+                'mime_type' => $mimeType,
+                'img_size' => 'original'
+            ]);
+
+            if (!$attachment->save()) {
+                unlink($fullPath); // Удаляем файл, если не удалось сохранить запись
+                return false;
+            }
+
+            return $attachment;
+        } catch (\Exception $e) {
+            \Yii::error('Ошибка при загрузке изображения: ' . $e->getMessage());
+            return false;
+        }
+    }
+
     public function processExcelFile($file)
     {
         try {
@@ -244,17 +295,16 @@ class OrderExcelService
 
                 // Обработка изображения по ссылке
                 if (!empty($order->link_tz)) {
-                    $attachmentResponse = AttachmentService::writeFileWithModelByPath($order->link_tz);
-                    if (!$attachmentResponse->success) {
+                    $attachment = $this->downloadAndSaveImage($order->link_tz, $order->id);
+                    if (!$attachment) {
                         \Yii::$app->telegramLog->send('error', [
                             'Ошибка сохранения изображения по ссылке',
                             "Заказ №{$order->id}",
                             "Ссылка: {$order->link_tz}",
-                            json_encode($attachmentResponse->reason),
                         ], 'client');
-                        throw new Exception('Image save error: ' . json_encode($attachmentResponse->reason));
+                        throw new Exception('Image save error');
                     }
-                    $order->linkAll('attachments', [$attachmentResponse->result]);
+                    $order->linkAll('attachments', [$attachment]);
                 }
 
                 // Создаем чат для заказа
