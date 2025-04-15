@@ -269,8 +269,36 @@ class OrderExcelService
     private function downloadAndSaveImage($url, $orderId)
     {
         try {
-            $fileContent = file_get_contents($url);
+            // Проверяем URL
+            if (!filter_var($url, FILTER_VALIDATE_URL)) {
+                Yii::error('Некорректный URL: ' . $url);
+                return false;
+            }
+
+            // Проверяем, что URL начинается с http:// или https://
+            if (!preg_match('/^https?:\/\//i', $url)) {
+                Yii::error('URL должен начинаться с http:// или https://: ' . $url);
+                return false;
+            }
+
+            // Устанавливаем таймаут для запроса
+            $context = stream_context_create([
+                'http' => [
+                    'timeout' => 10
+                ]
+            ]);
+
+            $fileContent = @file_get_contents($url, false, $context);
             if ($fileContent === false) {
+                $error = error_get_last();
+                Yii::error('Ошибка при загрузке файла: ' . ($error['message'] ?? 'Неизвестная ошибка'));
+                return false;
+            }
+
+            // Проверяем HTTP статус
+            $httpStatus = $http_response_header[0] ?? '';
+            if (!preg_match('/HTTP\/\d\.\d\s+200/', $httpStatus)) {
+                Yii::error('Ошибка HTTP: ' . $httpStatus);
                 return false;
             }
 
@@ -279,6 +307,7 @@ class OrderExcelService
             
             // Проверяем, что это изображение
             if (!str_starts_with($mimeType, 'image/')) {
+                Yii::error('Файл не является изображением: ' . $mimeType);
                 return false;
             }
 
@@ -413,12 +442,21 @@ class OrderExcelService
                 if (!empty($order->link_tz)) {
                     $attachments = $this->downloadAndSaveImage($order->link_tz, $order->id);
                     if (!$attachments) {
-                        \Yii::$app->telegramLog->send('error', [
-                            'Ошибка сохранения изображения по ссылке',
-                            "Заказ №{$order->id}",
-                            "Ссылка: {$order->link_tz}",
-                        ], 'client');
-                        throw new Exception('Image save error');
+                        $errors[] = [
+                            'row' => $row,
+                            'errors' => ['link_tz' => 'Не удалось загрузить изображение по указанной ссылке']
+                        ];
+                        $transaction->rollBack();
+                        return [
+                            'success' => false,
+                            'message' => 'Обнаружены ошибки при создании заказов',
+                            'errors' => $errors,
+                            'debug_info' => [
+                                'total_rows' => $worksheet->getHighestRow(),
+                                'processed_rows' => $processedRows,
+                                'error_count' => count($errors)
+                            ]
+                        ];
                     }
                     $order->linkAll('attachments', $attachments);
                 }
