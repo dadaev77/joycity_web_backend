@@ -404,7 +404,10 @@ class OrderExcelService
                 $file->type,
                 $this->allowedTypes
             )) {
-                throw new \Exception('Неверный формат файла. Поддерживаются только Excel файлы (.xlsx, .xls, .csv)');
+                return [
+                    'success' => false,
+                    'message' => 'Неверный формат файла. Поддерживаются только Excel файлы (.xlsx, .xls, .csv)'
+                ];
             }
 
             $reader = IOFactory::createReaderForFile($file->tempName);
@@ -427,28 +430,6 @@ class OrderExcelService
                         'row' => $row,
                         'errors' => $validationErrors
                     ];
-                    continue;
-                }
-
-                $result = $this->processOrderData($row, $worksheet);
-                if (!$result['success']) {
-                    $errors[] = [
-                        'row' => $row,
-                        'errors' => $result['errors']
-                    ];
-                    continue;
-                }
-
-                // Проверяем URL изображения, если он есть
-                $photoUrl = $worksheet->getCell('A' . $row)->getValue();
-                if (!empty($photoUrl)) {
-                    if (!filter_var($photoUrl, FILTER_VALIDATE_URL)) {
-                        $errors[] = [
-                            'row' => $row,
-                            'errors' => ['link_tz' => 'Некорректный URL изображения']
-                        ];
-                        continue;
-                    }
                 }
             }
 
@@ -477,21 +458,33 @@ class OrderExcelService
 
                     $result = $this->processOrderData($row, $worksheet);
                     if (!$result['success']) {
-                        throw new \Exception('Ошибка обработки данных в строке ' . $row . ': ' . json_encode($result['errors']));
+                        $errors[] = [
+                            'row' => $row,
+                            'errors' => $result['errors']
+                        ];
+                        continue;
                     }
 
                     $order = new Order();
                     $order->load($result['data'], '');
 
                     if (!$order->save()) {
-                        throw new \Exception('Ошибка сохранения заказа в строке ' . $row . ': ' . json_encode($order->getFirstErrors()));
+                        $errors[] = [
+                            'row' => $row,
+                            'errors' => $order->getFirstErrors()
+                        ];
+                        continue;
                     }
 
                     // Обработка изображения по ссылке
                     if (!empty($order->link_tz)) {
                         $attachments = $this->downloadAndSaveImage($order->link_tz, $order->id);
                         if (!$attachments) {
-                            throw new \Exception('Не удалось загрузить изображение по указанной ссылке в строке ' . $row);
+                            $errors[] = [
+                                'row' => $row,
+                                'errors' => ['link_tz' => 'Не удалось загрузить изображение по указанной ссылке']
+                            ];
+                            continue;
                         }
                         $order->linkAll('attachments', $attachments);
                     }
@@ -506,17 +499,39 @@ class OrderExcelService
                     // Создаем задачу на распределение
                     $distribution = OrderDistributionService::createDistributionTask($order->id);
                     if (!$distribution->success) {
-                        throw new \Exception('Ошибка создания задачи на распределение в строке ' . $row . ': ' . $distribution->reason);
+                        $errors[] = [
+                            'row' => $row,
+                            'errors' => ['distribution' => 'Ошибка создания задачи на распределение: ' . $distribution->reason]
+                        ];
+                        continue;
                     }
 
                     if (!\app\controllers\CronController::actionCreate($distribution->result->id)) {
-                        throw new \Exception('Ошибка создания задачи cron для распределения заказа в строке ' . $row);
+                        $errors[] = [
+                            'row' => $row,
+                            'errors' => ['cron' => 'Ошибка создания задачи cron для распределения заказа']
+                        ];
+                        continue;
                     }
 
                     // Отправляем уведомление менеджеру
                     NotificationConstructor::orderOrderCreated($result['manager_id'], $order->id);
 
                     $successCount++;
+                }
+
+                if (!empty($errors)) {
+                    $transaction->rollBack();
+                    return [
+                        'success' => false,
+                        'message' => 'Ошибки при создании заказов',
+                        'errors' => $errors,
+                        'debug_info' => [
+                            'total_rows' => $worksheet->getHighestRow(),
+                            'processed_rows' => $processedRows,
+                            'success_count' => $successCount
+                        ]
+                    ];
                 }
 
                 $transaction->commit();
