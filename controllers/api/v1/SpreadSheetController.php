@@ -185,11 +185,11 @@ class SpreadSheetController extends V1Controller
             $sheet2 = $spreadsheet->createSheet();
             $sheet2->setTitle('Справочники');
 
-            // Получаем данные из базы данных
+            // Получаем данные из базы данных с правильными названиями колонок
             $categories = \app\models\Category::find()->select(['ru_name'])->column();
             $deliveryTypes = \app\models\TypeDelivery::find()->select(['ru_name'])->column();
             $deliveryPoints = \app\models\TypeDeliveryPoint::find()->select(['ru_name'])->column();
-            $addresses = \app\models\DeliveryPointAddress::find()->select(['ru_name'])->column();
+            $addresses = \app\models\DeliveryPointAddress::find()->select(['address'])->column(); // Используем колонку address вместо ru_name
             $packagingTypes = \app\models\TypePackaging::find()->select(['ru_name'])->column();
 
             // Заполняем справочники
