@@ -497,11 +497,17 @@ class OrderController extends ManagerController
             ->where(['order_id' => $order->id])
             ->all();
 
-        $chat = null;
         foreach ($order_chats as $item) {
             if (isset($item->metadata['group_name']) && $item->metadata['group_name'] === 'client_buyer_manager') {
                 \app\services\chats\ChatService::archiveChat($item->id);
             }
+        }
+
+        $offers = $order->buyerOffers;
+
+        foreach ($offers as $offer) {
+            $offer->status = BuyerOffer::STATUS_DECLINED;
+            $offer->save();
         }
 
         $order->buyer_id = $buyerId;
@@ -521,9 +527,7 @@ class OrderController extends ManagerController
         );
 
         \app\services\order\OrderStatusService::buyerAssigned($order->id);
-
         $language = $buyer->getSettings()->application_language;
-
         \app\services\push\PushService::sendPushNotification($buyerId, [
             'title' => Yii::t('order', 'new_order_for_buyer', [], $language),
             'body' => Yii::t('order', 'new_order_for_buyer_text', ['order_id' => $order->id], $language),
