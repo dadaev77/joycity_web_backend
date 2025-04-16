@@ -500,11 +500,9 @@ class OrderController extends ManagerController
         $chat = null;
         foreach ($order_chats as $item) {
             if (isset($item->metadata['group_name']) && $item->metadata['group_name'] === 'client_buyer_manager') {
-                $chat = $item;
-                break;
+                \app\services\chats\ChatService::archiveChat($item->id);
             }
         }
-        $chat = \app\services\chats\ChatService::archiveChat($chat->id);
 
         $order->buyer_id = $buyerId;
         $save = $order->save();
