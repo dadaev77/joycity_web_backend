@@ -111,11 +111,24 @@ class SpreadSheetController extends V1Controller
      */
     public function actionDownloadExcel(string $type)
     {
+        $allowedTypes = ['order', 'product'];
         $type = strtolower($type);
+        if (!in_array($type, $allowedTypes)) {
+            return ApiResponse::byResponseCode(
+                ResponseCodes::getStatic()->BAD_REQUEST,
+                [
+                    'message' => 'Неверный тип файла'
+                ],
+                422
+            );
+        }
         $spreadsheet = $this->generateExcelTemplate($type);
-        return ApiResponse::byResponseCode(ResponseCodes::getStatic()->SUCCESS, [
-            'file' => $spreadsheet
-        ]);
+        return ApiResponse::byResponseCode(
+            ResponseCodes::getStatic()->SUCCESS,
+            [
+                'file' => $spreadsheet
+            ]
+        );
     }
 
     /**
