@@ -522,7 +522,7 @@ class OrderController extends ManagerController
             false
         );
 
-        \app\services\order\OrderStatusService::waitingForBuyerOffer($order->id);
+        \app\services\order\OrderStatusService::buyerAssigned($order->id);
 
         \Yii::$app->telegramLog->send('success', [
             'Заказ обновлен менеджером',
