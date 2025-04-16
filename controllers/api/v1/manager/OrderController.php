@@ -392,7 +392,7 @@ class OrderController extends ManagerController
                 'role' => 'buyer'
             ])
             ->all();
-            
+
         foreach ($oldChats as $oldChat) {
             $oldChat->status = 'archived';
             $oldChat->save();
@@ -489,50 +489,57 @@ class OrderController extends ManagerController
         $order = Order::findOne(['id' => $id]);
         $buyer = User::findOne(['id' => $buyerId, 'role' => User::ROLE_BUYER]);
 
-        if (!$id || !$buyerId) return ApiResponse::code($this->apiCodes->NOT_FOUND, ['message' => 'Order or buyer not provided']);
+        if (!$id || !$buyerId) return ApiResponse::code($this->apiCodes->BAD_REQUEST, ['message' => 'Order or buyer not provided']);
         if (!$order || !$buyer) return ApiResponse::code($this->apiCodes->NOT_FOUND, ['message' => 'Order or buyer not exists']);
         if ($order->manager_id !== $user->id) return ApiResponse::code($apiCodes->NO_ACCESS, ['message' => 'You have no access to this order']);
 
-        try {
-            $order->buyer_id = $buyerId;
-            $save = $order->save();
-            if (!$save) return ApiResponse::codeErrors($apiCodes->ERROR_SAVE, $order->errors);
+        $order_chats = \app\models\Chat::find()
+            ->where(['order_id' => $order->id])
+            ->all();
 
-            ChatService::CreateGroupChat(
-                'Order ' . $order->id,
-                $user->id,
-                $order->id,
-                [
-                    'deal_type' => 'order',
-                    'participants' => [$order->created_by, $order->manager_id, $buyerId],
-                    'group_name' => 'client_buyer_manager',
-                ]
-            );
-
-            \Yii::$app->telegramLog->send('success', [
-                'Заказ обновлен менеджером',
-                'ID заказа: ' . $order->id,
-                'ID продавца: ' . $buyerId,
-                'ID менеджера: ' . \Yii::$app->user->id,
-            ], 'manager');
-
-            return ApiResponse::codeInfo(
-                $apiCodes->SUCCESS,
-                [
-                    'id' => $order->id,
-                    'created_at' => $order->created_at,
-                    'status' => $order->status,
-                    'buyer_id' => $order->buyer_id,
-                    'manager_id' => $order->manager_id
-                ]
-            );
-        } catch (\Throwable $e) {
-            \Yii::$app->telegramLog->send('error', [
-                'Ошибка при обновлении заказа менеджером',
-                'Текст ошибки: ' . $e->getMessage(),
-                'Трассировка: ' . $e->getTraceAsString(),
-            ], 'manager');
-            return ApiResponse::internalError($e->getMessage());
+        $chat = null;
+        foreach ($order_chats as $item) {
+            if (isset($item->metadata['group_name']) && $item->metadata['group_name'] === 'client_buyer_manager') {
+                $chat = $item;
+                break;
+            }
         }
+        $chat = \app\services\chats\ChatService::archiveChat($chat->id);
+
+        $order->buyer_id = $buyerId;
+        $save = $order->save();
+        if (!$save) return ApiResponse::codeErrors($apiCodes->ERROR_SAVE, $order->errors);
+
+        ChatService::CreateGroupChat(
+            'Order ' . $order->id,
+            $user->id,
+            $order->id,
+            [
+                'deal_type' => 'order',
+                'participants' => [$order->created_by, $order->manager_id, $buyerId],
+                'group_name' => 'client_buyer_manager',
+            ],
+            false
+        );
+
+        \app\services\order\OrderStatusService::waitingForBuyerOffer($order->id);
+
+        \Yii::$app->telegramLog->send('success', [
+            'Заказ обновлен менеджером',
+            'ID заказа: ' . $order->id,
+            'ID продавца: ' . $buyerId,
+            'ID менеджера: ' . \Yii::$app->user->id,
+        ], 'manager');
+
+        return ApiResponse::codeInfo(
+            $apiCodes->SUCCESS,
+            [
+                'id' => $order->id,
+                'created_at' => $order->created_at,
+                'status' => $order->status,
+                'buyer_id' => $order->buyer_id,
+                'manager_id' => $order->manager_id
+            ]
+        );
     }
 }
