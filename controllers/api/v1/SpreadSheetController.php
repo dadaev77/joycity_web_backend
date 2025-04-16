@@ -123,10 +123,13 @@ class SpreadSheetController extends V1Controller
             );
         }
         $spreadsheet = $this->generateExcelTemplate($type);
+
+
         return ApiResponse::byResponseCode(
             ResponseCodes::getStatic()->SUCCESS,
             [
-                'file' => $spreadsheet
+                'file' =>  $_ENV['APP_URL'] . $spreadsheet
+
             ]
         );
     }
