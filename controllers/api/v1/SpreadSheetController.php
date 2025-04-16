@@ -36,24 +36,47 @@ class SpreadSheetController extends V1Controller
             "M" => "Глубокая инспекция"
         ],
         'exampleData' => [
-            "A2" => "(Добавьте сюда ссылки на фото вашего товара)",
-            "B2" => "(Например Брюки женские)",
+            "A2" => "https://example.com/photo.jpg",
+            "B2" => "Например Брюки женские",
             "C2" => "Выберите из списка",
             "D2" => "Выберите из списка",
-            "E2" => "(Добавьте описание товара минимум 20 символов)",
-            "F2" => "(от 1 до 100 000)",
+            "E2" => "Описание товара",
+            "F2" => "от 1 до 100 000",
             "G2" => "от 1 до 1 000 000",
             "H2" => "Выберите из списка",
             "I2" => "Выберите из списка",
             "J2" => "Выберите из списка",
             "K2" => "Выберите из списка",
-            "L2" => "(от 1 до 100 000)",
+            "L2" => "от 1 до 100 000",
             "M2" => "Выберите из списка"
         ],
     ];
     private $product = [
-        'attributes' => [],
-        'exampleData' => [],
+        'attributes' => [
+            "A" => "Фото",
+            "B" => "Название товара",
+            "C" => "Категория товара",
+            "D" => "Подкатегория",
+            "E" => "Описание товара",
+            "F" => "Желаемое количество товара, шт",
+            "G" => "Желаемая стоимость за единицу товара, Р",
+            "H" => "Тип доставки",
+        ],
+        'exampleData' => [
+            "A2" => "https://example.com/photo.jpg",
+            "B2" => "test 567",
+            "C2" => "Детям",
+            "D2" => "Детская электроника",
+            "E2" => "тестовый товар",
+            "F2" => "55",
+            "G2" => "555",
+            "H2" => "Быстрое авто",
+            "I2" => "Склад",
+            "J2" => "Москва, Тестовый склад",
+            "K2" => "Мешок + скотч",
+            "L2" => "10",
+            "M2" => "да"
+        ],
     ];
 
     public function __construct($id, $module, $config = [])
@@ -208,10 +231,20 @@ class SpreadSheetController extends V1Controller
     {
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
-        $sheet->setCellValue('A1', 'Товар');
-        $sheet->setCellValue('B1', 'Цена');
-        $sheet->setCellValue('C1', 'Количество');
-        $sheet->setCellValue('D1', 'Сумма');
+        $sheet->setTitle('Товары');
+        foreach ($this->product['attributes'] as $key => $attribute) {
+            $sheet->setCellValue($key . '1', $attribute);
+            $sheet->getColumnDimension($key)->setAutoSize(true);
+        }
+        $sheet->getStyle('A1:M1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:M1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+
+        foreach ($this->product['exampleData'] as $key => $data) {
+            $sheet->setCellValue($key, $data);
+        }
+
+        $this->getDirectoryForProductExcelTemplate($spreadsheet);
+
         return $spreadsheet;
     }
 
@@ -263,6 +296,51 @@ class SpreadSheetController extends V1Controller
             $row = 2;
         }
 
+        return $spreadsheet;
+    }
+
+    private function getDirectoryForProductExcelTemplate($spreadsheet)
+    {
+        $categories = \app\models\Category::find()->where(['parent_id' => 1])->all();
+        $deliveryTypes = \app\models\TypeDelivery::find()->all();
+        $deliveryPoints = \app\models\TypeDeliveryPoint::find()->all();
+        $deliveryPointAddresses = \app\models\DeliveryPointAddress::find()->all();
+        $packagingTypes = \app\models\TypePackaging::find()->all();
+
+        $sheet2 = $spreadsheet->createSheet();
+        $sheet2->setTitle('Справочники');
+
+        $columns = [
+            "A" => "Категории",
+            "B" => "Типы доставки",
+            "C" => "Пункты доставки",
+            "D" => "Адреса",
+            "E" => "Тип упаковки",
+        ];
+
+        foreach ($columns as $key => $column) {
+            $sheet2->setCellValue($key . '1', $column);
+            $sheet2->getColumnDimension($key)->setAutoSize(true);
+        }
+        $sheet2->getStyle('A1:E1')->getFont()->setBold(true);
+        $sheet2->getStyle('A1:E1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+
+        $row = 2;
+        $dataArrays = [
+            'categories' => ['A', $categories],
+            'deliveryTypes' => ['B', $deliveryTypes],
+            'deliveryPoints' => ['C', $deliveryPoints],
+            'deliveryPointAddresses' => ['D', $deliveryPointAddresses],
+            'packagingTypes' => ['E', $packagingTypes],
+        ];
+        foreach ($dataArrays as $data) {
+            list($column, $items) = $data;
+            foreach ($items as $item) {
+                $sheet2->setCellValue($column . $row, $item->ru_name ?? $item->address);
+                $row++;
+            }
+            $row = 2;
+        }
         return $spreadsheet;
     }
 }
