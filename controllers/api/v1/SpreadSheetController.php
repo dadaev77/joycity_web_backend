@@ -189,7 +189,14 @@ class SpreadSheetController extends V1Controller
             $categories = \app\models\Category::find()->select(['ru_name'])->column();
             $deliveryTypes = \app\models\TypeDelivery::find()->select(['ru_name'])->column();
             $deliveryPoints = \app\models\TypeDeliveryPoint::find()->select(['ru_name'])->column();
-            $addresses = \app\models\DeliveryPointAddress::find()->select(['address'])->column(); // Используем колонку address вместо ru_name
+            
+            // Получаем адреса доставки, объединяя с type_delivery_point
+            $addresses = \app\models\DeliveryPointAddress::find()
+                ->select(['delivery_point_address.address'])
+                ->joinWith('typeDeliveryPoint')
+                ->where(['delivery_point_address.is_deleted' => 0])
+                ->column();
+            
             $packagingTypes = \app\models\TypePackaging::find()->select(['ru_name'])->column();
 
             // Заполняем справочники
@@ -297,5 +304,15 @@ class SpreadSheetController extends V1Controller
         // парсим файл
         // проверяем наличие всех необходимых полей
         // возвращаем ошибки
+    }
+
+    private function getDeliveryPointAddressId($address)
+    {
+        $deliveryPointAddress = \app\models\DeliveryPointAddress::find()
+            ->where(['address' => $address])
+            ->andWhere(['is_deleted' => 0])
+            ->one();
+        
+        return $deliveryPointAddress ? $deliveryPointAddress->id : null;
     }
 }
