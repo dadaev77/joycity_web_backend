@@ -522,6 +522,13 @@ class OrderController extends ManagerController
 
         \app\services\order\OrderStatusService::buyerAssigned($order->id);
 
+        $language = $buyer->getSettings()->application_language;
+
+        \app\services\push\PushService::sendPushNotification($buyerId, [
+            'title' => Yii::t('order', 'new_order_for_buyer', [], $language),
+            'body' => Yii::t('order', 'new_order_for_buyer_text', ['order_id' => $order->id], $language),
+        ], true);
+
         \Yii::$app->telegramLog->send('success', [
             'Заказ обновлен менеджером',
             'ID заказа: ' . $order->id,
