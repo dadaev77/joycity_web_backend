@@ -19,6 +19,42 @@ class SpreadSheetController extends V1Controller
 {
     private $orderExcelService;
     private $productExcelService;
+    private $order = [
+        'attributes' => [
+            "A" => "Фото",
+            "B" => "Название товара",
+            "C" => "Категория товара",
+            "D" => "Подкатегория",
+            "E" => "Описание товара",
+            "F" => "Желаемое количество товара, шт",
+            "G" => "Желаемая стоимость за единицу товара, Р",
+            "H" => "Тип доставки",
+            "I" => "Тип пункта доставки",
+            "J" => "Адрес пункта доставки",
+            "K" => "Тип упаковки",
+            "L" => "Количество упаковок, шт",
+            "M" => "Глубокая инспекция"
+        ],
+        'exampleData' => [
+            "A2" => "(Добавьте сюда ссылки на фото вашего товара)",
+            "B2" => "(Например Брюки женские)",
+            "C2" => "Выберите из списка",
+            "D2" => "Выберите из списка",
+            "E2" => "(Добавьте описание товара минимум 20 символов)",
+            "F2" => "(от 1 до 100 000)",
+            "G2" => "от 1 до 1 000 000",
+            "H2" => "Выберите из списка",
+            "I2" => "Выберите из списка",
+            "J2" => "Выберите из списка",
+            "K2" => "Выберите из списка",
+            "L2" => "(от 1 до 100 000)",
+            "M2" => "Выберите из списка"
+        ],
+    ];
+    private $product = [
+        'attributes' => [],
+        'exampleData' => [],
+    ];
 
     public function __construct($id, $module, $config = [])
     {
@@ -32,10 +68,6 @@ class SpreadSheetController extends V1Controller
         $behaviors = parent::behaviors();
         $behaviors['verbFilter']['actions']['download-excel'] = ['get'];
         $behaviors['verbFilter']['actions']['upload-excel'] = ['post'];
-        $behaviors['verbFilter']['actions']['generate-test-excel'] = ['get'];
-        $behaviors['verbFilter']['actions']['download-test-excel'] = ['get'];
-        $behaviors['verbFilter']['actions']['download-product-excel'] = ['get'];
-        $behaviors['verbFilter']['actions']['upload-product-excel'] = ['post'];
 
         return $behaviors;
     }
@@ -54,10 +86,12 @@ class SpreadSheetController extends V1Controller
      *     )
      * )
      */
-    public function actionDownloadExcel()
+    public function actionDownloadExcel(string $type)
     {
+        $type = strtolower($type);
+        $spreadsheet = $this->generateExcelTemplate($type);
         return ApiResponse::byResponseCode(ResponseCodes::getStatic()->SUCCESS, [
-            'file' => $_ENV['APP_URL'] . '/templates/order_template.xlsx'
+            'file' => $spreadsheet
         ]);
     }
 
@@ -115,204 +149,120 @@ class SpreadSheetController extends V1Controller
                 'debug_info' => $result['debug_info'] ?? null
             ], 422);
         }
-        
+
         return ApiResponse::byResponseCode(ResponseCodes::getStatic()->SUCCESS, $result);
     }
 
-    /**
-     * @OA\Get(
-     *     path="/api/v1/spread-sheet/download-test-excel",
-     *     summary="Скачать тестовый Excel файл для загрузки заказов",
-     *     @OA\Response(
-     *         response=200,
-     *         description="Тестовый файл Excel"
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Ошибка сервера"
-     *     )
-     * )
-     */
-    public function actionDownloadTestExcel()
+    private function generateExcelTemplate(string $type)
     {
-        try {
-            Yii::info('Запрос на создание тестового Excel файла');
-
-            // Создаем новый Excel-файл
-            $spreadsheet = new Spreadsheet();
-
-            // Заполняем первый лист данными заказов
-            $sheet1 = $spreadsheet->setActiveSheetIndex(0);
-            $sheet1->setTitle('Заказы');
-            $sheet1->fromArray([
-                [
-                    'Фото',
-                    'Название товара',
-                    'Категория товара',
-                    'Подкатегория',
-                    'Описание товара',
-                    'Желаемое количество товара, шт',
-                    'Желаемая стоимость за единицу товара, Р',
-                    'Тип доставки',
-                    'Тип пункта доставки',
-                    'Адрес пункта доставки',
-                    'Тип упаковки',
-                    'Количество упаковок, шт',
-                    'Глубокая инспекция'
-                ],
-            ], null, 'A1');
-
-            // Добавляем примеры заказов
-            $sheet1->fromArray([
-                [
-                    'https://example.com/image1.jpg',
-                    'Футболка мужская',
-                    'Мужчинам',
-                    'Футболки',
-                    'Качественная хлопковая футболка для мужчин. Подходит для повседневной носки.',
-                    500,
-                    800,
-                    'Быстрое авто',
-                    'Склад',
-                    'Москва, Тестовый склад',
-                    'Коробка',
-                    50,
-                    'нет'
-                ],
-            ], null, 'A2');
-
-            // Создаем второй лист со справочниками
-            $sheet2 = $spreadsheet->createSheet();
-            $sheet2->setTitle('Справочники');
-
-            // Получаем данные из базы данных с правильными названиями колонок
-            $categories = \app\models\Category::find()->select(['ru_name'])->column();
-            $deliveryTypes = \app\models\TypeDelivery::find()->select(['ru_name'])->column();
-            $deliveryPoints = \app\models\TypeDeliveryPoint::find()->select(['ru_name'])->column();
-            
-            // Получаем адреса доставки, объединяя с type_delivery_point
-            $addresses = \app\models\DeliveryPointAddress::find()
-                ->select(['delivery_point_address.address'])
-                ->joinWith('typeDeliveryPoint')
-                ->where(['delivery_point_address.is_deleted' => 0])
-                ->column();
-            
-            $packagingTypes = \app\models\TypePackaging::find()->select(['ru_name'])->column();
-
-            // Заполняем справочники
-            $sheet2->setCellValue('A1', 'Категории');
-            foreach ($categories as $index => $category) {
-                $sheet2->setCellValue('A' . ($index + 2), $category);
-            }
-
-            $sheet2->setCellValue('E1', 'Типы_доставки');
-            foreach ($deliveryTypes as $index => $type) {
-                $sheet2->setCellValue('E' . ($index + 2), $type);
-            }
-
-            $sheet2->setCellValue('F1', 'Пункты_доставки');
-            foreach ($deliveryPoints as $index => $point) {
-                $sheet2->setCellValue('F' . ($index + 2), $point);
-            }
-
-            $sheet2->setCellValue('G1', 'Адреса');
-            foreach ($addresses as $index => $address) {
-                $sheet2->setCellValue('G' . ($index + 2), $address);
-            }
-
-            $sheet2->setCellValue('H1', 'Типы_упаковки');
-            foreach ($packagingTypes as $index => $type) {
-                $sheet2->setCellValue('H' . ($index + 2), $type);
-            }
-
-            // Варианты глубокой инспекции
-            $sheet2->setCellValue('I1', 'Инспекция');
-            $inspectionOptions = ['да', 'нет'];
-            foreach ($inspectionOptions as $index => $option) {
-                $sheet2->setCellValue('I' . ($index + 2), $option);
-            }
-
-            // Форматирование
-            foreach (range('A', 'M') as $column) {
-                $sheet1->getColumnDimension($column)->setAutoSize(true);
-            }
-            foreach (range('A', 'I') as $column) {
-                $sheet2->getColumnDimension($column)->setAutoSize(true);
-            }
-
-            // Выделяем заголовки жирным
-            $sheet1->getStyle('A1:M1')->getFont()->setBold(true);
-            $sheet2->getStyle('A1:I1')->getFont()->setBold(true);
-
-            // Добавляем выпадающие списки
-            $this->addDropdownListDirect($sheet1, 'C', 2, 100, 'Справочники!$A$2:$A$' . (count($categories) + 1));
-            $this->addDropdownListDirect($sheet1, 'H', 2, 100, 'Справочники!$E$2:$E$' . (count($deliveryTypes) + 1));
-            $this->addDropdownListDirect($sheet1, 'I', 2, 100, 'Справочники!$F$2:$F$' . (count($deliveryPoints) + 1));
-            $this->addDropdownListDirect($sheet1, 'J', 2, 100, 'Справочники!$G$2:$G$' . (count($addresses) + 1));
-            $this->addDropdownListDirect($sheet1, 'K', 2, 100, 'Справочники!$H$2:$H$' . (count($packagingTypes) + 1));
-            $this->addDropdownListDirect($sheet1, 'M', 2, 100, 'Справочники!$I$2:$I$3');
-
-            // Возвращаемся к первому листу
-            $spreadsheet->setActiveSheetIndex(0);
-
-            // Создаем временный файл
-            $tempFile = tempnam(sys_get_temp_dir(), 'test_order_data_');
-            $writer = new WriterXlsx($spreadsheet);
-            $writer->save($tempFile);
-
-            Yii::info('Тестовый Excel файл успешно создан');
-
-            $response = Yii::$app->response;
-            $response->headers->set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-            $response->headers->set('Content-Disposition', 'attachment; filename="test_order_data.xlsx"');
-
-            return $response->sendFile($tempFile, 'test_order_data.xlsx', ['inline' => false]);
-        } catch (\Exception $e) {
-            Yii::error("Ошибка при создании тестового Excel файла: " . $e->getMessage() . "\n" . $e->getTraceAsString());
-            return $this->asJson([
-                'success' => false,
-                'message' => 'Внутренняя ошибка сервера: ' . $e->getMessage()
-            ]);
+        $spreadsheet = null;
+        if ($type === 'order') {
+            $spreadsheet = $this->generateOrderExcelTemplate();
         }
-    }
 
-    /**
-     * Добавляет выпадающий список в указанный столбец с прямой ссылкой на диапазон
-     * 
-     * @param \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet Лист Excel
-     * @param string $column Буква столбца
-     * @param int $startRow Начальная строка
-     * @param int $endRow Конечная строка
-     * @param string $range Диапазон ячеек для списка
-     */
-    private function addDropdownListDirect($sheet, $column, $startRow, $endRow, $range)
-    {
-        for ($i = $startRow; $i <= $endRow; $i++) {
-            $validation = $sheet->getCell($column . $i)->getDataValidation();
-            $validation->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST);
-            $validation->setErrorStyle(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::STYLE_INFORMATION);
-            $validation->setAllowBlank(false);
-            $validation->setShowInputMessage(true);
-            $validation->setShowErrorMessage(true);
-            $validation->setShowDropDown(true);
-            $validation->setFormula1($range);
+        if ($type === 'product') {
+            $spreadsheet = $this->generateProductExcelTemplate();
         }
+
+        $fileName = $type . '_' . date('Ymd_His') . '.xlsx';
+        $filePath = Yii::getAlias('@webroot') . '/xslx/' . $fileName;
+        $fileUrl = Yii::getAlias('@web') . '/xslx/' . $fileName;
+
+        $dir = dirname($filePath);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0777, true);
+        }
+
+        $writer = new WriterXlsx($spreadsheet);
+        $writer->save($filePath);
+        $spreadsheet->disconnectWorksheets();
+
+        unset($spreadsheet);
+        return $fileUrl;
     }
 
-    private function validateFields()
+    private function generateOrderExcelTemplate()
     {
-        // парсим файл
-        // проверяем наличие всех необходимых полей
-        // возвращаем ошибки
+        $spreadsheet = new Spreadsheet();
+
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Заказы');
+        foreach ($this->order['attributes'] as $key => $attribute) {
+            $sheet->setCellValue($key . '1', $attribute);
+            $sheet->getColumnDimension($key)->setAutoSize(true);
+        }
+        $sheet->getStyle('A1:M1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:M1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+
+
+        foreach ($this->order['exampleData'] as $key => $data) {
+            $sheet->setCellValue($key, $data);
+        }
+
+        $this->getDirectoryForOrderExcelTemplate($spreadsheet);
+
+        return $spreadsheet;
     }
 
-    private function getDeliveryPointAddressId($address)
+    private function generateProductExcelTemplate()
     {
-        $deliveryPointAddress = \app\models\DeliveryPointAddress::find()
-            ->where(['address' => $address])
-            ->andWhere(['is_deleted' => 0])
-            ->one();
-        
-        return $deliveryPointAddress ? $deliveryPointAddress->id : null;
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setCellValue('A1', 'Товар');
+        $sheet->setCellValue('B1', 'Цена');
+        $sheet->setCellValue('C1', 'Количество');
+        $sheet->setCellValue('D1', 'Сумма');
+        return $spreadsheet;
+    }
+
+    private function getDirectoryForOrderExcelTemplate($spreadsheet)
+    {
+        $columns = [
+            "A" => "Категории",
+            "B" => "Типы доставки",
+            "C" => "Пункты доставки",
+            "D" => "Адреса",
+            "E" => "Тип упаковки",
+            "F" => "Глубокая инспекция"
+        ];
+
+        $categories = \app\models\Category::find()->where(['parent_id' => 1])->all();
+        $deliveryTypes = \app\models\TypeDelivery::find()->all();
+        $deliveryPoints = \app\models\TypeDeliveryPoint::find()->all();
+        $deliveryPointAddresses = \app\models\DeliveryPointAddress::find()->all();
+        $packagingTypes = \app\models\TypePackaging::find()->all();
+
+        $sheet2 = $spreadsheet->createSheet();
+        $sheet2->setTitle('Справочники');
+
+        foreach ($columns as $key => $column) {
+            $sheet2->setCellValue($key . '1', $column);
+            $sheet2->getColumnDimension($key)->setAutoSize(true);
+        }
+        $sheet2->getStyle('A1:F1')->getFont()->setBold(true);
+        $sheet2->getStyle('A1:F1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+
+        $sheet2->setCellValue('F2', 'Да');
+        $sheet2->setCellValue('F3', 'Нет');
+
+        $row = 2;
+        $dataArrays = [
+            'categories' => ['A', $categories],
+            'deliveryTypes' => ['B', $deliveryTypes],
+            'deliveryPoints' => ['C', $deliveryPoints],
+            'deliveryPointAddresses' => ['D', $deliveryPointAddresses],
+            'packagingTypes' => ['E', $packagingTypes],
+        ];
+
+        foreach ($dataArrays as $data) {
+            list($column, $items) = $data;
+            foreach ($items as $item) {
+                $sheet2->setCellValue($column . $row, $item->ru_name ?? $item->address);
+                $row++;
+            }
+            $row = 2;
+        }
+
+        return $spreadsheet;
     }
 }
