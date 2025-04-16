@@ -150,7 +150,7 @@ class BuyerOfferController extends BuyerController
                 $order->created_by,
                 [
                     'title' => 'Новое предложение',
-                    'body' => 'Вы получили новое предложение ' . $buyerOffer->id,
+                    'body' => 'Вы получили новое предложение от ' . $user->name . ' на заказ ' . $order->id,
                 ]
             );
 
