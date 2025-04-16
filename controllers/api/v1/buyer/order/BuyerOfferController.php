@@ -146,16 +146,7 @@ class BuyerOfferController extends BuyerController
                 );
             }
 
-            PushService::sendPushNotification(
-                $order->created_by,
-                [
-                    'title' => 'Новое предложение',
-                    'body' => 'Вы получили новое предложение от ' . $user->name . ' на заказ ' . $order->id,
-                ]
-            );
-
             $transaction?->commit();
-
 
             \Yii::$app->telegramLog->send('success', [
                 'Предложение продавца создано',
