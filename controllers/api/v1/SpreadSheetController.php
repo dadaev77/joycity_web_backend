@@ -157,7 +157,7 @@ class SpreadSheetController extends V1Controller
             unlink($filePath); // Удаляем временный файл
 
             // Получаем базовый URL из .env
-            $baseUrl = getenv('APP_URL') ?? 'https://joycityrussia.friflex.com';
+            $baseUrl = getenv('APP_URL');
             
             return ApiResponse::byResponseCode(
                 ResponseCodes::getStatic()->SUCCESS,
