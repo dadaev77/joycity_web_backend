@@ -7,7 +7,6 @@ use app\models\structure\OrderStructure;
 use app\models\OrderTracking;
 use app\models\TypeDelivery;
 use DateTime;
-use app\services\RateService;
 
 class Order extends OrderStructure
 {
@@ -253,32 +252,6 @@ class Order extends OrderStructure
         return $this->hasMany(OrderTracking::class, ['order_id' => 'id']);
     }
 
-    /**
-     * Получить пользователя, создавшего заказ
-     * @return \yii\db\ActiveQuery
-     */
-    public function getCreatedBy()
-    {
-        return $this->hasOne(User::class, ['id' => 'created_by']);
-    }
-
-    /**
-     * Получить текущую наценку
-     * @return float
-     */
-    public function getCurrentMarkup(): float
-    {
-        if ($this->status === self::STATUS_COMPLETED) {
-            return $this->service_markup;
-        }
-        
-        return $this->createdBy->markup ?? 0;
-    }
-
-    /**
-     * Получить текущую сумму наценки
-     * @return float
-     */
     public function getCurrentMarkupSum(): float
     {
         if ($this->status === self::STATUS_TRANSFERRING_TO_BUYER) {
@@ -298,7 +271,7 @@ class Order extends OrderStructure
     }
 
     /**
-     * Фиксирует наценку при оплате заказа
+     * Фиксирует наценку при переходе в статус transferring_to_buyer
      * @return bool
      */
     public function fixMarkup(): bool
