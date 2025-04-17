@@ -6,7 +6,6 @@ use app\components\ApiResponse;
 use app\components\response\ResponseCodes;
 
 use app\controllers\api\V1Controller;
-use app\services\excel\ExcelTemplateService;
 use app\services\order\OrderExcelService;
 use app\services\product\ProductExcelService;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -20,7 +19,6 @@ class SpreadSheetController extends V1Controller
 {
     private $orderExcelService;
     private $productExcelService;
-    private $excelTemplateService;
 
     private $order = [
         'attributes' => [
@@ -93,7 +91,6 @@ class SpreadSheetController extends V1Controller
         parent::__construct($id, $module, $config);
         $this->orderExcelService = new OrderExcelService();
         $this->productExcelService = new ProductExcelService();
-        $this->excelTemplateService = new ExcelTemplateService();
     }
 
     public function behaviors()
