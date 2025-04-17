@@ -106,10 +106,34 @@ class OrderStatusService
 
     public static function transferringToBuyer(int $orderId): ResultAnswer
     {
-        return self::changeOrderStatus(
-            Order::STATUS_TRANSFERRING_TO_BUYER,
-            $orderId,
-        );
+        $order = Order::findOne(['id' => $orderId]);
+        if (!$order) {
+            return Result::notFound();
+        }
+
+        $transaction = Yii::$app->db->beginTransaction();
+        try {
+            if (!$order->fixMarkup()) {
+                $transaction?->rollBack();
+                return Result::error(['errors' => $order->getFirstErrors()]);
+            }
+            
+            $result = self::changeOrderStatus(
+                Order::STATUS_TRANSFERRING_TO_BUYER,
+                $orderId,
+            );
+            
+            if (!$result->success) {
+                $transaction?->rollBack();
+                return $result;
+            }
+            
+            $transaction?->commit();
+            return $result;
+        } catch (Throwable $e) {
+            $transaction?->rollBack();
+            return Result::error(['errors' => ['base' => $e->getMessage()]]);
+        }
     }
 
     public static function arrivedToBuyer(int $orderId): ResultAnswer
