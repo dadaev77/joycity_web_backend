@@ -155,14 +155,11 @@ class SpreadSheetController extends V1Controller
             // Копируем файл в публичную директорию
             copy($filePath, $fullPath);
             unlink($filePath); // Удаляем временный файл
-
-            // Получаем базовый URL из .env
-            $baseUrl = getenv('APP_URL');
             
             return ApiResponse::byResponseCode(
                 ResponseCodes::getStatic()->SUCCESS,
                 [
-                    'file' => $baseUrl . $webPath
+                    'file' => $_ENV['APP_URL'] . '/entrypoint/api/xslx/' . $fileName
                 ]
             );
         } catch (\Exception $e) {
