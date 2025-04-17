@@ -268,7 +268,7 @@ class Order extends OrderStructure
      */
     public function getCurrentMarkup(): float
     {
-        if ($this->status === self::STATUS_PAID) {
+        if ($this->status === self::STATUS_COMPLETED) {
             return $this->service_markup;
         }
         
@@ -281,7 +281,7 @@ class Order extends OrderStructure
      */
     public function getCurrentMarkupSum(): float
     {
-        if ($this->status === self::STATUS_PAID) {
+        if ($this->status === self::STATUS_COMPLETED) {
             return $this->service_markup_sum;
         }
         
@@ -303,7 +303,7 @@ class Order extends OrderStructure
      */
     public function fixMarkup(): bool
     {
-        if ($this->status === self::STATUS_PAID) {
+        if ($this->status === self::STATUS_COMPLETED) {
             $this->service_markup = $this->getCurrentMarkup();
             $this->service_markup_sum = $this->getCurrentMarkupSum();
             return $this->save();

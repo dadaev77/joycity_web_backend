@@ -212,6 +212,12 @@ class OrderStatusService
                     ChatService::archiveChat($chat->id);
                 }
             }
+            
+            if (!$order->fixMarkup()) {
+                $transaction?->rollBack();
+                return Result::error(['errors' => $order->getFirstErrors()]);
+            }
+            
             $transaction?->commit();
             return self::changeOrderStatus(Order::STATUS_COMPLETED, $orderId);
         } catch (Throwable $e) {
@@ -316,10 +322,6 @@ class OrderStatusService
                     'ID менеджера: ' . $order->manager_id,
                     'ID покупателя: ' . $order->buyer_id,
                 ], 'manager');
-                
-                if (!$order->fixMarkup()) {
-                    return Result::error(['errors' => $order->getFirstErrors()]);
-                }
             }
 
             PushService::sendPushNotification($order->created_by, [
