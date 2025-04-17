@@ -14,7 +14,7 @@ use app\services\push\PushService;
 use app\services\AttachmentService;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx as WriterXlsx;
 use Yii;
 use yii\base\Exception;
 use yii\web\UploadedFile;
