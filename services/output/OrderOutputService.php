@@ -225,7 +225,9 @@ class OrderOutputService extends OutputService
             }
             $info = $tempInfo;
 
-            $info['markup'] = Yii::$app->user->identity->markup;
+            $info['markup'] = $model->createdBy->markup ?? 0;
+            $info['service_markup'] = $model->service_markup;
+            $info['service_markup_sum'] = $model->service_markup_sum;
 
             $info['chats'] = [];
 

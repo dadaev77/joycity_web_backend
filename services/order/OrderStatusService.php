@@ -316,6 +316,10 @@ class OrderStatusService
                     'ID менеджера: ' . $order->manager_id,
                     'ID покупателя: ' . $order->buyer_id,
                 ], 'manager');
+                
+                if (!$order->fixMarkup()) {
+                    return Result::error(['errors' => $order->getFirstErrors()]);
+                }
             }
 
             PushService::sendPushNotification($order->created_by, [

@@ -7,6 +7,7 @@ use app\models\structure\OrderStructure;
 use app\models\OrderTracking;
 use app\models\TypeDelivery;
 use DateTime;
+use app\services\RateService;
 
 class Order extends OrderStructure
 {
@@ -250,5 +251,64 @@ class Order extends OrderStructure
     public function getOrderTrackings()
     {
         return $this->hasMany(OrderTracking::class, ['order_id' => 'id']);
+    }
+
+    /**
+     * Получить пользователя, создавшего заказ
+     * @return \yii\db\ActiveQuery
+     */
+    public function getCreatedBy()
+    {
+        return $this->hasOne(User::class, ['id' => 'created_by']);
+    }
+
+    /**
+     * Получить текущую наценку
+     * @return float
+     */
+    public function getCurrentMarkup(): float
+    {
+        if ($this->status === self::STATUS_PAID) {
+            return $this->service_markup;
+        }
+        
+        return $this->createdBy->markup ?? 0;
+    }
+
+    /**
+     * Получить текущую сумму наценки
+     * @return float
+     */
+    public function getCurrentMarkupSum(): float
+    {
+        if ($this->status === self::STATUS_PAID) {
+            return $this->service_markup_sum;
+        }
+        
+        $priceProduct = $this->price_product;
+        if ($this->currency !== $this->createdBy->getSettings()->currency) {
+            $priceProduct = RateService::convertValue(
+                $this->price_product,
+                $this->currency,
+                $this->createdBy->getSettings()->currency
+            );
+        }
+        
+        return $this->total_quantity * $priceProduct * ($this->getCurrentMarkup() / 100);
+    }
+
+    /**
+     * Фиксирует наценку при оплате заказа
+     * @return bool
+     */
+    public function fixMarkup(): bool
+    {
+        if ($this->status === self::STATUS_PAID) {
+            $this->service_markup = $this->getCurrentMarkup();
+            $this->service_markup_sum = $this->getCurrentMarkupSum();
+            return $this->save();
+        }
+        
+        return false;
     }
 }
