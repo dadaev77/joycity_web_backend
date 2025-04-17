@@ -142,7 +142,6 @@ class SpreadSheetController extends V1Controller
                 throw new \Exception('Файл шаблона не найден');
             }
 
-            // Получаем URL для файла
             $fileName = $type === 'order' ? 'order_template.xlsx' : 'product_template.xlsx';
             $webPath = '/entrypoint/api/xslx/' . $fileName;
             $fullPath = Yii::getAlias('@webroot') . $webPath;
@@ -157,10 +156,13 @@ class SpreadSheetController extends V1Controller
             copy($filePath, $fullPath);
             unlink($filePath); // Удаляем временный файл
 
+            // Получаем базовый URL из .env
+            $baseUrl = getenv('APP_URL') ?? 'https://joycityrussia.friflex.com';
+            
             return ApiResponse::byResponseCode(
                 ResponseCodes::getStatic()->SUCCESS,
                 [
-                    'file' => $webPath
+                    'file' => $baseUrl . $webPath
                 ]
             );
         } catch (\Exception $e) {
