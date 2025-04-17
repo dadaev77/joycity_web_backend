@@ -142,16 +142,27 @@ class SpreadSheetController extends V1Controller
                 throw new \Exception('Файл шаблона не найден');
             }
 
+            // Получаем URL для файла
             $fileName = $type === 'order' ? 'order_template.xlsx' : 'product_template.xlsx';
-            
-            Yii::$app->response->sendFile($filePath, $fileName, [
-                'mimeType' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                'inline' => false
-            ])->send();
+            $webPath = '/entrypoint/api/xslx/' . $fileName;
+            $fullPath = Yii::getAlias('@webroot') . $webPath;
 
-            unlink($filePath);
-            
-            return null;
+            // Создаем директорию, если её нет
+            $dir = dirname($fullPath);
+            if (!file_exists($dir)) {
+                mkdir($dir, 0777, true);
+            }
+
+            // Копируем файл в публичную директорию
+            copy($filePath, $fullPath);
+            unlink($filePath); // Удаляем временный файл
+
+            return ApiResponse::byResponseCode(
+                ResponseCodes::getStatic()->SUCCESS,
+                [
+                    'file' => $webPath
+                ]
+            );
         } catch (\Exception $e) {
             Yii::error("Ошибка при скачивании шаблона Excel: " . $e->getMessage());
             return ApiResponse::byResponseCode(
