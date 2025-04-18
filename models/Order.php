@@ -262,16 +262,20 @@ class Order extends OrderStructure
         if ($this->status === self::STATUS_TRANSFERRING_TO_BUYER) {
             return (float)($this->service_markup_sum ?? 0);
         }
-
+        
         // Получаем последнее предложение покупателя
         $buyerOffers = $this->buyerOffers;
         $lastOffer = array_pop($buyerOffers);
-
+        
         if (!$lastOffer) {
             return 0;
         }
-
+        
+        // Используем значения из buyerOffer
+        $totalQuantity = (float)($lastOffer->total_quantity ?? 0);
         $priceProduct = (float)($lastOffer->price_product ?? 0);
+        
+        // Конвертируем валюту если нужно
         if ($lastOffer->currency !== $this->createdBy->getSettings()->currency) {
             $priceProduct = RateService::convertValue(
                 $priceProduct,
@@ -279,8 +283,14 @@ class Order extends OrderStructure
                 $this->createdBy->getSettings()->currency
             );
         }
-
-        return (float)($lastOffer->total_quantity ?? 0) * $priceProduct * (($this->getCurrentMarkup() ?? 0) / 100);
+        
+        // Обновляем значения в заказе
+        $this->total_quantity = $totalQuantity;
+        $this->price_product = $priceProduct;
+        
+        // Рассчитываем сумму наценки
+        $markup = $this->getCurrentMarkup() ?? 0;
+        return $totalQuantity * $priceProduct * ($markup / 100);
     }
 
     /**
