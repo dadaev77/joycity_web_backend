@@ -131,6 +131,8 @@ class OrderStructure extends Base
                     'type_delivery_id',
                     'type_delivery_point_id',
                     'delivery_point_address_id',
+                    'service_markup',
+                    'service_markup_sum',
                 ],
                 'required',
             ],
@@ -165,6 +167,8 @@ class OrderStructure extends Base
                     'price_packaging',
                     'price_fulfilment',
                     'price_delivery',
+                    'service_markup',
+                    'service_markup_sum',
                 ],
                 'number',
                 'min' => 0,
@@ -323,6 +327,8 @@ class OrderStructure extends Base
             'is_deleted' => 'Is Deleted',
             'link_tz' => 'Link Tz',
             'timeDelivery' => 'Time Delivery',
+            'service_markup' => 'Service Markup',
+            'service_markup_sum' => 'Service Markup Sum',
         ];
     }
 

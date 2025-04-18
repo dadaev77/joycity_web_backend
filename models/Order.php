@@ -276,12 +276,8 @@ class Order extends OrderStructure
      */
     public function fixMarkup(): bool
     {
-        if ($this->status === self::STATUS_TRANSFERRING_TO_BUYER) {
-            $this->service_markup = $this->getCurrentMarkup();
-            $this->service_markup_sum = $this->getCurrentMarkupSum();
-            return $this->save();
-        }
-        
-        return false;
+        $this->service_markup = $this->getCurrentMarkup();
+        $this->service_markup_sum = $this->getCurrentMarkupSum();
+        return $this->save();
     }
 }
