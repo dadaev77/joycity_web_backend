@@ -263,16 +263,24 @@ class Order extends OrderStructure
             return (float)($this->service_markup_sum ?? 0);
         }
         
-        $priceProduct = (float)($this->price_product ?? 0);
-        if ($this->currency !== $this->createdBy->getSettings()->currency) {
+        // Получаем последнее предложение покупателя
+        $buyerOffers = $this->buyerOffers;
+        $lastOffer = array_pop($buyerOffers);
+        
+        if (!$lastOffer) {
+            return 0;
+        }
+        
+        $priceProduct = (float)($lastOffer->price_product ?? 0);
+        if ($lastOffer->currency !== $this->createdBy->getSettings()->currency) {
             $priceProduct = RateService::convertValue(
                 $priceProduct,
-                $this->currency,
+                $lastOffer->currency,
                 $this->createdBy->getSettings()->currency
             );
         }
         
-        return (float)($this->total_quantity ?? 0) * $priceProduct * (($this->getCurrentMarkup() ?? 0) / 100);
+        return (float)($lastOffer->total_quantity ?? 0) * $priceProduct * (($this->getCurrentMarkup() ?? 0) / 100);
     }
 
     /**
@@ -283,6 +291,6 @@ class Order extends OrderStructure
     {
         $this->service_markup = $this->getCurrentMarkup();
         $this->service_markup_sum = $this->getCurrentMarkupSum();
-        return $this->save(false, ['service_markup', 'service_markup_sum']);
+        return $this->save(false, ['service_markup', 'service_markup_sum', 'total_quantity', 'price_product']);
     }
 }
