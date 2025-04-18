@@ -260,19 +260,19 @@ class Order extends OrderStructure
     public function getCurrentMarkupSum(): float
     {
         if ($this->status === self::STATUS_TRANSFERRING_TO_BUYER) {
-            return $this->service_markup_sum;
+            return (float)($this->service_markup_sum ?? 0);
         }
         
-        $priceProduct = $this->price_product;
+        $priceProduct = (float)($this->price_product ?? 0);
         if ($this->currency !== $this->createdBy->getSettings()->currency) {
             $priceProduct = RateService::convertValue(
-                $this->price_product,
+                $priceProduct,
                 $this->currency,
                 $this->createdBy->getSettings()->currency
             );
         }
         
-        return $this->total_quantity * $priceProduct * ($this->getCurrentMarkup() / 100);
+        return (float)($this->total_quantity ?? 0) * $priceProduct * (($this->getCurrentMarkup() ?? 0) / 100);
     }
 
     /**
