@@ -276,11 +276,11 @@ class Order extends OrderStructure
         $priceProduct = (float)($lastOffer->price_product ?? 0);
         
         // Конвертируем валюту если нужно
-        if ($lastOffer->currency !== $this->createdBy->getSettings()->currency) {
+        if ($lastOffer->currency !== $this->currency) {
             $priceProduct = RateService::convertValue(
                 $priceProduct,
                 $lastOffer->currency,
-                $this->createdBy->getSettings()->currency
+                $this->currency
             );
         }
         
@@ -290,7 +290,10 @@ class Order extends OrderStructure
         
         // Рассчитываем сумму наценки
         $markup = $this->getCurrentMarkup() ?? 0;
-        return $totalQuantity * $priceProduct * ($markup / 100);
+        $markupSum = $totalQuantity * $priceProduct * ($markup / 100);
+        
+        // Округляем до 2 знаков после запятой
+        return round($markupSum, 2);
     }
 
     /**
