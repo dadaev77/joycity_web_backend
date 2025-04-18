@@ -19,7 +19,6 @@ class SpreadSheetController extends V1Controller
 {
     private $orderExcelService;
     private $productExcelService;
-
     private $order = [
         'attributes' => [
             "A" => "Фото",
@@ -39,20 +38,19 @@ class SpreadSheetController extends V1Controller
         'exampleData' => [
             "A2" => "https://example.com/photo.jpg",
             "B2" => "Например Брюки женские",
-            "C2" => "Женщинам",
-            "D2" => "Брюки",
-            "E2" => "Качественные женские брюки из хлопка",
-            "F2" => "100",
-            "G2" => "1500",
-            "H2" => "Быстрое авто",
-            "I2" => "Склад",
-            "J2" => "Москва, Тестовый склад",
-            "K2" => "Коробка",
-            "L2" => "10",
-            "M2" => "нет"
-        ]
+            "C2" => "Выберите из списка",
+            "D2" => "Выберите из списка",
+            "E2" => "Описание товара",
+            "F2" => "от 1 до 100 000",
+            "G2" => "от 1 до 1 000 000",
+            "H2" => "Выберите из списка",
+            "I2" => "Выберите из списка",
+            "J2" => "Выберите из списка",
+            "K2" => "Выберите из списка",
+            "L2" => "от 1 до 100 000",
+            "M2" => "Выберите из списка"
+        ],
     ];
-
     private $product = [
         'attributes' => [
             "A" => "Фото",
@@ -60,30 +58,25 @@ class SpreadSheetController extends V1Controller
             "C" => "Категория товара",
             "D" => "Подкатегория",
             "E" => "Описание товара",
-            "F" => "Количество товара, шт",
-            "G" => "Стоимость за единицу товара, Р",
+            "F" => "Желаемое количество товара, шт",
+            "G" => "Желаемая стоимость за единицу товара, Р",
             "H" => "Тип доставки",
-            "I" => "Тип пункта доставки",
-            "J" => "Адрес пункта доставки",
-            "K" => "Тип упаковки",
-            "L" => "Количество упаковок, шт",
-            "M" => "Глубокая инспекция"
         ],
         'exampleData' => [
             "A2" => "https://example.com/photo.jpg",
-            "B2" => "Например Брюки женские",
-            "C2" => "Женщинам",
-            "D2" => "Брюки",
-            "E2" => "Качественные женские брюки из хлопка",
-            "F2" => "100",
-            "G2" => "1500",
+            "B2" => "test 567",
+            "C2" => "Детям",
+            "D2" => "Детская электроника",
+            "E2" => "тестовый товар",
+            "F2" => "55",
+            "G2" => "555",
             "H2" => "Быстрое авто",
             "I2" => "Склад",
             "J2" => "Москва, Тестовый склад",
-            "K2" => "Коробка",
+            "K2" => "Мешок + скотч",
             "L2" => "10",
-            "M2" => "нет"
-        ]
+            "M2" => "да"
+        ],
     ];
 
     public function __construct($id, $module, $config = [])
@@ -98,10 +91,6 @@ class SpreadSheetController extends V1Controller
         $behaviors = parent::behaviors();
         $behaviors['verbFilter']['actions']['download-excel'] = ['get'];
         $behaviors['verbFilter']['actions']['upload-excel'] = ['post'];
-        $behaviors['verbFilter']['actions']['generate-test-excel'] = ['get'];
-        $behaviors['verbFilter']['actions']['download-test-excel'] = ['get'];
-        $behaviors['verbFilter']['actions']['download-product-excel'] = ['get'];
-        $behaviors['verbFilter']['actions']['upload-product-excel'] = ['post'];
 
         return $behaviors;
     }
@@ -122,53 +111,24 @@ class SpreadSheetController extends V1Controller
      */
     public function actionDownloadExcel(string $type)
     {
-        try {
-            $allowedTypes = ['order', 'product'];
-            $type = strtolower($type);
-            
-            if (!in_array($type, $allowedTypes)) {
-                return ApiResponse::byResponseCode(
-                    ResponseCodes::getStatic()->BAD_REQUEST,
-                    ['message' => 'Неверный тип файла'],
-                    422
-                );
-            }
-
-            $filePath = $type === 'order' 
-                ? $this->orderExcelService->generateTemplate() 
-                : $this->productExcelService->generateTemplate();
-
-            if (!file_exists($filePath)) {
-                throw new \Exception('Файл шаблона не найден');
-            }
-
-            $fileName = $type === 'order' ? 'order_template.xlsx' : 'product_template.xlsx';
-            $webPath = '/entrypoint/api/xslx/' . $fileName;
-            $fullPath = Yii::getAlias('@webroot') . $webPath;
-
-            // Создаем директорию, если её нет
-            $dir = dirname($fullPath);
-            if (!file_exists($dir)) {
-                mkdir($dir, 0777, true);
-            }
-
-            // Копируем файл в публичную директорию
-            copy($filePath, $fullPath);
-            unlink($filePath); // Удаляем временный файл
-            
+        $allowedTypes = ['order', 'product'];
+        $type = strtolower($type);
+        if (!in_array($type, $allowedTypes)) {
             return ApiResponse::byResponseCode(
-                ResponseCodes::getStatic()->SUCCESS,
+                ResponseCodes::getStatic()->BAD_REQUEST,
                 [
-                    'file' => $_ENV['APP_URL'] . '/entrypoint/api/xslx/' . $fileName
-                ]
-            );
-        } catch (\Exception $e) {
-            Yii::error("Ошибка при скачивании шаблона Excel: " . $e->getMessage());
-            return ApiResponse::byResponseCode(
-                ResponseCodes::getStatic()->INTERNAL_SERVER_ERROR,
-                ['message' => 'Ошибка при создании шаблона Excel']
+                    'message' => 'Неверный тип файла'
+                ],
+                422
             );
         }
+        $spreadsheet = $this->generateExcelTemplate($type);
+        return ApiResponse::byResponseCode(
+            ResponseCodes::getStatic()->SUCCESS,
+            [
+                'file' => $spreadsheet
+            ]
+        );
     }
 
     /**
@@ -205,153 +165,173 @@ class SpreadSheetController extends V1Controller
      */
     public function actionUploadExcel()
     {
-        try {
-            $file = UploadedFile::getInstanceByName('file');
-            if (!$file) {
-                return ApiResponse::byResponseCode(
-                    ResponseCodes::getStatic()->BAD_REQUEST,
-                    ['message' => 'Файл не был загружен'],
-                    422
-                );
-            }
-
-            $result = $this->orderExcelService->processExcelFile($file);
-            
-            if (!$result['success']) {
-                return ApiResponse::byResponseCode(
-                    ResponseCodes::getStatic()->BAD_REQUEST,
-                    [
-                        'message' => $result['message'],
-                        'errors' => $result['errors'] ?? [],
-                        'debug_info' => $result['debug_info'] ?? null
-                    ],
-                    422
-                );
-            }
-
-            return ApiResponse::byResponseCode(ResponseCodes::getStatic()->SUCCESS, $result);
-        } catch (\Exception $e) {
-            Yii::error("Ошибка при загрузке Excel файла: " . $e->getMessage());
-            return ApiResponse::byResponseCode(
-                ResponseCodes::getStatic()->INTERNAL_SERVER_ERROR,
-                ['message' => 'Ошибка при обработке Excel файла']
-            );
+        $file = UploadedFile::getInstanceByName('file');
+        if (!$file) {
+            return ApiResponse::byResponseCode(ResponseCodes::getStatic()->BAD_REQUEST, ['message' => 'Файл не был загружен'], 422);
         }
-    }
 
-    /**
-     * @OA\Get(
-     *     path="/api/v1/spread-sheet/download-test-excel",
-     *     summary="Скачать тестовый Excel файл для загрузки заказов",
-     *     @OA\Response(
-     *         response=200,
-     *         description="Тестовый файл Excel"
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Ошибка сервера"
-     *     )
-     * )
-     */
-    public function actionDownloadTestExcel()
-    {
-        try {
-            $filePath = $this->orderExcelService->generateTemplate();
-            
-            if (!file_exists($filePath)) {
-                throw new \Exception('Файл шаблона не найден');
-            }
-
-            Yii::$app->response->sendFile($filePath, 'test_order_data.xlsx', [
-                'mimeType' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                'inline' => false
-            ])->send();
-
-            unlink($filePath);
-            
-            return null;
-        } catch (\Exception $e) {
-            Yii::error("Ошибка при скачивании тестового Excel: " . $e->getMessage());
-            return ApiResponse::byResponseCode(
-                ResponseCodes::getStatic()->INTERNAL_SERVER_ERROR,
-                ['message' => 'Ошибка при создании тестового Excel']
-            );
+        // validate fields from excel file 
+        $errors = $this->validateFields($file);
+        if ($errors) {
+            return ApiResponse::byResponseCode(ResponseCodes::getStatic()->BAD_REQUEST, ['message' => 'ошибка валидации полей файла'], 422);
         }
-    }
 
-    /**
-     * Добавляет выпадающий список в указанный столбец с прямой ссылкой на диапазон
-     * 
-     * @param \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet Лист Excel
-     * @param string $column Буква столбца
-     * @param int $startRow Начальная строка
-     * @param int $endRow Конечная строка
-     * @param string $range Диапазон ячеек для списка
-     */
-    private function addDropdownListDirect($sheet, $column, $startRow, $endRow, $range)
-    {
-        for ($i = $startRow; $i <= $endRow; $i++) {
-            $validation = $sheet->getCell($column . $i)->getDataValidation();
-            $validation->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST);
-            $validation->setErrorStyle(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::STYLE_INFORMATION);
-            $validation->setAllowBlank(false);
-            $validation->setShowInputMessage(true);
-            $validation->setShowErrorMessage(true);
-            $validation->setShowDropDown(true);
-            $validation->setFormula1($range);
+        // SpreadSheet Service
+        $result = $this->orderExcelService->processExcelFile($file);
+        if (!$result['success']) {
+            return ApiResponse::byResponseCode(ResponseCodes::getStatic()->BAD_REQUEST, [
+                'message' => $result['message'],
+                'errors' => $result['errors'] ?? [],
+                'debug_info' => $result['debug_info'] ?? null
+            ], 422);
         }
+
+        return ApiResponse::byResponseCode(ResponseCodes::getStatic()->SUCCESS, $result);
     }
 
-    private function validateFields()
+    private function generateExcelTemplate(string $type)
     {
-        // парсим файл
-        // проверяем наличие всех необходимых полей
-        // возвращаем ошибки
-    }
-
-    private function getDeliveryPointAddressId($address)
-    {
-        $deliveryPointAddress = \app\models\DeliveryPointAddress::find()
-            ->where(['address' => $address])
-            ->andWhere(['is_deleted' => 0])
-            ->one();
-        
-        return $deliveryPointAddress ? $deliveryPointAddress->id : null;
-    }
-
-    public function actionUploadProductExcel()
-    {
-        try {
-            $file = UploadedFile::getInstanceByName('file');
-            if (!$file) {
-                return ApiResponse::byResponseCode(
-                    ResponseCodes::getStatic()->BAD_REQUEST,
-                    ['message' => 'Файл не был загружен'],
-                    422
-                );
-            }
-
-            $result = $this->productExcelService->processExcelFile($file);
-            
-            if (!$result['success']) {
-                return ApiResponse::byResponseCode(
-                    ResponseCodes::getStatic()->BAD_REQUEST,
-                    [
-                        'message' => $result['message'],
-                        'errors' => $result['errors'] ?? [],
-                        'debug_info' => $result['debug_info'] ?? null
-                    ],
-                    422
-                );
-            }
-
-            return ApiResponse::byResponseCode(ResponseCodes::getStatic()->SUCCESS, $result);
-        } catch (\Exception $e) {
-            Yii::error("Ошибка при загрузке Excel файла для товаров: " . $e->getMessage());
-            return ApiResponse::byResponseCode(
-                ResponseCodes::getStatic()->INTERNAL_SERVER_ERROR,
-                ['message' => 'Ошибка при обработке Excel файла для товаров']
-            );
+        $spreadsheet = null;
+        if ($type === 'order') {
+            $spreadsheet = $this->generateOrderExcelTemplate();
         }
+
+        if ($type === 'product') {
+            $spreadsheet = $this->generateProductExcelTemplate();
+        }
+
+        $fileName = $type . '_' . date('Ymd_His') . '.xlsx';
+        $filePath = Yii::getAlias('@webroot') . '/xslx/' . $fileName;
+        $fileUrl = Yii::getAlias('@web') . '/xslx/' . $fileName;
+
+        $dir = dirname($filePath);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0777, true);
+        }
+
+        $writer = new WriterXlsx($spreadsheet);
+        $writer->save($filePath);
+        $spreadsheet->disconnectWorksheets();
+
+        unset($spreadsheet);
+        return $fileUrl;
+    }
+
+    private function generateOrderExcelTemplate()
+    {
+        $spreadsheet = new Spreadsheet();
+
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Заказы');
+        foreach ($this->order['attributes'] as $key => $attribute) {
+            $sheet->setCellValue($key . '1', $attribute);
+            $sheet->getColumnDimension($key)->setAutoSize(true);
+        }
+
+        $sheet->getStyle('A1:M1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:M1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+
+
+        foreach ($this->order['exampleData'] as $key => $data) {
+            $sheet->setCellValue($key, $data);
+        }
+
+        $this->getDirectoryForOrderExcelTemplate($spreadsheet);
+
+        return $spreadsheet;
+    }
+
+    private function generateProductExcelTemplate()
+    {
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Товары');
+        foreach ($this->product['attributes'] as $key => $attribute) {
+            $sheet->setCellValue($key . '1', $attribute);
+            $sheet->getColumnDimension($key)->setAutoSize(true);
+        }
+        $sheet->getStyle('A1:M1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:M1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+
+        foreach ($this->product['exampleData'] as $key => $data) {
+            $sheet->setCellValue($key, $data);
+        }
+
+        $this->getDirectoryForProductExcelTemplate($spreadsheet);
+
+        return $spreadsheet;
+    }
+
+    private function getDirectoryForOrderExcelTemplate($spreadsheet)
+    {
+
+
+        $categories = \app\models\Category::find()->where(['parent_id' => 1])->all();
+
+        $sheet2 = $spreadsheet->createSheet();
+        $sheet2->setTitle('Справочники');
+        $startLiter = 'A';
+        foreach ($categories as $key => $category) {
+            $sheet2->setCellValue($startLiter . '1', $category->ru_name);
+            $sheet2->getColumnDimension($startLiter)->setAutoSize(true);
+            $startLiter++;
+        }
+
+        $sheet2->getStyle('A1:F1')->getFont()->setBold(true);
+        $sheet2->getStyle('A1:F1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+
+        $sheet2->setCellValue('F2', 'Да');
+        $sheet2->setCellValue('F3', 'Нет');
+
+        $row = 2;
+
+        return $spreadsheet;
+    }
+
+    private function getDirectoryForProductExcelTemplate($spreadsheet)
+    {
+        $categories = \app\models\Category::find()->where(['parent_id' => 1])->all();
+        $deliveryTypes = \app\models\TypeDelivery::find()->all();
+        $deliveryPoints = \app\models\TypeDeliveryPoint::find()->all();
+        $deliveryPointAddresses = \app\models\DeliveryPointAddress::find()->all();
+        $packagingTypes = \app\models\TypePackaging::find()->all();
+
+        $sheet2 = $spreadsheet->createSheet();
+        $sheet2->setTitle('Справочники');
+
+        $columns = [
+            "A" => "Категории",
+            "B" => "Типы доставки",
+            "C" => "Пункты доставки",
+            "D" => "Адреса",
+            "E" => "Тип упаковки",
+            "F" => "Глубокая инспекция",
+        ];
+
+        foreach ($columns as $key => $column) {
+            $sheet2->setCellValue($key . '1', $column);
+            $sheet2->getColumnDimension($key)->setAutoSize(true);
+        }
+        $sheet2->getStyle('A1:E1')->getFont()->setBold(true);
+        $sheet2->getStyle('A1:E1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+
+        $row = 2;
+        $dataArrays = [
+            'categories' => ['A', $categories],
+            'deliveryTypes' => ['B', $deliveryTypes],
+            'deliveryPoints' => ['C', $deliveryPoints],
+            'deliveryPointAddresses' => ['D', $deliveryPointAddresses],
+            'packagingTypes' => ['E', $packagingTypes],
+            // 
+        ];
+        foreach ($dataArrays as $data) {
+            list($column, $items) = $data;
+            foreach ($items as $item) {
+                $sheet2->setCellValue($column . $row, $item->ru_name ?? $item->address);
+                $row++;
+            }
+            $row = 2;
+        }
+        return $spreadsheet;
     }
 }
