@@ -252,22 +252,35 @@ class Order extends OrderStructure
         return $this->hasMany(OrderTracking::class, ['order_id' => 'id']);
     }
 
+    public function getCurrentMarkup(): float
+    {
+        return $this->createdBy->markup ?? 0;
+    }
+
     public function getCurrentMarkupSum(): float
     {
         if ($this->status === self::STATUS_TRANSFERRING_TO_BUYER) {
-            return $this->service_markup_sum;
+            return (float)($this->service_markup_sum ?? 0);
         }
         
-        $priceProduct = $this->price_product;
-        if ($this->currency !== $this->createdBy->getSettings()->currency) {
+        // Получаем последнее предложение покупателя
+        $buyerOffers = $this->buyerOffers;
+        $lastOffer = array_pop($buyerOffers);
+        
+        if (!$lastOffer) {
+            return 0;
+        }
+        
+        $priceProduct = (float)($lastOffer->price_product ?? 0);
+        if ($lastOffer->currency !== $this->createdBy->getSettings()->currency) {
             $priceProduct = RateService::convertValue(
-                $this->price_product,
-                $this->currency,
+                $priceProduct,
+                $lastOffer->currency,
                 $this->createdBy->getSettings()->currency
             );
         }
         
-        return $this->total_quantity * $priceProduct * ($this->getCurrentMarkup() / 100);
+        return (float)($lastOffer->total_quantity ?? 0) * $priceProduct * (($this->getCurrentMarkup() ?? 0) / 100);
     }
 
     /**
@@ -276,12 +289,8 @@ class Order extends OrderStructure
      */
     public function fixMarkup(): bool
     {
-        if ($this->status === self::STATUS_TRANSFERRING_TO_BUYER) {
-            $this->service_markup = $this->getCurrentMarkup();
-            $this->service_markup_sum = $this->getCurrentMarkupSum();
-            return $this->save();
-        }
-        
-        return false;
+        $this->service_markup = $this->getCurrentMarkup();
+        $this->service_markup_sum = $this->getCurrentMarkupSum();
+        return $this->save(false, ['service_markup', 'service_markup_sum', 'total_quantity', 'price_product']);
     }
 }
