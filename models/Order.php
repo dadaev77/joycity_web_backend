@@ -283,6 +283,6 @@ class Order extends OrderStructure
     {
         $this->service_markup = $this->getCurrentMarkup();
         $this->service_markup_sum = $this->getCurrentMarkupSum();
-        return $this->save();
+        return $this->save(false, ['service_markup', 'service_markup_sum']);
     }
 }
