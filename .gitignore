@@ -60,6 +60,7 @@ vendor
 # config/smtp.php
 
 /entrypoint/api/attachments/
+/entrypoint/api/xslx/
 /entrypoint/api/uploads/
 /entrypoint/api/admin/
 /joycity.json
