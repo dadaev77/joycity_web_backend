@@ -252,6 +252,11 @@ class Order extends OrderStructure
         return $this->hasMany(OrderTracking::class, ['order_id' => 'id']);
     }
 
+    public function getCurrentMarkup(): float
+    {
+        return $this->createdBy->markup ?? 0;
+    }
+
     public function getCurrentMarkupSum(): float
     {
         if ($this->status === self::STATUS_TRANSFERRING_TO_BUYER) {
