@@ -461,7 +461,7 @@ class ProductController extends BuyerController
     {
         $apiCodes = Product::apiCodes();
         $user = User::getIdentity();
-        if (!$user->can('view-product')) return ApiResponse::byResponseCode($apiCodes->NO_ACCESS);
+        // if (!$user->can('view-product')) return ApiResponse::byResponseCode($apiCodes->NO_ACCESS);
 
         $products = Product::find()
             ->where(['buyer_id' => $user->id])
