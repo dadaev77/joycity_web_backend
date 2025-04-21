@@ -61,6 +61,22 @@ class RateService
             return $value * ($rate[self::CURRENCY_USD] / $rate[self::CURRENCY_CNY]);
         }
 
+        // Прямая конвертация между RUB и USD
+        if ($fromCurrency === self::CURRENCY_RUB && $toCurrency === self::CURRENCY_USD) {
+            return $value / $rate[self::CURRENCY_USD];
+        }
+        if ($fromCurrency === self::CURRENCY_USD && $toCurrency === self::CURRENCY_RUB) {
+            return $value * $rate[self::CURRENCY_USD];
+        }
+
+        // Прямая конвертация между RUB и CNY
+        if ($fromCurrency === self::CURRENCY_RUB && $toCurrency === self::CURRENCY_CNY) {
+            return $value / $rate[self::CURRENCY_CNY];
+        }
+        if ($fromCurrency === self::CURRENCY_CNY && $toCurrency === self::CURRENCY_RUB) {
+            return $value * $rate[self::CURRENCY_CNY];
+        }
+
         // Конвертация через RUB для остальных случаев
         if ($fromCurrency !== self::CURRENCY_RUB) {
             $value = $value * $rate[$fromCurrency];
