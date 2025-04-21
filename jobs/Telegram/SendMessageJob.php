@@ -10,6 +10,7 @@ use Yii;
 
 class SendMessageJob extends BaseObject implements JobInterface
 {
+    // -1002255927524 stage chat id
     // params
     public $type;
     public $message;
@@ -31,7 +32,7 @@ class SendMessageJob extends BaseObject implements JobInterface
         parent::__construct($config);
         $this->types = $this->getTypes();
         $this->envTypes = $this->getEnvTypes();
-        $this->token = $_ENV['APP_LOG_BOT_TOKEN'];
+        $this->token = $this->env === 'prod' ? $_ENV['APP_LOG_BOT_TOKEN_PROD'] : $_ENV['APP_LOG_BOT_TOKEN_STAGE'];
         $this->chatId = $this->getChatId($this->env);
 
         if ($this->thread) {
