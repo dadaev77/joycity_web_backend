@@ -254,7 +254,7 @@ class Order extends OrderStructure
 
     public function getCurrentMarkup(): float
     {
-        return $this->createdBy->markup ?? 0;
+        return (float)($this->createdBy->markup ?? 0);
     }
 
     public function getCurrentMarkupSum(): float
@@ -263,7 +263,33 @@ class Order extends OrderStructure
             return (float)($this->service_markup_sum ?? 0);
         }
         
-        // Получаем последнее предложение покупателя
+        // Сначала проверяем предложение байера
+        if ($this->buyerDeliveryOffer) {
+            $totalQuantity = (float)($this->buyerDeliveryOffer->total_quantity ?? 0);
+            $priceProduct = (float)($this->buyerDeliveryOffer->price_product ?? 0);
+            
+            // Конвертируем валюту если нужно
+            if ($this->buyerDeliveryOffer->currency !== $this->currency) {
+                $priceProduct = RateService::convertValue(
+                    $priceProduct,
+                    $this->buyerDeliveryOffer->currency,
+                    $this->currency
+                );
+            }
+            
+            // Обновляем значения в заказе
+            $this->total_quantity = $totalQuantity;
+            $this->price_product = $priceProduct;
+            
+            // Сохраняем обновленные значения
+            $this->save(false, ['total_quantity', 'price_product']);
+            
+            // Рассчитываем сумму наценки
+            $markup = $this->getCurrentMarkup() ?? 0;
+            return $totalQuantity * $priceProduct * ($markup / 100);
+        }
+        
+        // Если предложения байера нет, используем последнее предложение покупателя
         $buyerOffers = $this->buyerOffers;
         $lastOffer = array_pop($buyerOffers);
         
@@ -288,12 +314,12 @@ class Order extends OrderStructure
         $this->total_quantity = $totalQuantity;
         $this->price_product = $priceProduct;
         
+        // Сохраняем обновленные значения
+        $this->save(false, ['total_quantity', 'price_product']);
+        
         // Рассчитываем сумму наценки
         $markup = $this->getCurrentMarkup() ?? 0;
-        $markupSum = $totalQuantity * $priceProduct * ($markup / 100);
-        
-        // Округляем до 2 знаков после запятой
-        return round($markupSum, 2);
+        return $totalQuantity * $priceProduct * ($markup / 100);
     }
 
     /**
@@ -304,6 +330,15 @@ class Order extends OrderStructure
     {
         $this->service_markup = $this->getCurrentMarkup();
         $this->service_markup_sum = $this->getCurrentMarkupSum();
-        return $this->save(false, ['service_markup', 'service_markup_sum', 'total_quantity', 'price_product']);
+        
+        // Обновляем все необходимые поля
+        return $this->save(false, [
+            'service_markup',
+            'service_markup_sum',
+            'total_quantity',
+            'price_product',
+            'expected_quantity',
+            'expected_price_per_item'
+        ]);
     }
 }
