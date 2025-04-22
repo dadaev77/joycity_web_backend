@@ -274,8 +274,8 @@ class DistributionController extends BuyerController
             \Yii::$app->telegramLog->send('success', [
                 'Заявка отклонена',
                 'ID заявки: ' . $task->order_id,
-                'ID продавца: ' . $task->order->created_by,
-                'ID покупателя: ' . $user->id,
+                'ID продавца: ' .  $user->id,
+                'ID покупателя: ' . $task->order->created_by,
             ], 'buyer');
 
             return ApiResponse::code($apiCodes->SUCCESS);

@@ -55,17 +55,7 @@ class WaybillController extends ClientController
         }
 
         $waybill = $order->waybill;
-        if (!$waybill) {
-
-            \Yii::$app->telegramLog->send('error', [
-                'Накладная не найдена',
-                "ID заказа: {$id}",
-                "Клиент: {$user->name} (ID: {$user->id})"
-            ], 'client');
-
-            return ApiResponse::code($apiCodes->NOT_FOUND, ['message' => 'Накладная не найдена']);
-        };
-
+        
         if ($waybill) {
 
             if (
