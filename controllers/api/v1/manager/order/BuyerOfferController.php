@@ -199,7 +199,6 @@ class BuyerOfferController extends ManagerController
                 'success',
                 [
                     'Подтверждение оплаты предложения продавца',
-                    'ID предложения: ' . $id,
                     'ID заказа: ' . $order->id,
                     'ID менеджера: ' . $user->id,
                 ],

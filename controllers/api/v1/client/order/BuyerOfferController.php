@@ -109,7 +109,6 @@ class BuyerOfferController extends ClientController
 
             \Yii::$app->telegramLog->send('success', [
                 'Предложение принято',
-                'ID предложения: ' . $buyerOffer->id,
                 'ID заказа: ' . $order->id,
                 'ID покупателя: ' . $order->created_by,
             ], 'client');

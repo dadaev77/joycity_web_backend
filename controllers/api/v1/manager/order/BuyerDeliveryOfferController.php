@@ -260,7 +260,6 @@ class BuyerDeliveryOfferController extends ManagerController
                 'success',
                 [
                     'Предложение по доставке оплачено',
-                    'ID предложения: ' . $id,
                     'ID заказа: ' . $order->id,
                     'ID менеджера: ' . $user->id,
                 ],
