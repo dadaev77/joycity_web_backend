@@ -229,7 +229,6 @@ class OrderController extends ManagerController
         $queryModel = Order::find()
             ->select(['order.id'])
             ->where(['order.manager_id' => $user->id])
-            ->orderBy(['id' => SORT_DESC])
             ->andWhere([
                 'IN',
                 'order.status',
@@ -271,6 +270,12 @@ class OrderController extends ManagerController
                 ])
                 ->andWhere(['LIKE', 'user.email', $emailClient]);
         }
+
+        // Применить двойную сортировку: распределить заказы без покупателя, затем сортируйте по ID
+        $queryModel->orderBy([
+            'buyer_id' => 'IS NULL DESC', // Заказы с null buyer_id на первом месте
+            'id' => SORT_DESC, // Сортировать по ID в каждой группе
+        ]);
 
         return ApiResponse::codeCollection(
             $apiCodes->SUCCESS,
