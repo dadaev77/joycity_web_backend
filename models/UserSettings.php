@@ -26,6 +26,7 @@ class UserSettings extends Base
 
     public const CURRENCY_RUB = RateService::CURRENCY_RUB;
     public const CURRENCY_CNY = RateService::CURRENCY_CNY;
+    public const CURRENCY_USD = RateService::CURRENCY_USD;
 
     public const APPLICATION_LANGUAGE_RU = 'ru';
     public const APPLICATION_LANGUAGE_EN = 'en';
@@ -104,7 +105,7 @@ class UserSettings extends Base
             [
                 ['currency'],
                 'in',
-                'range' => [self::CURRENCY_RUB, self::CURRENCY_CNY],
+                'range' => [self::CURRENCY_RUB, self::CURRENCY_CNY, self::CURRENCY_USD],
             ],
             [
                 ['application_language'],
