@@ -141,6 +141,25 @@ class WaybillService
             throw new Exception('Ошибка при сохранении накладной в БД: ' . json_encode($waybill->errors));
         }
 
+        // Отправляем уведомление через 2 дня
+        \Yii::$app->queue->delay(2 * 24 * 60 * 60)->push(function() use ($data, $waybill) {
+            $order = Order::findOne($data['order_id']);
+            if ($order && $order->client) {
+                // Проверяем, что прошло 2 дня с момента создания накладной
+                $createdAt = new \DateTime($waybill->created_at);
+                $now = new \DateTime();
+                $interval = $now->diff($createdAt);
+                
+                if ($interval->days >= 2) {
+                    \Yii::$app->telegramLog->send('info', [
+                        'Накладная сформирована',
+                        "ID заказа: {$order->id}",
+                        "Клиент: {$order->client->name} (ID: {$order->client->id})"
+                    ], 'client');
+                }
+            }
+        });
+
         return $waybill;
     }
 
@@ -237,7 +256,7 @@ class WaybillService
             'waybill_number' => $waybill->waybill_number,
             'sender_name' => $buyer ? $buyer->name : 'не указано',
             'sender_phone' => $buyer ? $buyer->phone_number : 'не указано',
-            'recipient_name' => $client ? $client->name : 'не указ��но',
+            'recipient_name' => $client ? $client->name : 'не указано',
             'recipient_phone' => $client ? $client->phone_number : 'не указано',
             // Доставка
             'departure_city' => 'Иу',
@@ -291,8 +310,6 @@ class WaybillService
             self::deleteWaybillFile($fileName);
             throw new Exception('Ошибка при обновлении накладной в БД: ' . json_encode($waybill->errors));
         }
-
-
 
         return self::getByOrderId($waybill->order_id);
     }
