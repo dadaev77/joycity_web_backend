@@ -155,7 +155,7 @@ class VerificationController extends ClientController
             $transaction?->commit();
 
             \Yii::$app->telegramLog->send('success', [
-                'Верификация клиента успешно подтверждена',
+                'Запрос на верификацию успешно создан',
                 'ID запроса: ' . $newRequest->id,
                 'ID пользователя: ' . $user->id,
             ], 'manager');
