@@ -151,7 +151,7 @@ class BuyerOfferController extends BuyerController
             \Yii::$app->telegramLog->send('success', [
                 'Предложение продавца создано',
                 'ID заявки: ' . $order->id,
-                'ID покупателя: ' . $user->id,
+                'ID покупателя: ' . $order->created_by,
             ], 'buyer');
 
             return ApiResponse::info(
