@@ -226,6 +226,7 @@ class OrderController extends ManagerController
         $user = User::getIdentity();
         $request = Yii::$app->request;
         $type = $request->get('type', 'order');
+
         $queryModel = Order::find()
             ->select(['order.id', 'order.buyer_id'])
             ->where(['order.manager_id' => $user->id])
@@ -273,7 +274,7 @@ class OrderController extends ManagerController
 
 
         $queryModel->orderBy([
-            'buyer_id' => 'IS NULL DESC',
+            'buyer_id' => SORT_ASC,
             'id' => SORT_DESC,
         ]);
 
