@@ -227,7 +227,7 @@ class OrderController extends ManagerController
         $request = Yii::$app->request;
         $type = $request->get('type', 'order');
         $queryModel = Order::find()
-            ->select(['order.id'])
+            ->select(['order.id', 'order.buyer_id'])
             ->where(['order.manager_id' => $user->id])
             ->andWhere([
                 'IN',
