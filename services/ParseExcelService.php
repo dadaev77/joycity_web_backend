@@ -62,6 +62,8 @@ class ParseExcelService
         $validatedOrdersData = self::validateOrdersData($rawOrderData);
         $createdOrdersIds = self::createOrders($validatedOrdersData);
 
+        self::$response = \app\services\output\OrderOutputService::getCollection($createdOrdersIds);
+
         return self::$response;
     }
 
@@ -152,11 +154,22 @@ class ParseExcelService
                 'type_delivery_id' => $od['delivery_type_id'] ?? null,
                 'delivery_point_address_id' => $od['delivery_point_address_id'] ?? null,
                 'subcategory_id' => $od['subcategory_id'] ?? null,
-                'is_need_deep_inspection' => $od['deep_inspection'] ?? 0,
+                'is_need_deep_inspection' => $od['deep_inspection'] == true ? 1 : 0,
                 'repeat_order_id' => null,
                 'repeat_images_to_keep' => null,
                 'manager_id' => $randomManager->id,
             ]);
+
+            $translations = [
+                'ru' => ['name' => $od['name'], 'description' => $od['description']],
+                'en' => ['name' => $od['name'], 'description' => $od['description']],
+                'zh' => ['name' => $od['name'], 'description' => $od['description']],
+            ];
+
+            foreach ($translations as $lang => $values) {
+                $order->{'product_name_' . $lang} = $values['name'];
+                $order->{'product_description_' . $lang} = $values['description'];
+            }
 
             $attachmentResponse = AttachmentService::writeFilesCollection($od['images']);
 
@@ -165,10 +178,25 @@ class ParseExcelService
                 continue;
             }
 
-            Yii::$app->db->beginTransaction();
+            if (!$order->save()) {
+                self::$response['error'][] = ['Ошибка при сохранении заказа в строке ' . ($index + 2), $order->getErrors()];
+                continue;
+            }
             $order->linkAll('attachments', $attachmentResponse->result);
-            $order->save();
-            Yii::$app->db->commit();
+
+            \app\services\TranslationService::translateAttributes(
+                $od['name'],
+                $od['description'],
+                'order',
+                $order->id
+            );
+
+            \app\services\chats\ChatService::CreateGroupChat('Order ' . $order->id, $user->id, $order->id, [
+                'deal_type' => 'order',
+                'participants' => [$user->id, $order->manager_id],
+                'group_name' => 'client_manager',
+            ], true);
+
             $createdOrdersIds[] = $order->id;
         }
 
