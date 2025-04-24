@@ -7,7 +7,7 @@ use yii\behaviors\TimestampBehavior;
 
 class RoleModel extends ActiveRecord
 {
-
+    public $role_permissions;
     public static function tableName()
     {
         return 'roles';
@@ -51,26 +51,5 @@ class RoleModel extends ActiveRecord
     public function getUsers()
     {
         return $this->hasMany(User::class, ['role_id' => 'id']);
-    }
-
-    public function setNewPermissions(array $permissions)
-    {
-        $permissions = $this->permissions;
-        foreach ($permissions as $permission) {
-            $this->detach($permission);
-        }
-        $notFoundPermissions = [];
-        foreach ($permissions as $permission) {
-            $permission = \app\models\PermissionModel::findOne(['name' => $permission]);
-            if ($permission) {
-                $this->link('permissions', $permission);
-            } else {
-                $notFoundPermissions[] = $permission;
-            }
-        }
-        if (count($notFoundPermissions) > 0) {
-            return $notFoundPermissions;
-        }
-        return true;
     }
 }

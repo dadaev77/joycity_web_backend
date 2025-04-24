@@ -59,8 +59,8 @@ controllers/api/v1/user/RelationshipController.php
 vendor
 # config/smtp.php
 
-/entrypoint/api/attachments/
 /entrypoint/api/xlsx/
+/entrypoint/api/attachments/
 /entrypoint/api/uploads/
 /entrypoint/api/admin/
 /joycity.json
