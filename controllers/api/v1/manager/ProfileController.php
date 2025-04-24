@@ -183,10 +183,13 @@ class ProfileController extends ManagerController
             'organization_name',
             'phone_country_code',
             'telegram',
+            'currency',
         ]);
 
         $user->load($postParams, '');
-
+        $settings = $user->userSettings;
+        $settings->currency = $postParams['currency'];
+        $settings->save(false);
         if (isset($postParams['phone_number'])) {
             $existingUser = User::isset([
                 'phone_number' => $user->phone_number,

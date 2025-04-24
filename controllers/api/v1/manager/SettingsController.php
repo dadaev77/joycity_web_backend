@@ -61,7 +61,7 @@ class SettingsController extends ManagerController
     {
         $user = User::getIdentity();
         $settings = SettingsOutputService::getEntity($user->id);
-        
+
         // Добавляем информацию о наценках
         $charges = Charges::getCurrentCharges();
         if ($charges) {
@@ -87,31 +87,31 @@ class SettingsController extends ManagerController
     {
         try {
             Yii::debug('Начало выполнения actionCharges');
-            
+
             // Проверяем существование таблицы и записей
             $connection = Yii::$app->db;
             $tableExists = $connection->createCommand("SHOW TABLES LIKE 'charges'")->queryOne();
-            
+
             if (!$tableExists) {
                 Yii::error('Таблица charges не существует');
                 return ApiResponse::internalError('Таблица charges не существует');
             }
-            
+
             // Проверяем наличие записей
             $count = Charges::find()->count();
             Yii::debug('Количество записей в таблице charges: ' . $count);
-            
+
             // Получаем данные через сервис
             $charges = \app\services\ChargesService::getCurrentCharges();
             Yii::debug('Полученные данные: ' . print_r($charges, true));
-            
+
             return ApiResponse::info([
                 'data' => $charges
             ]);
         } catch (\Throwable $e) {
             Yii::error('Ошибка при получении наценок: ' . $e->getMessage());
             Yii::error('Stack trace: ' . $e->getTraceAsString());
-            
+
             return ApiResponse::internalError(
                 YII_DEBUG ? [
                     'message' => $e->getMessage(),
