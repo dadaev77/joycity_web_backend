@@ -186,7 +186,7 @@ class RawController extends Controller
     }
     public function actionTest()
     {
-        $imagick = new Imagick();
+        $imagick = new \Imagick();
         echo "Imagick is working!";
     }
 }
