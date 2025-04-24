@@ -228,7 +228,7 @@ class OrderController extends ManagerController
         $type = $request->get('type', 'order');
 
         $queryModel = Order::find()
-            ->select(['order.id', 'order.buyer_id'])
+            ->select(['order.id', 'order.buyer_id', 'order.status', 'order.created_at'])
             ->where(['order.manager_id' => $user->id])
             ->andWhere([
                 'IN',
@@ -274,8 +274,8 @@ class OrderController extends ManagerController
 
 
         $queryModel->orderBy([
-            'buyer_id' => SORT_ASC,
-            'id' => SORT_DESC,
+            new \yii\db\Expression('buyer_id IS NULL DESC'),
+            'id' => SORT_DESC
         ]);
 
         return ApiResponse::codeCollection(
