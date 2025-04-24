@@ -6,11 +6,9 @@ use app\components\ApiResponse;
 use app\components\response\ResponseCodes;
 
 use app\controllers\api\V1Controller;
-use app\services\order\OrderExcelService;
-use app\services\product\ProductExcelService;
+
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx as WriterXlsx;
-use yii\web\UploadedFile;
 
 use Yii;
 
@@ -53,7 +51,7 @@ class SpreadSheetController extends V1Controller
         $writer->save($filePath);
 
         return [
-            'file' => $fileUrl
+            'file' => $_ENV['APP_URL'] . $fileUrl
         ];
     }
 
