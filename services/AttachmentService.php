@@ -85,11 +85,9 @@ class AttachmentService
         $transaction = Yii::$app->db->beginTransaction();
 
         try {
-            // Удалем существующие вложения возможны доработки
             $existingAttachments = $mainModel->$relationName;
             if ($existingAttachments) {
                 foreach ($existingAttachments as $existingAttachment) {
-                    // Удаляем соответствующий файл с сервера
                     $fileToDelete =
                         Yii::getAlias('@app/entrypoint/api/attachment/') .
                         basename($existingAttachment->$fileAttribute);
@@ -100,7 +98,6 @@ class AttachmentService
                 $mainModel->unlinkAll($relationName, true);
             }
 
-            // Проходимся по загруженным файлам и сохраняем их в базе данных
             foreach ($files as $file) {
                 $extension = $file->getExtension();
                 $fileName = md5(uniqid(rand(), true)) . '.' . $extension;
@@ -141,7 +138,6 @@ class AttachmentService
 
             $transaction->commit();
         } catch (Exception $e) {
-            // Если произошла ошибка во время транзакции, ткатываем ее и выбрасываем исключение
             Yii::$app->telegramLog->send('error', 'Ошибка при сохранении вложений: ' . $e->getMessage());
             $transaction->rollBack();
             return ApiResponse::byResponseCode(
@@ -166,9 +162,34 @@ class AttachmentService
         $videoCount = 0;
 
         $maxFileSize = 50 * 1024 * 1024;
-
         foreach ($files as $file) {
-            $extension = $file->getExtension();
+            $not_file = false;
+            if (is_string($file)) {
+                $not_file = true;
+                $tmpfile = tmpfile();
+                $metaData = stream_get_meta_data($tmpfile);
+                $tmpfileName = $metaData['uri'];
+                $getfile = file_get_contents($file);
+                file_put_contents($tmpfileName, $getfile);
+                $mimeType = mime_content_type($tmpfileName);
+                $extension = match ($mimeType) {
+                    'image/jpeg' => 'jpg',
+                    'image/png' => 'png',
+                    'image/gif' => 'gif',
+                    'image/webp' => 'webp',
+                    default => 'jpg',
+                };
+
+                $file = new UploadedFile([
+                    'tempName' => $tmpfileName . '.' . $extension,
+                    'name' => basename($file),
+                    'size' => filesize($tmpfileName),
+                    'type' => $mimeType,
+                ]);
+            }
+
+            $extension = $not_file ? array_reverse(explode('.', $file->tempName))[0] : $file->getExtension();
+
             $fileSize = $file->size;
             if (in_array($extension, self::AllowedImageExtensions, true)) {
                 $imageCount++;
@@ -206,8 +227,33 @@ class AttachmentService
         $out = [];
 
         foreach ($files as $file) {
-            // создаем изображения для всех размеров
+            // Проверяем, является ли $file объектом UploadedFile
+            if (!$file instanceof UploadedFile) {
+                // Если это не объект UploadedFile, создаем его из временного файла
+                $tmpfile = tmpfile();
+                $metaData = stream_get_meta_data($tmpfile);
+                $tmpfileName = $metaData['uri'];
+                $getfile = file_get_contents($file);
+                file_put_contents($tmpfileName, $getfile);
+                $mimeType = mime_content_type($tmpfileName);
+                $extension = match ($mimeType) {
+                    'image/jpeg' => 'jpg',
+                    'image/png' => 'png',
+                    'image/gif' => 'gif',
+                    'image/webp' => 'webp',
+                    default => 'jpg',
+                };
+
+                $file = new UploadedFile([
+                    'tempName' => $tmpfileName,
+                    'name' => basename($file),
+                    'size' => filesize($tmpfileName),
+                    'type' => $mimeType,
+                ]);
+            }
+
             foreach (self::IMAGE_SIZES as $label => $size) {
+
                 $fileModelResponse = self::writeFileWithModel($file, $size, $label);
                 if (!$fileModelResponse->success) {
                     $transaction?->rollBack();
@@ -229,6 +275,15 @@ class AttachmentService
     {
         try {
             $extension = pathinfo($file->name, PATHINFO_EXTENSION);
+            if (empty($extension)) {
+                $extension = match ($file->type) {
+                    'image/jpeg' => 'jpg',
+                    'image/png' => 'png',
+                    'image/gif' => 'gif',
+                    'image/webp' => 'webp',
+                    default => 'jpg',
+                };
+            }
             $mimeType = $file->type;
             $pathName = Yii::$app->security->generateRandomString(16) . '_' . $name;
             $path = '/' . self::PUBLIC_PATH . "/$pathName.$extension";
@@ -260,7 +315,6 @@ class AttachmentService
             }
             chmod($fullPath, 0666);
 
-            // Проверяем, существует ли файл
             if (!file_exists($fullPath)) {
                 return Result::error(['errors' => ['File does not exist after saving']]);
             }
@@ -286,7 +340,7 @@ class AttachmentService
             return Result::success($attachment);
         } catch (Exception $e) {
             Yii::$app->telegramLog->send('error', 'Ошибка при обработке изображения: ' . $e->getMessage());
-            return Result::error(['errors' => ['image_processing' => 'Ошибка при обработке изображения']]);
+            return Result::error(['errors' => $e->getMessage()]);
         }
     }
 

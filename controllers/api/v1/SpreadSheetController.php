@@ -4,8 +4,9 @@ namespace app\controllers\api\v1;
 
 use app\components\ApiResponse;
 use app\components\response\ResponseCodes;
-
+use app\services\ParseExcelService;
 use app\controllers\api\V1Controller;
+use yii\web\UploadedFile;
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx as WriterXlsx;
@@ -50,14 +51,23 @@ class SpreadSheetController extends V1Controller
         $writer = new WriterXlsx($spreadsheet);
         $writer->save($filePath);
 
-        return [
+        return ApiResponse::byResponseCode(ResponseCodes::getStatic()->SUCCESS, [
             'file' => $_ENV['APP_URL'] . $fileUrl
-        ];
+        ]);
     }
 
-    public function actionUploadExcel()
+    public function actionUploadExcel($type)
     {
-        return ['success' => true];
+        $file = UploadedFile::getInstanceByName('file');
+        $result = ParseExcelService::parseExcel($file);
+
+        if (isset($result['error']) && count($result['error']) > 0) return ApiResponse::byResponseCode(ResponseCodes::getStatic()->INTERNAL_ERROR, [
+            'message' => $result['error']
+        ]);
+
+        return ApiResponse::byResponseCode(ResponseCodes::getStatic()->SUCCESS, [
+            'data' => $result
+        ]);
     }
 
 

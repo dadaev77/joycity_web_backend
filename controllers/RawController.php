@@ -184,5 +184,9 @@ class RawController extends Controller
         }
         return $response;
     }
-
+    public function actionTest()
+    {
+        $imagick = new Imagick();
+        echo "Imagick is working!";
+    }
 }
