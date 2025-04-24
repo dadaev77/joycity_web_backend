@@ -12,6 +12,7 @@ use yii\web\NotFoundHttpException;
 use app\models\User;
 use app\models\TypeDelivery;
 use app\models\BuyerDeliveryOffer;
+use app\jobs\WaybillNotificationJob;
 
 class WaybillService
 {
@@ -141,23 +142,17 @@ class WaybillService
             throw new Exception('Ошибка при сохранении накладной в БД: ' . json_encode($waybill->errors));
         }
 
-        // Отправляем уведомление через 2 дня
-        \Yii::$app->queue->delay(2 * 24 * 60 * 60)->push(function() use ($data, $waybill) {
-            $order = Order::findOne($data['order_id']);
-            if ($order && $order->client) {
-                // Проверяем, что прошло 2 дня с момента создания накладной
-                $createdAt = new \DateTime($waybill->created_at);
-                $now = new \DateTime();
-                $interval = $now->diff($createdAt);
-                
-                if ($interval->days >= 2) {
-                    \Yii::$app->telegramLog->send('info', [
-                        'Накладная сформирована',
-                        "ID заказа: {$order->id}",
-                        "Клиент: {$order->client->name} (ID: {$order->client->id})"
-                    ], 'client');
-                }
-            }
+        
+        
+        Yii::$app->queue->delay(2 * 24 * 60 * 60)->push(function() use ($data) {
+            Yii::$app->telegramLog->send(
+                'success',
+                [
+                    'Накладная сформирована',
+                    'ID заказа: ' . $data['order_id']
+                ],
+                'client'
+            );
         });
 
         return $waybill;
