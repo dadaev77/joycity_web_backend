@@ -15,6 +15,7 @@ use yii\db\Exception;
 use yii\web\UploadedFile;
 use app\components\response\ResponseCodes;
 use app\services\push\PushService;
+use app\models\UserVerificationRequest;
 
 
 class ProfileController extends ClientController
@@ -264,15 +265,68 @@ class ProfileController extends ClientController
             ->exists();
 
         if ($hasForbiddenOrders) {
+            \Yii::$app->telegramLog->send(
+                'error',
+                [
+                    'Ошибка удаления аккаунта',
+                    'ID пользователя: ' . $user->id,
+                    'Причина: есть активные заказы'
+                ],
+                'manager'
+            );
             return ApiResponse::byResponseCode($apiCodes->HAS_ACTIVE_ORDER);
         }
 
-        $user->is_deleted = 1;
-        PushService::dropTokens();
-        if ($user->save(false)) {
-            return ApiResponse::byResponseCode($apiCodes->SUCCESS);
-        }
+        $transaction = Yii::$app->db->beginTransaction();
 
-        return ApiResponse::byResponseCode($apiCodes->INTERNAL_ERROR);
+        try {
+            
+            UserVerificationRequest::deleteAll([
+                'created_by_id' => $user->id,
+                'status' => UserVerificationRequest::STATUS_WAITING
+            ]);
+
+            
+            $user->is_deleted = 1;
+            PushService::dropTokens();
+
+            if (!$user->save(false)) {
+                $transaction->rollBack();
+                \Yii::$app->telegramLog->send(
+                    'error',
+                    [
+                        'Ошибка удаления аккаунта',
+                        'ID пользователя: ' . $user->id,
+                        'Ошибка при сохранении'
+                    ],
+                    'manager'
+                );
+                return ApiResponse::byResponseCode($apiCodes->INTERNAL_ERROR);
+            }
+
+            $transaction->commit();
+            \Yii::$app->telegramLog->send(
+                'success',
+                [
+                    'Пользователь удалил свой аккаунт',
+                    'ID пользователя: ' . $user->id,
+                    'Удалены все активные заявки на верификацию'
+                ],
+                'manager'
+            );
+            return ApiResponse::byResponseCode($apiCodes->SUCCESS);
+        } catch (Throwable $e) {
+            $transaction->rollBack();
+            \Yii::$app->telegramLog->send(
+                'error',
+                [
+                    'Ошибка удаления аккаунта',
+                    'ID пользователя: ' . $user->id,
+                    'Текст ошибки: ' . $e->getMessage(),
+                ],
+                'manager'
+            );
+            return ApiResponse::internalError($e);
+        }
     }
 }
