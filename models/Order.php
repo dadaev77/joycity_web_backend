@@ -7,6 +7,7 @@ use app\models\structure\OrderStructure;
 use app\models\OrderTracking;
 use app\models\TypeDelivery;
 use DateTime;
+use app\services\RateService;
 
 class Order extends OrderStructure
 {
