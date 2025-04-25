@@ -140,16 +140,18 @@ class CronController extends Controller
             } else {
                 Yii::$app->telegramLog->send(
                     'error',
-                    'Ошибка сохранения курсов'
-                , 'rates');
+                    'Ошибка сохранения курсов',
+                    'rates'
+                );
                 return ['status' => 'error', 'message' => 'Ошибка сохранения курсов'];
             }
         }
 
         Yii::$app->telegramLog->send(
             'error',
-            'Нет данных для обновления курсов'
-        , 'rates');
+            'Нет данных для обновления курсов',
+            'rates'
+        );
         return ['status' => 'error', 'message' => 'Нет данных для обновления курсов'];
     }
 
@@ -227,7 +229,7 @@ class CronController extends Controller
             'success',
             'Проверка сервисов завершена'
         );
-        
+
         return [
             'status' => 'success',
             'message' => 'Проверка сервисов завершена',
@@ -297,14 +299,16 @@ class CronController extends Controller
                 'buyer_offer' => ['in', 'buyer_id', $guestUserIds],
                 'order_distribution' => ['in', 'current_buyer_id', $guestUserIds],
                 'chats' => ['in', 'user_id', $guestUserIds],
-                'order' => ['or',
+                'order' => [
+                    'or',
                     ['in', 'created_by', $guestUserIds],
                     ['in', 'buyer_id', $guestUserIds],
                 ],
                 'user_link_category' => ['in', 'user_id', $guestUserIds],
                 'user_link_type_delivery' => ['in', 'user_id', $guestUserIds],
                 'user_link_type_packaging' => ['in', 'user_id', $guestUserIds],
-                'user_verification_request' => ['or',
+                'user_verification_request' => [
+                    'or',
                     ['in', 'created_by_id', $guestUserIds],
                     ['in', 'manager_id', $guestUserIds],
                     ['in', 'approved_by_id', $guestUserIds],
@@ -331,10 +335,11 @@ class CronController extends Controller
             }
 
             Yii::$app->actionLog->success($message);
-            Yii::$app->telegramLog->send('success', 
+            Yii::$app->telegramLog->send(
+                'success',
                 "Очистка аккаунтов с определенными ролями\n" .
-                "Удалены все пользователи с role_id 4 и 7, созданные более 24 часов назад\n" .
-                "Всего удалено записей: " . $totalDeleted,
+                    "Удалены все пользователи с role_id 4 и 7, созданные более 24 часов назад\n" .
+                    "Всего удалено записей: " . $totalDeleted,
             );
 
             return [
@@ -342,7 +347,6 @@ class CronController extends Controller
                 'message' => 'Аккаунты с указанными ролями, созданные более 24 часов назад, успешно очищены',
                 'details' => $deletedCounts
             ];
-
         } catch (\Throwable $e) {
             if (isset($transaction)) {
                 $transaction->rollBack();
@@ -350,10 +354,11 @@ class CronController extends Controller
 
             $errorMessage = 'Ошибка при очистке аккаунтов: ' . $e->getMessage();
             Yii::$app->actionLog->error($errorMessage);
-            Yii::$app->telegramLog->send('error', 
+            Yii::$app->telegramLog->send(
+                'error',
                 "Ошибка при очистке аккаунтов\n" .
-                "Детали ошибки: " . $e->getMessage() . "\n" .
-                "Время: " . date('Y-m-d H:i:s'),
+                    "Детали ошибки: " . $e->getMessage() . "\n" .
+                    "Время: " . date('Y-m-d H:i:s'),
             );
 
             return [

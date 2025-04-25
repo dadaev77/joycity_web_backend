@@ -52,4 +52,9 @@ class RoleModel extends ActiveRecord
     {
         return $this->hasMany(User::class, ['role_id' => 'id']);
     }
+
+    public function getRoleName()
+    {
+        return $this->name;
+    }
 }

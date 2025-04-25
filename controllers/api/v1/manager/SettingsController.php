@@ -87,8 +87,6 @@ class SettingsController extends ManagerController
     {
         try {
             Yii::debug('Начало выполнения actionCharges');
-
-            // Проверяем существование таблицы и записей
             $connection = Yii::$app->db;
             $tableExists = $connection->createCommand("SHOW TABLES LIKE 'charges'")->queryOne();
 

@@ -88,6 +88,7 @@ class User extends UserStructure implements IdentityInterface
         if (is_string($roles)) {
             return $this->getRole()->name === $roles;
         }
+
         return in_array($this->getRole()->name, $roles);
     }
 

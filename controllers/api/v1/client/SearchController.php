@@ -7,7 +7,6 @@ use app\components\response\ResponseCodes;
 use app\controllers\api\v1\ClientController;
 use app\models\Category;
 use app\models\Product;
-use app\models\Subcategory;
 use app\models\User;
 use app\services\output\ProductOutputService;
 use app\services\RateService;
@@ -352,6 +351,7 @@ class SearchController extends ClientController
      */
     public function actionPopular()
     {
+
         $offset = Yii::$app->request->get('offset', 0);
         $apiCodes = ResponseCodes::getStatic();
         $collectionQuery = Product::find()
@@ -366,7 +366,7 @@ class SearchController extends ClientController
         return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
             'collection' => ProductOutputService::getCollection(
                 $collectionQuery->column(),
-                'small', // Size of output images
+                'small',
             ),
         ]);
     }
