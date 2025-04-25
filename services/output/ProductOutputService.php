@@ -5,7 +5,6 @@ namespace app\services\output;
 use app\helpers\ModelTypeHelper;
 use app\models\Category;
 use app\models\Product;
-use app\services\RateService;
 use app\services\SqlQueryService;
 use Yii;
 
@@ -119,8 +118,13 @@ class ProductOutputService extends OutputService
                 // $info['attachments'],
             );
 
-            // Конвертация цен в валюту пользователя
-            $info = RateService::convertDataPrices($info, ['price', 'range_1_price', 'range_2_price', 'range_3_price', 'range_4_price'], $info['currency'], $userCurrency);
+
+            $info = \app\services\RateService::convertDataPrices(
+                $info,
+                ['price', 'range_1_price', 'range_2_price', 'range_3_price', 'range_4_price'],
+                $info['currency'],
+                $userCurrency
+            );
 
             return $info;
         }, $query->all());

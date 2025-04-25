@@ -354,6 +354,7 @@ class SearchController extends ClientController
 
         $offset = Yii::$app->request->get('offset', 0);
         $apiCodes = ResponseCodes::getStatic();
+
         $collectionQuery = Product::find()
             ->select(['product.id', 'COUNT(order.id) as order_count'])
             ->joinWith(['orders' => fn($q) => $q->select(['id', 'product_id'])])

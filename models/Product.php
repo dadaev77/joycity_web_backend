@@ -4,7 +4,6 @@ namespace app\models;
 
 use app\components\response\ResponseCodesModels;
 use yii\db\ActiveQuery;
-use app\services\RateService;
 
 /**
  * This is the model class for table "product".
@@ -219,27 +218,36 @@ class Product extends Base
      */
     public function getAttachments()
     {
-        return $this->hasMany(Attachment::class, ['id' => 'attachment_id'])->via('productLinkAttachments');
+        return $this->hasMany(Attachment::class, ['id' => 'attachment_id'])
+            ->via('productLinkAttachments');
     }
 
     public function getAttachmentsSmallSize()
     {
-        return $this->hasMany(Attachment::class, ['id' => 'attachment_id'])->andOnCondition(['img_size' => 'small'])->via('productLinkAttachments');
+        return $this->hasMany(Attachment::class, ['id' => 'attachment_id'])
+            ->andOnCondition(['img_size' => 'small'])
+            ->via('productLinkAttachments');
     }
 
     public function getAttachmentsMediumSize()
     {
-        return $this->hasMany(Attachment::class, ['id' => 'attachment_id'])->andOnCondition(['img_size' => 'medium'])->via('productLinkAttachments');
+        return $this->hasMany(Attachment::class, ['id' => 'attachment_id'])
+            ->andOnCondition(['img_size' => 'medium'])
+            ->via('productLinkAttachments');
     }
 
     public function getAttachmentsLargeSize()
     {
-        return $this->hasMany(Attachment::class, ['id' => 'attachment_id'])->andOnCondition(['img_size' => 'large'])->via('productLinkAttachments');
+        return $this->hasMany(Attachment::class, ['id' => 'attachment_id'])
+            ->andOnCondition(['img_size' => 'large'])
+            ->via('productLinkAttachments');
     }
 
     public function getAttachmentsXlargeSize()
     {
-        return $this->hasMany(Attachment::class, ['id' => 'attachment_id'])->andOnCondition(['img_size' => 'xlarge'])->via('productLinkAttachments');
+        return $this->hasMany(Attachment::class, ['id' => 'attachment_id'])
+            ->andOnCondition(['img_size' => 'xlarge'])
+            ->via('productLinkAttachments');
     }
 
     /**
