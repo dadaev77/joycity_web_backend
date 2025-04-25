@@ -8,7 +8,7 @@ use app\models\OrderTracking;
 use app\models\TypeDelivery;
 use DateTime;
 use app\services\RateService;
-
+use Yii;
 class Order extends OrderStructure
 {
 
@@ -263,19 +263,30 @@ class Order extends OrderStructure
         if ($this->status === self::STATUS_TRANSFERRING_TO_BUYER) {
             return (float)($this->service_markup_sum ?? 0);
         }
-        
+
         // Сначала проверяем предложение байера
         if ($this->buyerDeliveryOffer) {
             $totalQuantity = (float)($this->buyerDeliveryOffer->total_quantity ?? 0);
             $priceProduct = (float)($this->buyerDeliveryOffer->price_product ?? 0);
             
+            // Проверяем валюту предложения байера
+            if (empty($this->buyerDeliveryOffer->currency)) {
+                Yii::error("Валюта предложения байера не установлена для заказа ID: " . $this->id);
+                return 0;
+            }
+            
             // Конвертируем валюту если нужно
             if ($this->buyerDeliveryOffer->currency !== $this->currency) {
-                $priceProduct = RateService::convertValue(
-                    $priceProduct,
-                    $this->buyerDeliveryOffer->currency,
-                    $this->currency
-                );
+                try {
+                    $priceProduct = RateService::convertValue(
+                        $priceProduct,
+                        $this->buyerDeliveryOffer->currency,
+                        $this->currency
+                    );
+                } catch (\Exception $e) {
+                    Yii::error("Ошибка конвертации валюты: " . $e->getMessage() . " для заказа ID: " . $this->id);
+                    return 0;
+                }
             }
             
             // Обновляем значения в заказе
@@ -302,13 +313,24 @@ class Order extends OrderStructure
         $totalQuantity = (float)($lastOffer->total_quantity ?? 0);
         $priceProduct = (float)($lastOffer->price_product ?? 0);
         
+        // Проверяем валюту предложения покупателя
+        if (empty($lastOffer->currency)) {
+            Yii::error("Валюта предложения покупателя не установлена для заказа ID: " . $this->id);
+            return 0;
+        }
+        
         // Конвертируем валюту если нужно
         if ($lastOffer->currency !== $this->currency) {
-            $priceProduct = RateService::convertValue(
-                $priceProduct,
-                $lastOffer->currency,
-                $this->currency
-            );
+            try {
+                $priceProduct = RateService::convertValue(
+                    $priceProduct,
+                    $lastOffer->currency,
+                    $this->currency
+                );
+            } catch (\Exception $e) {
+                Yii::error("Ошибка конвертации валюты: " . $e->getMessage() . " для заказа ID: " . $this->id);
+                return 0;
+            }
         }
         
         // Обновляем значения в заказе
