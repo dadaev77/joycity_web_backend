@@ -158,7 +158,7 @@ class ProductController extends BuyerController
                     return ApiResponse::byResponseCode($apiCodes->INTERNAL_ERROR, ['errors' => ['images' => 'Failed to save images']]);
                 }
 
-                $attachmentsToLink = array_merge($attachmentsToLink, $attachmentSaveResponse->result);
+                $product->linkAll('attachments', $attachmentSaveResponse->result);
             }
 
             $transaction->commit();
@@ -275,7 +275,7 @@ class ProductController extends BuyerController
 
             if (!$product->validate()) {
                 Yii::error('Validation errors: ' . json_encode($product->getErrors()));
-                return ApiResponse::byResponseCode($apiCodes->VALIDATION_ERROR, [
+                return ApiResponse::byResponseCode($apiCodes->BAD_REQUEST, [
                     'errors' => $product->getErrors(),
                 ]);
             }
