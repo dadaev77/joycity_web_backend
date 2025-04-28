@@ -8,7 +8,6 @@ class ChargesService
 {
     protected $defaultCharges = [];
 
-
     public function __construct()
     {
         $this->defaultCharges = [

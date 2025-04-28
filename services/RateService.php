@@ -2,10 +2,9 @@
 
 namespace app\services;
 
-use app\models\OrderRate;
-use app\models\Rate;
-use app\models\User;
-use Throwable;
+use app\services\rates\CurrencyConverter;
+use app\services\rates\RateProvider;
+use app\services\rates\ChargesProvider;
 
 class RateService
 {
@@ -13,79 +12,70 @@ class RateService
     public const CURRENCY_CNY = 'CNY';
     public const CURRENCY_USD = 'USD';
 
+    private CurrencyConverter $converter;
     public static int $SYMBOLS_AFTER_DECIMAL_POINT = 4;
 
-    protected static array $currentRate;
-    protected static array $orderRates = [];
+    /**
+     * Инициализирует сервис с новым конвертером.
+     */
+    public function __construct()
+    {
+        $this->converter = new CurrencyConverter(new RateProvider(new ChargesProvider()));
+        $this->converter->setPrecision(self::$SYMBOLS_AFTER_DECIMAL_POINT);
+    }
 
+    /**
+     * Устанавливает количество знаков после запятой для округления.
+     * @param int $symbolsAfterDecimalPoint Количество знаков.
+     */
     public static function setSADP(int $symbolsAfterDecimalPoint): void
     {
         self::$SYMBOLS_AFTER_DECIMAL_POINT = $symbolsAfterDecimalPoint;
     }
 
-    // Get the latest currency rate
+    /**
+     * Возвращает текущий курс валют.
+     * @return array
+     */
     public static function getRate(): array
     {
-        if (!empty(self::$currentRate))
-            return self::$currentRate;
-        return self::$currentRate = Rate::find()->orderBy(['id' => SORT_DESC])->asArray()->one();
+        return (new RateProvider(new ChargesProvider()))->getCurrentRate();
     }
 
-    // Get the order rate for a specific order
-    protected static function getOrderRate(int $orderId): array
-    {
-        if (!empty(self::$orderRates[$orderId])) return self::$orderRates[$orderId];
-        $orderRate = OrderRate::find()->asArray()->where(['order_id' => $orderId])->one();
-        if (!$orderRate) return self::getRate();
-        self::$orderRates[$orderId] = $orderRate;
-        return self::$orderRates[$orderId];
-    }
-
-    // Метод для конвертации отдельного значения
+    /**
+     * Конвертирует одно значение из одной валюты в другую.
+     * @param float $value Значение для конвертации.
+     * @param string $fromCurrency Исходная валюта.
+     * @param string $toCurrency Целевая валюта.
+     * @return float Конвертированное значение.
+     */
     public static function convertValue(float $value, string $fromCurrency, string $toCurrency): float
     {
-        if ($value == 0) {
-            return 0;
-        }
-
-        $rate = self::getRate();
-        if ($fromCurrency === $toCurrency) {
-            return $value;
-        }
-
-        // Конвертация через RUB для остальных случаев
-        if ($fromCurrency !== self::CURRENCY_RUB) {
-            $value = $value * $rate[$fromCurrency];
-        }
-        if ($toCurrency !== self::CURRENCY_RUB) {
-            $value = $value / $rate[$toCurrency];
-        }
-        return round($value, self::$SYMBOLS_AFTER_DECIMAL_POINT);
+        return (new self())->converter->convert($value, $fromCurrency, $toCurrency);
     }
 
-    // Метод для конвертации массива цен
+    /**
+     * Конвертирует массив цен из одной валюты в другую.
+     * @param array $prices Массив цен.
+     * @param string $fromCurrency Исходная валюта.
+     * @param string $toCurrency Целевая валюта.
+     * @return array Конвертированный массив цен.
+     */
     public static function convertPrices(array $prices, string $fromCurrency, string $toCurrency): array
     {
-        foreach ($prices as &$price) {
-            if (is_numeric($price)) {
-                $price = self::convertValue($price, $fromCurrency, $toCurrency);
-            }
-        }
-        return $prices;
+        return (new self())->converter->convertArray($prices, $fromCurrency, $toCurrency);
     }
 
-    // Метод для конвертации цен в массиве данных
+    /**
+     * Конвертирует цены в массиве данных по указанным ключам.
+     * @param array $data Массив данных.
+     * @param array $priceKeys Ключи, содержащие цены.
+     * @param string $fromCurrency Исходная валюта.
+     * @param string $toCurrency Целевая валюта.
+     * @return array Обработанный массив данных.
+     */
     public static function convertDataPrices(array $data, array $priceKeys, string $fromCurrency, string $toCurrency): array
     {
-        foreach ($priceKeys as $key) {
-            if (isset($data[$key])) {
-                if (is_array($data[$key])) {
-                    $data[$key] = self::convertPrices($data[$key], $fromCurrency, $toCurrency);
-                } elseif (is_numeric($data[$key])) {
-                    $data[$key] = self::convertValue($data[$key], $fromCurrency, $toCurrency);
-                }
-            }
-        }
-        return $data;
+        return (new self())->converter->convertData($data, $priceKeys, $fromCurrency, $toCurrency);
     }
 }

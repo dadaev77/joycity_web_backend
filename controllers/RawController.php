@@ -184,4 +184,9 @@ class RawController extends Controller
         }
         return $response;
     }
+
+    public function actionTest()
+    {
+        return \app\services\RateService::getRate();
+    }
 }
