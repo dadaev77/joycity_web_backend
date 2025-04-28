@@ -184,17 +184,4 @@ class RawController extends Controller
         }
         return $response;
     }
-
-    public function actionTest()
-    {
-        $products = Product::find()
-            ->with('attachments')
-            ->all();
-        $output = [];
-        foreach ($products as $product) {
-            $output[] = $product->attachments;
-        }
-
-        return $output;
-    }
 }

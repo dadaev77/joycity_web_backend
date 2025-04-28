@@ -122,8 +122,8 @@ class CronController extends Controller
         if (!empty($rates['data'])) {
             $rate = new \app\models\Rate();
             $rate->RUB = 1;
-            $rate->USD = round($rates['data']['USD'] * 1.05, 4);
-            $rate->CNY = round($rates['data']['CNY'] * 1.07, 4);
+            $rate->USD = round($rates['data']['USD'], 4);
+            $rate->CNY = round($rates['data']['CNY'], 4);
 
             if ($rate->save()) {
                 Yii::$app->heartbeat->addHeartbeat('rates', 'success');
@@ -132,7 +132,7 @@ class CronController extends Controller
                     [
                         'Курсы обновлены:',
                         'USD - ' . $rates['data']['USD'] . ', CNY - ' . $rates['data']['CNY'],
-                        'Курсы + проценты: USD + 2% - ' . $rate->USD . ', CNY + 5% - ' . $rate->CNY,
+                        'Курсы: USD - ' . $rate->USD . ', CNY - ' . $rate->CNY,
                     ],
                     'rates'
                 );

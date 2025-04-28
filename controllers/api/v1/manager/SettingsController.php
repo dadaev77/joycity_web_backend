@@ -25,18 +25,7 @@ class SettingsController extends ManagerController
         $behaviours['verbFilter']['actions']['set-categories'] = ['put'];
         $behaviours['verbFilter']['actions']['charges'] = ['get'];
         $behaviours['verbFilter']['actions']['charges-update'] = ['put'];
-        // array_unshift($behaviours['access']['rules'], [
-        //     'actions' => ['update', 'delete'],
-        //     'allow' => false,
-        //     'matchCallback' => fn() => User::getIdentity()->role === User::ROLE_CLIENT_DEMO,
-        // ]);
-        // $behaviours['access']['denyCallback'] = static function () {
-        //     $response =
-        //         User::getIdentity()->role === User::ROLE_CLIENT_DEMO ?
-        //         ApiResponse::byResponseCode(ResponseCodes::getStatic()->NOT_AUTHENTICATED) :
-        //         false;
-        //     Yii::$app->response->data = $response;
-        // };
+
 
         return $behaviours;
     }
@@ -85,39 +74,12 @@ class SettingsController extends ManagerController
      */
     public function actionCharges()
     {
-        try {
-            Yii::debug('Начало выполнения actionCharges');
-            $connection = Yii::$app->db;
-            $tableExists = $connection->createCommand("SHOW TABLES LIKE 'charges'")->queryOne();
+        $charges = \app\services\ChargesService::getCharges();
 
-            if (!$tableExists) {
-                Yii::error('Таблица charges не существует');
-                return ApiResponse::internalError('Таблица charges не существует');
-            }
-
-            // Проверяем наличие записей
-            $count = Charges::find()->count();
-            Yii::debug('Количество записей в таблице charges: ' . $count);
-
-            // Получаем данные через сервис
-            $charges = \app\services\ChargesService::getCurrentCharges();
-            Yii::debug('Полученные данные: ' . print_r($charges, true));
-
-            return ApiResponse::info([
-                'data' => $charges
-            ]);
-        } catch (\Throwable $e) {
-            Yii::error('Ошибка при получении наценок: ' . $e->getMessage());
-            Yii::error('Stack trace: ' . $e->getTraceAsString());
-
-            return ApiResponse::internalError(
-                YII_DEBUG ? [
-                    'message' => $e->getMessage(),
-                    'file' => $e->getFile(),
-                    'line' => $e->getLine()
-                ] : 'Ошибка при получении наценок'
-            );
-        }
+        return ApiResponse::byResponseCode(
+            \app\components\response\ResponseCodes::getStatic()->SUCCESS,
+            $charges
+        );
     }
 
     /**
@@ -141,36 +103,33 @@ class SettingsController extends ManagerController
      */
     public function actionChargesUpdate()
     {
-        try {
-            $charges = Charges::find()->one();
-            if (!$charges) {
-                $charges = new Charges();
-            }
+        $charges = [
+            'usd_charge' => Yii::$app->request->post('usd_charge'),
+            'cny_charge' => Yii::$app->request->post('cny_charge'),
+        ];
 
-            $postParams = POSTHelper::getPostWithKeys([
-                'usd_charge',
-                'cny_charge',
-            ]);
-
-            $charges->load($postParams, '');
-
-            if (!$charges->save()) {
-                return ApiResponse::codeErrors(
-                    'ERROR_SAVE',
-                    $charges->getFirstErrors()
-                );
-            }
-
-            return ApiResponse::info([
-                'message' => 'Настройки наценок обновлены',
-                'data' => [
-                    'usd_charge' => $charges->usd_charge,
-                    'cny_charge' => $charges->cny_charge,
+        if (empty($charges['usd_charge']) || empty($charges['cny_charge'])) {
+            return ApiResponse::codeErrors(
+                \app\components\response\ResponseCodes::getStatic()->BAD_REQUEST,
+                [
+                    'usd_charge' => 'Поле `usd_charge` не может быть пустым',
+                    'cny_charge' => 'Поле `cny_charge` не может быть пустым'
                 ]
-            ]);
-        } catch (Throwable $e) {
-            return ApiResponse::internalError($e->getMessage());
+            );
         }
+
+        \app\services\ChargesService::updateCharges(
+            $charges['usd_charge'],
+            $charges['cny_charge']
+        );
+
+        return ApiResponse::info([
+            'message' => 'Настройки наценок обновлены',
+            'data' => [
+                'usd_charge' => $charges['usd_charge'],
+                'cny_charge' => $charges['cny_charge'],
+            ]
+        ]);
     }
 
     /**

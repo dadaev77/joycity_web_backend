@@ -541,15 +541,15 @@ class ConstantsController extends V1Controller
         $latestRate = Rate::find()
             ->orderBy(['id' => SORT_DESC])
             ->one();
-
+        $charges = \app\services\ChargesService::getCharges();
         if (!$latestRate) {
             return ApiResponse::code($apiCodes->NOT_FOUND);
         }
 
         $rubToCny = RateService::convertValue(1, RateService::CURRENCY_RUB, RateService::CURRENCY_CNY);
-        $cnyToRub = round($latestRate['CNY'], 2); //RateService::convertCNYtoRUB(1);
+        $cnyToRub = round($latestRate['CNY'] * (1 + $charges['cny_charge'] / 100), 2);
         $rubToUsd = RateService::convertValue(1, RateService::CURRENCY_RUB, RateService::CURRENCY_USD);
-        $usdToRub =  round($latestRate['USD'], 2); //RateService::convertUSDtoRUB(1);
+        $usdToRub =  round($latestRate['USD'] * (1 + $charges['usd_charge'] / 100), 2);
         $cnyToUsd = RateService::convertValue(1, RateService::CURRENCY_CNY, RateService::CURRENCY_USD);
         $usdToCny = RateService::convertValue(1, RateService::CURRENCY_USD, RateService::CURRENCY_CNY);
 

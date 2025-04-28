@@ -19,15 +19,25 @@ class ChargesService
 
     public static function updateCharges(int $usdCharge, int $cnyCharge): bool
     {
-        $charges = Charges::find()->one() ?? new Charges();
+        $charges = new Charges();
+
         $charges->usd_charge = $usdCharge;
         $charges->cny_charge = $cnyCharge;
+
         return $charges->save();
     }
 
     public static function getCharges(): array
     {
-        $charges = Charges::find()->one() ?? self::$defaultCharges;
+        $service = new self();
+
+        $charges = Charges::find()
+            ->orderBy(['id' => SORT_DESC])
+            ->one();
+
+        if (!$charges) {
+            return $service->defaultCharges;
+        }
         return $charges->toArray();
     }
 }
