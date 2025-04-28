@@ -11,8 +11,8 @@ class ChargesProvider
     {
         $charges = \app\models\Charges::find()->orderBy(['id' => SORT_DESC])->one();
         if ($charges) {
-            $this->chargeUsd = $charges->usd_charge;
-            $this->chargeCny = $charges->cny_charge;
+            $this->chargeUsd = ($charges->usd_charge / 100) + 1;
+            $this->chargeCny = ($charges->cny_charge / 100) + 1;
         }
     }
 }
