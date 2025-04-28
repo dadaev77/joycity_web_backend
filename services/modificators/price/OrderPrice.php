@@ -2,120 +2,61 @@
 
 namespace app\services\modificators\price;
 
-use app\services\price\OrderPriceService;
+use app\dto\OrderPriceParams;
 use app\models\Order;
-use app\models\TypePackaging;
-use Throwable;
-use app\models\TypeDeliveryPrice;
+use app\services\price\OrderPriceService;
 use app\services\RateService;
+use Throwable;
+use Yii;
 
-class OrderPrice extends OrderPriceService
+class OrderPrice
 {
-    /**
-     * OrderPriceService Class
-     * Methods:
-     * 
-     * - calculateOrderPrices(int $orderId): array
-     *   Calculates the prices for a given order based on the order ID.
-     *
-     * - calculateAbstractOrderPrices(
-     *     string $currency,
-     *     int $orderId,
-     *     float $productPrice,
-     *     int $productQuantity,
-     *     float $productWidth,
-     *     float $productHeight,
-     *     float $productDepth,
-     *     float $productWeight,
-     *     int $packagingQuantity,
-     *     int $typeDeliveryId,
-     *     int $typePackagingId,
-     *     float $productInspectionPrice,
-     *     float $fulfillmentPrice,
-     *     string $calculationType
-     *   ): array
-     *   Calculates abstract order prices based on various parameters.
-     *
-     * - outputOrderPricesInUserCurrency(array $prices): array
-     *   Converts the given prices to the user's currency.
-     *
-     * - getPricesConfig(): array
-     *   Returns the default prices configuration.
-     */
+    private const SYMBOLS_AFTER_DECIMAL_POINT = 2;
+    private const TYPE_CALCULATION_PACKAGING = 'packaging';
+    private const TYPE_CALCULATION_PRODUCT = 'product';
+    private const BASE_CURRENCY = 'CNY';
 
     /**
-     * Calculates the prices for a given order
-     * 
-     * @param int $orderId Order ID
-     * @return array Calculated prices
+     * Рассчитывает цены для заказа
+     *
+     * @param int $orderId ID заказа
+     * @param string $currency Валюта для вывода цен
+     * @param string $role Роль пользователя (например, 'client')
+     * @return array Рассчитанные цены
      */
     public static function calculateOrderPrices(int $orderId, string $currency, string $role): array
     {
-        $output = self::defaultOutput();
         try {
             $order = Order::findOne($orderId);
             if (!$order) {
-                return self::defaultOutput();
+                throw new \RuntimeException("Заказ #$orderId не найден");
             }
 
-            $buyerOffers = $order->buyerOffers;
-            $lastOffer = array_pop($buyerOffers);
-            $product = $order->product;
-            $fulfillmentOffer = $order->fulfillmentOffer;
-            $buyerDeliveryOffer = $order->buyerDeliveryOffer;
-
-            if (empty($lastOffer)) {
-                return self::defaultOutput();
-            }
-
-            $params = self::prepareOrderParams($order, $lastOffer, $product, $fulfillmentOffer, $buyerDeliveryOffer, $currency, $role);
-
-            return self::calcOrderPrices($params);
-        } catch (Throwable $th) {
+            $params = self::prepareOrderParams($order, $currency, $role);
+            return self::computeOrderPrices($params, $currency);
+        } catch (Throwable $e) {
+            Yii::error("Ошибка расчёта цен для заказа #$orderId: {$e->getMessage()}");
             return self::defaultOutput();
         }
     }
 
-    private static function prepareOrderParams(Order $order, $lastOffer, $product, $fulfillmentOffer, $buyerDeliveryOffer, string $currency, string $role): array
-    {
-        $markup = null;
-        if ($role === 'client') {
-            $markup = \Yii::$app->user->getIdentity()->markup;
-        }
-
-        $userCurrency = $currency;
-        $orderCurrency = $order->currency;
-
-        $productPrice = $markup ? $lastOffer?->price_product * (1 + $markup / 100) : $lastOffer?->price_product ?? $order->expected_price_per_item;
-        $productPrice = RateService::convertValue($productPrice, $lastOffer?->currency ?? $orderCurrency, $userCurrency);
-
-        $productInspectionPrice = $lastOffer?->price_inspection ?: 0;
-        $productInspectionPrice = RateService::convertValue($productInspectionPrice, $lastOffer?->currency ?? $orderCurrency, $userCurrency);
-
-        $fulfillmentPrice = $fulfillmentOffer?->overall_price ?: 0;
-        $fulfillmentPrice = RateService::convertValue($fulfillmentPrice, $lastOffer?->currency ?? $orderCurrency, $userCurrency);
-
-        $response = [
-            'orderId' => $order->id,
-            'productPrice' => $productPrice,
-            'productQuantity' => $lastOffer?->total_quantity ?? $order->expected_quantity,
-            'productDimensions' => [
-                'width' => $lastOffer?->product_width ?? ($product?->product_width ?: 0),
-                'height' => $lastOffer?->product_height ?? ($product?->product_height ?: 0),
-                'depth' => $lastOffer?->product_depth ?? ($product?->product_depth ?: 0),
-                'weight' => $lastOffer?->product_weight ?? ($product?->product_weight ?: 0),
-            ],
-            'packagingQuantity' => $buyerDeliveryOffer?->total_packaging_quantity ?? $order->expected_packaging_quantity,
-            'typeDeliveryId' => $order->type_delivery_id,
-            'typePackagingId' => $order->type_packaging_id,
-            'productInspectionPrice' => $productInspectionPrice,
-            'fulfillmentPrice' => $fulfillmentPrice,
-            'calculationType' => $buyerDeliveryOffer ? self::TYPE_CALCULATION_PACKAGING : self::TYPE_CALCULATION_PRODUCT,
-        ];
-        return $response;
-    }
-
-    private static function prepareOrderParamsForFacade(
+    /**
+     * Фасад для расчёта цен без привязки к заказу
+     *
+     * @param float $productPrice Цена за единицу
+     * @param int $productQuantity Количество единиц
+     * @param float $productWidth Ширина (см)
+     * @param float $productHeight Высота (см)
+     * @param float $productDepth Глубина (см)
+     * @param float $productWeight Вес (г)
+     * @param int $packagingQuantity Количество упаковок
+     * @param int $typeDeliveryId ID типа доставки
+     * @param int $typePackagingId ID типа упаковки
+     * @param string $calculationType Тип расчёта ('packaging' или 'product')
+     * @param string $currency Валюта для вывода цен
+     * @return array Рассчитанные цены
+     */
+    public static function calculatorFacade(
         float $productPrice,
         int $productQuantity,
         float $productWidth,
@@ -126,8 +67,112 @@ class OrderPrice extends OrderPriceService
         int $typeDeliveryId,
         int $typePackagingId,
         string $calculationType,
+        string $currency
     ): array {
-        return [
+        try {
+            $params = self::prepareOrderParamsForFacade(
+                $productPrice,
+                $productQuantity,
+                $productWidth,
+                $productHeight,
+                $productDepth,
+                $productWeight,
+                $packagingQuantity,
+                $typeDeliveryId,
+                $typePackagingId,
+                $calculationType
+            );
+            return self::computeOrderPrices($params, $currency);
+        } catch (Throwable $e) {
+            Yii::error("Ошибка в calculatorFacade: {$e->getMessage()}");
+            return self::defaultOutput();
+        }
+    }
+
+    /**
+     * Подготавливает параметры для расчёта цен из заказа
+     *
+     * @param Order $order Модель заказа
+     * @param string $currency Валюта для конвертации
+     * @param string $role Роль пользователя
+     * @return OrderPriceParams
+     */
+    private static function prepareOrderParams(Order $order, string $currency, string $role): OrderPriceParams
+    {
+        $buyerOffers = $order->buyerOffers;
+        $lastOffer = array_pop($buyerOffers);
+        $product = $order->product;
+        $fulfillmentOffer = $order->fulfillmentOffer;
+        $buyerDeliveryOffer = $order->buyerDeliveryOffer;
+
+        if (!$lastOffer) {
+            throw new \RuntimeException("Предложение покупателя не найдено для заказа #$order->id");
+        }
+
+        $markup = $role === 'client' ? Yii::$app->user->getIdentity()->markup : 0;
+        $orderCurrency = $lastOffer->currency ?? $order->currency;
+        $productPrice = $lastOffer->price_product ?? $order->expected_price_per_item;
+        if ($markup) {
+            $productPrice *= (1 + $markup / 100);
+        }
+        $productPrice = RateService::convertValue($productPrice, $orderCurrency, self::BASE_CURRENCY);
+
+        return new OrderPriceParams([
+            'orderId' => $order->id,
+            'productPrice' => $productPrice,
+            'productQuantity' => $lastOffer->total_quantity ?? $order->expected_quantity,
+            'productDimensions' => [
+                'width' => $lastOffer->product_width ?? $product?->product_width ?? 0.0,
+                'height' => $lastOffer->product_height ?? $product?->product_height ?? 0.0,
+                'depth' => $lastOffer->product_depth ?? $product?->product_depth ?? 0.0,
+                'weight' => $lastOffer->product_weight ?? $product?->product_weight ?? 0.0,
+            ],
+            'packagingQuantity' => $buyerDeliveryOffer?->total_packaging_quantity ?? $order->expected_packaging_quantity,
+            'typeDeliveryId' => $order->type_delivery_id,
+            'typePackagingId' => $order->type_packaging_id,
+            'productInspectionPrice' => RateService::convertValue(
+                $lastOffer->price_inspection ?? 0.0,
+                $orderCurrency,
+                self::BASE_CURRENCY
+            ),
+            'fulfillmentPrice' => RateService::convertValue(
+                $fulfillmentOffer?->overall_price ?? 0.0,
+                $orderCurrency,
+                self::BASE_CURRENCY
+            ),
+            'calculationType' => $buyerDeliveryOffer ? self::TYPE_CALCULATION_PACKAGING : self::TYPE_CALCULATION_PRODUCT,
+        ]);
+    }
+
+    /**
+     * Подготавливает параметры для фасада
+     *
+     * @param float $productPrice Цена за единицу
+     * @param int $productQuantity Количество единиц
+     * @param float $productWidth Ширина (см)
+     * @param float $productHeight Высота (см)
+     * @param float $productDepth Глубина (см)
+     * @param float $productWeight Вес (г)
+     * @param int $packagingQuantity Количество упаковок
+     * @param int $typeDeliveryId ID типа доставки
+     * @param int $typePackagingId ID типа упаковки
+     * @param string $calculationType Тип расчёта
+     * @return OrderPriceParams
+     */
+    private static function prepareOrderParamsForFacade(
+        float $productPrice,
+        int $productQuantity,
+        float $productWidth,
+        float $productHeight,
+        float $productDepth,
+        float $productWeight,
+        int $packagingQuantity,
+        int $typeDeliveryId,
+        int $typePackagingId,
+        string $calculationType
+    ): OrderPriceParams {
+        return new OrderPriceParams([
+            'orderId' => 0,
             'productPrice' => $productPrice,
             'productQuantity' => $productQuantity,
             'productDimensions' => [
@@ -139,124 +184,30 @@ class OrderPrice extends OrderPriceService
             'packagingQuantity' => $packagingQuantity,
             'typeDeliveryId' => $typeDeliveryId,
             'typePackagingId' => $typePackagingId,
-            'productInspectionPrice' => 0,
-            'fulfillmentPrice' => 0,
+            'productInspectionPrice' => 0.0,
+            'fulfillmentPrice' => 0.0,
             'calculationType' => $calculationType,
-        ];
+        ]);
     }
 
-    private static function calcOrderPrices(array $params): array
+    /**
+     * Рассчитывает цены на основе параметров
+     *
+     * @param OrderPriceParams $params Параметры для расчёта
+     * @param string $currency Валюта для вывода цен
+     * @return array Рассчитанные цены
+     */
+    private static function computeOrderPrices(OrderPriceParams $params, string $currency): array
     {
-        $currency = \Yii::$app->user->getIdentity()->settings->currency;
-        $orderId = $params['orderId'] ?? null;
-        $out = self::defaultOutput();
 
-        $isTypePackaging = $params['calculationType'] === self::TYPE_CALCULATION_PACKAGING;
-
-        $packagingPrice = self::calcPackagingPrice($params['typePackagingId'], $params['packagingQuantity']);
-        $deliveryPrice = self::calcDeliveryPrice(
-            $params['productDimensions'],
-            $params['productQuantity'],
-            $params['typeDeliveryId'],
-        );
-
-        $out['delivery']['packaging'] = $packagingPrice;
-        $out['delivery']['delivery'] = $deliveryPrice;
-        $out['delivery']['overall'] = $packagingPrice + $deliveryPrice;
-        $out['product_inspection'] = $params['productInspectionPrice'];
-        $out['fulfillment'] = $params['fulfillmentPrice'];
-        $out['product']['price_per_item'] = $params['productPrice'];
-        $out['product']['overall'] = round($params['productPrice'] * $params['productQuantity'], self::SYMBOLS_AFTER_DECIMAL_POINT);
-
-        $out['overall'] = round(
-            $out['product']['overall'] +
-                $out['product_inspection'] +
-                $out['delivery']['overall'] +
-                $out['fulfillment'],
-            self::SYMBOLS_AFTER_DECIMAL_POINT,
-        );
-        $out['product_overall'] = round(
-            $out['product']['overall'],
-            self::SYMBOLS_AFTER_DECIMAL_POINT
-        );
-
-        return $out;
+        return OrderPriceService::computePrices($params, $currency);
     }
 
-    private static function calcPackagingPrice(int $typePackagingId, int $packagingQuantity): float
-    {
-        try {
-            $userCurrency = \Yii::$app->user->getIdentity()->settings->currency;
-            $typePackaging = TypePackaging::findOne(['id' => $typePackagingId]);
-            $price = $typePackaging?->price ?? 0;
-
-            $price = RateService::convertValue($price, 'USD', $userCurrency);
-
-            return round($price * $packagingQuantity, self::SYMBOLS_AFTER_DECIMAL_POINT);
-        } catch (Throwable $th) {
-            return 0;
-        }
-    }
-
-    private static function calcDeliveryPrice(array $dimensions, int $itemsCount, int $typeDeliveryId): mixed
-    {
-        try {
-
-            $volumeCm3 = $dimensions['width'] * $dimensions['height'] * $dimensions['depth']; // Объем в см³
-            $volumeM3 = $volumeCm3 / 1000000; // Объем в м³
-            $weightPerItemKg = $dimensions['weight']; // Вес в кг
-            $density = $weightPerItemKg / $volumeM3; // Плотность в кг/м³
-
-            $deliveryPrice = 0;
-
-            if ($density > 100) {
-                $totalWeight = $itemsCount * $weightPerItemKg; // Убираем упаковку
-                $deliveryPrice = self::getPriceByWeight($typeDeliveryId, $density) * $totalWeight; // Стоимость доставки в $
-            } else {
-                $deliveryPrice = ($volumeM3 * $itemsCount) * self::getPriceByVolume($typeDeliveryId);
-            }
-            return (float) $deliveryPrice;
-        } catch (Throwable $th) {
-            return self::defaultOutput();
-        }
-    }
-
-    public static function getPriceByWeight(int $typeDeliveryId, float $density): float
-    {
-        try {
-            $userCurrency = \Yii::$app->user->getIdentity()->settings->currency;
-            $price = TypeDeliveryPrice::find()
-                ->where(['type_delivery_id' => $typeDeliveryId])
-                ->one();
-
-            if (!$price) {
-                $price = TypeDeliveryPrice::find()
-                    ->where(['type_delivery_id' => $typeDeliveryId])
-                    ->one();
-            }
-
-            // Конвертируем цену доставки в валюту пользователя
-            return RateService::convertValue($price?->price ?? 0, 'USD', $userCurrency);
-        } catch (Throwable $th) {
-            return 0;
-        }
-    }
-
-    private static function getPriceByVolume(int $typeDeliveryId): float
-    {
-        try {
-            $userCurrency = \Yii::$app->user->getIdentity()->settings->currency;
-            $price = TypeDeliveryPrice::find()
-                ->where(['type_delivery_id' => $typeDeliveryId])
-                ->one();
-
-            // Конвертируем цену доставки в валюту пользователя
-            return RateService::convertValue($price?->price ?? 0, 'USD', $userCurrency);
-        } catch (Throwable $th) {
-            return 0;
-        }
-    }
-
+    /**
+     * Возвращает конфигурацию цен по умолчанию
+     *
+     * @return array
+     */
     private static function defaultOutput(): array
     {
         return [
@@ -273,39 +224,7 @@ class OrderPrice extends OrderPriceService
             'fulfillment' => 0,
             'overall' => 0,
             'overall_overhead' => 0,
-            'product_overall' => 0
+            'product_overall' => 0,
         ];
-    }
-
-    public static function calculatorFacade(
-        float $productPrice,
-        int $productQuantity,
-        float $productWidth,
-        float $productHeight,
-        float $productDepth,
-        float $productWeight,
-        int $packagingQuantity,
-        int $typeDeliveryId,
-        int $typePackagingId,
-        string $calculationType,
-    ): array {
-        try {
-            $params = self::prepareOrderParamsForFacade(
-                $productPrice,
-                $productQuantity,
-                $productWidth,
-                $productHeight,
-                $productDepth,
-                $productWeight,
-                $packagingQuantity,
-                $typeDeliveryId,
-                $typePackagingId,
-                $calculationType,
-            );
-
-            return self::calcOrderPrices($params);
-        } catch (Throwable $th) {
-            return self::defaultOutput();
-        }
     }
 }

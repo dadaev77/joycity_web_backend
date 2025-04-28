@@ -11,18 +11,38 @@ use Yii;
 
 class OrderDeliveryPriceService extends PriceOutputService
 {
+    private const SYMBOLS_AFTER_DECIMAL_POINT = 2;
+    private const BASE_CURRENCY = 'CNY';
+    private const DEFAULT_VOLUME_PRICE = 350.0; // Цена за м³ для низкой плотности
+    private const DENSITY_THRESHOLD = 100.0; // Порог плотности (кг/м³)
 
+    /**
+     * Возвращает конфигурацию цен для типа доставки
+     *
+     * @param int $typeDeliveryId ID типа доставки
+     * @return array
+     */
     private static function typeDeliveryPriceConfig(int $typeDeliveryId): array
     {
-        $typeDeliveryPrice = TypeDeliveryPrice::find()
-            ->where(['type_delivery_id' => $typeDeliveryId])
-            ->all();
-        return $typeDeliveryPrice;
+        try {
+            $typeDeliveryPrices = TypeDeliveryPrice::find()
+                ->where(['type_delivery_id' => $typeDeliveryId])
+                ->all();
+            return $typeDeliveryPrices;
+        } catch (Throwable $e) {
+            Yii::error("Ошибка получения конфигурации цен доставки #$typeDeliveryId: {$e->getMessage()}");
+            return [];
+        }
     }
 
-    public static function addPriceRangeToTypeDelivery(
-        int $typeDeliveryId,
-    ): ResultAnswer {
+    /**
+     * Добавляет диапазоны цен для типа доставки
+     *
+     * @param int $typeDeliveryId ID типа доставки
+     * @return ResultAnswer
+     */
+    public static function addPriceRangeToTypeDelivery(int $typeDeliveryId): ResultAnswer
+    {
         try {
             $rangeConfig = [
                 ['from' => 0, 'to' => 50],
@@ -62,147 +82,161 @@ class OrderDeliveryPriceService extends PriceOutputService
                 ]);
 
                 if (!$typeDeliveryPrice->save()) {
-                    $transaction?->rollBack();
-
+                    $transaction->rollBack();
                     return Result::errors($typeDeliveryPrice->getFirstErrors());
                 }
             }
 
-            $transaction?->commit();
-
+            $transaction->commit();
             return Result::success();
         } catch (Throwable $e) {
-            isset($transaction) && $transaction->rollBack();
-
+            if (isset($transaction)) {
+                $transaction->rollBack();
+            }
+            Yii::error("Ошибка добавления диапазонов цен для доставки #$typeDeliveryId: {$e->getMessage()}");
             return Result::error();
         }
     }
 
-    public static function getPriceByWeight(
-        int $typeDeliveryId,
-        float $weight,
-    ): float {
-        $typeDeliveryPrice = TypeDeliveryPrice::find()
-            ->where(['type_delivery_id' => $typeDeliveryId])
-            ->andWhere([
-                'AND',
-                ['<=', 'range_min', $weight],
-                ['>', 'range_max', $weight],
-            ])
-            ->one();
+    /**
+     * Возвращает цену доставки по весу
+     *
+     * @param int $typeDeliveryId ID типа доставки
+     * @param float $density Плотность груза (кг/м³)
+     * @return float
+     */
+    public static function getPriceByWeight(int $typeDeliveryId, float $density): float
+    {
+        try {
+            $typeDeliveryPrice = TypeDeliveryPrice::find()
+                ->where(['type_delivery_id' => $typeDeliveryId])
+                ->andWhere([
+                    'AND',
+                    ['<=', 'range_min', $density],
+                    ['>', 'range_max', $density],
+                ])
+                ->one();
 
-        if (!$typeDeliveryPrice) {
-            return 0;
+            return $typeDeliveryPrice?->price ?? 0.0;
+        } catch (Throwable $e) {
+            Yii::error("Ошибка получения цены по весу для доставки #$typeDeliveryId: {$e->getMessage()}");
+            return 0.0;
         }
-
-        return $typeDeliveryPrice->price;
     }
 
+    /**
+     * Рассчитывает плотность продукта
+     *
+     * @param float $widthPerItem Ширина (см)
+     * @param float $heightPerItem Высота (см)
+     * @param float $depthPerItem Глубина (см)
+     * @param float $weightPerItem Вес (г)
+     * @return float Плотность (кг/м³)
+     */
     public static function calculateProductDensity(
         float $widthPerItem,
         float $heightPerItem,
         float $depthPerItem,
-        float $weightPerItem,
+        float $weightPerItem
     ): float {
-        if (
-            !$weightPerItem ||
-            !$widthPerItem ||
-            !$heightPerItem ||
-            !$depthPerItem
-        ) {
-            return 0;
+        if (!$widthPerItem || !$heightPerItem || !$depthPerItem || !$weightPerItem) {
+            return 0.0;
         }
 
-        return $weightPerItem /
-            ($widthPerItem * $heightPerItem * $depthPerItem);
+        $volumeCm3 = $widthPerItem * $heightPerItem * $depthPerItem; // Объём в см³
+        $volumeM3 = $volumeCm3 / 1_000_000; // Объём в м³
+        $weightKg = $weightPerItem / 1000; // Вес в кг
+        return $volumeM3 ? $weightKg / $volumeM3 : 0.0;
     }
 
+    /**
+     * Рассчитывает цену доставки
+     *
+     * @param int $itemsCount Количество единиц
+     * @param float $widthPerItem Ширина единицы (см)
+     * @param float $heightPerItem Высота единицы (см)
+     * @param float $depthPerItem Глубина единицы (см)
+     * @param float $weightPerItem Вес единицы (г)
+     * @param int $typeDeliveryId ID типа доставки
+     * @return float Цена доставки в базовой валюте
+     */
     public static function calculateDeliveryPrice(
-        bool $debug = false, // TODO: remove after testing
-        int $orderId, // TODO: remove after testing
         int $itemsCount,
         float $widthPerItem,
         float $heightPerItem,
         float $depthPerItem,
         float $weightPerItem,
         int $typeDeliveryId
-    ): mixed {
-        /*
-        * Логика расчета цены доставки
-        * При запросе цены доставки, сначала определяем категорию товара,
-        * затем последовательно поднимаемся по иерархии категорий, пока не найдем ID типа доставки (первый найденный)
-        * Вес и размеры единицы товара нам интересны для определения плотности груза
-        * Используем граммы и сантиметры, плотность груза получится в кг/м3
-        * Если плотность груза больше 100, то считаем по плотности, иначе по объему
-        * Вычисляем цену доставки с учетом категории и иерархии категорий
-        * Модели: Order, Category, TypeDeliveryPrice
-        * --------------------------------
-        */
-
-        /*
-        * Определяем категорию товара
-        */
-
-        $parentsTree = [];
-        $order = \app\models\Order::findOne($orderId);
-        $category = \app\models\Category::findOne($order->subcategory_id);
-
-        while ($category->parent_id) {
-            $category = \app\models\Category::findOne($category->parent_id);
-            $parentsTree[] = $category->id;
-        }
-        array_reverse($parentsTree);
-
-        $typeDeliveryIds = [];
-        foreach ($parentsTree as $parentId) {
-            $typeDeliveryIds = \app\services\TypeDeliveryService::getTypeDeliveryIdsBySubcategory($parentId);
-            if ($typeDeliveryIds) {
-                $typeDeliveryIds = $typeDeliveryIds;
-                break;
-            }
-        }
-
-        $volumeCm3 = $widthPerItem * $heightPerItem * $depthPerItem; // Объем в см³
-        $volumeM3 = $volumeCm3 / 1000000; // Объем в м³
-        $weightPerItemKg = $weightPerItem / 1000; // Вес в кг
-        $density = $weightPerItemKg / $volumeM3; // Плотность в кг/м³
-
-        // init variables
-        $deliveryPrice = 0;
-        $densityPrice = 0;
-        $totalWeight = 0;
-
-        if ($density > 100) {
-            // Находим вес груза
-            $totalWeight = $itemsCount * $weightPerItemKg; // Убираем упаковку
-            $densityPrice = self::getPriceByWeight($typeDeliveryId, $density);
-            $deliveryPrice = $densityPrice * $totalWeight; // Стоимость доставки в $
-        } else {
-            // Стоимость доставки в $ для плотности < 100
-            $deliveryPrice = ($volumeM3 * $itemsCount) * self::getPriceByVolume($typeDeliveryId);
-        }
-
-
-        return $deliveryPrice;
-    }
-
-    private static function getPriceByVolume(int $typeDeliveryId): float
-    {
-        return 350;
-    }
-
-    public static function calculatePackagingPrice(
-        int $typePackagingId,
-        int $packagingQuantity,
     ): float {
         try {
-            $typePackaging = TypePackaging::findOne([
-                'id' => $typePackagingId,
-            ]);
+            $density = self::calculateProductDensity(
+                $widthPerItem,
+                $heightPerItem,
+                $depthPerItem,
+                $weightPerItem
+            );
 
-            return round(($typePackaging?->price ?: 0) * $packagingQuantity, self::SYMBOLS_AFTER_DECIMAL_POINT);
-        } catch (Throwable) {
-            return 0;
+            $volumeCm3 = $widthPerItem * $heightPerItem * $depthPerItem; // Объём в см³
+            $volumeM3 = $volumeCm3 / 1_000_000; // Объём в м³
+            $weightPerItemKg = $weightPerItem / 1000; // Вес в кг
+
+            $deliveryPrice = 0.0;
+
+            if ($density > self::DENSITY_THRESHOLD) {
+                $totalWeight = $itemsCount * $weightPerItemKg;
+                $densityPrice = self::getPriceByWeight($typeDeliveryId, $density);
+                $deliveryPrice = $densityPrice * $totalWeight;
+            } else {
+                $deliveryPrice = ($volumeM3 * $itemsCount) * self::getPriceByVolume($typeDeliveryId);
+            }
+
+            return round($deliveryPrice, self::SYMBOLS_AFTER_DECIMAL_POINT);
+        } catch (Throwable $e) {
+            Yii::error("Ошибка расчёта цены доставки для типа #$typeDeliveryId: {$e->getMessage()}");
+            return 0.0;
+        }
+    }
+
+    /**
+     * Возвращает цену доставки по объёму
+     *
+     * @param int $typeDeliveryId ID типа доставки
+     * @return float
+     */
+    private static function getPriceByVolume(int $typeDeliveryId): float
+    {
+        try {
+            $typeDeliveryPrice = TypeDeliveryPrice::find()
+                ->where(['type_delivery_id' => $typeDeliveryId])
+                ->one();
+
+            return $typeDeliveryPrice?->price ?? self::DEFAULT_VOLUME_PRICE;
+        } catch (Throwable $e) {
+            Yii::error("Ошибка получения цены по объёму для доставки #$typeDeliveryId: {$e->getMessage()}");
+            return self::DEFAULT_VOLUME_PRICE;
+        }
+    }
+
+    /**
+     * Рассчитывает цену упаковки
+     *
+     * @param int $typePackagingId ID типа упаковки
+     * @param int $packagingQuantity Количество упаковок
+     * @return float Цена в базовой валюте
+     */
+    public static function calculatePackagingPrice(
+        int $typePackagingId,
+        int $packagingQuantity
+    ): float {
+        try {
+            $typePackaging = TypePackaging::findOne(['id' => $typePackagingId]);
+            return round(
+                ($typePackaging?->price ?? 0.0) * $packagingQuantity,
+                self::SYMBOLS_AFTER_DECIMAL_POINT
+            );
+        } catch (Throwable $e) {
+            Yii::error("Ошибка расчёта цены упаковки для типа #$typePackagingId: {$e->getMessage()}");
+            return 0.0;
         }
     }
 }
