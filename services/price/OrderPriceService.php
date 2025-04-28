@@ -9,28 +9,23 @@ use Throwable;
 
 class OrderPriceService extends PriceOutputService
 {
-    public static function calculateOrderPrices(int $orderId): array
+    public static function calculateOrderPrices(int $orderId, string $currency, string $role): array
     {
         try {
             $order = Order::findOne(['id' => $orderId]);
             if (!$order) {
                 return self::getPricesConfig();
             }
-            // get offers 
             $buyerOffers = $order->buyerOffers;
             $buyerOffer = array_pop($buyerOffers);
-            // get delivery offer
             $buyerDeliveryOffer = $order->buyerDeliveryOffer;
-            // get fulfillment offer
             $fulfillmentOffer = $order->fulfillmentOffer;
-            // get last offer
             $lastOffer = $buyerDeliveryOffer ?: $buyerOffer;
-            // get product
             $product = $order->product;
 
             return self::calculateAbstractOrderPrices(
                 $currency,
-                $order->id, // TODO: remove after testing
+                $order->id,
                 $lastOffer?->price_product ?: $order->expected_price_per_item,
                 $lastOffer?->total_quantity ?: $order->expected_quantity,
                 $lastOffer?->product_width ?: ($product?->product_width ?: 0),
@@ -90,14 +85,23 @@ class OrderPriceService extends PriceOutputService
         );
 
 
+        $pricesToConvert = [
+            'packaging' => $packagingPrice,
+            'delivery' => $deliveryPrice,
+            'fulfillment' => $fulfillmentPrice,
+
+        ];
+
+        $convertedPrices = RateService::convertPrices($pricesToConvert, $currency, 'CNY');
+
         $out['delivery']['packaging'] = match ($currency) {
             'rub' => $packagingPrice,
-            'cny' => RateService::convertUSDtoCNY($packagingPrice),
+            'cny' => $convertedPrices['packaging'],
             default => $packagingPrice,
         };
         $out['delivery']['delivery'] = match ($currency) {
             'rub' => $deliveryPrice,
-            'cny' => RateService::convertUSDtoCNY($deliveryPrice),
+            'cny' => $convertedPrices['delivery'],
             default => $deliveryPrice,
         };
         $out['delivery']['overall'] =
@@ -106,7 +110,7 @@ class OrderPriceService extends PriceOutputService
         $out['product_inspection'] = $productInspectionPrice;
         $out['fulfillment'] = match ($currency) {
             'rub' => $fulfillmentPrice,
-            'cny' => RateService::convertUSDtoCNY($fulfillmentPrice),
+            'cny' => $convertedPrices['fulfillment'],
             default => $fulfillmentPrice,
         };
 

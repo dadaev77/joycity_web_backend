@@ -49,7 +49,7 @@ class OrderPrice extends OrderPriceService
      * @param int $orderId Order ID
      * @return array Calculated prices
      */
-    public static function calculateOrderPrices(int $orderId): array
+    public static function calculateOrderPrices(int $orderId, string $currency, string $role): array
     {
         $output = self::defaultOutput();
         try {
@@ -68,19 +68,25 @@ class OrderPrice extends OrderPriceService
                 return self::defaultOutput();
             }
 
-            $params = self::prepareOrderParams($order, $lastOffer, $product, $fulfillmentOffer, $buyerDeliveryOffer);
+            $params = self::prepareOrderParams($order, $lastOffer, $product, $fulfillmentOffer, $buyerDeliveryOffer, $currency, $role);
+
             return self::calcOrderPrices($params);
         } catch (Throwable $th) {
             return self::defaultOutput();
         }
     }
 
-    private static function prepareOrderParams(Order $order, $lastOffer, $product, $fulfillmentOffer, $buyerDeliveryOffer): array
+    private static function prepareOrderParams(Order $order, $lastOffer, $product, $fulfillmentOffer, $buyerDeliveryOffer, string $currency, string $role): array
     {
-        $userCurrency = \Yii::$app->user->getIdentity()->getSettings()->currency;
+        $markup = null;
+        if ($role === 'client') {
+            $markup = \Yii::$app->user->getIdentity()->markup;
+        }
+
+        $userCurrency = $currency;
         $orderCurrency = $order->currency;
-        // Конвертируем все цены в валюту пользователя
-        $productPrice = $lastOffer?->price_product ?? $order->expected_price_per_item;
+
+        $productPrice = $markup ? $lastOffer?->price_product * (1 + $markup / 100) : $lastOffer?->price_product ?? $order->expected_price_per_item;
         $productPrice = RateService::convertValue($productPrice, $lastOffer?->currency ?? $orderCurrency, $userCurrency);
 
         $productInspectionPrice = $lastOffer?->price_inspection ?: 0;
@@ -139,21 +145,9 @@ class OrderPrice extends OrderPriceService
         ];
     }
 
-    private static function logError(string $context, Throwable $th): string
-    {
-        return json_encode([
-            'context' => $context,
-            'message' => $th->getMessage(),
-            'code' => $th->getCode(),
-            'file' => $th->getFile(),
-            'line' => $th->getLine(),
-            'trace' => $th->getTraceAsString(),
-        ]);
-    }
-
     private static function calcOrderPrices(array $params): array
     {
-        $currency = \Yii::$app->user->getIdentity()->getSettings()->currency;
+        $currency = \Yii::$app->user->getIdentity()->settings->currency;
         $orderId = $params['orderId'] ?? null;
         $out = self::defaultOutput();
 
@@ -166,7 +160,6 @@ class OrderPrice extends OrderPriceService
             $params['typeDeliveryId'],
         );
 
-        // Заполнение выходных данных
         $out['delivery']['packaging'] = $packagingPrice;
         $out['delivery']['delivery'] = $deliveryPrice;
         $out['delivery']['overall'] = $packagingPrice + $deliveryPrice;
@@ -193,11 +186,10 @@ class OrderPrice extends OrderPriceService
     private static function calcPackagingPrice(int $typePackagingId, int $packagingQuantity): float
     {
         try {
-            $userCurrency = \Yii::$app->user->getIdentity()->getSettings()->currency;
+            $userCurrency = \Yii::$app->user->getIdentity()->settings->currency;
             $typePackaging = TypePackaging::findOne(['id' => $typePackagingId]);
             $price = $typePackaging?->price ?? 0;
 
-            // Конвертируем цену упаковки в валюту пользователя
             $price = RateService::convertValue($price, 'USD', $userCurrency);
 
             return round($price * $packagingQuantity, self::SYMBOLS_AFTER_DECIMAL_POINT);
@@ -206,7 +198,7 @@ class OrderPrice extends OrderPriceService
         }
     }
 
-    private static function calcDeliveryPrice(array $dimensions, int $itemsCount, int $typeDeliveryId): float
+    private static function calcDeliveryPrice(array $dimensions, int $itemsCount, int $typeDeliveryId): mixed
     {
         try {
 
@@ -215,7 +207,6 @@ class OrderPrice extends OrderPriceService
             $weightPerItemKg = $dimensions['weight']; // Вес в кг
             $density = $weightPerItemKg / $volumeM3; // Плотность в кг/м³
 
-            // init variables
             $deliveryPrice = 0;
 
             if ($density > 100) {
@@ -233,7 +224,7 @@ class OrderPrice extends OrderPriceService
     public static function getPriceByWeight(int $typeDeliveryId, float $density): float
     {
         try {
-            $userCurrency = \Yii::$app->user->getIdentity()->getSettings()->currency;
+            $userCurrency = \Yii::$app->user->getIdentity()->settings->currency;
             $price = TypeDeliveryPrice::find()
                 ->where(['type_delivery_id' => $typeDeliveryId])
                 ->one();
@@ -254,7 +245,7 @@ class OrderPrice extends OrderPriceService
     private static function getPriceByVolume(int $typeDeliveryId): float
     {
         try {
-            $userCurrency = \Yii::$app->user->getIdentity()->getSettings()->currency;
+            $userCurrency = \Yii::$app->user->getIdentity()->settings->currency;
             $price = TypeDeliveryPrice::find()
                 ->where(['type_delivery_id' => $typeDeliveryId])
                 ->one();

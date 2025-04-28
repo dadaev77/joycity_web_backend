@@ -27,9 +27,11 @@ class RateProvider
                 ->orderBy(['id' => SORT_DESC])
                 ->asArray()
                 ->one() ?? ['USD' => 1.0, 'CNY' => 1.0];
+
             if (!isset($rate['USD'], $rate['CNY'])) {
                 throw new \RuntimeException('Invalid rate data: USD or CNY missing.');
             }
+
             $this->currentRate = $this->applyCharges($rate);
         }
         return $this->currentRate;
