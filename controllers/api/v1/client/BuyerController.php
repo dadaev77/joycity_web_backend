@@ -51,7 +51,7 @@ class BuyerController extends ClientController
             return ApiResponse::byResponseCode($apiCodes->NOT_FOUND, null, 404);
         }
 
-        if (User::getIdentity()->is([User::ROLE_BUYER_DEMO])) {
+        if (User::getIdentity()->is([User::ROLE_CLIENT_DEMO, User::ROLE_CLIENT])) {
             return ApiResponse::byResponseCode($apiCodes->SUCCESS, [
                 'info' => BuyerOutputService::getEntity($id),
             ]);
