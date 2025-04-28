@@ -230,10 +230,10 @@ class BuyerController extends ClientController
         $userId = Yii::$app->user->id;
         $apiCodes = FeedbackBuyer::apiCodes();
 
-        return ApiResponse::code($apiCodes->SUCCESS);
-        // if (FeedbackService::canCreateFeedbackBuyer($id, $userId)) {
-        // }
+        if (FeedbackService::canCreateFeedbackBuyer($id, $userId)) {
+            return ApiResponse::code($apiCodes->SUCCESS);
+        }
 
-        // return ApiResponse::code($apiCodes->NO_ACCESS);
+        return ApiResponse::code($apiCodes->NO_ACCESS);
     }
 }
