@@ -51,8 +51,7 @@ class SettingsController extends ManagerController
         $user = User::getIdentity();
         $settings = SettingsOutputService::getEntity($user->id);
 
-        // Добавляем информацию о наценках
-        $charges = Charges::getCurrentCharges();
+        $charges = \app\services\ChargesService::getCharges();
         if ($charges) {
             $settings['charges'] = $charges;
         }
