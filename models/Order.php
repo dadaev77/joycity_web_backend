@@ -9,6 +9,7 @@ use app\models\TypeDelivery;
 use DateTime;
 use app\services\RateService;
 use Yii;
+
 class Order extends OrderStructure
 {
 
@@ -251,117 +252,5 @@ class Order extends OrderStructure
     public function getOrderTrackings()
     {
         return $this->hasMany(OrderTracking::class, ['order_id' => 'id']);
-    }
-
-    public function getCurrentMarkup(): float
-    {
-        return (float)($this->createdBy->markup ?? 0);
-    }
-
-    public function getCurrentMarkupSum(): float
-    {
-        if ($this->status === self::STATUS_TRANSFERRING_TO_BUYER) {
-            return (float)($this->service_markup_sum ?? 0);
-        }
-
-        // Сначала проверяем предложение байера
-        if ($this->buyerDeliveryOffer) {
-            $totalQuantity = (float)($this->buyerDeliveryOffer->total_quantity ?? 0);
-            $priceProduct = (float)($this->buyerDeliveryOffer->price_product ?? 0);
-            
-            // Проверяем валюту предложения байера
-            if (empty($this->buyerDeliveryOffer->currency)) {
-                Yii::error("Валюта предложения байера не установлена для заказа ID: " . $this->id);
-                return 0;
-            }
-            
-            // Конвертируем валюту если нужно
-            if ($this->buyerDeliveryOffer->currency !== $this->currency) {
-                try {
-                    $priceProduct = RateService::convertValue(
-                        $priceProduct,
-                        $this->buyerDeliveryOffer->currency,
-                        $this->currency
-                    );
-                } catch (\Exception $e) {
-                    Yii::error("Ошибка конвертации валюты: " . $e->getMessage() . " для заказа ID: " . $this->id);
-                    return 0;
-                }
-            }
-            
-            // Обновляем значения в заказе
-            $this->total_quantity = $totalQuantity;
-            $this->price_product = $priceProduct;
-            
-            // Сохраняем обновленные значения
-            $this->save(false, ['total_quantity', 'price_product']);
-            
-            // Рассчитываем сумму наценки
-            $markup = $this->getCurrentMarkup() ?? 0;
-            return $totalQuantity * $priceProduct * ($markup / 100);
-        }
-        
-        // Если предложения байера нет, используем последнее предложение покупателя
-        $buyerOffers = $this->buyerOffers;
-        $lastOffer = array_pop($buyerOffers);
-        
-        if (!$lastOffer) {
-            return 0;
-        }
-        
-        // Используем значения из buyerOffer
-        $totalQuantity = (float)($lastOffer->total_quantity ?? 0);
-        $priceProduct = (float)($lastOffer->price_product ?? 0);
-        
-        // Проверяем валюту предложения покупателя
-        if (empty($lastOffer->currency)) {
-            Yii::error("Валюта предложения покупателя не установлена для заказа ID: " . $this->id);
-            return 0;
-        }
-        
-        // Конвертируем валюту если нужно
-        if ($lastOffer->currency !== $this->currency) {
-            try {
-                $priceProduct = RateService::convertValue(
-                    $priceProduct,
-                    $lastOffer->currency,
-                    $this->currency
-                );
-            } catch (\Exception $e) {
-                Yii::error("Ошибка конвертации валюты: " . $e->getMessage() . " для заказа ID: " . $this->id);
-                return 0;
-            }
-        }
-        
-        // Обновляем значения в заказе
-        $this->total_quantity = $totalQuantity;
-        $this->price_product = $priceProduct;
-        
-        // Сохраняем обновленные значения
-        $this->save(false, ['total_quantity', 'price_product']);
-        
-        // Рассчитываем сумму наценки
-        $markup = $this->getCurrentMarkup() ?? 0;
-        return $totalQuantity * $priceProduct * ($markup / 100);
-    }
-
-    /**
-     * Фиксирует наценку при переходе в статус transferring_to_buyer
-     * @return bool
-     */
-    public function fixMarkup(): bool
-    {
-        $this->service_markup = $this->getCurrentMarkup();
-        $this->service_markup_sum = $this->getCurrentMarkupSum();
-        
-        // Обновляем все необходимые поля
-        return $this->save(false, [
-            'service_markup',
-            'service_markup_sum',
-            'total_quantity',
-            'price_product',
-            'expected_quantity',
-            'expected_price_per_item'
-        ]);
     }
 }
