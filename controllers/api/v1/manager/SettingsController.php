@@ -109,13 +109,17 @@ class SettingsController extends ManagerController
         ];
 
         if (empty($charges['usd_charge']) || empty($charges['cny_charge'])) {
-            return ApiResponse::codeErrors(
-                \app\components\response\ResponseCodes::getStatic()->BAD_REQUEST,
-                [
-                    'usd_charge' => 'Поле `usd_charge` не может быть пустым',
-                    'cny_charge' => 'Поле `cny_charge` не может быть пустым'
-                ]
+            \app\services\ChargesService::updateCharges(
+                $_ENV['USD_CHARGE'],
+                $_ENV['CNY_CHARGE']
             );
+            return ApiResponse::info([
+                'message' => 'Настройки наценок обновлены',
+                'data' => [
+                    'usd_charge' => $_ENV['USD_CHARGE'],
+                    'cny_charge' => $_ENV['CNY_CHARGE'],
+                ]
+            ]);
         }
 
         \app\services\ChargesService::updateCharges(
