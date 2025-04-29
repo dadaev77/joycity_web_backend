@@ -80,8 +80,7 @@ class BuyerController extends ManagerController
 
         $oldBuyerOffers = BuyerOffer::find()->where(['order_id' => $order->id])->all();
         foreach ($oldBuyerOffers as $oldBuyerOffer) {
-            $oldBuyerOffer->status = BuyerOffer::STATUS_DECLINED;
-            $oldBuyerOffer->save();
+            $oldBuyerOffer->delete();
         }
 
         $orderStatus = \app\services\order\OrderStatusService::waitingForBuyerOffer($order->id);
