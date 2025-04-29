@@ -11,10 +11,10 @@ use Yii;
 
 class OrderDeliveryPriceService extends PriceOutputService
 {
-    private const SYMBOLS_AFTER_DECIMAL_POINT = 2;
-    private const BASE_CURRENCY = 'CNY';
-    private const DEFAULT_VOLUME_PRICE = 350.0; // Цена за м³ для низкой плотности
-    private const DENSITY_THRESHOLD = 100.0; // Порог плотности (кг/м³)
+    public const SYMBOLS_AFTER_DECIMAL_POINT = 2;
+    public const BASE_CURRENCY = 'CNY';
+    public const DEFAULT_VOLUME_PRICE = 350.0; // Цена за м³ для низкой плотности
+    public const DENSITY_THRESHOLD = 100.0; // Порог плотности (кг/м³)
 
     /**
      * Возвращает конфигурацию цен для типа доставки
@@ -22,7 +22,7 @@ class OrderDeliveryPriceService extends PriceOutputService
      * @param int $typeDeliveryId ID типа доставки
      * @return array
      */
-    private static function typeDeliveryPriceConfig(int $typeDeliveryId): array
+    public static function typeDeliveryPriceConfig(int $typeDeliveryId): array
     {
         try {
             $typeDeliveryPrices = TypeDeliveryPrice::find()

@@ -69,7 +69,7 @@ class OrderOutputService extends OutputService
             $query->showWithDeleted();
         }
 
-        $userCurrency = Yii::$app->user->identity->getSettings()->currency;
+        $userCurrency = Yii::$app->user->getIdentity()->settings->currency;
 
         return array_map(static function ($model) use ($imageSize, $userCurrency) {
             $info = ModelTypeHelper::toArray($model);
@@ -217,7 +217,7 @@ class OrderOutputService extends OutputService
                 $info['price']['product_overall'] = $info['buyerOffer']['price_product'] * $info['buyerOffer']['total_quantity'];
             }
 
-            $info['price']['product_overall'] = $info['price']['product_overall'] * ($user_markup / 100 + 1);
+            // $info['price']['product_overall'] = $info['price']['product_overall'] * ($user_markup / 100 + 1);
 
             // КОНЕЦ РАССЧЕТА ЦЕНЫ ДЛЯ ЗАКАЗА
             // ================================================

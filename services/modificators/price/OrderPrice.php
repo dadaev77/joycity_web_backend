@@ -109,7 +109,6 @@ class OrderPrice
             throw new \RuntimeException("Предложение продавца не найдено для заказа #$order->id");
         }
 
-
         $markup = $role === 'client' ? Yii::$app->user->getIdentity()->markup : 0;
         $orderCurrency = $lastOffer->currency ?? $order->currency;
         $productPrice = $lastOffer->price_product ?? $order->expected_price_per_item;
@@ -200,7 +199,6 @@ class OrderPrice
      */
     private static function computeOrderPrices(OrderPriceParams $params, string $currency): array
     {
-
         return OrderPriceService::computePrices($params, $currency);
     }
 
