@@ -211,9 +211,6 @@ class OrderOutputService extends OutputService
             $user_role = Yii::$app->user->getIdentity()->role;
             if ($info['buyerOffer']) {
                 $info['price']['product_overall'] = $info['buyerOffer']['price_product'] * $info['buyerOffer']['total_quantity'];
-                if ($user_role === \app\models\User::ROLE_CLIENT) {
-                    $info['price']['product_overall'] = $info['price']['product_overall'] * ($user_markup / 100 + 1);
-                }
             }
 
             $info['price']['product_overall'] = $info['price']['product_overall'] * ($user_markup / 100 + 1);
