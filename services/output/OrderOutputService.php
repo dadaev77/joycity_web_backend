@@ -207,12 +207,16 @@ class OrderOutputService extends OutputService
 
             $info['price'] = OrderPrice::calculateOrderPrices($info['id'], $userCurrency, Yii::$app->user->getIdentity()->role);
 
+            $user_markup = \app\models\User::find()->where(['id' => $info['created_by']])->one()->markup;
+            $user_role = Yii::$app->user->getIdentity()->role;
             if ($info['buyerOffer']) {
                 $info['price']['product_overall'] = $info['buyerOffer']['price_product'] * $info['buyerOffer']['total_quantity'];
-                if (Yii::$app->user->getIdentity()->role === \app\models\User::ROLE_CLIENT) {
-                    $info['price']['product_overall'] = $info['price']['product_overall'] * (Yii::$app->user->getIdentity()->markup / 100 + 1);
+                if ($user_role === \app\models\User::ROLE_CLIENT) {
+                    $info['price']['product_overall'] = $info['price']['product_overall'] * ($user_markup / 100 + 1);
                 }
             }
+
+            $info['price']['product_overall'] = $info['price']['product_overall'] * ($user_markup / 100 + 1);
 
             $timeDelivery = OrderDeliveryTimeService::calculateDeliveryTime($model);
             unset($info['timeDelivery']);
