@@ -11,9 +11,9 @@ use Yii;
 class OrderPriceService extends PriceOutputService
 {
     private const SYMBOLS_AFTER_DECIMAL_POINT = 2;
-    private const TYPE_CALCULATION_PACKAGING = 'packaging';
-    private const TYPE_CALCULATION_PRODUCT = 'product';
-    private const BASE_CURRENCY = 'CNY';
+    public const TYPE_CALCULATION_PACKAGING = 'packaging';
+    public const TYPE_CALCULATION_PRODUCT = 'product';
+    public const BASE_CURRENCY = 'RUB';
 
     /**
      * Рассчитывает цены для заказа
@@ -90,10 +90,6 @@ class OrderPriceService extends PriceOutputService
     public static function computePrices(OrderPriceParams $params, string $currency): array
     {
         $out = self::getPricesConfig();
-
-
-        var_dump($params);
-        die();
 
         $isTypePackaging = $params->calculationType === self::TYPE_CALCULATION_PACKAGING;
         $quantity = $isTypePackaging ? $params->packagingQuantity : $params->productQuantity;

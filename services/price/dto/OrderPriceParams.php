@@ -22,7 +22,7 @@ class OrderPriceParams
     public float $fulfillmentPrice;
     public string $calculationType;
 
-    private const CALCULATION_TYPES = ['packaging', 'product'];
+    public const CALCULATION_TYPES = ['packaging', 'product'];
 
     public function __construct(array $data)
     {
