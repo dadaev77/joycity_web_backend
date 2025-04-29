@@ -216,8 +216,9 @@ class OrderOutputService extends OutputService
             if ($info['buyerOffer']) {
                 $info['price']['product_overall'] = $info['buyerOffer']['price_product'] * $info['buyerOffer']['total_quantity'];
             }
-
-            $info['price']['product_overall'] = $info['price']['product_overall'] * ($user_markup / 100 + 1);
+            if (isset($info['price']['product_overall'])) {
+                $info['price']['product_overall'] = $info['price']['product_overall'] * ($user_markup / 100 + 1);
+            }
 
             // КОНЕЦ РАССЧЕТА ЦЕНЫ ДЛЯ ЗАКАЗА
             // ================================================
