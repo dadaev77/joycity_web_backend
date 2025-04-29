@@ -102,6 +102,10 @@ class BuyerOfferController extends ManagerController
             $order->price_inspection = $buyerOffer->price_inspection;
             $order->amount_of_space = null;
 
+            // ставим флаг что цена зафиксирована
+            $order->service_markup = \app\models\User::findOne($order->created_by)->markup;
+            $order->fix_price = true;
+
             if (!$order->save()) {
                 \Yii::$app->telegramLog->send('error', 'Не удалось подтвердить оплату предложения продавца: ' . json_encode($order->getFirstErrors()));
                 return ApiResponse::transactionCodeErrors(
@@ -123,6 +127,8 @@ class BuyerOfferController extends ManagerController
             //     ]
             // );
 
+
+            // если пункт выдачи стоит фф 
             if (
                 $order->type_delivery_point_id ===
                 TypeDeliveryPoint::TYPE_FULFILLMENT
@@ -154,17 +160,7 @@ class BuyerOfferController extends ManagerController
                 );
             }
 
-            $rate = Rate::find()
-                ->orderBy(['id' => SORT_DESC])
-                ->one();
-
-            if (!$rate) {
-                return ApiResponse::transactionCodeErrors(
-                    $transaction,
-                    $apiCodes->BAD_REQUEST,
-                    ['rate' => 'Rate not found'],
-                );
-            }
+            $rate = Rate::find()->orderBy(['id' => SORT_DESC])->one();
 
             $orderRate = new OrderRate();
             $orderRate->order_id = $order->id;

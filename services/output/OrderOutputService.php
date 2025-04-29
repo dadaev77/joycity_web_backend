@@ -205,15 +205,23 @@ class OrderOutputService extends OutputService
             $info['type'] = in_array($info['status'], Order::STATUS_GROUP_ORDER, true) ? 'order' : 'request';
 
 
+            // ================================================
+            //  РАССЧЕТ ЦЕНЫ ДЛЯ ЗАКАЗА
+
             $info['price'] = OrderPrice::calculateOrderPrices($info['id'], $userCurrency, Yii::$app->user->getIdentity()->role);
 
             $user_markup = \app\models\User::find()->where(['id' => $info['created_by']])->one()->markup;
             $user_role = Yii::$app->user->getIdentity()->role;
+
             if ($info['buyerOffer']) {
                 $info['price']['product_overall'] = $info['buyerOffer']['price_product'] * $info['buyerOffer']['total_quantity'];
             }
 
             $info['price']['product_overall'] = $info['price']['product_overall'] * ($user_markup / 100 + 1);
+
+            // КОНЕЦ РАССЧЕТА ЦЕНЫ ДЛЯ ЗАКАЗА
+            // ================================================
+
 
             $timeDelivery = OrderDeliveryTimeService::calculateDeliveryTime($model);
             unset($info['timeDelivery']);
