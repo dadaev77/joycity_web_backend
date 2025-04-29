@@ -209,6 +209,9 @@ class OrderOutputService extends OutputService
 
             if ($info['buyerOffer']) {
                 $info['price']['product_overall'] = $info['buyerOffer']['price_product'] * $info['buyerOffer']['total_quantity'];
+                if (Yii::$app->user->getIdentity()->role === User::ROLE_CLIENT) {
+                    $info['price']['product_overall'] = $info['price']['product_overall'] * (Yii::$app->user->getIdentity()->markup / 100 + 1);
+                }
             }
 
             $timeDelivery = OrderDeliveryTimeService::calculateDeliveryTime($model);
