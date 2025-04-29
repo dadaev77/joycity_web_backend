@@ -10,7 +10,7 @@ use Yii;
 
 class OrderPriceService extends PriceOutputService
 {
-    private const SYMBOLS_AFTER_DECIMAL_POINT = 2;
+    public const SYMBOLS_AFTER_DECIMAL_POINT = 2;
     public const TYPE_CALCULATION_PACKAGING = 'packaging';
     public const TYPE_CALCULATION_PRODUCT = 'product';
     public const BASE_CURRENCY = 'RUB';
