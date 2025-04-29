@@ -546,12 +546,12 @@ class ConstantsController extends V1Controller
             return ApiResponse::code($apiCodes->NOT_FOUND);
         }
 
-        $rubToCny = RateService::convertValue(1, RateService::CURRENCY_RUB, RateService::CURRENCY_CNY);
+        $rubToCny = RateService::convertValue(1, RateService::CURRENCY_RUB, RateService::CURRENCY_CNY, null);
         $cnyToRub = round($latestRate['CNY'] * (1 + $charges['cny_charge'] / 100), 2);
-        $rubToUsd = RateService::convertValue(1, RateService::CURRENCY_RUB, RateService::CURRENCY_USD);
+        $rubToUsd = RateService::convertValue(1, RateService::CURRENCY_RUB, RateService::CURRENCY_USD, null);
         $usdToRub =  round($latestRate['USD'] * (1 + $charges['usd_charge'] / 100), 2);
-        $cnyToUsd = RateService::convertValue(1, RateService::CURRENCY_CNY, RateService::CURRENCY_USD);
-        $usdToCny = RateService::convertValue(1, RateService::CURRENCY_USD, RateService::CURRENCY_CNY);
+        $cnyToUsd = RateService::convertValue(1, RateService::CURRENCY_CNY, RateService::CURRENCY_USD, null);
+        $usdToCny = RateService::convertValue(1, RateService::CURRENCY_USD, RateService::CURRENCY_CNY, null);
 
         $result = [
             'date' => $latestRate->created_at,
