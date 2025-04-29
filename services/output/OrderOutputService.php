@@ -213,11 +213,12 @@ class OrderOutputService extends OutputService
             $user_markup = \app\models\User::find()->where(['id' => $info['created_by']])->one()->markup;
             $user_role = Yii::$app->user->getIdentity()->role;
 
-            if ($info['buyerOffer']) {
-                $info['price']['product_overall'] = $info['buyerOffer']['price_product'] * $info['buyerOffer']['total_quantity'];
-            }
             if (isset($info['price']['product_overall'])) {
                 $info['price']['product_overall'] = $info['price']['product_overall'] * ($user_markup / 100 + 1);
+            }
+
+            if ($info['buyerOffer']) {
+                $info['price']['product_overall'] = $info['buyerOffer']['price_product'] * $info['buyerOffer']['total_quantity'];
             }
 
             // КОНЕЦ РАССЧЕТА ЦЕНЫ ДЛЯ ЗАКАЗА

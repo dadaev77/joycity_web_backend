@@ -31,7 +31,8 @@ class OrderPrice
             if (!$order) {
                 throw new \RuntimeException("Заказ #$orderId не найден");
             }
-
+            // placeholder for prices dto
+            return self::defaultOutput();
             $params = self::prepareOrderParams($order, $currency, $role);
             return self::computeOrderPrices($params, $currency);
         } catch (Throwable $e) {
