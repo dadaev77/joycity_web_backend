@@ -56,7 +56,7 @@ class SpreadSheetController extends V1Controller
         ]);
     }
 
-    public function actionUploadExcel($type)
+    public function actionUploadExcel()
     {
         $file = UploadedFile::getInstanceByName('file');
         $result = ParseExcelService::parseExcel($file);
