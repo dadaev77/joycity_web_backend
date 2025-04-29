@@ -91,10 +91,13 @@ class OrderPriceService extends PriceOutputService
     {
         $out = self::getPricesConfig();
 
+        var_dump($params);
+        die();
+
+
         $isTypePackaging = $params->calculationType === self::TYPE_CALCULATION_PACKAGING;
         $quantity = $isTypePackaging ? $params->packagingQuantity : $params->productQuantity;
 
-        // Расчёт цен в базовой валюте
         $packagingPrice = OrderDeliveryPriceService::calculatePackagingPrice(
             $params->typePackagingId,
             $params->packagingQuantity
@@ -108,7 +111,6 @@ class OrderPriceService extends PriceOutputService
             $params->typeDeliveryId
         );
 
-        // Конвертация цен в валюту пользователя
         $out['delivery']['packaging'] = RateService::convertValue($packagingPrice, self::BASE_CURRENCY, $currency);
         $out['delivery']['delivery'] = RateService::convertValue($deliveryPrice, self::BASE_CURRENCY, $currency);
         $out['delivery']['overall'] = $out['delivery']['packaging'] + $out['delivery']['delivery'];

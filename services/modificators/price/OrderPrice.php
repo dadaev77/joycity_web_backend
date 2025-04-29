@@ -33,6 +33,7 @@ class OrderPrice
             }
 
             $params = self::prepareOrderParams($order, $currency, $role);
+            return [$params];
             return self::computeOrderPrices($params, $currency);
         } catch (Throwable $e) {
             Yii::error("Ошибка расчёта цен для заказа #$orderId: {$e->getMessage()}");
@@ -106,7 +107,7 @@ class OrderPrice
         $buyerDeliveryOffer = $order->buyerDeliveryOffer;
 
         if (!$lastOffer) {
-            throw new \RuntimeException("Предложение покупателя не найдено для заказа #$order->id");
+            throw new \RuntimeException("Предложение продавца не найдено для заказа #$order->id");
         }
 
         $markup = $role === 'client' ? Yii::$app->user->getIdentity()->markup : 0;
