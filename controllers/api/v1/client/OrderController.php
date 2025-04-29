@@ -216,23 +216,8 @@ class OrderController extends ClientController
                     ],
                     'client'
                 );
-            } else {
-                $distribution = OrderDistributionService::createDistributionTask($order->id);
-                if (!$distribution->success) {
-                    \Yii::$app->telegramLog->send('error', [
-                        'Ошибка создания задачи на распределение',
-                        $distribution->reason,
-                    ], 'client');
-                    throw new Exception('Distribution error: ' . $distribution->reason);
-                }
-                if (!\app\controllers\CronController::actionCreate($distribution->result->id)) {
-                    \Yii::$app->telegramLog->send('error', [
-                        'Ошибка создания задачи cron для распределения заказа',
-                        $distribution->result->id,
-                    ], 'client');
-                    throw new Exception('Cron task creation error: ' . $distribution->result->id);
-                }
             }
+
 
             if ($images) {
                 $attachmentResponse = AttachmentService::writeFilesCollection($images);
@@ -492,7 +477,7 @@ class OrderController extends ClientController
         }
 
         $orderInfo = OrderOutputService::getEntity($id);
-        
+
         // Форматируем имя байера
         if (isset($orderInfo['buyer'])) {
             if (!empty($orderInfo['buyer']['organization_name'])) {
