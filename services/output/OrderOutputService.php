@@ -207,9 +207,6 @@ class OrderOutputService extends OutputService
 
             $info['price'] = OrderPrice::calculateOrderPrices($info['id'], $userCurrency, Yii::$app->user->getIdentity()->role);
 
-            var_dump($info['price']);
-            die();
-
             if ($info['buyerOffer']) {
                 $info['price']['product_overall'] = $info['buyerOffer']['price_product'] * $info['buyerOffer']['total_quantity'];
             }

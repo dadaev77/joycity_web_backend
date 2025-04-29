@@ -106,34 +106,10 @@ class OrderStatusService
 
     public static function transferringToBuyer(int $orderId): ResultAnswer
     {
-        $order = Order::findOne(['id' => $orderId]);
-        if (!$order) {
-            return Result::notFound();
-        }
-
-        $transaction = Yii::$app->db->beginTransaction();
-        try {
-            if (!$order->fixMarkup()) {
-                $transaction?->rollBack();
-                return Result::error(['errors' => $order->getFirstErrors()]);
-            }
-            
-            $result = self::changeOrderStatus(
-                Order::STATUS_TRANSFERRING_TO_BUYER,
-                $orderId,
-            );
-            
-            if (!$result->success) {
-                $transaction?->rollBack();
-                return $result;
-            }
-            
-            $transaction?->commit();
-            return $result;
-        } catch (Throwable $e) {
-            $transaction?->rollBack();
-            return Result::error(['errors' => ['base' => $e->getMessage()]]);
-        }
+        return self::changeOrderStatus(
+            Order::STATUS_TRANSFERRING_TO_BUYER,
+            $orderId,
+        );
     }
 
     public static function arrivedToBuyer(int $orderId): ResultAnswer
@@ -236,12 +212,6 @@ class OrderStatusService
                     ChatService::archiveChat($chat->id);
                 }
             }
-            
-            if (!$order->fixMarkup()) {
-                $transaction?->rollBack();
-                return Result::error(['errors' => $order->getFirstErrors()]);
-            }
-            
             $transaction?->commit();
             return self::changeOrderStatus(Order::STATUS_COMPLETED, $orderId);
         } catch (Throwable $e) {
