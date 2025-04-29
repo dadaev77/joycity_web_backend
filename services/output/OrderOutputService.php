@@ -216,7 +216,7 @@ class OrderOutputService extends OutputService
             if ($info['buyerOffer']) {
                 $info['price']['product_overall'] = $info['buyerOffer']['price_product'] * $info['buyerOffer']['total_quantity'];
             }
-
+            $clientOverhead = $info['fix_price'] && ($info['service_markup'] !== 0) ? ($info['service_markup'] / 100 + 1) : ($user_markup / 100 + 1);
             if ($info['fix_price']) {
                 $info['price']['product_overall'] = \app\services\RateService::convertValueWithStaticRate(
                     $info['price']['product_overall'],
@@ -226,7 +226,7 @@ class OrderOutputService extends OutputService
                 );
             }
 
-            $info['price']['product_overall'] = $info['price']['product_overall'] * ($user_markup / 100 + 1);
+            $info['price']['product_overall'] = $info['price']['product_overall'] * $clientOverhead;
             // КОНЕЦ РАССЧЕТА ЦЕНЫ ДЛЯ ЗАКАЗА
             // ================================================
 
