@@ -48,8 +48,9 @@ class RateService
      * @param string $fromCurrency Исходная валюта.
      * @param string $toCurrency Целевая валюта.
      * @return float Конвертированное значение.
+     * @param int|null $orderId Идентификатор заказа.
      */
-    public static function convertValue(float $value, string $fromCurrency, string $toCurrency, ?int $orderId = null): float
+    public static function convertValue(float $value, string $fromCurrency, string $toCurrency, int $orderId): float
     {
         return (new self())->converter->convert($value, $fromCurrency, $toCurrency, $orderId);
     }

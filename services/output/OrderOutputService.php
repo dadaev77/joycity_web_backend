@@ -122,7 +122,7 @@ class OrderOutputService extends OutputService
 
             foreach ($info as $key => $value) {
                 if ($value && (str_starts_with($key, 'price_') || $key === 'expected_price_per_item')) {
-                    $info[$key] = RateService::convertValue($value, $info['currency'], $userCurrency);
+                    $info[$key] = RateService::convertValue($value, $info['currency'], $userCurrency, $model->id);
                 }
             }
 
@@ -139,7 +139,7 @@ class OrderOutputService extends OutputService
                 unset($info[$key]);
             }
 
-            $userLanguage = Yii::$app->user->identity->getSettings()->application_language;
+            $userLanguage = Yii::$app->user->getIdentity()->settings->application_language;
             $info['product_name'] = match (strtolower($userLanguage)) {
                 'ru' => $model->product_name_ru,
                 'en' => $model->product_name_en,
@@ -192,15 +192,15 @@ class OrderOutputService extends OutputService
             }
 
             if ($info['fulfillmentOffer'] !== null) {
-                $info['fulfillmentOffer']['overall_price'] = RateService::convertValue($info['fulfillmentOffer']['overall_price'], $info['fulfillmentOffer']['currency'], $userCurrency);
+                $info['fulfillmentOffer']['overall_price'] = RateService::convertValue($info['fulfillmentOffer']['overall_price'], $info['fulfillmentOffer']['currency'], $userCurrency, $model->id);
             }
 
             if ($info['buyerOffer']) {
-                $info['buyerOffer']['price_product'] = RateService::convertValue($info['buyerOffer']['price_product'], $info['buyerOffer']['currency'], $userCurrency);
-                $info['buyerOffer']['price_inspection'] = RateService::convertValue($info['buyerOffer']['price_inspection'], $info['buyerOffer']['currency'], $userCurrency);
+                $info['buyerOffer']['price_product'] = RateService::convertValue($info['buyerOffer']['price_product'], $info['buyerOffer']['currency'], $userCurrency, $model->id);
+                $info['buyerOffer']['price_inspection'] = RateService::convertValue($info['buyerOffer']['price_inspection'], $info['buyerOffer']['currency'], $userCurrency, $model->id);
             }
             if (isset($info['buyerDeliveryOffer'])) {
-                $info['buyerDeliveryOffer']['price_product'] = RateService::convertValue($info['buyerDeliveryOffer']['price_product'], $info['buyerDeliveryOffer']['currency'], $userCurrency);
+                $info['buyerDeliveryOffer']['price_product'] = RateService::convertValue($info['buyerDeliveryOffer']['price_product'], $info['buyerDeliveryOffer']['currency'], $userCurrency, $model->id);
             }
             $info['type'] = in_array($info['status'], Order::STATUS_GROUP_ORDER, true) ? 'order' : 'request';
 
@@ -221,13 +221,15 @@ class OrderOutputService extends OutputService
             $info['price']['product_overall'] = $info['price']['product_overall'] * $clientOverhead;
 
             if ($info['fix_price']) {
+
                 $info['price']['product_overall'] = \app\services\RateService::convertValue(
                     $info['price']['product_overall'],
                     $info['currency'],
                     $userCurrency,
-                    $info['id']
+                    $model->id
                 );
             }
+
             // КОНЕЦ РАССЧЕТА ЦЕНЫ ДЛЯ ЗАКАЗА
             // ================================================
 
