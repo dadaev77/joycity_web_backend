@@ -1,6 +1,6 @@
 <?php
 
-namespace app\dto;
+namespace app\services\price\dto;
 
 use InvalidArgumentException;
 

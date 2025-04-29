@@ -2,7 +2,7 @@
 
 namespace app\services\price;
 
-use app\dto\OrderPriceParams;
+use app\services\price\dto\OrderPriceParams;
 use app\models\Order;
 use app\services\RateService;
 use Throwable;
@@ -91,9 +91,9 @@ class OrderPriceService extends PriceOutputService
     {
         $out = self::getPricesConfig();
 
+
         var_dump($params);
         die();
-
 
         $isTypePackaging = $params->calculationType === self::TYPE_CALCULATION_PACKAGING;
         $quantity = $isTypePackaging ? $params->packagingQuantity : $params->productQuantity;

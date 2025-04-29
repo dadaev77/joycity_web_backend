@@ -2,7 +2,7 @@
 
 namespace app\services\modificators\price;
 
-use app\dto\OrderPriceParams;
+use app\services\price\dto\OrderPriceParams;
 use app\models\Order;
 use app\services\price\OrderPriceService;
 use app\services\RateService;
@@ -33,7 +33,6 @@ class OrderPrice
             }
 
             $params = self::prepareOrderParams($order, $currency, $role);
-            return [$params];
             return self::computeOrderPrices($params, $currency);
         } catch (Throwable $e) {
             Yii::error("Ошибка расчёта цен для заказа #$orderId: {$e->getMessage()}");
@@ -109,6 +108,7 @@ class OrderPrice
         if (!$lastOffer) {
             throw new \RuntimeException("Предложение продавца не найдено для заказа #$order->id");
         }
+
 
         $markup = $role === 'client' ? Yii::$app->user->getIdentity()->markup : 0;
         $orderCurrency = $lastOffer->currency ?? $order->currency;
