@@ -69,4 +69,16 @@ class RateProvider
         $rate['CNY'] *= $this->chargesProvider->chargeCny;
         return $rate;
     }
+
+    public function getRateByOrderId(int $orderId): array
+    {
+        $orderRate = OrderRate::find()
+            ->asArray()
+            ->where(['order_id' => $orderId])
+            ->one();
+        if (!$orderRate) {
+            return $this->getCurrentRate();
+        }
+        return $orderRate;
+    }
 }

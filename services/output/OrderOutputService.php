@@ -217,9 +217,16 @@ class OrderOutputService extends OutputService
                 $info['price']['product_overall'] = $info['buyerOffer']['price_product'] * $info['buyerOffer']['total_quantity'];
             }
 
+            if ($info['fix_price']) {
+                $info['price']['product_overall'] = \app\services\RateService::convertValueWithStaticRate(
+                    $info['price']['product_overall'],
+                    $info['currency'],
+                    $userCurrency,
+                    $info['id']
+                );
+            }
+
             $info['price']['product_overall'] = $info['price']['product_overall'] * ($user_markup / 100 + 1);
-
-
             // КОНЕЦ РАССЧЕТА ЦЕНЫ ДЛЯ ЗАКАЗА
             // ================================================
 

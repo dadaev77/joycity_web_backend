@@ -78,4 +78,14 @@ class RateService
     {
         return (new self())->converter->convertData($data, $priceKeys, $fromCurrency, $toCurrency);
     }
+
+    public static function convertValueWithStaticRate(float $value, string $fromCurrency, string $toCurrency, int $orderId): float
+    {
+        $value = $value;
+        $rates = (new RateProvider(new ChargesProvider()))->getRateByOrderId($orderId);
+        $value = $value * $rates[$fromCurrency];
+        $converter = new CurrencyConverter(new RateProvider(new ChargesProvider()));
+        $converter->setPrecision(self::$SYMBOLS_AFTER_DECIMAL_POINT);
+        return $converter->convert($value, $fromCurrency, $toCurrency);
+    }
 }
