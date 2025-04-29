@@ -160,13 +160,13 @@ class BuyerOfferController extends ManagerController
                 );
             }
 
-            $rate = Rate::find()->orderBy(['id' => SORT_DESC])->one();
+            $rate = \app\services\RateService::getRate();
 
             $orderRate = new OrderRate();
             $orderRate->order_id = $order->id;
-            $orderRate->RUB = $rate->RUB;
-            $orderRate->CNY = $rate->CNY;
-            $orderRate->USD = $rate->USD;
+            $orderRate->RUB = $rate['RUB'];
+            $orderRate->CNY = $rate['CNY'];
+            $orderRate->USD = $rate['USD'];
             $orderRate->type = OrderRate::TYPE_PRODUCT_PAYMENT;
 
             if (!$orderRate->save()) {
