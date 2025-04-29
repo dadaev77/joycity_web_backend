@@ -221,7 +221,7 @@ class OrderOutputService extends OutputService
             $info['price']['product_overall'] = $info['price']['product_overall'] * $clientOverhead;
 
             if ($info['fix_price']) {
-                $info['price']['product_overall'] = \app\services\RateService::convertValueWithStaticRate(
+                $info['price']['product_overall'] = \app\services\RateService::convertValue(
                     $info['price']['product_overall'],
                     $info['currency'],
                     $userCurrency,

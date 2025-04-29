@@ -49,9 +49,9 @@ class RateService
      * @param string $toCurrency Целевая валюта.
      * @return float Конвертированное значение.
      */
-    public static function convertValue(float $value, string $fromCurrency, string $toCurrency): float
+    public static function convertValue(float $value, string $fromCurrency, string $toCurrency, ?int $orderId = null): float
     {
-        return (new self())->converter->convert($value, $fromCurrency, $toCurrency);
+        return (new self())->converter->convert($value, $fromCurrency, $toCurrency, $orderId);
     }
 
     /**
@@ -77,15 +77,5 @@ class RateService
     public static function convertDataPrices(array $data, array $priceKeys, string $fromCurrency, string $toCurrency): array
     {
         return (new self())->converter->convertData($data, $priceKeys, $fromCurrency, $toCurrency);
-    }
-
-    public static function convertValueWithStaticRate(float $value, string $fromCurrency, string $toCurrency, int $orderId): float
-    {
-        $value = $value;
-        $rates = (new RateProvider(new ChargesProvider()))->getRateByOrderId($orderId);
-        $value = $value * $rates[$fromCurrency];
-        $converter = new CurrencyConverter(new RateProvider(new ChargesProvider()));
-        $converter->setPrecision(self::$SYMBOLS_AFTER_DECIMAL_POINT);
-        return $converter->convert($value, $fromCurrency, $toCurrency);
     }
 }
