@@ -5,6 +5,7 @@ namespace app\services\output;
 use app\helpers\ModelTypeHelper;
 use app\models\BuyerOffer;
 use app\models\Order;
+use app\models\UserSettings;
 use app\services\MarketplaceTransactionService;
 use app\services\modificators\price\OrderPrice;
 use app\services\RateService;
@@ -69,7 +70,7 @@ class OrderOutputService extends OutputService
             $query->showWithDeleted();
         }
 
-        $userCurrency = Yii::$app->user->getIdentity()->settings->currency;
+        $userCurrency = UserSettings::find()->where(['user_id' => Yii::$app->user->getIdentity()->id])->one()->currency;
 
         return array_map(static function ($model) use ($imageSize, $userCurrency) {
             $info = ModelTypeHelper::toArray($model);
