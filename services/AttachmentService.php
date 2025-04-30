@@ -169,7 +169,9 @@ class AttachmentService
                 $tmpfile = tmpfile();
                 $metaData = stream_get_meta_data($tmpfile);
                 $tmpfileName = $metaData['uri'];
+
                 $getfile = file_get_contents($file);
+
                 file_put_contents($tmpfileName, $getfile);
                 $mimeType = mime_content_type($tmpfileName);
                 $extension = match ($mimeType) {

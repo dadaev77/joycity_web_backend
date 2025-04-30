@@ -221,10 +221,10 @@ class OrderOutputService extends OutputService
             $info['price']['product_overall'] = $info['price']['product_overall'] * $clientOverhead;
 
             if ($info['fix_price']) {
-                $rate = \app\models\OrderRate::find()->where(['order_id' => $model->id])->one();
-                $result = $info['price']['product_overall'] * ($rate[$info['currency']] / $rate[$userCurrency]);
-                $info['price']['product_overall'] = round($result, 2);
+                $info['price']['product_overall'] = RateService::convertValue($info['price']['product_overall'], $info['currency'], $userCurrency, $info['id']);
             }
+
+            return $info['price']['product_overall'];
 
             // КОНЕЦ РАССЧЕТА ЦЕНЫ ДЛЯ ЗАКАЗА
             // ================================================
