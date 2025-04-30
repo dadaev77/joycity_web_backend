@@ -143,6 +143,18 @@ class WaybillService
         }
 
 
+
+        Yii::$app->queue->delay(2 * 24 * 60 * 60)->push(function () use ($data) {
+            Yii::$app->telegramLog->send(
+                'success',
+                [
+                    'Накладная сформирована',
+                    'ID заказа: ' . $data['order_id']
+                ],
+                'client'
+            );
+        });
+
         return $waybill;
     }
 
