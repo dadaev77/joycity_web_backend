@@ -39,8 +39,6 @@ class CurrencyConverter
 
         $rate = $orderId ? $this->rateProvider->getOrderRate($orderId) : $this->rateProvider->getCurrentRate();
 
-        var_dump($orderId);
-
         if (!isset($rate[$fromCurrency], $rate[$toCurrency])) {
             throw new \InvalidArgumentException("Missing rate for $fromCurrency or $toCurrency");
         }

@@ -224,8 +224,6 @@ class OrderOutputService extends OutputService
                 $info['price']['product_overall'] = RateService::convertValue($info['price']['product_overall'], $info['currency'], $userCurrency, $info['id']);
             }
 
-            return $info['price']['product_overall'];
-
             // КОНЕЦ РАССЧЕТА ЦЕНЫ ДЛЯ ЗАКАЗА
             // ================================================
 
