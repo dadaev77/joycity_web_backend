@@ -64,5 +64,5 @@ vendor
 /entrypoint/api/uploads/
 /entrypoint/api/admin/
 /joycity.json
-
+/entrypoint/api/swagger/swagger.json
 # components/docker/cron_tasks.txt
