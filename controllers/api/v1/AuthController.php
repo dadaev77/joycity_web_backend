@@ -2,7 +2,6 @@
 
 namespace app\controllers\api\v1;
 
-use app\components\ApiAuth;
 use app\components\ApiResponse;
 use app\components\response\ResponseCodes;
 use app\controllers\api\V1Controller;
@@ -19,7 +18,7 @@ use Throwable;
 use Yii;
 
 
-class AuthController extends V1Controller implements ApiAuth
+class AuthController extends V1Controller
 {
     public function init()
     {
