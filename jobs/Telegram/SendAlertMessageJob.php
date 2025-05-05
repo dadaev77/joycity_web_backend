@@ -29,8 +29,8 @@ class SendAlertMessageJob extends BaseObject implements JobInterface
         parent::__construct($config);
         $this->types = $this->getTypes();
         $this->envTypes = $this->getEnvTypes();
-        $this->token = $this->env === 'prod' ? $_ENV['APP_LOG_BOT_ALERTS_PROD'] : $_ENV['APP_LOG_BOT_ALERTS_STAGE'];
-        $this->chatId = $this->env === 'prod' ? $_ENV['APP_LOG_BOT_CHAT_ID_ALERTS_PROD'] : $_ENV['APP_LOG_BOT_CHAT_ID_ALERTS_STAGE'];
+        $this->token = $_ENV['APP_LOG_BOT_ALERTS'];
+        $this->chatId = $_ENV['APP_LOG_BOT_CHAT_ID_ALERTS'];
     }
 
     public function execute($queue)
@@ -86,4 +86,4 @@ class SendAlertMessageJob extends BaseObject implements JobInterface
             'both' => 'Оба контура',
         ];
     }
-} 
+}

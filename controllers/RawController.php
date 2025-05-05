@@ -187,6 +187,14 @@ class RawController extends Controller
 
     public function actionTest()
     {
-        return \app\services\RateService::getRate();
+        Yii::$app->telegramLog->sendAlert('critical', [
+            'message' => 'test',
+            'file' => 'test',
+            'line' => 'test',
+            'trace' => 'test',
+            'trace_string' => 'test',
+            'trace_string_short' => 'test',
+            'trace_string_short' => 'test',
+        ]);
     }
 }
