@@ -138,7 +138,7 @@ class CronController extends Controller
                 );
                 return ['status' => 'success', 'message' => 'Курсы обновлены'];
             }
-            
+
             Yii::$app->telegramLog->send(
                 'error',
                 'Ошибка сохранения курсов',
@@ -380,5 +380,11 @@ class CronController extends Controller
         return Yii::$app->db->createCommand()
             ->delete($table, $condition)
             ->execute();
+    }
+    public function actionUpdateSwagger()
+    {
+        $command = "composer swagger";
+        exec($command);
+        return 'Swagger обновлен';
     }
 }
