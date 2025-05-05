@@ -165,32 +165,46 @@ class BuyerDeliveryOfferController extends ManagerController
 
     /**
      * @OA\Put(
-     *     path="/api/v1/manager/order/buyer-delivery-offer/paid/{id}",
-     *     summary="Отметить предложение по доставке как оплаченное",
+     *     path="/api/v1/manager/order/buyer-delivery-offer/{id}/paid",
+     *     summary="Подтверждение оплаты предложения по доставке",
      *     tags={"BuyerDeliveryOffer"},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
      *         required=true,
-     *         description="ID предложения по доставке",
-     *         @OA\Schema(type="integer")
+     *         @OA\Schema(type="integer"),
+     *         description="ID предложения по доставке"
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Предложение по доставке успешно отмечено как оплаченное"
+     *         description="Успешно подтверждено",
+     
      *     ),
      *     @OA\Response(
      *         response=404,
-     *         description="Предложение по доставке не найдено"
+     *         description="Предложение не найдено",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="code", type="integer", example=404),
+     *             @OA\Property(property="message", type="string", example="Not Found")
+     *         )
      *     ),
      *     @OA\Response(
      *         response=403,
-     *         description="Нет доступа к предложению"
+     *         description="Нет доступа",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="code", type="integer", example=403),
+     *             @OA\Property(property="message", type="string", example="No Access")
+     *         )
      *     ),
      *     @OA\Response(
      *         response=500,
-     *         description="Внутренняя ошибка сервера"
+     *         description="Внутренняя ошибка сервера",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="code", type="integer", example=500),
+     *             @OA\Property(property="message", type="string", example="Internal Server Error")
+     *         )
      *     )
+     * )
      */
     public function actionPaid(int $id)
     {

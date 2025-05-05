@@ -9,11 +9,7 @@
   ],
   "autoload": {
     "psr-4": {
-      "app\\": "./",
-      "app\\controllers\\": "./controllers",
-      "app\\models\\": "./models",
-      "app\\components\\": "./components",
-      "app\\services\\": "./services"
+      "app\\controllers\\": "./controllers"
     }
   },
   "homepage": "http://www.yiiframework.com/",
