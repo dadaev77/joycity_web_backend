@@ -137,14 +137,14 @@ class CronController extends Controller
                     'rates'
                 );
                 return ['status' => 'success', 'message' => 'Курсы обновлены'];
-            } else {
-                Yii::$app->telegramLog->send(
-                    'error',
-                    'Ошибка сохранения курсов',
-                    'rates'
-                );
-                return ['status' => 'error', 'message' => 'Ошибка сохранения курсов'];
             }
+            
+            Yii::$app->telegramLog->send(
+                'error',
+                'Ошибка сохранения курсов',
+                'rates'
+            );
+            return ['status' => 'error', 'message' => 'Ошибка сохранения курсов'];
         }
 
         Yii::$app->telegramLog->send(

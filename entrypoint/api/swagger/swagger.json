@@ -18,6 +18,12 @@
                         "in": "query",
                         "description": "ID задачи",
                         "required": true
+                    },
+                    {
+                        "name": "schedule",
+                        "in": "query",
+                        "description": "Расписание задачи (например, '* * * * *')",
+                        "required": false
                     }
                 ],
                 "responses": {
@@ -25,7 +31,7 @@
                         "description": "Задача cron создана"
                     },
                     "400": {
-                        "description": "Неверный ID задачи"
+                        "description": "Неверный ID задачи или задача уже существует"
                     }
                 }
             }
@@ -80,6 +86,46 @@
                 }
             }
         },
+        "/cron/check-pulse": {
+            "get": {
+                "summary": "Проверка статуса сервисов приложения",
+                "description": "Сервис для проверки статуса сервисов приложения \nВызывается раз в полчаса и проверяет статус сервисов\nПри нахождении ошибки в сервисе, отправляется сообщение в телеграм",
+                "operationId": "0e41e450cfdb26291c8c8e03a713502b",
+                "responses": {
+                    "200": {
+                        "description": "Сервисы проверены"
+                    }
+                }
+            }
+        },
+        "/cron/clear-action-logs": {
+            "get": {
+                "summary": "Очистить логи действий",
+                "operationId": "1b17ee58f85bf7546b850db98d320d98",
+                "responses": {
+                    "200": {
+                        "description": "Логи действий очищены"
+                    },
+                    "500": {
+                        "description": "Ошибка очистки логов действий"
+                    }
+                }
+            }
+        },
+        "/cron/cleanup-guest-accounts": {
+            "get": {
+                "summary": "Очистка аккаунтов с определенными ролями через 24 часа",
+                "operationId": "4cb79fffd232708482a408e90582ec2c",
+                "responses": {
+                    "200": {
+                        "description": "Аккаунты очищены"
+                    },
+                    "500": {
+                        "description": "Ошибка очистки аккаунтов"
+                    }
+                }
+            }
+        },
         "/raw/log": {
             "get": {
                 "summary": "Получить логи",
@@ -94,20 +140,6 @@
                 }
             }
         },
-        "/raw/clear-log": {
-            "post": {
-                "summary": "Очистить лог приложения",
-                "operationId": "3b7da8bd29e8e754d7eaa7cddfd22437",
-                "responses": {
-                    "200": {
-                        "description": "Лог очищен"
-                    },
-                    "500": {
-                        "description": "Ошибка очистки лога"
-                    }
-                }
-            }
-        },
         "/raw/accept-front-logs": {
             "post": {
                 "summary": "Принять фронт-логи",
@@ -118,48 +150,6 @@
                     },
                     "500": {
                         "description": "Не удалось добавить логи"
-                    }
-                }
-            }
-        },
-        "/raw/fetch-chats": {
-            "get": {
-                "summary": "Получить чаты из Twilio",
-                "operationId": "e1b2cc31a4752e1168e013e55c9b9576",
-                "responses": {
-                    "200": {
-                        "description": "Чаты успешно получены"
-                    },
-                    "404": {
-                        "description": "Чат не найден"
-                    }
-                }
-            }
-        },
-        "/raw/conversations": {
-            "get": {
-                "summary": "Получить разговоры Twilio",
-                "operationId": "4b4f64cfda2acca34353f1ab57f21a1b",
-                "responses": {
-                    "200": {
-                        "description": "Разговоры успешно получены"
-                    },
-                    "500": {
-                        "description": "Ошибка получения разговоров"
-                    }
-                }
-            }
-        },
-        "/raw/truncate-tables": {
-            "get": {
-                "summary": "Очистить таблицы",
-                "operationId": "bc8eed8b17e7647cc627d2591c832c16",
-                "responses": {
-                    "200": {
-                        "description": "Таблицы успешно очищены"
-                    },
-                    "500": {
-                        "description": "Ошибка очистки таблиц"
                     }
                 }
             }
@@ -1126,55 +1116,6 @@
                                                 }
                                             },
                                             "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Внутренняя ошибка сервера",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "string",
-                                            "example": "error"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Внутренняя ошибка сервера"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/auth/twilio-token": {
-            "post": {
-                "summary": "Получение токена Twilio",
-                "description": "Этот метод позволяет получить токен для работы с Twilio.",
-                "operationId": "4c6045b0b70c50c5a8c0876fccb588e3",
-                "responses": {
-                    "200": {
-                        "description": "Токен успешно получен",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "string",
-                                            "example": "success"
-                                        },
-                                        "access_token": {
-                                            "type": "string",
-                                            "example": "your_twilio_access_token"
                                         }
                                     },
                                     "type": "object"
@@ -2269,33 +2210,26 @@
                 }
             }
         },
-        "/api/v1/chat-message": {
+        "/api/v1/push/register-token": {
             "post": {
-                "summary": "Обработка сообщения чата",
-                "description": "Этот метод принимает оригинальный текст сообщения и возвращает переведенные тексты на русский, английский и китайский языки. Если перевод уже существует, он будет возвращен. В противном случае, создается новая запись.",
-                "operationId": "ffa6a180d585817f271a0ac2e0059c08",
+                "tags": [
+                    "Push"
+                ],
+                "summary": "Зарегистрировать токен push-уведомлений",
+                "operationId": "fedf35ef4d2a6fe3c3c9160fb782a819",
                 "requestBody": {
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "required": [
-                                    "original_text",
-                                    "message_key",
-                                    "chat_id"
-                                ],
                                 "properties": {
-                                    "original_text": {
+                                    "push_token": {
                                         "type": "string",
-                                        "example": "Привет, как дела?"
+                                        "example": "ваш_push_токен"
                                     },
-                                    "message_key": {
+                                    "device_id": {
                                         "type": "string",
-                                        "example": "unique_message_key"
-                                    },
-                                    "chat_id": {
-                                        "type": "integer",
-                                        "example": 123
+                                        "example": "ваш_device_id"
                                     }
                                 },
                                 "type": "object"
@@ -2305,13 +2239,60 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Успешный ответ с переведенными текстами"
+                        "description": "Токен успешно зарегистрирован"
                     },
                     "400": {
-                        "description": "Ошибка при сохранении перевода"
+                        "description": "Недействительный токен"
+                    }
+                }
+            }
+        },
+        "/api/v1/push/delete-token": {
+            "delete": {
+                "tags": [
+                    "Push"
+                ],
+                "summary": "Удалить токен push-уведомлений",
+                "operationId": "427bfd70ccaac37bb04567525ab63cf0",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "push_token": {
+                                        "type": "string",
+                                        "example": "ваш_push_токен"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Токен успешно удален"
                     },
-                    "500": {
-                        "description": "Внутренняя ошибка сервера"
+                    "400": {
+                        "description": "Недействительный токен"
+                    }
+                }
+            }
+        },
+        "/api/v1/push/drop-tokens": {
+            "delete": {
+                "tags": [
+                    "Push"
+                ],
+                "summary": "Удалить все токены для аутентифицированного пользователя",
+                "operationId": "439c2ceb3fd664a9016abf2db37b78ec",
+                "responses": {
+                    "200": {
+                        "description": "Токены успешно удалены"
+                    },
+                    "400": {
+                        "description": "Пользователь не аутентифицирован"
                     }
                 }
             }
@@ -2420,85 +2401,6 @@
                                 }
                             }
                         }
-                    }
-                }
-            }
-        },
-        "/api/v1/buyer/chat": {
-            "get": {
-                "summary": "Получить список чатов",
-                "operationId": "cbb6f046a3c76df52f6b3470af4dd256",
-                "responses": {
-                    "200": {
-                        "description": "Список чатов успешно получен."
-                    },
-                    "401": {
-                        "description": "Пользователь не авторизован."
-                    },
-                    "400": {
-                        "description": "Неверный запрос."
-                    }
-                }
-            }
-        },
-        "/api/v1/buyer/chat/search": {
-            "get": {
-                "summary": "Поиск заказов и чатов",
-                "operationId": "5ea811986b063d83c31ab5086bd8d20a",
-                "parameters": [
-                    {
-                        "name": "query",
-                        "in": "query",
-                        "description": "Поисковый запрос.",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Список заказов и связанных с ними чатов успешно получен."
-                    },
-                    "401": {
-                        "description": "Пользователь не авторизован."
-                    },
-                    "400": {
-                        "description": "Неверный запрос."
-                    },
-                    "404": {
-                        "description": "Заказы не найдены."
-                    }
-                }
-            }
-        },
-        "/api/v1/buyer/chat/get-chat": {
-            "get": {
-                "summary": "Получить чаты для заказа",
-                "operationId": "ea5077e6cdbde5b98947c4f46fb19fc7",
-                "parameters": [
-                    {
-                        "name": "order_id",
-                        "in": "query",
-                        "description": "ID заказа.",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Список чатов для указанного заказа успешно получен."
-                    },
-                    "401": {
-                        "description": "Пользователь не авторизован."
-                    },
-                    "400": {
-                        "description": "Неверный запрос."
-                    },
-                    "404": {
-                        "description": "Чаты не найдены."
                     }
                 }
             }
@@ -3716,179 +3618,6 @@
                     },
                     "404": {
                         "description": "Покупатель не найден"
-                    }
-                }
-            }
-        },
-        "/api/v1/client/chat": {
-            "get": {
-                "summary": "Получить список чатов",
-                "description": "Возвращает список чатов для текущего пользователя.",
-                "operationId": "a47c6ac4a0676c1d9ea6addb649f0b10",
-                "responses": {
-                    "200": {
-                        "description": "Успешный ответ",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "properties": {
-                                            "id": {
-                                                "description": "ID чата",
-                                                "type": "integer"
-                                            },
-                                            "name": {
-                                                "description": "Название чата",
-                                                "type": "string"
-                                            },
-                                            "last_message": {
-                                                "description": "Последнее сообщение",
-                                                "type": "string"
-                                            },
-                                            "created_at": {
-                                                "description": "Дата создания чата",
-                                                "type": "string",
-                                                "format": "date-time"
-                                            },
-                                            "updated_at": {
-                                                "description": "Дата последнего обновления чата",
-                                                "type": "string",
-                                                "format": "date-time"
-                                            }
-                                        },
-                                        "type": "object"
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Внутренняя ошибка сервера"
-                    }
-                }
-            }
-        },
-        "/api/v1/client/chat/search": {
-            "get": {
-                "summary": "Поиск чатов",
-                "description": "Ищет чаты по заданному запросу.",
-                "operationId": "75ace718ae665fb7c760c36f66ab859a",
-                "parameters": [
-                    {
-                        "name": "query",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Успешный ответ",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "properties": {
-                                            "id": {
-                                                "description": "ID чата",
-                                                "type": "integer"
-                                            },
-                                            "name": {
-                                                "description": "Название чата",
-                                                "type": "string"
-                                            },
-                                            "last_message": {
-                                                "description": "Последнее сообщение",
-                                                "type": "string"
-                                            },
-                                            "created_at": {
-                                                "description": "Дата создания чата",
-                                                "type": "string",
-                                                "format": "date-time"
-                                            },
-                                            "updated_at": {
-                                                "description": "Дата последнего обновления чата",
-                                                "type": "string",
-                                                "format": "date-time"
-                                            }
-                                        },
-                                        "type": "object"
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Неверный запрос"
-                    },
-                    "404": {
-                        "description": "Чаты не найдены"
-                    }
-                }
-            }
-        },
-        "/api/v1/client/chat/get-chat": {
-            "get": {
-                "summary": "Получить чат по ID заказа",
-                "description": "Возвращает чаты для указанного ID заказа.",
-                "operationId": "1c41a37ffb61171c1e45fa9d76323e2d",
-                "parameters": [
-                    {
-                        "name": "order_id",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Успешный ответ",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "properties": {
-                                            "id": {
-                                                "description": "ID чата",
-                                                "type": "integer"
-                                            },
-                                            "name": {
-                                                "description": "Название чата",
-                                                "type": "string"
-                                            },
-                                            "last_message": {
-                                                "description": "Последнее сообщение",
-                                                "type": "string"
-                                            },
-                                            "created_at": {
-                                                "description": "Дата создания чата",
-                                                "type": "string",
-                                                "format": "date-time"
-                                            },
-                                            "updated_at": {
-                                                "description": "Дата последнего обновления чата",
-                                                "type": "string",
-                                                "format": "date-time"
-                                            }
-                                        },
-                                        "type": "object"
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Неверный запрос"
-                    },
-                    "404": {
-                        "description": "Чаты не найдены"
                     }
                 }
             }
@@ -5296,60 +5025,6 @@
                     },
                     "500": {
                         "description": "Internal server error"
-                    }
-                }
-            }
-        },
-        "/api/v1/fulfillment/chat": {
-            "get": {
-                "summary": "Получить список чатов",
-                "operationId": "98d2912ccdb06e78d6b2beb61139dd04",
-                "responses": {
-                    "200": {
-                        "description": "Успешный ответ"
-                    },
-                    "500": {
-                        "description": "Внутренняя ошибка сервера"
-                    }
-                }
-            }
-        },
-        "/api/v1/fulfillment/chat/search": {
-            "post": {
-                "summary": "Поиск заказов по запросу",
-                "operationId": "f42004506066e23fd67eb3833b81f4a0",
-                "responses": {
-                    "200": {
-                        "description": "Успешный ответ"
-                    },
-                    "401": {
-                        "description": "Не авторизован"
-                    },
-                    "400": {
-                        "description": "Неверный запрос"
-                    },
-                    "404": {
-                        "description": "Не найдено"
-                    }
-                }
-            }
-        },
-        "/api/v1/fulfillment/chat/get-chat": {
-            "post": {
-                "summary": "Получить чаты для заказа",
-                "operationId": "babd9ec9177a2259a6c80bd8af388259",
-                "responses": {
-                    "200": {
-                        "description": "Успешный ответ"
-                    },
-                    "401": {
-                        "description": "Не авторизован"
-                    },
-                    "400": {
-                        "description": "Неверный запрос"
-                    },
-                    "404": {
-                        "description": "Не найдено"
                     }
                 }
             }
@@ -7211,72 +6886,6 @@
                 }
             }
         },
-        "/api/v1/manager/chat": {
-            "get": {
-                "tags": [
-                    "Chat"
-                ],
-                "summary": "Получить список чатов",
-                "operationId": "6759588224054927981581fa21b12c1c",
-                "responses": {
-                    "200": {
-                        "description": "Список чатов успешно получен"
-                    },
-                    "401": {
-                        "description": "Не авторизован"
-                    },
-                    "400": {
-                        "description": "Неверный запрос"
-                    }
-                }
-            }
-        },
-        "/api/v1/manager/chat/search": {
-            "get": {
-                "tags": [
-                    "Chat"
-                ],
-                "summary": "Поиск заказов по запросу",
-                "operationId": "1730faca88ab2daf84b52d83598cb0b4",
-                "responses": {
-                    "200": {
-                        "description": "Результаты поиска успешно получены"
-                    },
-                    "401": {
-                        "description": "Не авторизован"
-                    },
-                    "400": {
-                        "description": "Неверный запрос"
-                    },
-                    "404": {
-                        "description": "Заказы не найдены"
-                    }
-                }
-            }
-        },
-        "/api/v1/manager/chat/getChat": {
-            "get": {
-                "tags": [
-                    "Chat"
-                ],
-                "summary": "Получить чаты для заказа",
-                "operationId": "078b404b5f8f395ad52de97266b6585d",
-                "responses": {
-                    "200": {
-                        "description": "Чаты успешно получены"
-                    },
-                    "401": {
-                        "description": "Не авторизован"
-                    },
-                    "400": {
-                        "description": "Неверный запрос"
-                    },
-                    "404": {
-                        "description": "Чаты не найдены"
-                    }
-                }
-            }
-        },
         "/api/v1/manager/order/arrived-to-warehouse/{id}": {
             "put": {
                 "tags": [
@@ -7397,6 +7006,139 @@
                     },
                     "404": {
                         "description": "Заказ не найден"
+                    }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Order"
+                ],
+                "summary": "Изменить данные заказа клиента",
+                "operationId": "12a95239d05ca9f7317892f3307dbc90",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID заказа",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "buyer_id": {
+                                        "type": "integer",
+                                        "example": 12
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Заказ успешно обновлен",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "statusCode": {
+                                            "type": "integer",
+                                            "example": 200
+                                        },
+                                        "response": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 3
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "example": "15/01/25"
+                                                },
+                                                "status": {
+                                                    "type": "string",
+                                                    "example": "status"
+                                                },
+                                                "buyer_id": {
+                                                    "type": "integer",
+                                                    "example": 12
+                                                },
+                                                "manager_id": {
+                                                    "type": "integer",
+                                                    "example": 2
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 1000
+                                        },
+                                        "codeKey": {
+                                            "type": "string",
+                                            "example": "SUCCESS"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": ""
+                                        },
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Заказ не найден",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "statusCode": {
+                                            "type": "integer",
+                                            "example": 404
+                                        },
+                                        "response": {
+                                            "type": "null"
+                                        },
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 2004
+                                        },
+                                        "codeKey": {
+                                            "type": "string",
+                                            "example": "NOT_FOUND"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "NOT_FOUND"
+                                        },
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -7564,6 +7306,58 @@
                 ]
             }
         },
+        "/api/v1/manager/settings/charges": {
+            "get": {
+                "summary": "Получить текущие значения наценок на валюты",
+                "description": "Возвращает текущие значения наценок USD и CNY.",
+                "operationId": "1f8deebc18b208be77e733c9a2dbcd1d",
+                "responses": {
+                    "200": {
+                        "description": "Успешный ответ"
+                    }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/manager/settings/charges/update": {
+            "put": {
+                "summary": "Обновить значения наценок на валюты",
+                "description": "Обновляет значения наценок USD и CNY.",
+                "operationId": "34e63a0148e50c281090b4895694d707",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "usd_charge": {
+                                        "type": "integer"
+                                    },
+                                    "cny_charge": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Успешное обновление"
+                    }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ]
+            }
+        },
         "/api/v1/manager/settings/update": {
             "put": {
                 "summary": "Обновить настройки пользователя",
@@ -7721,452 +7515,6 @@
                     },
                     "403": {
                         "description": "Запрос уже одобрен"
-                    },
-                    "500": {
-                        "description": "Внутренняя ошибка сервера"
-                    }
-                }
-            }
-        },
-        "/api/v1/manager/waybill/generate": {
-            "post": {
-                "summary": "Генерация новой накладной",
-                "description": "Генерация новой накладной",
-                "operationId": "2dbaa3bc96670b1e6ece750a7f835955",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "sender",
-                                    "receiver",
-                                    "items"
-                                ],
-                                "properties": {
-                                    "sender": {
-                                        "properties": {
-                                            "name": {
-                                                "type": "string",
-                                                "example": "ООО Компания"
-                                            },
-                                            "phone": {
-                                                "type": "string",
-                                                "example": "+7 999 999 99 99"
-                                            },
-                                            "address": {
-                                                "type": "string",
-                                                "example": "г. Москва, ул. Примерная, д. 1"
-                                            }
-                                        },
-                                        "type": "object"
-                                    },
-                                    "receiver": {
-                                        "properties": {
-                                            "name": {
-                                                "type": "string",
-                                                "example": "ИП Иванов"
-                                            },
-                                            "phone": {
-                                                "type": "string",
-                                                "example": "+7 888 888 88 88"
-                                            },
-                                            "address": {
-                                                "type": "string",
-                                                "example": "г. Санкт-Петербург, ул. Тестовая, д. 2"
-                                            }
-                                        },
-                                        "type": "object"
-                                    },
-                                    "items": {
-                                        "type": "array",
-                                        "items": {
-                                            "properties": {
-                                                "name": {
-                                                    "type": "string",
-                                                    "example": "Товар 1"
-                                                },
-                                                "quantity": {
-                                                    "type": "integer",
-                                                    "example": 2
-                                                },
-                                                "price": {
-                                                    "type": "number",
-                                                    "format": "float",
-                                                    "example": 1000.5
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Накладная успешно создана",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": true
-                                        },
-                                        "data": {
-                                            "properties": {
-                                                "file_url": {
-                                                    "type": "string",
-                                                    "example": "https://example.com/uploads/waybills/waybill_123.pdf"
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Ошибка валидации",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": false
-                                        },
-                                        "error": {
-                                            "type": "string",
-                                            "example": "Неверный формат данных"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/manager/waybill/get-file/{id}": {
-            "get": {
-                "summary": "Получение ссылки на файл накладной",
-                "description": "Получение ссылки на файл накладной",
-                "operationId": "f5f12fbb11035e37aa38ccc8e2e61391",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "ID накладной",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Успешное получение ссылки",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": true
-                                        },
-                                        "data": {
-                                            "properties": {
-                                                "file_url": {
-                                                    "type": "string",
-                                                    "example": "https://example.com/uploads/waybills/waybill_123.pdf"
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Накладная не найдена",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": false
-                                        },
-                                        "error": {
-                                            "type": "string",
-                                            "example": "Файл накладной не найден"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/manager/waybill/regenerate/{id}": {
-            "put": {
-                "summary": "Регенерация накладной с новыми данными",
-                "description": "Повторная генерация накладной с учетом изменений",
-                "operationId": "fdc82f861fc074ed3ff56263a7897988",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "ID накладной",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "sender",
-                                    "receiver",
-                                    "items"
-                                ],
-                                "properties": {
-                                    "sender": {
-                                        "properties": {
-                                            "name": {
-                                                "type": "string",
-                                                "example": "ООО Компания"
-                                            },
-                                            "phone": {
-                                                "type": "string",
-                                                "example": "+7 999 999 99 99"
-                                            },
-                                            "address": {
-                                                "type": "string",
-                                                "example": "г. Москва, ул. Примерная, д. 1"
-                                            }
-                                        },
-                                        "type": "object"
-                                    },
-                                    "receiver": {
-                                        "properties": {
-                                            "name": {
-                                                "type": "string",
-                                                "example": "ИП Иванов"
-                                            },
-                                            "phone": {
-                                                "type": "string",
-                                                "example": "+7 888 888 88 88"
-                                            },
-                                            "address": {
-                                                "type": "string",
-                                                "example": "г. Санкт-Петербург, ул. Тестовая, д. 2"
-                                            }
-                                        },
-                                        "type": "object"
-                                    },
-                                    "items": {
-                                        "type": "array",
-                                        "items": {
-                                            "properties": {
-                                                "name": {
-                                                    "type": "string",
-                                                    "example": "Товар 1"
-                                                },
-                                                "quantity": {
-                                                    "type": "integer",
-                                                    "example": 2
-                                                },
-                                                "price": {
-                                                    "type": "number",
-                                                    "format": "float",
-                                                    "example": 1000.5
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Накладная успешно обновлена",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": true
-                                        },
-                                        "data": {
-                                            "properties": {
-                                                "file_url": {
-                                                    "type": "string",
-                                                    "example": "https://example.com/uploads/waybills/waybill_123.pdf"
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Накладная не найдена",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": false
-                                        },
-                                        "error": {
-                                            "type": "string",
-                                            "example": "Файл накладной не найден"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Ошибка валидации",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": false
-                                        },
-                                        "error": {
-                                            "type": "string",
-                                            "example": "Неверный формат данных"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/manager/order/buyer-delivery-offer/create": {
-            "post": {
-                "tags": [
-                    "BuyerDeliveryOffer"
-                ],
-                "summary": "Создать предложение по доставке",
-                "operationId": "e764a3d5ed5acea652932f62223871a9",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "order_id": {
-                                        "type": "integer",
-                                        "example": 1
-                                    },
-                                    "price_product": {
-                                        "type": "number",
-                                        "example": 100
-                                    },
-                                    "total_quantity": {
-                                        "type": "integer",
-                                        "example": 10
-                                    },
-                                    "total_packaging_quantity": {
-                                        "type": "integer",
-                                        "example": 5
-                                    },
-                                    "product_height": {
-                                        "type": "number",
-                                        "example": 10
-                                    },
-                                    "product_width": {
-                                        "type": "number",
-                                        "example": 5
-                                    },
-                                    "product_depth": {
-                                        "type": "number",
-                                        "example": 2
-                                    },
-                                    "product_weight": {
-                                        "type": "number",
-                                        "example": 1
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Успешно создано предложение по доставке"
-                    },
-                    "400": {
-                        "description": "Ошибка валидации параметров"
-                    },
-                    "500": {
-                        "description": "Внутренняя ошибка сервера"
-                    }
-                }
-            }
-        },
-        "/api/v1/manager/order/buyer-delivery-offer/paid/{id}": {
-            "put": {
-                "tags": [
-                    "BuyerDeliveryOffer"
-                ],
-                "summary": "Отметить предложение по доставке как оплаченное",
-                "operationId": "0c0eccb7e16ff4e0a3c379b7c6fbb662",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "ID предложения по доставке",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Предложение по доставке успешно отмечено как оплаченное"
-                    },
-                    "404": {
-                        "description": "Предложение по доставке не найдено"
-                    },
-                    "403": {
-                        "description": "Нет доступа к предложению"
                     },
                     "500": {
                         "description": "Внутренняя ошибка сервера"
@@ -8344,9 +7692,6 @@
                     "200": {
                         "description": "OK"
                     },
-                    "401": {
-                        "description": "Unauthorized"
-                    },
                     "404": {
                         "description": "Not Found"
                     }
@@ -8365,6 +7710,10 @@
         }
     },
     "tags": [
+        {
+            "name": "Push",
+            "description": "API для push-уведомлений"
+        },
         {
             "name": "Options",
             "description": "Options"
@@ -8428,14 +7777,6 @@
         {
             "name": "Type Packaging",
             "description": "Type Packaging"
-        },
-        {
-            "name": "Chat",
-            "description": "Chat"
-        },
-        {
-            "name": "BuyerDeliveryOffer",
-            "description": "BuyerDeliveryOffer"
         },
         {
             "name": "BuyerOffer",
