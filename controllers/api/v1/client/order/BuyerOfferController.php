@@ -211,6 +211,7 @@ class BuyerOfferController extends ClientController
                 );
             }
 
+<<<<<<< Updated upstream
             $orderDistributionReload = OrderDistributionService::reloadDistributionTask(
                 $order->id,
             );
@@ -223,6 +224,8 @@ class BuyerOfferController extends ClientController
                 );
             }
 
+=======
+>>>>>>> Stashed changes
             $transaction?->commit();
 
             \Yii::$app->telegramLog->send('success', [
