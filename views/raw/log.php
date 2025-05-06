@@ -251,8 +251,15 @@
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Название</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Цена</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Остаток</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Описание</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Рейтинг</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Количество отзывов</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID покупателя</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID подкатегории</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Диапазон 1</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Цена диапазона 1</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Создан</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Обновлен</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-900 dark:divide-gray-700">
@@ -260,6 +267,31 @@
                             <tr class="hover:bg-gray-50 dark:hover:bg-gray-800">
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?= $product->id ?></td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?= htmlspecialchars($product->name_ru) ?></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?= htmlspecialchars($product->description_ru) ?></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?= $product->rating ?></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?= $product->feedback_count ?></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?= $product->buyer_id ?></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?= $product->subcategory_id ?></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
+                                    <?php 
+                                    if (isset($product->range_1_min) && isset($product->range_1_max)) {
+                                        echo $product->range_1_min . ' - ' . $product->range_1_max;
+                                    } else {
+                                        echo '0';
+                                    }
+                                    ?>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
+                                    <?php 
+                                    if (isset($product->range_1_price)) {
+                                        echo number_format((float)$product->range_1_price, 2, '.', ' ') . ' ₽';
+                                    } else {
+                                        echo '0.00 ₽';
+                                    }
+                                    ?>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?= $product->created_at ?></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?= $product->updated_at ?></td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
@@ -276,8 +308,18 @@
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Статус</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Клиент</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Создал</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID покупателя</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID менеджера</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID продукта</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Название продукта</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ожидаемое количество</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ожидаемая цена</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Общее количество</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Цена продукта</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Цена доставки</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Создан</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Обновлен</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-900 dark:divide-gray-700">
@@ -286,7 +328,41 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?= $order->id ?></td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?= $order->status ?></td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?= $order->created_by ?></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?= $order->buyer_id ?></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?= $order->manager_id ?></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?= $order->product_id ?></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?= htmlspecialchars($order->product_name_ru) ?></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?= $order->expected_quantity ?></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
+                                    <?php 
+                                    if (isset($order->expected_price_per_item)) {
+                                        echo number_format((float)$order->expected_price_per_item, 2, '.', ' ') . ' ₽';
+                                    } else {
+                                        echo '0.00 ₽';
+                                    }
+                                    ?>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?= $order->total_quantity ?></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
+                                    <?php 
+                                    if (isset($order->price_product)) {
+                                        echo number_format((float)$order->price_product, 2, '.', ' ') . ' ₽';
+                                    } else {
+                                        echo '0.00 ₽';
+                                    }
+                                    ?>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
+                                    <?php 
+                                    if (isset($order->price_delivery)) {
+                                        echo number_format((float)$order->price_delivery, 2, '.', ' ') . ' ₽';
+                                    } else {
+                                        echo '0.00 ₽';
+                                    }
+                                    ?>
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?= $order->created_at ?></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?= $order->updated_at ?></td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
@@ -392,7 +468,7 @@
         function toggleDarkMode() {
             document.documentElement.classList.toggle('dark');
             const icon = document.getElementById('darkModeIcon');
-            icon.textContent = document.documentElement.classList.contains('dark') ? '☀��' : '🌙';
+            icon.textContent = document.documentElement.classList.contains('dark') ? '☀' : '🌙';
         }
 
         // Функция для форматирования фронтенд логов
