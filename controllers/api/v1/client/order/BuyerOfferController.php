@@ -211,21 +211,6 @@ class BuyerOfferController extends ClientController
                 );
             }
 
-<<<<<<< Updated upstream
-            $orderDistributionReload = OrderDistributionService::reloadDistributionTask(
-                $order->id,
-            );
-
-            if (!$orderDistributionReload->success) {
-                $transaction?->rollBack();
-                return ApiResponse::codeErrors(
-                    $apiCodes->ERROR_SAVE,
-                    $orderDistributionReload->reason,
-                );
-            }
-
-=======
->>>>>>> Stashed changes
             $transaction?->commit();
 
             \Yii::$app->telegramLog->send('success', [
