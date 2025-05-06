@@ -6,7 +6,7 @@ $getAuth = $_COOKIE['auth'] ?? false;
 
 $authData = [
     'login' => 'joycity',
-    'password' => 'friflex'
+    'password' => 'Ap9s!i9wP8'
 ];
 
 $postData = $_POST ?? [];

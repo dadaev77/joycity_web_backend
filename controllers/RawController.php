@@ -101,14 +101,20 @@ class RawController extends Controller
         $managers = User::find()->where(['role' => 'manager'])->orderBy(['id' => SORT_DESC])->all();
         $fulfillment = User::find()->where(['role' => 'fulfillment'])->orderBy(['id' => SORT_DESC])->all();
         $buyers = User::find()->where(['role' => 'buyer'])->orderBy(['id' => SORT_DESC])->all();
-        $products = Product::find()->orderBy(['id' => SORT_DESC])->limit(10)->all();
-        $orders = OrderModel::find()->orderBy(['id' => SORT_DESC])->limit(10)->all();
-
+        $products = Product::find()
+            ->select('*')
+            ->orderBy(['id' => SORT_DESC])
+            ->limit(100)
+            ->all();
+        $orders = OrderModel::find()
+            ->select('*')
+            ->orderBy(['id' => SORT_DESC])
+            ->limit(100)
+            ->all();
 
         $keysToRemove = array_keys(array_intersect_key($_SERVER, array_flip(self::KEYS)));
 
         foreach ($keysToRemove as $key) {
-
             $logs = preg_replace('/.*' . preg_quote($key, '/') . '.*\n?/', '', $logs);
         }
 
@@ -138,8 +144,6 @@ class RawController extends Controller
             'profilingLogs' => $profilingLogs,
         ], false);
     }
-
-
 
     /**
      * @OA\Post(
