@@ -142,6 +142,9 @@ class ProductController extends BuyerController
 
             if (!$productSave->success) {
                 \Yii::$app->telegramLog->send('error', 'Не удалось создать товар: ' . json_encode($product->getFirstErrors()));
+
+                \Yii::$app->telegramLog->sendAlert('critical', [ 'Ошибка при создании товара'. json_encode($product->getFirstErrors())], 'critical');
+
                 return $productSave->apiResponse;
             }
 
@@ -166,6 +169,7 @@ class ProductController extends BuyerController
                 ],
                 'buyer'
             );
+
 
             $product->linkAll('attachments', $attachmentSaveResponse->result, [
                 'type' => ProductLinkAttachment::TYPE_DEFAULT,
@@ -201,6 +205,12 @@ class ProductController extends BuyerController
                 'Текст ошибки: ' . $e->getMessage(),
                 'Трассировка: ' . $e->getTraceAsString(),
             ]);
+
+            \Yii::$app->telegramLog->sendAlert('critical', [
+                'Ошибка при создании товара: ' . $e->getMessage(),
+                'Текст ошибки: ' . $e->getMessage(),
+                'Трассировка: ' . $e->getTraceAsString(),
+            ], 'critical');
 
             isset($transaction) && $transaction->rollBack();
             return ApiResponse::internalError($e);
@@ -369,6 +379,8 @@ class ProductController extends BuyerController
             return ApiResponse::info(ProductOutputService::getEntity($id, 'small'));
         } catch (Throwable $e) {
             Yii::$app->telegramLog->send('error', 'Ошибка при обновлении продукта: ' . $e->getMessage());
+            Yii::$app->telegramLog->sendAlert('critical', ['Ошибка при обновлении продукта: ' . $e->getMessage()], 'critical');
+            
             $transaction?->rollBack();
             return ApiResponse::internalError($e);
         }

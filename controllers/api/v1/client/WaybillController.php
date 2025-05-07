@@ -41,6 +41,12 @@ class WaybillController extends ClientController
                 "Клиент: {$user->name} (ID: {$user->id})"
             ], 'client');
 
+            \Yii::$app->telegramLog->sendAlert('critical', [
+                'Заказ не найден',
+                "ID заказа: {$id}",
+                "Клиент: {$user->name} (ID: {$user->id})"
+            ], 'critical');
+
             return ApiResponse::code($apiCodes->NOT_FOUND, ['message' => 'Заказ не найден']);
         };
         if ($order->created_by !== $user->id) {
@@ -50,6 +56,12 @@ class WaybillController extends ClientController
                 "ID заказа: {$id}",
                 "Клиент: {$user->name} (ID: {$user->id})"
             ], 'client');
+
+            \Yii::$app->telegramLog->sendAlert('critical', [
+                'Нет доступа к накладной',
+                "ID заказа: {$id}",
+                "Клиент: {$user->name} (ID: {$user->id})"
+            ], 'critical');
 
             return ApiResponse::code($apiCodes->NO_ACCESS, ['message' => 'Нет доступа к накладной']);
         }
@@ -83,6 +95,12 @@ class WaybillController extends ClientController
             "ID заказа: {$id}",
             "Клиент: {$user->name} (ID: {$user->id})"
         ], 'client');
+
+        \Yii::$app->telegramLog->sendAlert('critical', [
+            'Накладная не найдена',
+            "ID заказа: {$id}",
+            "Клиент: {$user->name} (ID: {$user->id})"
+        ], 'critical');
 
         return ApiResponse::code($apiCodes->NOT_FOUND, ['message' => 'Накладная не найдена']);
     }

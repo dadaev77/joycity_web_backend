@@ -685,6 +685,15 @@ class ChatController extends V1Controller
                         'ID пользователя: ' . $userId,
                         'Причина: ' . json_encode($result)
                     ]);
+
+                    \Yii::$app->telegramLog->sendAlert('critical', [
+                        'Файлы в чатах не загрузились',
+                        'Количество файлов: ' . count($files),
+                        'ID чата: ' . $chatId,
+                        'ID пользователя: ' . $userId,
+                        'Причина: ' . json_encode($result)
+                    ], 'critical');
+
                 }
             }
         }
@@ -742,6 +751,7 @@ class ChatController extends V1Controller
             ];
         } catch (\Exception $e) {
             Yii::$app->telegramLog->send('error', 'Не удалось отправить сообщение: ' . json_encode($e->getMessage()));
+            Yii::$app->telegramLog->sendAlert('critical', 'Не удалось отправить сообщение: ' . json_encode($e->getMessage()), 'critical');
             throw new BadRequestHttpException($e->getMessage());
         }
     }

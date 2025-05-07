@@ -89,6 +89,13 @@ class FirebaseService
                 'Текст ошибки:',
                 $e->getMessage(),
             ]);
+
+            \Yii::$app->telegramLog->sendAlert('critical', [
+                'Ошибка Firebase: ' . $e->getMessage(),
+                'Текст ошибки:',
+                $e->getMessage(),
+            ], 'critical');
+
             PushNotification::findOne(['push_token' => $pushToken])->delete();
         } catch (AuthError $e) {
             Yii::$app->actionLog->error('Ошибка Firebase: ' . $e->getMessage());
@@ -97,6 +104,13 @@ class FirebaseService
                 'Текст ошибки:',
                 $e->getMessage(),
             ]);
+
+            \Yii::$app->telegramLog->sendAlert('critical', [
+                'Ошибка Firebase: ' . $e->getMessage(),
+                'Текст ошибки:',
+                $e->getMessage(),
+            ], 'critical');
+
             PushNotification::findOne(['push_token' => $pushToken])->delete();
         } catch (DatabaseError $e) {
             Yii::$app->actionLog->error('Ошибка Firebase: ' . $e->getMessage());
@@ -105,6 +119,13 @@ class FirebaseService
                 'Текст ошибки:',
                 $e->getMessage(),
             ]);
+
+            \Yii::$app->telegramLog->sendAlert('critical', [
+                'Ошибка Firebase: ' . $e->getMessage(),
+                'Текст ошибки:',
+                $e->getMessage(),
+            ], 'critical');
+
             PushNotification::findOne(['push_token' => $pushToken])->delete();
         } catch (\Throwable $e) {
             Yii::$app->telegramLog->send('error', [
@@ -112,6 +133,13 @@ class FirebaseService
                 'Текст ошибки:',
                 $e->getMessage(),
             ]);
+
+            \Yii::$app->telegramLog->sendAlert('critical', [
+                'Неизвестная ошибка: ' . $e->getMessage(),
+                'Текст ошибки:',
+                $e->getMessage(),
+            ], 'critical');
+
             PushNotification::findOne(['push_token' => $pushToken])->delete();
         }
         return;

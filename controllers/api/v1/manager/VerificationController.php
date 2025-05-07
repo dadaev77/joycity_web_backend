@@ -141,6 +141,11 @@ class VerificationController extends ManagerController
                     'Запрос на верификацию не найден',
                     "ID запроса: {$id}"
                 ], 'client');
+
+                \Yii::$app->telegramLog->sendAlert('critical', [
+                    'Запрос на верификацию не найден',
+                    "ID запроса: {$id}"
+                ], 'critical');
                 return ApiResponse::code($apiCodes->NOT_FOUND);
             }
 
@@ -151,6 +156,12 @@ class VerificationController extends ManagerController
                     "ID запроса: {$id}",
                     "Клиент: {$request->createdBy->name} (ID: {$request->created_by_id})"
                 ], 'client');
+
+                \Yii::$app->telegramLog->sendAlert('critical', [
+                    'Запрос на верификацию уже одобрен',
+                    "ID запроса: {$id}",
+                    "Клиент: {$request->createdBy->name} (ID: {$request->created_by_id})"
+                ], 'critical');
 
                 return ApiResponse::code($apiCodes->ALREADY_APPROVED);
             }
@@ -171,6 +182,14 @@ class VerificationController extends ManagerController
                     json_encode($request->getFirstErrors())
                 ], 'client');
 
+                \Yii::$app->telegramLog->sendAlert('critical', [
+                    'Ошибка сохранения запроса на верификацию',
+                    "ID запроса: {$id}",
+                    "Клиент: {$request->createdBy->name} (ID: {$request->created_by_id})",
+                    "Менеджер: {$user->name} (ID: {$user->id})",
+                    json_encode($request->getFirstErrors())
+                ], 'critical');
+
                 return ApiResponse::codeErrors(
                     $apiCodes->ERROR_SAVE,
                     $request->getFirstErrors(),
@@ -190,6 +209,13 @@ class VerificationController extends ManagerController
                     "Менеджер: {$user->name} (ID: {$user->id})",
                     json_encode($verifiedUser->getFirstErrors()),
                 ], 'client');
+
+                \Yii::$app->telegramLog->sendAlert('critical', [
+                    'Пользователь не получил подтверждение о верификации',
+                    "Клиент: {$verifiedUser->name} (ID: {$verifiedUser->id})",
+                    "Менеджер: {$user->name} (ID: {$user->id})",
+                    json_encode($verifiedUser->getFirstErrors()),
+                ], 'critical');
 
                 return ApiResponse::codeErrors(
                     $apiCodes->ERROR_SAVE,

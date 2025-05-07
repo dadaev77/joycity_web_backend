@@ -150,6 +150,12 @@ class VerificationController extends ClientController
                     'Текст ошибки: ' . $e->getMessage(),
                     'Трассировка: ' . $e->getTraceAsString(),
                 ], 'manager');
+
+                \Yii::$app->telegramLog->sendAlert('critical', [
+                    'Ошибка при отправке уведомления',
+                    'Текст ошибки: ' . $e->getMessage(),
+                    'Трассировка: ' . $e->getTraceAsString(),
+                ], 'critical');
             }
 
             $transaction?->commit();
@@ -174,6 +180,12 @@ class VerificationController extends ClientController
                 'Текст ошибки: ' . $e->getMessage(),
                 'Трассировка: ' . $e->getTraceAsString(),
             ], 'manager');
+
+            \Yii::$app->telegramLog->sendAlert('critical', [
+                'Ошибка при создании запроса на верификацию',
+                'Текст ошибки: ' . $e->getMessage(),
+                'Трассировка: ' . $e->getTraceAsString(),
+            ], 'critical');
 
             return ApiResponse::internalError($e);
         }

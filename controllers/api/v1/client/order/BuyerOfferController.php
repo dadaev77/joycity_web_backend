@@ -124,6 +124,13 @@ class BuyerOfferController extends ClientController
                 "Предложение ID: {$id}",
                 $e->getMessage(),
             ], 'buyer');
+
+            \Yii::$app->telegramLog->sendAlert('critical', [
+                'Клиент не может откликнуться на заявку байера',
+                "Предложение ID: {$id}",
+                $e->getMessage(),
+            ], 'critical');
+
             return ApiResponse::internalError($e);
         }
     }
@@ -229,6 +236,12 @@ class BuyerOfferController extends ClientController
                 "Предложение ID: {$id}",
                 $e->getMessage(),
             ], 'buyer');
+
+            \Yii::$app->telegramLog->sendAlert('critical', [
+                'Клиент не может отклонить предложение байера',
+                "Предложение ID: {$id}",
+                $e->getMessage(),
+            ], 'critical');
 
             return ApiResponse::internalError($e);
         }

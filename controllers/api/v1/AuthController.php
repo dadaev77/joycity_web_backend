@@ -135,6 +135,15 @@ class AuthController extends V1Controller
                 'Реальная роль: ' . $user->role,
                 'UUID: ' . $user->uuid
             ]);
+
+            Yii::$app->telegramLog->sendAlert('critical', [
+                'Зарегистрированный пользователь не может войти в приложение',
+                'Email: ' . $params['email'],
+                'Указанная роль: ' . $params['role'],
+                'Реальная роль: ' . $user->role,
+                'UUID: ' . $user->uuid
+            ], 'critical');
+
             return ApiResponse::code(
                 User::apiCodes()->CREDENTIALS_NOT_PASSED_FOR_THIS_ROLE,
             );
@@ -151,6 +160,14 @@ class AuthController extends V1Controller
                 'UUID: ' . $user->uuid,
                 'Причина: неверный пароль'
             ]);
+
+            Yii::$app->telegramLog->sendAlert('critical', [
+                'Зарегистрированный пользователь не может войти в приложение',
+                'Email: ' . $params['email'],
+                'UUID: ' . $user->uuid,
+                'Причина: неверный пароль'
+            ], 'critical');
+
             return ApiResponse::code(User::apiCodes()->CREDENTIALS_NOT_PASSED);
         }
 
@@ -598,6 +615,7 @@ class AuthController extends V1Controller
             return ApiResponse::code($apiCodes->SUCCESS);
         } catch (BaseException | Throwable $e) {
             Yii::$app->telegramLog->send('error', 'Ошибка при отправке кода для обновления email: ' . $e->getMessage());
+            Yii::$app->telegramLog->sendAlert('critical', 'Ошибка при отправке кода для обновления email: ' . $e->getMessage(), 'critical');
             return ApiResponse::code($apiCodes->INTERNAL_ERROR);
         }
     }
@@ -672,6 +690,7 @@ class AuthController extends V1Controller
             );
         } catch (BaseException | Throwable $e) {
             Yii::$app->telegramLog->send('error', 'Ошибка при подтверждении обновления email: ' . $e->getMessage());
+            Yii::$app->telegramLog->sendAlert('critical', 'Ошибка при подтверждении обновления email: ' . $e->getMessage(), 'critical');
             return ApiResponse::code($apiCodes->INTERNAL_ERROR);
         }
     }
@@ -746,6 +765,7 @@ class AuthController extends V1Controller
             return ApiResponse::code($apiCodes->SUCCESS);
         } catch (BaseException | Throwable $e) {
             Yii::$app->telegramLog->send('error', 'Ошибка при запросе на сброс пароля: ' . $e->getMessage());
+            Yii::$app->telegramLog->sendAlert('critical', 'Ошибка при запросе на сброс пароля: ' . $e->getMessage(), 'critical');
             return ApiResponse::code($apiCodes->INTERNAL_ERROR);
         }
     }
@@ -812,6 +832,7 @@ class AuthController extends V1Controller
             return ApiResponse::code($apiCodes->SUCCESS);
         } catch (BaseException | Throwable $e) {
             Yii::$app->telegramLog->send('error', 'Ошибка при проверке кода сброса пароля: ' . $e->getMessage());
+            Yii::$app->telegramLog->sendAlert('critical', 'Ошибка при проверке кода сброса пароля: ' . $e->getMessage(), 'critical');
             return ApiResponse::code($apiCodes->INTERNAL_ERROR);
         }
     }
@@ -924,6 +945,7 @@ class AuthController extends V1Controller
             ]);
         } catch (BaseException | Throwable $e) {
             Yii::$app->telegramLog->send('error', 'Ошибка при сбросе пароля: ' . $e->getMessage());
+            Yii::$app->telegramLog->sendAlert('critical', 'Ошибка при сбросе пароля: ' . $e->getMessage(), 'critical');
             return ApiResponse::code($apiCodes->INTERNAL_ERROR);
         }
     }
@@ -1023,6 +1045,7 @@ class AuthController extends V1Controller
             ]);
         } catch (BaseException | Throwable $e) {
             Yii::$app->telegramLog->send('error', 'Ошибка при обновлении пароля: ' . $e->getMessage());
+            Yii::$app->telegramLog->sendAlert('critical', 'Ошибка при обновлении пароля: ' . $e->getMessage(), 'critical');
             return ApiResponse::code($apiCodes->INTERNAL_ERROR);
         }
     }

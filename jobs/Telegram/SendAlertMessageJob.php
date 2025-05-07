@@ -67,7 +67,15 @@ class SendAlertMessageJob extends BaseObject implements JobInterface
 
     private function getUrl()
     {
-        return "https://api.telegram.org/bot{$this->token}/sendMessage?chat_id={$this->chatId}&text=";
+        $url = "https://api.telegram.org/bot{$this->token}/sendMessage?chat_id={$this->chatId}";
+
+        if ($this->type === 'critical') {
+            $url .= "&message_thread_id=3";
+        }
+
+        $url .= '&text=';
+
+        return $url;
     }
 
     private function getTypes()

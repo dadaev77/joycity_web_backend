@@ -165,6 +165,12 @@ class BuyerOfferController extends BuyerController
                 'Трассировка: ' . $e->getTraceAsString(),
             ], 'buyer');
 
+            \Yii::$app->telegramLog->sendAlert('critical', [
+                'Ошибка при создании предложения продавца',
+                'Текст ошибки: ' . $e->getMessage(),
+                'Трассировка: ' . $e->getTraceAsString(),
+            ], 'critical');
+
             isset($transaction) && $transaction->rollBack();
             return ApiResponse::internalError($e);
         }
