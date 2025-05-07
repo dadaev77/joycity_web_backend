@@ -16,6 +16,8 @@ $isAuth = auth($postData, $authData);
 
 if ($isAuth) {
     setcookie('auth', true, time() + 3600, '/');
+    header('Location: content.php');
+    exit;
 }
 
 if ($isAuth) {

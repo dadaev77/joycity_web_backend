@@ -309,7 +309,7 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Статус</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Создал</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID покупателя</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID байера</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID менеджера</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID продукта</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Название продукта</th>
