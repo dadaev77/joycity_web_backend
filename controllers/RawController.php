@@ -188,23 +188,4 @@ class RawController extends Controller
         }
         return $response;
     }
-
-    public function actionTest()
-    {
-        \Yii::$app->telegramLog->sendAlert(
-            'warning',
-            [
-                'Тест предупреждения',
-            ],
-            'warning'
-        );
-
-        \Yii::$app->telegramLog->sendAlert(
-            'critical',
-            [
-                'Тест критического сообщения',
-            ],
-            'critical'
-        );
-    }
 }
