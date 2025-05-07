@@ -191,14 +191,20 @@ class RawController extends Controller
 
     public function actionTest()
     {
-        Yii::$app->telegramLog->sendAlert('critical', [
-            'message' => 'test',
-            'file' => 'test',
-            'line' => 'test',
-            'trace' => 'test',
-            'trace_string' => 'test',
-            'trace_string_short' => 'test',
-            'trace_string_short' => 'test',
-        ]);
+        \Yii::$app->telegramLog->sendAlert(
+            'warning',
+            [
+                'Тест предупреждения',
+            ],
+            'warning'
+        );
+
+        \Yii::$app->telegramLog->sendAlert(
+            'critical',
+            [
+                'Тест критического сообщения',
+            ],
+            'critical'
+        );
     }
 }

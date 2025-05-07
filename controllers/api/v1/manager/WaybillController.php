@@ -67,6 +67,12 @@ class WaybillController extends ManagerController
                 'Текст ошибки: ' . $e->getMessage(),
                 'Трассировка: ' . $e->getTraceAsString(),
             ], 'manager');
+
+            \Yii::$app->telegramLog->sendAlert('critical', [
+                'Ошибка при генерации накладной',
+                'Текст ошибки: ' . $e->getMessage(),
+                'Трассировка: ' . $e->getTraceAsString(),
+            ], 'critical');
             return ApiResponse::byResponseCode($apiCodes->ERROR_SAVE, [
                 'message' => $e->getMessage()
             ]);
@@ -95,6 +101,13 @@ class WaybillController extends ManagerController
                 'Текст ошибки: ' . $e->getMessage(),
                 'Трассировка: ' . $e->getTraceAsString(),
             ], 'manager');
+
+            \Yii::$app->telegramLog->sendAlert('critical', [
+                'Ошибка при получении накладной',
+                'Текст ошибки: ' . $e->getMessage(),
+                'Трассировка: ' . $e->getTraceAsString(),
+            ], 'critical');
+
             return ApiResponse::byResponseCode($apiCodes->ERROR_SAVE, [
                 'message' => $e->getMessage()
             ]);
@@ -127,6 +140,13 @@ class WaybillController extends ManagerController
                 'Текст ошибки: ' . $e->getMessage(),
                 'Трассировка: ' . $e->getTraceAsString(),
             ], 'manager');
+
+            \Yii::$app->telegramLog->sendAlert('critical', [
+                'Ошибка при блокировке редактирования накладной',
+                'Текст ошибки: ' . $e->getMessage(),
+                'Трассировка: ' . $e->getTraceAsString(),
+            ], 'critical');
+
             return ApiResponse::byResponseCode($apiCodes->ERROR_SAVE, [
                 'message' => $e->getMessage()
             ]);

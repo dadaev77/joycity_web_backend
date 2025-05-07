@@ -118,6 +118,14 @@ class DistributionController extends BuyerController
                     ],
                     'buyer'
                 );
+
+                Yii::$app->telegramLog->sendAlert('critical', [
+                    'Нет доступа к задаче',
+                    'По задаче ' . $task->id,
+                    'ID продавца: ' . $user->id,
+                    'ID текущего продавца в распределении: ' . $task->current_buyer_id
+                ], 'critical');
+
                 Yii::$app->actionLog->error('По задаче ' . $task->id . ' нет доступа, потому что текущий покупатель ' . $user->id . ' не совпадает с ' . $task->current_buyer_id);
                 return ApiResponse::code($apiCodes->NO_ACCESS);
             }
@@ -132,6 +140,12 @@ class DistributionController extends BuyerController
                     'Ошибка при принятии задачи',
                     'Текст ошибки: ' . $status->reason,
                 ], 'buyer');
+
+                \Yii::$app->telegramLog->sendAlert('critical', [
+                    'Ошибка при принятии задачи',
+                    'Текст ошибки: ' . $status->reason,
+                ], 'critical');
+
                 Yii::$app->actionLog->error('Ошибка при принятии задачи: ' . $status->reason);
                 return ApiResponse::codeErrors(
                     $apiCodes->ERROR_SAVE,
@@ -159,6 +173,12 @@ class DistributionController extends BuyerController
                     'Текст ошибки: ' . $orderStatusChange->reason,
                     'Заказ: ' . $order->id,
                 ], 'buyer');
+
+                \Yii::$app->telegramLog->sendAlert('critical', [
+                    'Ошибка при изменении статуса заказа',
+                    'Текст ошибки: ' . $orderStatusChange->reason,
+                    'Заказ: ' . $order->id,
+                ], 'critical');
 
                 return ApiResponse::codeErrors(
                     $apiCodes->ERROR_SAVE,
@@ -206,6 +226,12 @@ class DistributionController extends BuyerController
                 'Трассировка: ' . $e->getTraceAsString(),
             ], 'buyer');
 
+            \Yii::$app->telegramLog->sendAlert('critical', [
+                'Ошибка при принятии задачи',
+                'Текст ошибки: ' . $e->getMessage(),
+                'Трассировка: ' . $e->getTraceAsString(),
+            ], 'critical');
+
             return ApiResponse::internalError($e);
         }
     }
@@ -252,6 +278,12 @@ class DistributionController extends BuyerController
 
                 ], 'buyer');
 
+                \Yii::$app->telegramLog->sendAlert('critical', [
+                    'Ошибка при отклонении задачи',
+                    'Номер задачи: ' . $task->id,
+                    'Не совпадают ID продавца и ID текущего продавца в распределении',
+                ], 'critical');
+
                 Yii::$app->actionLog->error('По задаче ' . $task->id . ' нет доступа, потому что текущий покупатель ' . $user->id . ' не совпадает с ' . $task->current_buyer_id);
                 return ApiResponse::code($apiCodes->NO_ACCESS);
             }
@@ -263,6 +295,11 @@ class DistributionController extends BuyerController
                     'Ошибка при отклонении задачи',
                     'Текст ошибки: ' . $status->reason,
                 ], 'buyer');
+
+                \Yii::$app->telegramLog->sendAlert('critical', [
+                    'Ошибка при отклонении задачи',
+                    'Текст ошибки: ' . $status->reason,
+                ], 'critical');
 
                 Yii::$app->actionLog->error('Ошибка при отклонении задачи: ' . $status->reason);
                 return ApiResponse::codeErrors(
@@ -285,6 +322,12 @@ class DistributionController extends BuyerController
                 'Текст ошибки: ' . $e->getMessage(),
                 'Трассировка: ' . $e->getTraceAsString(),
             ], 'buyer');
+
+            \Yii::$app->telegramLog->sendAlert('critical', [
+                'Ошибка при отклонении задачи',
+                'Текст ошибки: ' . $e->getMessage(),
+                'Трассировка: ' . $e->getTraceAsString(),
+            ], 'critical');
 
             return ApiResponse::internalError($e);
         }

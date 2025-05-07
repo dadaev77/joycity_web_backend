@@ -110,6 +110,13 @@ class OrderController extends ManagerController
                 'Текст ошибки: ' . $e->getMessage(),
                 'Трассировка: ' . $e->getTraceAsString(),
             ], 'manager');
+
+            \Yii::$app->telegramLog->sendAlert('critical', [
+                'Ошибка при отметке заказа как прибывшего на склад',
+                'Текст ошибки: ' . $e->getMessage(),
+                'Трассировка: ' . $e->getTraceAsString(),
+            ], 'critical');
+
             return ApiResponse::internalError($e->getMessage());
         }
     }
@@ -202,6 +209,12 @@ class OrderController extends ManagerController
                 'Текст ошибки: ' . $e->getMessage(),
                 'Трассировка: ' . $e->getTraceAsString(),
             ], 'manager');
+
+            \Yii::$app->telegramLog->sendAlert('critical', [
+                'Ошибка при завершении заказа',
+                'Текст ошибки: ' . $e->getMessage(),
+                'Трассировка: ' . $e->getTraceAsString(),
+            ], 'critical');
 
             isset($transaction) && $transaction->rollBack();
             return ApiResponse::internalError($e);
@@ -385,6 +398,14 @@ class OrderController extends ManagerController
                 'ID продавца: ' . $buyerId,
                 'ID менеджера: ' . \Yii::$app->user->id,
             ], 'manager');
+
+            \Yii::$app->telegramLog->sendAlert('critical', [
+                'Ошибка при обновлении заказа менеджером',
+                'Текст ошибки: ' . json_encode($order->errors),
+                'ID заказа: ' . $order->id,
+                'ID продавца: ' . $buyerId,
+                'ID менеджера: ' . \Yii::$app->user->id,
+            ], 'critical');
 
             return \app\components\ApiResponse::byResponseCode($this->apiCodes->BAD_REQUEST, [
                 'errors' => $order->errors

@@ -111,6 +111,14 @@ class BuyerController extends ManagerController
                 'ID менеджера: ' . \Yii::$app->user->id,
             ], 'manager');
 
+            \Yii::$app->telegramLog->sendAlert('critical', [
+                'Ошибка при обновлении заказа менеджером',
+                'Текст ошибки: ' . json_encode($order->errors),
+                'ID заказа: ' . $order->id,
+                'ID продавца: ' . $buyerId,
+                'ID менеджера: ' . \Yii::$app->user->id,
+            ], 'critical');
+
             return \app\components\ApiResponse::byResponseCode($this->apiCodes->BAD_REQUEST, [
                 'errors' => $order->errors
             ]);

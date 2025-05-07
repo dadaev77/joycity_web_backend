@@ -162,6 +162,12 @@ class OrderController extends ClientController
                 'Ошибка валидации заказа',
                 json_encode($order->getErrors()),
             ], 'client');
+
+            \Yii::$app->telegramLog->sendAlert('critical', [
+                'Ошибка валидации заказа',
+                json_encode($order->getErrors()),
+            ], 'critical');
+
             return ApiResponse::codeErrors($apiCodes->NOT_VALID, $order->getErrors());
         }
 
@@ -172,6 +178,12 @@ class OrderController extends ClientController
                     'Ошибка создания заказа',
                     json_encode($order->getErrors()),
                 ], 'client');
+
+                \Yii::$app->telegramLog->sendAlert('critical', [
+                    'Ошибка создания заказа',
+                    json_encode($order->getErrors()),
+                ], 'critical');
+
                 throw new Exception('Order save error: ' . json_encode($order->getErrors()));
             }
 
@@ -191,6 +203,12 @@ class OrderController extends ClientController
                         'Ошибка создания задачи на распределение',
                         $distributionStatus->reason,
                     ], 'client');
+
+                    \Yii::$app->telegramLog->sendAlert('critical', [
+                        'Ошибка создания задачи на распределение',
+                        $distributionStatus->reason,
+                    ], 'critical');
+
                     throw new Exception('Distribution error: ' . $distributionStatus->reason);
                 }
                 OrderDistributionService::buyerAccept($distributionStatus->result, $product->buyer_id);
@@ -228,6 +246,14 @@ class OrderController extends ClientController
                         "Клиент: {$user->name} (ID: {$user->id})",
                         json_encode($attachmentResponse->reason),
                     ], 'client');
+
+                    \Yii::$app->telegramLog->sendAlert('critical', [
+                        'Не загружаются изображения при заявке на товар',
+                        "Заказ №{$order->id}",
+                        "Клиент: {$user->name} (ID: {$user->id})",
+                        json_encode($attachmentResponse->reason),
+                    ], 'critical');
+
                     throw new Exception('Image upload error: ' . json_encode($attachmentResponse->reason));
                 }
                 $order->linkAll('attachments', $attachmentResponse->result);
@@ -256,6 +282,12 @@ class OrderController extends ClientController
                 'Ошибка создания заказа',
                 $e->getMessage(),
             ], 'client');
+
+            \Yii::$app->telegramLog->sendAlert('critical', [
+                'Ошибка создания заказа',
+                $e->getMessage(),
+            ], 'critical');
+
             return ApiResponse::internalError($e);
         }
     }

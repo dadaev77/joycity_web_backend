@@ -127,6 +127,11 @@ class ReportController extends BuyerController
                     'Текст ошибки: ' . json_encode($stockReport->getFirstErrors()),
                 ], 'buyer');
 
+                \Yii::$app->telegramLog->sendAlert('critical', [
+                    'Не удалось создать отчет о наличии товара',
+                    'Текст ошибки: ' . json_encode($stockReport->getFirstErrors()),
+                ], 'critical');
+
                 return ApiResponse::codeErrors(
                     $apiCodes->ERROR_SAVE,
                     $stockReport->getFirstErrors(),
@@ -213,6 +218,12 @@ class ReportController extends BuyerController
                 'Трассировка: ' . $e->getTraceAsString(),
             ], 'buyer');
 
+            \Yii::$app->telegramLog->sendAlert('critical', [
+                'Ошибка при отправке отчета о запасах',
+                'Текст ошибки: ' . $e->getMessage(),
+                'Трассировка: ' . $e->getTraceAsString(),
+            ], 'critical');
+
             isset($transaction) && $transaction->rollBack();
 
             return ApiResponse::internalError($e);
@@ -274,6 +285,12 @@ class ReportController extends BuyerController
                     'Не удалось создать отчет о проверке',
                     'Текст ошибки: ' . json_encode($productInspection->getFirstErrors()),
                 ], 'buyer');
+
+                \Yii::$app->telegramLog->sendAlert('critical', [
+                    'Не удалось создать отчет о проверке',
+                    'Текст ошибки: ' . json_encode($productInspection->getFirstErrors()),
+                ], 'critical');
+
                 return ApiResponse::transactionCodeErrors(
                     $transaction,
                     $apiCodes->ERROR_SAVE,
@@ -313,6 +330,13 @@ class ReportController extends BuyerController
                 'Текст ошибки: ' . $e->getMessage(),
                 'Трассировка: ' . $e->getTraceAsString(),
             ], 'buyer');
+
+            \Yii::$app->telegramLog->sendAlert('critical', [
+                'Ошибка при отправке отчета об инспекции',
+                'Текст ошибки: ' . $e->getMessage(),
+                'Трассировка: ' . $e->getTraceAsString(),
+            ], 'critical');
+
             isset($transaction) && $transaction->rollBack();
 
             return ApiResponse::internalError($e);
@@ -392,6 +416,12 @@ class ReportController extends BuyerController
                     'Не удалось создать отчет о отправке заказа',
                     'Текст ошибки: ' . json_encode($status->reason),
                 ], 'buyer');
+
+                \Yii::$app->telegramLog->sendAlert('critical', [
+                    'Не удалось создать отчет о отправке заказа',
+                    'Текст ошибки: ' . json_encode($status->reason),
+                ], 'critical');
+
                 return ApiResponse::transactionCodeErrors(
                     $transaction,
                     $apiCodes->ERROR_SAVE,
@@ -420,6 +450,13 @@ class ReportController extends BuyerController
                 'Текст ошибки: ' . $e->getMessage(),
                 'Трассировка: ' . $e->getTraceAsString(),
             ], 'buyer');
+
+            \Yii::$app->telegramLog->sendAlert('critical', [
+                'Ошибка при отправке заказа как отправленного',
+                'Текст ошибки: ' . $e->getMessage(),
+                'Трассировка: ' . $e->getTraceAsString(),
+            ], 'critical');
+
             isset($transaction) && $transaction->rollBack();
 
             return ApiResponse::internalError($e);
