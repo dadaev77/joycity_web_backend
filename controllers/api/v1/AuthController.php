@@ -161,13 +161,6 @@ class AuthController extends V1Controller
                 'Причина: неверный пароль'
             ]);
 
-            Yii::$app->telegramLog->sendAlert('critical', [
-                'Зарегистрированный пользователь не может войти в приложение',
-                'Email: ' . $params['email'],
-                'UUID: ' . $user->uuid,
-                'Причина: неверный пароль'
-            ], 'critical');
-
             return ApiResponse::code(User::apiCodes()->CREDENTIALS_NOT_PASSED);
         }
 
