@@ -23,19 +23,18 @@ class SendAlertMessageJob extends BaseObject implements JobInterface
     protected $client;
     protected $token;
     protected $chatId;
-    protected $botTokens;
 
     public function __construct($config = [])
     {
         parent::__construct($config);
         $this->types = $this->getTypes();
         $this->envTypes = $this->getEnvTypes();
-        $this->botTokens = [
-            'prod' => $_ENV['APP_LOG_BOT_ALERTS_PROD'] ?? null,
-            'stage' => $_ENV['APP_LOG_BOT_ALERTS_STAGE'] ?? null
-        ];
-        $this->token = $this->botTokens[$this->env] ?? null;
-        $this->chatId = $_ENV['APP_LOG_BOT_CHAT_ID_ALERTS'];
+        $this->token = $this->env === 'prod'
+            ? $_ENV['APP_LOG_BOT_ALERTS_PROD']
+            : $_ENV['APP_LOG_BOT_ALERTS_STAGE'];
+        $this->chatId = $this->env === 'prod'
+            ? $_ENV['APP_LOG_BOT_CHAT_ID_ALERTS_PROD']
+            : $_ENV['APP_LOG_BOT_CHAT_ID_ALERTS_STAGE'];
     }
 
     public function execute($queue)
