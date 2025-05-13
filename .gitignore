@@ -66,3 +66,4 @@ vendor
 /joycity.json
 /entrypoint/api/swagger/swagger.json
 # components/docker/cron_tasks.txt
+.phpunit.result.cache
