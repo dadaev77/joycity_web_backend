@@ -175,7 +175,7 @@ class ProductController extends BuyerController
                 'type' => ProductLinkAttachment::TYPE_DEFAULT,
             ]);
 
-            $transaction?->commit();
+            //$transaction?->commit();
 
             \app\services\TranslationService::translateAttributes(
                 $request->post('name'),
