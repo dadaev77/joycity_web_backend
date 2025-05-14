@@ -6,6 +6,7 @@ use yii\rest\Controller;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Yii;
+use app\jobs\TestQueueJob;
 
 class HealthCheckController extends Controller
 {
@@ -28,7 +29,105 @@ class HealthCheckController extends Controller
 
     public function actionQueue()
     {
-        return $this->asJson('Queue is ok')->setStatusCode(200);
+        try {
+            Yii::info('Начало проверки очереди', 'health-check');
+            
+            
+            $tableName = Yii::$app->db->schema->getRawTableName('{{%queue}}');
+            Yii::info('Проверяем таблицу: ' . $tableName, 'health-check');
+            
+            $tableExists = Yii::$app->db->createCommand("SHOW TABLES LIKE '{$tableName}'")->queryScalar();
+            if (!$tableExists) {
+                throw new \Exception('Таблица очереди не существует');
+            }
+            Yii::info('Таблица очереди существует', 'health-check');
+            
+            
+            $testData = 'test_' . time();
+            Yii::info('Создаем тестовую задачу с данными: ' . $testData, 'health-check');
+            
+            $job = new TestQueueJob([
+                'data' => $testData
+            ]);
+            
+            $jobId = Yii::$app->queue->push($job);
+            Yii::info('ID созданной задачи: ' . ($jobId ?: 'null'), 'health-check');
+
+            if (!$jobId) {
+                throw new \Exception('Не удалось создать задачу в очереди');
+            }
+
+            // Шаг 3: Проверяем, что задача создалась в БД
+            $jobRecord = (new \yii\db\Query())
+                ->select(['id', 'channel', 'pushed_at', 'reserved_at', 'attempt', 'done_at'])
+                ->from($tableName)
+                ->where(['id' => $jobId])
+                ->one();
+                
+            if (!$jobRecord) {
+                throw new \Exception('Задача не найдена в базе данных после создания');
+            }
+            Yii::info('Задача успешно создана в БД', 'health-check');
+
+            // Шаг 4: Выполняем задачу
+            Yii::info('Начинаем выполнение задачи', 'health-check');
+            
+            // Обновляем статус задачи как "в процессе"
+            Yii::$app->db->createCommand()
+                ->update($tableName, 
+                    ['reserved_at' => time(), 'attempt' => 1],
+                    ['id' => $jobId]
+                )->execute();
+            
+            // Выполняем задачу
+            $result = $job->execute(Yii::$app->queue);
+            Yii::info('Результат выполнения задачи: ' . ($result ? 'true' : 'false'), 'health-check');
+            
+            if (!$result) {
+                throw new \Exception('Не удалось выполнить задачу');
+            }
+
+            // Отмечаем задачу как выполненную
+            Yii::$app->db->createCommand()
+                ->update($tableName, 
+                    ['done_at' => time()],
+                    ['id' => $jobId]
+                )->execute();
+
+            // Шаг 5: Проверяем статус выполнения
+            $jobRecord = (new \yii\db\Query())
+                ->select(['id', 'channel', 'pushed_at', 'reserved_at', 'attempt', 'done_at'])
+                ->from($tableName)
+                ->where(['id' => $jobId])
+                ->one();
+                
+            if (!$jobRecord['done_at']) {
+                throw new \Exception('Задача не отмечена как выполненная');
+            }
+
+            // Шаг 6: Очищаем тестовые задачи
+            Yii::info('Очищаем тестовые задачи', 'health-check');
+            $deleted = Yii::$app->db->createCommand()
+                ->delete($tableName, ['id' => $jobId])
+                ->execute();
+            Yii::info('Удалено тестовых задач: ' . $deleted, 'health-check');
+
+            Yii::info('Проверка очереди успешно завершена', 'health-check');
+            return $this->asJson([
+                'status' => 'ok',
+                'message' => 'Queue is working properly',
+                'job_id' => $jobId,
+                'job_data' => $jobRecord
+            ])->setStatusCode(200);
+
+        } catch (\Exception $e) {
+            Yii::error('Queue health check failed: ' . $e->getMessage() . "\n" . $e->getTraceAsString(), 'health-check');
+            return $this->asJson([
+                'status' => 'error',
+                'message' => 'Queue is not working: ' . $e->getMessage(),
+                'trace' => YII_DEBUG ? $e->getTraceAsString() : null
+            ])->setStatusCode(500);
+        }
     }
 
     public function actionRates()
