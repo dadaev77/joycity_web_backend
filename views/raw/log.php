@@ -1,3 +1,8 @@
+<?php
+use app\models\User;
+use app\models\Product;
+use app\models\Order as OrderModel;
+?>
 <!DOCTYPE html>
 <html class="dark">
 
@@ -232,7 +237,7 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100"><?= $user->phone_number ?></td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100"><?= $user->role ?></td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full <?= $user->is_deleted ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' ?>">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold <?= $user->is_deleted ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' ?>">
                                         <?= $user->is_deleted ? 'Deleted' : 'Active' ?>
                                     </span>
                                 </td>
@@ -302,71 +307,109 @@
         <!-- Orders Tab -->
         <div id="model-orders" class="model-tab hidden">
             <h2 class="text-xl font-semibold mb-4 dark:text-white">Последние заявки</h2>
+            
+            <!-- Фильтры -->
+            <div class="mb-4 flex gap-4">
+                <select id="orderStatusFilter" onchange="filterOrders()" class="p-2.5 text-sm rounded-lg border bg-gray-50 border-gray-300 text-gray-900 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                    <option value="all">Все статусы</option>
+                    <option value="new">Новые</option>
+                    <option value="in_progress">В работе</option>
+                    <option value="completed">Завершенные</option>
+                    <option value="cancelled">Отмененные</option>
+                </select>
+                
+                <input type="text" id="orderSearch" onkeyup="filterOrders()" placeholder="Поиск по ID или названию..." class="p-2.5 text-sm rounded-lg border bg-gray-50 border-gray-300 text-gray-900 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+            </div>
+
             <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
                 <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead class="bg-gray-50 dark:bg-gray-800">
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Статус</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Создал</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID байера</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID менеджера</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID продукта</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Название продукта</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ожидаемое количество</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ожидаемая цена</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Общее количество</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Цена продукта</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Цена доставки</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Создан</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Обновлен</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Продукт</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Количество</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Цена</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Менеджер</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Байер</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Действия</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-900 dark:divide-gray-700">
-                        <?php foreach ($orders as $order): ?>
-                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?= $order->id ?></td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?= $order->status ?></td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?= $order->created_by ?></td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?= $order->buyer_id ?></td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?= $order->manager_id ?></td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?= $order->product_id ?></td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?= htmlspecialchars($order->product_name_ru) ?></td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?= $order->expected_quantity ?></td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
-                                    <?php 
-                                    if (isset($order->expected_price_per_item)) {
-                                        echo number_format((float)$order->expected_price_per_item, 2, '.', ' ') . ' ₽';
-                                    } else {
-                                        echo '0.00 ₽';
-                                    }
-                                    ?>
+                        <?php foreach ($orders as $orderData): 
+                            $order = $orderData['order'];
+                            $manager = $orderData['manager'];
+                            $buyer = $orderData['buyer'];
+                        ?>
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800 order-row" 
+                                data-status="<?= $order->status ?>"
+                                data-id="<?= $order->id ?>"
+                                data-product="<?= htmlspecialchars($order->product_name_ru) ?>">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100"><?= $order->id ?></td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                        <?php
+                                        switch($order->status) {
+                                            case 'new':
+                                                echo 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+                                                break;
+                                            case 'in_progress':
+                                                echo 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+                                                break;
+                                            case 'completed':
+                                                echo 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+                                                break;
+                                            case 'cancelled':
+                                                echo 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+                                                break;
+                                            default:
+                                                echo 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+                                        }
+                                        ?>">
+                                        <?= ucfirst($order->status) ?>
+                                    </span>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?= $order->total_quantity ?></td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
-                                    <?php 
-                                    if (isset($order->price_product)) {
-                                        echo number_format((float)$order->price_product, 2, '.', ' ') . ' ₽';
-                                    } else {
-                                        echo '0.00 ₽';
-                                    }
-                                    ?>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                                    <?= htmlspecialchars($order->product_name_ru) ?>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
-                                    <?php 
-                                    if (isset($order->price_delivery)) {
-                                        echo number_format((float)$order->price_delivery, 2, '.', ' ') . ' ₽';
-                                    } else {
-                                        echo '0.00 ₽';
-                                    }
-                                    ?>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                                    <?= $order->total_quantity ?>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?= $order->created_at ?></td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300"><?= $order->updated_at ?></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                                    <?= number_format((float)$order->price_product, 2, '.', ' ') ?> ₽
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                                    <?= $manager ? htmlspecialchars($manager['name'] . ' ' . $manager['surname']) : 'Не назначен' ?>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                                    <?= $buyer ? htmlspecialchars($buyer['name'] . ' ' . $buyer['surname']) : 'Не назначен' ?>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                                    <button onclick="showOrderDetails(<?= $order->id ?>)" class="text-primary-600 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-300">
+                                        Подробнее
+                                    </button>
+                                </td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
                 </table>
+            </div>
+
+            <!-- Модальное окно с деталями заявки -->
+            <div id="orderDetailsModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full">
+                <div class="relative top-20 mx-auto p-5 border w-4/5 shadow-lg rounded-md bg-white dark:bg-gray-800">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-white">Детали заявки</h3>
+                        <button onclick="closeOrderDetails()" class="text-gray-400 hover:text-gray-500">
+                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="orderDetailsContent" class="space-y-4 text-gray-900 dark:text-gray-100">
+                        <!-- Контент будет загружен динамически -->
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -811,6 +854,183 @@
                         }
                     </div>`;
             }).join('');
+        }
+
+        // Функция для фильтрации заявок
+        function filterOrders() {
+            const statusFilter = document.getElementById('orderStatusFilter').value;
+            const searchQuery = document.getElementById('orderSearch').value.toLowerCase();
+            const rows = document.querySelectorAll('.order-row');
+
+            rows.forEach(row => {
+                const status = row.dataset.status;
+                const id = row.dataset.id;
+                const product = row.dataset.product.toLowerCase();
+                
+                const statusMatch = statusFilter === 'all' || status === statusFilter;
+                const searchMatch = !searchQuery || 
+                    id.includes(searchQuery) || 
+                    product.includes(searchQuery);
+
+                if (statusMatch && searchMatch) {
+                    row.classList.remove('hidden');
+                } else {
+                    row.classList.add('hidden');
+                }
+            });
+        }
+
+        // Функция для отображения деталей заявки
+        function showOrderDetails(orderId) {
+            const modal = document.getElementById('orderDetailsModal');
+            const content = document.getElementById('orderDetailsContent');
+            
+            // Показываем модальное окно
+            modal.classList.remove('hidden');
+            
+            // Показываем индикатор загрузки
+            content.innerHTML = `
+                <div class="flex justify-center items-center py-8">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
+                </div>
+            `;
+            
+            // Загружаем данные о заявке
+            fetch(`/raw/order-details?id=${orderId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Ошибка при загрузке данных');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
+
+                    content.innerHTML = `
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-4">
+                                <div>
+                                    <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">Основная информация</h4>
+                                    <div class="mt-2 space-y-2">
+                                        <p class="text-gray-900 dark:text-gray-100"><span class="font-medium">ID:</span> ${data.id}</p>
+                                        <p class="text-gray-900 dark:text-gray-100"><span class="font-medium">Статус:</span> 
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                                ${getStatusClass(data.status)}">
+                                                ${data.status}
+                                            </span>
+                                        </p>
+                                        <p class="text-gray-900 dark:text-gray-100"><span class="font-medium">Создано:</span> ${formatDate(data.created_at)}</p>
+                                        <p class="text-gray-900 dark:text-gray-100"><span class="font-medium">Обновлено:</span> ${formatDate(data.updated_at)}</p>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">Информация о продукте</h4>
+                                    <div class="mt-2 space-y-2">
+                                        <p class="text-gray-900 dark:text-gray-100"><span class="font-medium">Название:</span> ${data.product_name_ru}</p>
+                                        <p class="text-gray-900 dark:text-gray-100"><span class="font-medium">Количество:</span> ${data.total_quantity}</p>
+                                        <p class="text-gray-900 dark:text-gray-100"><span class="font-medium">Цена продукта:</span> ${data.price_product} ₽</p>
+                                        <p class="text-gray-900 dark:text-gray-100"><span class="font-medium">Цена доставки:</span> ${data.price_delivery} ₽</p>
+                                        <p class="text-gray-900 dark:text-gray-100"><span class="font-medium">Срок доставки:</span> ${data.time_delivery || 'Не указан'}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-4">
+                                <div>
+                                    <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">Участники</h4>
+                                    <div class="mt-2 space-y-2">
+                                        <p class="text-gray-900 dark:text-gray-100"><span class="font-medium">Создал:</span> ${data.created_by_name}</p>
+                                        <p class="text-gray-900 dark:text-gray-100"><span class="font-medium">Менеджер:</span> ${data.manager_name}</p>
+                                        <p class="text-gray-900 dark:text-gray-100"><span class="font-medium">Байер:</span> ${data.buyer_name}</p>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">Предложения</h4>
+                                    <div class="mt-2 space-y-2">
+                                        ${data.proposals && data.proposals.length > 0 ? 
+                                            data.proposals.map(proposal => `
+                                                <div class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                                    <div class="flex justify-between items-start">
+                                                        <div>
+                                                            <p class="font-medium text-gray-900 dark:text-gray-100">${proposal.sender_name}</p>
+                                                            <p class="text-sm text-gray-600 dark:text-gray-400">${formatDate(proposal.created_at)}</p>
+                                                        </div>
+                                                        <span class="px-2 py-1 text-xs rounded-full ${getProposalStatusClass(proposal.status)}">
+                                                            ${proposal.status}
+                                                        </span>
+                                                    </div>
+                                                    <p class="mt-2 text-lg font-semibold text-gray-900 dark:text-gray-100">${proposal.price} ₽</p>
+                                                </div>
+                                            `).join('') : 
+                                            '<p class="text-gray-600 dark:text-gray-400">Нет предложений</p>'
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                })
+                .catch(error => {
+                    content.innerHTML = `
+                        <div class="text-red-500 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                            <p class="font-medium">Ошибка при загрузке данных</p>
+                            <p class="text-sm mt-1">${error.message}</p>
+                        </div>
+                    `;
+                });
+        }
+
+        // Функция для форматирования даты
+        function formatDate(dateString) {
+            if (!dateString) return 'Не указано';
+            const date = new Date(dateString);
+            return date.toLocaleString('ru-RU', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // Функция для получения класса статуса заявки
+        function getStatusClass(status) {
+            switch(status) {
+                case 'new':
+                    return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+                case 'in_progress':
+                    return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+                case 'completed':
+                    return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+                case 'cancelled':
+                    return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+                default:
+                    return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+            }
+        }
+
+        // Функция для получения класса статуса предложения
+        function getProposalStatusClass(status) {
+            switch(status) {
+                case 'accepted':
+                    return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+                case 'rejected':
+                    return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+                case 'pending':
+                    return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+                default:
+                    return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+            }
+        }
+
+        // Функция для закрытия модального окна
+        function closeOrderDetails() {
+            const modal = document.getElementById('orderDetailsModal');
+            modal.classList.add('hidden');
         }
 
         // Инициализация форматирования при загрузке страницы

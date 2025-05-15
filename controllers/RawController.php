@@ -97,10 +97,13 @@ class RawController extends Controller
             $actionLogs = implode("\n", array_reverse($logEntries));
         }
 
+        // Получаем пользователей
         $clients = User::find()->where(['role' => 'client'])->orderBy(['id' => SORT_DESC])->all();
         $managers = User::find()->where(['role' => 'manager'])->orderBy(['id' => SORT_DESC])->all();
         $fulfillment = User::find()->where(['role' => 'fulfillment'])->orderBy(['id' => SORT_DESC])->all();
         $buyers = User::find()->where(['role' => 'buyer'])->orderBy(['id' => SORT_DESC])->all();
+
+        // Получаем продукты и заказы
         $products = Product::find()
             ->select('*')
             ->orderBy(['id' => SORT_DESC])
@@ -111,6 +114,25 @@ class RawController extends Controller
             ->orderBy(['id' => SORT_DESC])
             ->limit(100)
             ->all();
+
+        // Подготавливаем данные для заказов
+        $ordersData = [];
+        foreach ($orders as $order) {
+            $manager = User::findOne($order->manager_id);
+            $buyer = User::findOne($order->buyer_id);
+            
+            $ordersData[] = [
+                'order' => $order,
+                'manager' => $manager ? [
+                    'name' => $manager->name,
+                    'surname' => $manager->surname
+                ] : null,
+                'buyer' => $buyer ? [
+                    'name' => $buyer->name,
+                    'surname' => $buyer->surname
+                ] : null
+            ];
+        }
 
         $keysToRemove = array_keys(array_intersect_key($_SERVER, array_flip(self::KEYS)));
 
@@ -138,7 +160,7 @@ class RawController extends Controller
             'fulfillment' => $fulfillment,
             'buyers' => $buyers,
             'products' => $products,
-            'orders' => $orders,
+            'orders' => $ordersData,
             'attachments' => $attachments,
             'actionLogs' => $actionLogs,
             'profilingLogs' => $profilingLogs,
@@ -187,5 +209,87 @@ class RawController extends Controller
             ];
         }
         return $response;
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/raw/order-details",
+     *     summary="Получить детальную информацию о заявке",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="query",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(response="200", description="Информация о заявке успешно получена"),
+     *     @OA\Response(response="404", description="Заявка не найдена")
+     * )
+     */
+    public function actionOrderDetails()
+    {
+        if (!isset($_COOKIE['auth'])) {
+            return $this->asJson([
+                'error' => 'Unauthorized'
+            ])->setStatusCode(401);
+        }
+
+        $orderId = Yii::$app->request->get('id');
+        $order = OrderModel::findOne($orderId);
+
+        if (!$order) {
+            return $this->asJson([
+                'error' => 'Order not found'
+            ])->setStatusCode(404);
+        }
+
+        // Получаем информацию о пользователях
+        $createdBy = User::findOne($order->created_by);
+        $manager = User::findOne($order->manager_id);
+        $buyer = User::findOne($order->buyer_id);
+
+        // Получаем предложения по заявке
+        $buyerOffers = $order->buyerOffers;
+        $fulfillmentOffer = $order->fulfillmentOffer;
+        
+        $formattedProposals = [];
+        
+        // Форматируем предложения покупателей
+        foreach ($buyerOffers as $offer) {
+            $sender = User::findOne($offer->buyer_id);
+            $formattedProposals[] = [
+                'id' => $offer->id,
+                'sender_name' => $sender ? $sender->name . ' ' . $sender->surname : 'Неизвестный отправитель',
+                'price' => number_format((float)$offer->price_product, 2, '.', ' '),
+                'status' => $offer->status,
+                'created_at' => $offer->created_at
+            ];
+        }
+        
+        // Добавляем предложение фулфилмента, если оно есть
+        if ($fulfillmentOffer) {
+            $sender = User::findOne($fulfillmentOffer->fulfillment_id);
+            $formattedProposals[] = [
+                'id' => $fulfillmentOffer->id,
+                'sender_name' => $sender ? $sender->name . ' ' . $sender->surname : 'Неизвестный отправитель',
+                'price' => number_format((float)$fulfillmentOffer->overall_price, 2, '.', ' '),
+                'status' => $fulfillmentOffer->status,
+                'created_at' => $fulfillmentOffer->created_at
+            ];
+        }
+
+        return $this->asJson([
+            'id' => $order->id,
+            'status' => $order->status,
+            'created_at' => $order->created_at,
+            'updated_at' => $order->updated_at,
+            'product_name_ru' => $order->product_name_ru,
+            'total_quantity' => $order->total_quantity,
+            'price_product' => number_format((float)$order->price_product, 2, '.', ' '),
+            'price_delivery' => number_format((float)$order->price_delivery, 2, '.', ' '),
+            'created_by_name' => $createdBy ? $createdBy->name . ' ' . $createdBy->surname : 'Неизвестный создатель',
+            'manager_name' => $manager ? $manager->name . ' ' . $manager->surname : 'Не назначен',
+            'buyer_name' => $buyer ? $buyer->name . ' ' . $buyer->surname : 'Не назначен',
+            'proposals' => $formattedProposals
+        ]);
     }
 }
